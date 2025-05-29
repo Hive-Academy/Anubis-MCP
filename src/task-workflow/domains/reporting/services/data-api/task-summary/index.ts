@@ -5,3 +5,7 @@
  */
 
 export { TaskSummaryDataApiService } from './task-summary-data-api.service';
+
+// Template Interfaces
+export * from './task-summary-template.interface';
+export * from './task-progress-health.interface';
