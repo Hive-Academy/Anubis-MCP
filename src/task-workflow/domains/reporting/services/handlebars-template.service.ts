@@ -104,6 +104,25 @@ export class HandlebarsTemplateService {
 
     // Basic conditionals
     this.handlebars.registerHelper('eq', (a: unknown, b: unknown) => a === b);
+    this.handlebars.registerHelper('gt', (a: number, b: number) => a > b);
+    this.handlebars.registerHelper('gte', (a: number, b: number) => a >= b);
+    this.handlebars.registerHelper('lte', (a: number, b: number) => a <= b);
+
+    // Logical helpers
+    this.handlebars.registerHelper('or', (...args: any[]) => {
+      // Remove the options object (last argument)
+      const values = args.slice(0, -1);
+      // Return true if any value is truthy, false otherwise
+      return values.some((value) => Boolean(value));
+    });
+
+    this.handlebars.registerHelper('and', (...args: any[]) => {
+      // Remove the options object (last argument)
+      const values = args.slice(0, -1);
+      // Return true only if all values are truthy
+      return values.every((value) => !!value);
+    });
+
     this.handlebars.registerHelper(
       'if_exists',
       (value: unknown, options: Handlebars.HelperOptions) => {
@@ -147,6 +166,13 @@ export class HandlebarsTemplateService {
             hour12: true,
           });
         }
+        if (format === 'MMM DD, YYYY') {
+          return d.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          });
+        }
         return d.toLocaleDateString();
       },
     );
@@ -165,9 +191,6 @@ export class HandlebarsTemplateService {
     });
 
     // Math helpers
-    this.handlebars.registerHelper('gt', (a: number, b: number) => a > b);
-    this.handlebars.registerHelper('gte', (a: number, b: number) => a >= b);
-    this.handlebars.registerHelper('lte', (a: number, b: number) => a <= b);
     this.handlebars.registerHelper('abs', (num: number) => Math.abs(num));
     this.handlebars.registerHelper(
       'multiply',
@@ -179,6 +202,65 @@ export class HandlebarsTemplateService {
       if (!str) return '';
       return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
     });
+
+    // Status and Priority helpers to avoid boolean rendering issues
+    this.handlebars.registerHelper('statusBadge', (status: string) => {
+      const statusMap: Record<string, { class: string; label: string }> = {
+        completed: { class: 'bg-green-100 text-green-800', label: 'Completed' },
+        'in-progress': {
+          class: 'bg-blue-100 text-blue-800',
+          label: 'In Progress',
+        },
+        'not-started': {
+          class: 'bg-slate-100 text-slate-700',
+          label: 'Not Started',
+        },
+        'needs-review': {
+          class: 'bg-yellow-100 text-yellow-800',
+          label: 'Needs Review',
+        },
+        'needs-changes': {
+          class: 'bg-red-100 text-red-800',
+          label: 'Needs Changes',
+        },
+        paused: { class: 'bg-gray-100 text-gray-800', label: 'Paused' },
+        cancelled: { class: 'bg-red-100 text-red-800', label: 'Cancelled' },
+      };
+
+      const config = statusMap[status] || {
+        class: 'bg-gray-100 text-gray-600',
+        label: status || 'Unknown',
+      };
+      return new this.handlebars.SafeString(
+        `<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${config.class}">${config.label}</span>`,
+      );
+    });
+
+    this.handlebars.registerHelper(
+      'priorityBadge',
+      (priority: string | null) => {
+        if (!priority) {
+          return new this.handlebars.SafeString(
+            '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">Unset</span>',
+          );
+        }
+
+        const priorityMap: Record<string, { class: string; label: string }> = {
+          Critical: { class: 'bg-red-100 text-red-800', label: 'Critical' },
+          High: { class: 'bg-orange-100 text-orange-800', label: 'High' },
+          Medium: { class: 'bg-yellow-100 text-yellow-800', label: 'Medium' },
+          Low: { class: 'bg-green-100 text-green-800', label: 'Low' },
+        };
+
+        const config = priorityMap[priority] || {
+          class: 'bg-slate-100 text-slate-600',
+          label: priority,
+        };
+        return new this.handlebars.SafeString(
+          `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${config.class}">${config.label}</span>`,
+        );
+      },
+    );
 
     this.logger.log('Basic Handlebars helpers registered');
   }

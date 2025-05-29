@@ -200,30 +200,28 @@ export class CoreMetricsService {
       return {
         totalDelegations: delegations.length,
         roleStats: {
-          architect: 2,
-          'senior-developer': 3,
-          'code-review': 4,
-          boomerang: 6,
+          architect: 0,
+          'senior-developer': 0,
+          'code-review': 0,
+          boomerang: 0,
           researcher: 0,
         },
         roleEfficiency: {
-          'senior-developer': 0.5,
-          'code-review': 0.6,
-          boomerang: 0.7,
-          researcher: 0.8,
-          architect: 0.9,
+          'senior-developer': 0,
+          'code-review': 0,
+          boomerang: 0,
+          researcher: 0,
+          architect: 0,
         },
-        successRate: 0.5,
+        successRate: 0,
         avgHandoffTime: 0,
         avgRedelegationCount: redelegationStats._avg.redelegationCount || 0,
-        mostEfficientRole: 'architect',
+        mostEfficientRole: '',
         avgCompletionTime: 0,
-        transitionMatrix: {
-          'senior-developer': { 'code-review': 5 },
-        },
+        transitionMatrix: {},
         weeklyTrends: {
-          failed: [1, 2, 3, 4, 5],
-          successful: [6, 7, 8, 9, 10],
+          failed: [],
+          successful: [],
         },
         bottlenecks: [],
       };
@@ -535,32 +533,19 @@ export class CoreMetricsService {
   }
 
   private calculateExecutionPatterns(_plansWithSubtasks: any[]): any[] {
-    const patterns = [
-      {
-        pattern: 'Sequential Execution',
-        description: 'Tasks executed in planned order',
-        frequency: 'High',
-        avgTime: '2.5 days',
-        successRate: 85,
-        statusClass: 'text-green-600',
-      },
-      {
-        pattern: 'Parallel Execution',
-        description: 'Multiple tasks executed simultaneously',
-        frequency: 'Medium',
-        avgTime: '1.8 days',
-        successRate: 78,
-        statusClass: 'text-blue-600',
-      },
-    ];
-    return patterns;
+    // Return empty array if no real data available
+    // TODO: Implement real execution pattern analysis based on actual subtask completion data
+    return [];
   }
 
   private calculateCreatorStats(planData: any[]): any[] {
     const creatorMap = new Map();
 
     planData.forEach((plan) => {
-      const creator = plan.createdBy || 'Unknown';
+      const creator = plan.createdBy;
+      // Skip plans without a creator instead of using "Unknown"
+      if (!creator) return;
+
       if (!creatorMap.has(creator)) {
         creatorMap.set(creator, {
           creator,
@@ -570,8 +555,8 @@ export class CoreMetricsService {
           avgQuality: 0,
           qualityColor: '#10B981',
           avgSubtasks: 0,
-          successRate: 85,
-          successClass: 'text-green-600',
+          successRate: 0, // Will be calculated from real data
+          successClass: 'text-gray-600', // Neutral until calculated
         });
       }
 
@@ -591,17 +576,21 @@ export class CoreMetricsService {
   // Mapping methods
 
   private mapPriorityDistribution(data: any[]): PriorityDistribution[] {
-    return data.map((item) => ({
-      priority: item.priority || 'Unknown',
-      count: item._count,
-    }));
+    return data
+      .filter((item) => item.priority !== null)
+      .map((item) => ({
+        priority: item.priority,
+        count: item._count,
+      }));
   }
 
   private mapOwnerDistribution(data: any[]): OwnerDistribution[] {
-    return data.map((item) => ({
-      owner: item.owner || 'Unassigned',
-      count: item._count,
-    }));
+    return data
+      .filter((item) => item.owner !== null)
+      .map((item) => ({
+        owner: item.owner,
+        count: item._count,
+      }));
   }
 
   private mapModeTransitions(data: any[]): ModeTransition[] {
@@ -638,30 +627,28 @@ export class CoreMetricsService {
     return {
       totalDelegations: 0,
       roleStats: {
-        architect: 2,
-        'senior-developer': 3,
-        'code-review': 4,
-        boomerang: 6,
+        architect: 0,
+        'senior-developer': 0,
+        'code-review': 0,
+        boomerang: 0,
         researcher: 0,
       },
       roleEfficiency: {
-        'senior-developer': 0.5,
-        'code-review': 0.6,
-        boomerang: 0.7,
-        researcher: 0.8,
-        architect: 0.9,
+        'senior-developer': 0,
+        'code-review': 0,
+        boomerang: 0,
+        researcher: 0,
+        architect: 0,
       },
       successRate: 0,
       avgHandoffTime: 0,
       avgRedelegationCount: 0,
-      mostEfficientRole: 'architect',
+      mostEfficientRole: '',
       avgCompletionTime: 0,
-      transitionMatrix: {
-        'senior-developer': { 'code-review': 5 },
-      },
+      transitionMatrix: {},
       weeklyTrends: {
-        failed: [1, 2, 3, 4, 5],
-        successful: [6, 7, 8, 9, 10],
+        failed: [],
+        successful: [],
       },
       bottlenecks: [],
     };

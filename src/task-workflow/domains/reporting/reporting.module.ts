@@ -58,6 +58,7 @@ import { DelegationFlowAnalysisTaskGeneratorService } from './services/generator
 
 // === RENDERING SERVICE (PDF/PNG generation) ===
 import { ReportRenderingService } from './report-rendering.service';
+import { TaskSummaryAnalyticsService } from './services/data-api/task-summary/task-summary-analytics.service';
 
 /**
  * Focused Reporting Module - TSK-010 Refactored Architecture
@@ -133,6 +134,7 @@ import { ReportRenderingService } from './report-rendering.service';
 
     // === RENDERING SERVICE (PDF/PNG generation) ===
     ReportRenderingService,
+    TaskSummaryAnalyticsService,
   ],
   exports: [
     // === PRIMARY EXPORTS ===
