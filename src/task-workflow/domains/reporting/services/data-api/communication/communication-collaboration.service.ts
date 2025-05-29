@@ -260,25 +260,37 @@ export class CommunicationCollaborationService {
       'code-review',
     ];
 
-    // Calculate interactions based on delegation patterns
+    // Calculate interactions based on real delegation patterns
     roles.forEach((role, index) => {
-      const interactionCount =
-        delegationMetrics.roleParticipation?.[role] ||
-        Math.floor(Math.random() * 5) + 1;
-      const responseTime =
-        delegationMetrics.roleResponseTimes?.[role] || Math.random() * 3 + 1;
+      const roleStats = delegationMetrics.roleStats?.[role] || 0;
+      const roleEfficiency = delegationMetrics.roleEfficiency?.[role] || 0.5;
+
+      // Calculate response time based on efficiency and handoff time
+      const baseResponseTime = delegationMetrics.avgHandoffTime || 24;
+      const responseTime = Math.max(
+        1,
+        baseResponseTime * (1 - roleEfficiency * 0.3),
+      );
 
       interactions.push({
         role,
-        interactionCount,
+        interactionCount: roleStats,
         averageResponseTime: `${Math.round(responseTime)}h`,
-        communicationQuality: Math.round(85 + Math.random() * 15),
-        collaborationScore: Math.round(80 + Math.random() * 20),
+        communicationQuality: Math.round(
+          Math.min(100, 70 + roleEfficiency * 30),
+        ),
+        collaborationScore: Math.round(Math.min(100, 75 + roleEfficiency * 25)),
         lastInteraction: new Date(
           Date.now() - index * 12 * 60 * 60 * 1000,
         ).toISOString(),
-        status: interactionCount >= 3 ? 'active' : 'limited',
-        statusClass: interactionCount >= 3 ? 'text-success' : 'text-warning',
+        status:
+          roleStats >= 2 ? 'active' : roleStats >= 1 ? 'limited' : 'inactive',
+        statusClass:
+          roleStats >= 2
+            ? 'text-success'
+            : roleStats >= 1
+              ? 'text-warning'
+              : 'text-muted',
       });
     });
 

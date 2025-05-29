@@ -1,9 +1,9 @@
 /**
- * Delegation Analytics Services - Delegation patterns and role efficiency analysis
+ * Delegation Analytics Services - Delegation patterns and workflow analysis
  */
 
 export { DelegationAnalyticsDataApiService } from './delegation-analytics-data-api.service';
-export { CodeReviewDelegationTemplateDataService } from './code-review-delegation-template-data.service';
+export { DelegationFlowAnalysisDataApiService } from './delegation-flow-analysis-data-api.service';
 
 // Template Interfaces
 export * from './delegation-analytics-template.interface';

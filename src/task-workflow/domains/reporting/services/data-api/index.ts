@@ -16,3 +16,4 @@ export * from './comprehensive';
 export * from './code-review';
 export * from './implementation-plan';
 export * from './communication';
+export * from './task-progress';

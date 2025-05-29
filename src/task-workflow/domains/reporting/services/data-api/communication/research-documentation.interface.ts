@@ -3,6 +3,8 @@
  * Defines the data structure for task research and documentation quality analysis
  */
 
+import { ImpactArea } from '../implementation-plan/implementation-execution.interface';
+
 export interface ResearchDocumentationData {
   research: {
     completionRate: number; // Added this property that the service expects
@@ -131,12 +133,6 @@ export interface MitigationStrategy {
   feasibility: string;
   effort: string;
   timeline: string;
-}
-
-export interface ImpactArea {
-  category: string;
-  color: string;
-  metrics: ImpactMetric[];
 }
 
 export interface ImpactMetric {

@@ -23,6 +23,7 @@ export interface TaskProgressHealthData {
     totalSubtasks: number;
     timeElapsed: string;
     estimatedRemaining: string;
+    totalDuration: string;
     velocity: number;
     trend: string;
     trendClass: string;
@@ -30,6 +31,11 @@ export interface TaskProgressHealthData {
     chartData: number[];
     chartColors: string[];
   };
+
+  taskName?: string;
+  status?: string;
+  priority?: string;
+  currentMode?: string;
 
   subtasks: SubtaskProgress[];
 

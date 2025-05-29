@@ -13,10 +13,9 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 
-import { TaskHealthAnalysisService } from '../../analytics/task-health-analysis.service';
+import { TaskHealthAnalysisService } from '../foundation/task-health-analysis.service';
 import { ReportDataAccessService } from '../foundation/report-data-access.service';
 import { MetricsCalculatorService } from '../foundation/metrics-calculator.service';
-import { ImpactArea } from '../communication';
 import {
   ImplementationExecutionData,
   BatchProgress,
@@ -27,6 +26,7 @@ import {
   BlockerIssue,
   ResolvedIssue,
   ExecutionRecommendation,
+  ImpactArea,
 } from '../implementation-plan';
 import {
   TaskProgressHealthData,
@@ -67,10 +67,10 @@ export class TaskProgressExecutionService {
       await Promise.all([
         this.getTaskInfo(taskId, healthAnalysis),
         this.calculateProgressMetrics(healthAnalysis),
-        this.getSubtaskProgress(healthAnalysis),
-        this.assessTaskRisks(healthAnalysis),
+        Promise.resolve(this.getSubtaskProgress(healthAnalysis)),
+        Promise.resolve(this.assessTaskRisks(healthAnalysis)),
         this.getDelegationHistory(taskId),
-        this.generateActionItems(healthAnalysis),
+        Promise.resolve(this.generateActionItems(healthAnalysis)),
       ]);
 
     // Convert health analysis to health indicators
@@ -145,17 +145,29 @@ export class TaskProgressExecutionService {
 
   // ===== TASK PROGRESS HEALTH HELPER METHODS =====
 
-  private getTaskInfo(
+  private async getTaskInfo(
     taskId: string,
     healthAnalysis: any,
-  ): TaskProgressHealthData['task'] {
-    // Use real task info from health analysis
+  ): Promise<TaskProgressHealthData['task']> {
+    // Get real task info from TaskHealthAnalysisService
+    const taskHealthMetrics =
+      await this.taskHealthAnalysis.getTaskProgressHealthMetrics(taskId);
+
     return {
-      name: healthAnalysis.taskName || `Task ${taskId}`,
-      status: healthAnalysis.status || 'in-progress',
-      statusClass: this.getStatusClass(healthAnalysis.status || 'in-progress'),
-      priority: 'High', // TODO: Get actual priority from database
-      currentMode: healthAnalysis.currentMode || 'senior-developer',
+      name:
+        taskHealthMetrics.taskName ||
+        healthAnalysis.taskName ||
+        `Task ${taskId}`,
+      status:
+        taskHealthMetrics.status || healthAnalysis.status || 'in-progress',
+      statusClass: this.getStatusClass(
+        taskHealthMetrics.status || healthAnalysis.status || 'in-progress',
+      ),
+      priority: taskHealthMetrics.priority || 'High',
+      currentMode:
+        taskHealthMetrics.currentMode ||
+        healthAnalysis.currentMode ||
+        'senior-developer',
     };
   }
 
@@ -250,6 +262,7 @@ export class TaskProgressExecutionService {
       totalSubtasks,
       timeElapsed: `${Math.round(healthAnalysis.totalDuration || 48)} hours`,
       estimatedRemaining: '24 hours', // TODO: Calculate from actual data
+      totalDuration: `${Math.round(healthAnalysis.totalDuration || 48)} hours`,
       velocity: Math.round(
         (completedSubtasks / (healthAnalysis.totalDuration || 48)) * 24,
       ), // subtasks per day
@@ -296,52 +309,9 @@ export class TaskProgressExecutionService {
       });
     }
 
-    // Fallback to sample data if no batch analysis
+    // Log when no real subtask data is available
     if (subtasks.length === 0) {
-      subtasks.push(
-        {
-          name: 'Setup Module Structure',
-          description: 'Create the basic module structure and dependencies',
-          status: 'completed',
-          statusClass: 'text-success',
-          statusBorderClass: 'border-success',
-          sequenceNumber: 1,
-          estimatedDuration: '4 hours',
-          startedAt: new Date(
-            Date.now() - 3 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-          completedAt: new Date(
-            Date.now() - 2 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-          assignedTo: 'Developer',
-          batchTitle: 'Core Implementation',
-        },
-        {
-          name: 'Implement Core Logic',
-          description: 'Implement the main business logic and algorithms',
-          status: 'in-progress',
-          statusClass: 'text-primary',
-          statusBorderClass: 'border-primary',
-          sequenceNumber: 2,
-          estimatedDuration: '8 hours',
-          startedAt: new Date(
-            Date.now() - 1 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
-          assignedTo: 'Developer',
-          batchTitle: 'Core Implementation',
-        },
-        {
-          name: 'Add Unit Tests',
-          description: 'Create comprehensive unit tests for all components',
-          status: 'not-started',
-          statusClass: 'text-secondary',
-          statusBorderClass: 'border-secondary',
-          sequenceNumber: 3,
-          estimatedDuration: '4 hours',
-          assignedTo: 'Developer',
-          batchTitle: 'Testing & Quality',
-        },
-      );
+      this.logger.warn('No subtask data available from health analysis');
     }
 
     return subtasks;
@@ -397,46 +367,58 @@ export class TaskProgressExecutionService {
     taskId: string,
   ): Promise<DelegationEvent[]> {
     // Get real delegation history from database
-    const whereClause = { taskId };
-    const delegationMetrics =
-      await this.metricsCalculator.getDelegationMetrics(whereClause);
+    const delegationMetrics = await this.metricsCalculator.getDelegationMetrics(
+      { taskId },
+    );
 
     const events: DelegationEvent[] = [];
 
-    // Convert delegation transitions to events
+    // Convert delegation transitions to events using transitionMatrix
     if (
-      delegationMetrics.modeTransitions &&
-      delegationMetrics.modeTransitions.length > 0
+      delegationMetrics.transitionMatrix &&
+      Object.keys(delegationMetrics.transitionMatrix).length > 0
     ) {
-      delegationMetrics.modeTransitions.forEach(
-        (transition: any, index: number) => {
-          events.push({
-            fromMode: transition.fromMode || 'boomerang',
-            toMode: transition.toMode || 'senior-developer',
-            timestamp: new Date(
-              Date.now() - index * 24 * 60 * 60 * 1000,
-            ).toISOString(),
-            description: `Task delegation from ${transition.fromMode} to ${transition.toMode}`,
-            duration: transition.duration || '2 hours',
-            statusColor: '#28a745',
-            icon: 'fas fa-exchange-alt',
+      let index = 0;
+      Object.entries(delegationMetrics.transitionMatrix).forEach(
+        ([fromRole, transitions]) => {
+          Object.entries(transitions as any).forEach(([toRole, count]) => {
+            if ((count as number) > 0) {
+              events.push({
+                fromMode: fromRole,
+                toMode: toRole,
+                timestamp: new Date(
+                  Date.now() - index * 24 * 60 * 60 * 1000,
+                ).toISOString(),
+                description: `Task delegation from ${fromRole} to ${toRole}`,
+                duration: '2 hours',
+                statusColor: '#28a745',
+                icon: 'fas fa-exchange-alt',
+              });
+              index++;
+            }
           });
         },
       );
     }
 
-    // Fallback to sample data
-    if (events.length === 0) {
+    // Get actual workflow transitions from ReportDataAccessService
+    const workflowTransitions =
+      await this.reportDataAccess.getWorkflowTransitions(taskId);
+
+    // Add workflow transitions to events
+    workflowTransitions.forEach((transition: any, index: number) => {
       events.push({
-        fromMode: 'boomerang',
-        toMode: 'senior-developer',
-        timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        description: 'Task assigned for implementation',
-        duration: '1 hour',
-        statusColor: '#28a745',
-        icon: 'fas fa-play',
+        fromMode: transition.fromMode || 'boomerang',
+        toMode: transition.toMode || 'senior-developer',
+        timestamp:
+          transition.timestamp ||
+          new Date(Date.now() - index * 12 * 60 * 60 * 1000).toISOString(),
+        description: transition.description || `Task delegation transition`,
+        duration: transition.duration || '1 hour',
+        statusColor: transition.statusColor || '#28a745',
+        icon: transition.icon || 'fas fa-exchange-alt',
       });
-    }
+    });
 
     return events;
   }
@@ -605,19 +587,19 @@ export class TaskProgressExecutionService {
     // TODO: Get real file impact data from version control or task analysis
     const impactAreas: ImpactArea[] = [
       {
-        metrics: [],
-        category: 'Services',
-        color: '#28a745',
+        area: 'Services',
+        impact: 'high',
+        impactClass: 'text-success',
       },
       {
-        metrics: [],
-        category: 'Tests',
-        color: '#17a2b8',
+        area: 'Tests',
+        impact: 'medium',
+        impactClass: 'text-primary',
       },
       {
-        metrics: [],
-        category: 'Interfaces',
-        color: '#ffc107',
+        area: 'Interfaces',
+        impact: 'medium',
+        impactClass: 'text-warning',
       },
     ];
 
@@ -627,7 +609,7 @@ export class TaskProgressExecutionService {
       linesAdded: 457,
       linesRemoved: 65,
       impactAreas,
-      chartLabels: impactAreas.map((area) => area.category),
+      chartLabels: impactAreas.map((area) => area.area),
       chartData: [234, 156, 67], // Lines added per area
       chartColors: ['#dc3545', '#ffc107', '#28a745'],
     });
@@ -741,54 +723,64 @@ export class TaskProgressExecutionService {
   }
 
   private async getImplementationTimeline(
-    _taskId: string,
+    taskId: string,
   ): Promise<TimelineEvent[]> {
-    // TODO: Get real timeline events from task history
-    return Promise.resolve([
-      {
-        milestone: 'Task Started',
-        timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-        description: 'Implementation work began',
-        statusColor: '#28a745',
-        icon: 'fas fa-play',
-        metrics: [
-          {
-            label: 'Initial Estimate',
-            value: '5 days',
-          },
-        ],
-      },
-      {
-        milestone: 'First Batch Completed',
-        timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        description: 'Core module structure implemented',
+    // Get real timeline events from workflow transitions
+    const workflowTransitions =
+      await this.reportDataAccess.getWorkflowTransitions(taskId);
+    const delegationMetrics = await this.metricsCalculator.getDelegationMetrics(
+      { taskId },
+    );
+
+    const timeline: TimelineEvent[] = [];
+
+    // Add workflow transition events to timeline
+    workflowTransitions.forEach((transition: any, index: number) => {
+      timeline.push({
+        milestone: transition.milestone || `Workflow Transition ${index + 1}`,
+        timestamp:
+          transition.timestamp ||
+          new Date(
+            Date.now() -
+              (workflowTransitions.length - index) * 24 * 60 * 60 * 1000,
+          ).toISOString(),
+        description: transition.description || `Task transition event`,
+        statusColor: transition.statusColor || '#28a745',
+        icon: transition.icon || 'fas fa-arrow-right',
+        metrics: transition.metrics || [],
+      });
+    });
+
+    // Add delegation metrics as timeline events
+    if (delegationMetrics.totalDelegations > 0) {
+      timeline.push({
+        milestone: 'Task Delegations Started',
+        timestamp: new Date(
+          Date.now() - delegationMetrics.totalDelegations * 12 * 60 * 60 * 1000,
+        ).toISOString(),
+        description: `${delegationMetrics.totalDelegations} delegations completed`,
         statusColor: '#17a2b8',
-        icon: 'fas fa-check',
+        icon: 'fas fa-users',
         metrics: [
           {
-            label: 'Progress',
-            value: '40%',
+            label: 'Total Delegations',
+            value: delegationMetrics.totalDelegations.toString(),
           },
           {
-            label: 'Quality Score',
-            value: '85%',
+            label: 'Avg Handoff Time',
+            value: `${delegationMetrics.avgHandoffTime.toFixed(1)}h`,
           },
         ],
-      },
-      {
-        milestone: 'Code Review Requested',
-        timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        description: 'Implementation ready for review',
-        statusColor: '#ffc107',
-        icon: 'fas fa-eye',
-        metrics: [
-          {
-            label: 'Coverage',
-            value: '87%',
-          },
-        ],
-      },
-    ]);
+      });
+    }
+
+    // Sort timeline by timestamp (most recent first)
+    timeline.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+    );
+
+    return timeline;
   }
 
   private async analyzeBlockers(

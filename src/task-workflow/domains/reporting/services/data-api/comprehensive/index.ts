@@ -3,7 +3,6 @@
  */
 
 export { ComprehensiveDataApiService } from './comprehensive-data-api.service';
-export { ComprehensiveTemplateDataService } from './comprehensive-template-data.service';
 
 // Template Interfaces
 export * from './comprehensive-template.interface';

@@ -8,3 +8,4 @@
 export { CoreMetricsService } from './core-metrics.service';
 export { ReportDataAccessService } from './report-data-access.service';
 export { MetricsCalculatorService } from './metrics-calculator.service';
+export { TaskHealthAnalysisService } from './task-health-analysis.service';

@@ -81,31 +81,8 @@ export class DelegationAnalyticsDataApiService
     );
     const baseMetrics = await this.reportDataAccess.getBaseMetrics(whereClause);
 
-    // Extract role performance from delegation metrics
-    const rolePerformance = baseMetrics.delegations.rolePerformance || [];
-
-    return {
-      boomerang: this.calculateRoleEfficiencyScore(
-        rolePerformance,
-        'boomerang',
-      ),
-      researcher: this.calculateRoleEfficiencyScore(
-        rolePerformance,
-        'researcher',
-      ),
-      architect: this.calculateRoleEfficiencyScore(
-        rolePerformance,
-        'architect',
-      ),
-      'senior-developer': this.calculateRoleEfficiencyScore(
-        rolePerformance,
-        'senior-developer',
-      ),
-      'code-review': this.calculateRoleEfficiencyScore(
-        rolePerformance,
-        'code-review',
-      ),
-    };
+    // Use the existing roleEfficiency from delegation metrics
+    return baseMetrics.delegations.roleEfficiency;
   }
 
   /**
@@ -140,14 +117,14 @@ export class DelegationAnalyticsDataApiService
       });
     }
 
-    // Analyze role-specific bottlenecks
-    const rolePerformance = baseMetrics.delegations.rolePerformance || [];
-    rolePerformance.forEach((role: any) => {
-      if (role.avgCompletionTime > 48) {
+    // Analyze role-specific bottlenecks using roleEfficiency
+    const roleEfficiency = baseMetrics.delegations.roleEfficiency;
+    Object.entries(roleEfficiency).forEach(([role, efficiency]) => {
+      if (efficiency < 0.5) {
         bottlenecks.push({
-          role: role.role,
-          issue: `Slow completion time: ${role.avgCompletionTime.toFixed(1)} hours`,
-          impact: role.avgCompletionTime > 72 ? 'high' : 'medium',
+          role: role,
+          issue: `Low efficiency score: ${(efficiency * 100).toFixed(1)}%`,
+          impact: efficiency < 0.3 ? 'high' : 'medium',
         });
       }
     });
@@ -168,37 +145,8 @@ export class DelegationAnalyticsDataApiService
     );
     const baseMetrics = await this.reportDataAccess.getBaseMetrics(whereClause);
 
-    // Extract transition data from delegation metrics
-    const transitions = baseMetrics.delegations.modeTransitions || [];
-
-    const matrix: DelegationMetrics['transitionMatrix'] = {};
-    const roles = [
-      'boomerang',
-      'researcher',
-      'architect',
-      'senior-developer',
-      'code-review',
-    ];
-
-    // Initialize matrix
-    roles.forEach((fromRole) => {
-      matrix[fromRole] = {};
-      roles.forEach((toRole) => {
-        matrix[fromRole][toRole] = 0;
-      });
-    });
-
-    // Populate matrix from transition data
-    transitions.forEach((transition: any) => {
-      const from = transition.fromMode || 'unknown';
-      const to = transition.toMode || 'unknown';
-
-      if (matrix[from] && matrix[from][to] !== undefined) {
-        matrix[from][to]++;
-      }
-    });
-
-    return matrix;
+    // Use the existing transitionMatrix from delegation metrics
+    return baseMetrics.delegations.transitionMatrix;
   }
 
   // ===== PRIVATE BUSINESS LOGIC METHODS =====
@@ -256,27 +204,6 @@ export class DelegationAnalyticsDataApiService
   }
 
   /**
-   * Calculate role efficiency score with business logic
-   */
-  private calculateRoleEfficiencyScore(
-    rolePerformance: any[],
-    roleName: string,
-  ): number {
-    const roleData = rolePerformance.find((r) => r.role === roleName);
-
-    if (!roleData) return 0.5; // Neutral score if no data
-
-    // Business logic: efficiency based on completion time and success rate
-    const timeEfficiency = Math.max(
-      0,
-      Math.min(1, (48 - (roleData.avgCompletionTime || 48)) / 48),
-    );
-    const successRate = (roleData.successRate || 50) / 100;
-
-    return Math.round(((timeEfficiency + successRate) / 2) * 100) / 100;
-  }
-
-  /**
    * Calculate role statistics from performance data
    */
   private calculateRoleStats(
@@ -291,7 +218,7 @@ export class DelegationAnalyticsDataApiService
     };
 
     rolePerformance.forEach((role) => {
-      if (defaultStats.hasOwnProperty(role.role)) {
+      if (role.role in defaultStats) {
         defaultStats[role.role as keyof typeof defaultStats] =
           role.taskCount || 0;
       }

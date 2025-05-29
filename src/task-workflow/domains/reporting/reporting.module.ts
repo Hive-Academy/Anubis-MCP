@@ -5,41 +5,35 @@ import { PrismaModule } from '../../../prisma/prisma.module';
 import { ReportMcpOperationsService } from './report-mcp-operations.service';
 import { HandlebarsTemplateService } from './services/handlebars-template.service';
 
-// === ANALYTICS SERVICES (Keep all - real business value) ===
-import { AdvancedAnalyticsService } from './services/analytics/advanced-analytics.service';
-import { TaskHealthAnalysisService } from './services/analytics/task-health-analysis.service';
-import { TimeSeriesAnalysisService } from './services/analytics/time-series-analysis.service';
-import { PerformanceBenchmarkService } from './services/analytics/performance-benchmark.service';
-import { RecommendationEngineService } from './services/analytics/recommendation-engine.service';
-import { EnhancedInsightsGeneratorService } from './services/analytics/enhanced-insights-generator.service';
-import { SmartResponseSummarizationService } from './services/analytics/smart-response-summarization.service';
-import { SchemaDrivenIntelligenceService } from './services/analytics/schema-driven-intelligence.service';
+// === FOUNDATION ANALYTICS SERVICES (Keep essential services only) ===
+// TaskHealthAnalysisService is now imported from foundation
 
-// === NEW ORGANIZED DATA API SERVICES ===
+// === FOCUSED DATA API SERVICES ===
 // Foundation Services
 import {
   CoreMetricsService,
   MetricsCalculatorService,
   ReportDataAccessService,
+  TaskHealthAnalysisService,
 } from './services/data-api/foundation';
 
 // Report-Specific Data API Services
 import { TaskSummaryDataApiService } from './services/data-api/task-summary';
 import {
   DelegationAnalyticsDataApiService,
-  CodeReviewDelegationTemplateDataService,
+  DelegationFlowAnalysisDataApiService,
 } from './services/data-api/delegation-analytics';
-import {
-  PerformanceDashboardDataApiService,
-  TaskProgressExecutionService,
-} from './services/data-api/performance-dashboard';
-import {
-  ComprehensiveDataApiService,
-  ComprehensiveTemplateDataService,
-} from './services/data-api/comprehensive';
-import { CodeReviewResearchService } from './services/data-api/code-review';
-import { ImplementationPlanTemplateDataService } from './services/data-api/implementation-plan';
+import { PerformanceDashboardDataApiService } from './services/data-api/performance-dashboard';
+import { ComprehensiveDataApiService } from './services/data-api/comprehensive';
+import { CodeReviewInsightsDataApiService } from './services/data-api/code-review';
 import { CommunicationCollaborationService } from './services/data-api/communication';
+import { ImplementationPlanAnalyticsDataApiService } from './services/data-api/implementation-plan';
+import { TaskProgressHealthDataApiService } from './services/data-api/task-progress';
+
+// Individual Task Report Services (specialized)
+import { CodeReviewQualityDataApiService } from './services/data-api/code-review';
+import { ImplementationExecutionDataApiService } from './services/data-api/implementation-plan';
+import { ResearchDocumentationDataApiService } from './services/data-api/communication';
 
 // === MINIMAL INFRASTRUCTURE (Only essentials) ===
 import { ReportingConfigService } from './services/infrastructure/reporting-config.service';
@@ -66,34 +60,26 @@ import { DelegationFlowAnalysisTaskGeneratorService } from './services/generator
 import { ReportRenderingService } from './report-rendering.service';
 
 /**
- * Simplified Reporting Module
+ * Focused Reporting Module - TSK-010 Refactored Architecture
  *
- * PHILOSOPHY: Keep business value, eliminate architectural complexity
+ * PHILOSOPHY: Focused [report-name]-data-api services pattern
  *
- * KEPT (32 services):
- * - 9 Analytics services: Real business intelligence and insights
- * - 12 Data services: Database queries and data transformation logic
- * - 1 Template service: Simple, effective rendering
- * - 1 Config service: Essential configuration
+ * ARCHITECTURE:
+ * - 3 Foundation services: CoreMetrics, MetricsCalculator, ReportDataAccess
+ * - 12 Focused data API services: One per report type, following proven pattern
+ * - 1 Essential analytics service: TaskHealthAnalysisService (used by multiple APIs)
+ * - 15 Generator services: Thin wrappers for template rendering
+ * - 1 Template service: Handlebars rendering
  * - 1 MCP service: External API interface
- * - 1 Rendering service: PDF/PNG generation with Playwright
- * - 15 Generator services: All report types now supported
+ * - 1 Rendering service: PDF/PNG generation
  *
- * REMOVED (25+ services):
- * - Strategy pattern services (unnecessary abstraction)
- * - Complex rendering pipeline (over-engineered)
- * - Coordination services (unnecessary orchestration)
- * - Infrastructure bloat (file loggers, path generators, etc.)
- * - Template factories and complex abstractions
- * - ReportGeneratorService (697 lines of complex orchestration)
- * - ChartGenerationModule and related bloat
+ * REMOVED:
+ * - 8 Over-engineered analytics services (EnhancedInsights, SchemaDriven, etc.)
+ * - Complex template data services replaced by focused APIs
+ * - Service pollution and unnecessary abstractions
  *
- * REMOVED INTERFACES (3 files):
- * - chart-generator.interface.ts (unused)
- * - report-service.interface.ts (unused)
- * - core-data-contracts.interface.ts (unused)
- *
- * FLOW: MCP Request → Data Service → Analytics Service → Simple Template → Response
+ * PATTERN: MCP Request → Focused Data API → Foundation Services → Template → Response
+ * RESULT: 20+ services reduced to 12 focused services with better insights
  */
 @Module({
   imports: [PrismaModule],
@@ -121,35 +107,32 @@ import { ReportRenderingService } from './report-rendering.service';
     CommunicationCollaborationGeneratorService,
     DelegationFlowAnalysisTaskGeneratorService,
 
-    // === ANALYTICS SERVICES (All kept - real business value) ===
-    AdvancedAnalyticsService,
+    // === ESSENTIAL ANALYTICS SERVICE ===
     TaskHealthAnalysisService,
-    TimeSeriesAnalysisService,
-    PerformanceBenchmarkService,
-    RecommendationEngineService,
-    EnhancedInsightsGeneratorService,
-    SmartResponseSummarizationService,
-    SchemaDrivenIntelligenceService,
 
-    // === DATA SERVICES (All kept - essential data logic) ===
+    // === FOUNDATION DATA SERVICES ===
     CoreMetricsService,
     MetricsCalculatorService,
     ReportDataAccessService,
-    ComprehensiveTemplateDataService,
-    ImplementationPlanTemplateDataService,
-    CodeReviewDelegationTemplateDataService,
-    TaskProgressExecutionService,
-    CodeReviewResearchService,
+
+    // === FOCUSED DATA API SERVICES ===
+    TaskSummaryDataApiService,
+    DelegationAnalyticsDataApiService,
+    DelegationFlowAnalysisDataApiService,
+    PerformanceDashboardDataApiService,
+    ComprehensiveDataApiService,
+    CodeReviewInsightsDataApiService,
+    ImplementationPlanAnalyticsDataApiService,
+    TaskProgressHealthDataApiService,
     CommunicationCollaborationService,
+
+    // === INDIVIDUAL TASK REPORT SERVICES ===
+    CodeReviewQualityDataApiService,
+    ImplementationExecutionDataApiService,
+    ResearchDocumentationDataApiService,
 
     // === RENDERING SERVICE (PDF/PNG generation) ===
     ReportRenderingService,
-
-    // === REPORT TEMPLATE DATA API SERVICES ===
-    TaskSummaryDataApiService,
-    DelegationAnalyticsDataApiService,
-    PerformanceDashboardDataApiService,
-    ComprehensiveDataApiService,
   ],
   exports: [
     // === PRIMARY EXPORTS ===
@@ -159,19 +142,19 @@ import { ReportRenderingService } from './report-rendering.service';
     // === NEW GENERATOR ARCHITECTURE ===
     ReportGeneratorFactoryService,
 
-    // === ANALYTICS EXPORTS (for external use) ===
-    AdvancedAnalyticsService,
+    // === ESSENTIAL ANALYTICS EXPORT ===
     TaskHealthAnalysisService,
-    TimeSeriesAnalysisService,
-    PerformanceBenchmarkService,
-    RecommendationEngineService,
-    EnhancedInsightsGeneratorService,
-    SmartResponseSummarizationService,
-    SchemaDrivenIntelligenceService,
 
-    // === DATA EXPORTS (for external use) ===
+    // === FOUNDATION DATA EXPORTS ===
     CoreMetricsService,
+    MetricsCalculatorService,
     ReportDataAccessService,
+
+    // === FOCUSED DATA API EXPORTS ===
+    TaskSummaryDataApiService,
+    DelegationAnalyticsDataApiService,
+    PerformanceDashboardDataApiService,
+    ComprehensiveDataApiService,
 
     // === RENDERING SERVICE (PDF/PNG generation) ===
     ReportRenderingService,

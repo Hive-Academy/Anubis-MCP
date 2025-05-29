@@ -4,21 +4,21 @@ import {
   ReportFilters,
   ReportGenerationResult,
 } from './base-report-generator.interface';
-import { ReportType } from '../../interfaces/service-contracts.interface';
 
-import { CodeReviewDelegationTemplateDataService } from '../data-api';
+import { CodeReviewInsightsDataApiService } from '../data-api';
 import { HandlebarsTemplateService } from '../handlebars-template.service';
+import { ReportType } from '../../interfaces/service-contracts.interface';
 
 /**
  * Code Review Insights Generator
  *
- * Uses the data services as the glue layer since they already:
- * - Combine data + analytics + insights
- * - Format data for template consumption
- * - Handle all the complex logic
+ * Uses the NEW focused data-api service that follows the proven task-summary pattern:
+ * - ReportDataAccessService: Pure Prisma API interface
+ * - CoreMetricsService: Foundation metrics calculations
+ * - CodeReviewInsightsDataApiService: Focused business logic + data transformation
  *
- * This generator just:
- * 1. Calls the appropriate data service method
+ * This generator:
+ * 1. Calls the focused data service method
  * 2. Renders the template
  * 3. Returns the result
  */
@@ -29,8 +29,8 @@ export class CodeReviewInsightsGeneratorService
   private readonly logger = new Logger(CodeReviewInsightsGeneratorService.name);
 
   constructor(
-    // The data service IS the glue layer
-    private readonly templateData: CodeReviewDelegationTemplateDataService,
+    // Use the NEW focused data-api service
+    private readonly codeReviewDataApi: CodeReviewInsightsDataApiService,
 
     // Template service for rendering
     private readonly templateService: HandlebarsTemplateService,
@@ -54,23 +54,24 @@ export class CodeReviewInsightsGeneratorService
     filters: ReportFilters,
   ): Promise<ReportGenerationResult> {
     this.logger.log(
-      'Generating code review insights report using data service glue layer',
+      'Generating code review insights report using NEW CodeReviewInsightsDataApiService',
     );
 
     try {
       this.validateFilters(filters);
 
-      // Step 1: Use the data service as the glue layer
-      // It already combines analytics + data + template formatting
-      const templateData = await this.templateData.getCodeReviewInsightsData(
-        filters.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-        filters.endDate || new Date(),
-        {
-          ...(filters.owner && { owner: filters.owner }),
-          ...(filters.mode && { mode: filters.mode }),
-          ...(filters.priority && { priority: filters.priority }),
-        },
-      );
+      // Step 1: Use the NEW focused data-api service
+      // It uses foundation services and provides real data without dummy values
+      const templateData =
+        await this.codeReviewDataApi.getCodeReviewInsightsData(
+          filters.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+          filters.endDate || new Date(),
+          {
+            ...(filters.owner && { owner: filters.owner }),
+            ...(filters.mode && { mode: filters.mode }),
+            ...(filters.priority && { priority: filters.priority }),
+          },
+        );
 
       // Step 2: Render template
       const htmlContent = await this.templateService.renderTemplate(
@@ -86,10 +87,12 @@ export class CodeReviewInsightsGeneratorService
           generatedAt: new Date(),
           filters,
           dataSourcesUsed: [
-            'CodeReviewDelegationTemplateDataService (glue layer)',
+            'CodeReviewInsightsDataApiService (NEW focused service with foundation)',
           ],
           analyticsApplied: [
-            'All analytics services via CodeReviewDelegationTemplateDataService',
+            'CoreMetricsService',
+            'ReportDataAccessService',
+            'MetricsCalculatorService',
           ],
         },
       };

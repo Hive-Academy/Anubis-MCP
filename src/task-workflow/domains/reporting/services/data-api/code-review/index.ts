@@ -1,8 +1,9 @@
 /**
- * Code Review Services - Quality assessments and review insights
+ * Code Review Services - Code review analysis and quality assessment
  */
 
-export { CodeReviewResearchService } from './code-review-research.service';
+export { CodeReviewInsightsDataApiService } from './code-review-insights-data-api.service';
+export { CodeReviewQualityDataApiService } from './code-review-quality-data-api.service';
 
 // Template Interfaces
 export * from './code-review-insights-template.interface';

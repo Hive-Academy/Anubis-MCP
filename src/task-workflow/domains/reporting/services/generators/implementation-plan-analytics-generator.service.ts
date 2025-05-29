@@ -6,21 +6,18 @@ import {
 } from './base-report-generator.interface';
 import { ReportType } from '../../interfaces/service-contracts.interface';
 
-import { ImplementationPlanTemplateDataService } from '../data-api';
+import { ImplementationPlanAnalyticsDataApiService } from '../data-api';
 import { HandlebarsTemplateService } from '../handlebars-template.service';
 
 /**
  * Implementation Plan Analytics Generator
  *
- * Uses the data services as the glue layer since they already:
- * - Combine data + analytics + insights
- * - Format data for template consumption
- * - Handle all the complex logic
+ * Clean, focused architecture using dedicated data API:
+ * 1. Use ImplementationPlanAnalyticsDataApiService (focused analytics)
+ * 2. Render template
+ * 3. Return result
  *
- * This generator just:
- * 1. Calls the appropriate data service method
- * 2. Renders the template
- * 3. Returns the result
+ * Follows the proven task-summary pattern for consistency
  */
 @Injectable()
 export class ImplementationPlanAnalyticsGeneratorService
@@ -31,8 +28,8 @@ export class ImplementationPlanAnalyticsGeneratorService
   );
 
   constructor(
-    // The data service IS the glue layer
-    private readonly templateData: ImplementationPlanTemplateDataService,
+    // Focused implementation plan analytics API
+    private readonly implementationPlanApi: ImplementationPlanAnalyticsDataApiService,
 
     // Template service for rendering
     private readonly templateService: HandlebarsTemplateService,
@@ -56,16 +53,15 @@ export class ImplementationPlanAnalyticsGeneratorService
     filters: ReportFilters,
   ): Promise<ReportGenerationResult> {
     this.logger.log(
-      'Generating implementation plan analytics report using data service glue layer',
+      'Generating implementation plan analytics report using focused data API',
     );
 
     try {
       this.validateFilters(filters);
 
-      // Step 1: Use the data service as the glue layer
-      // It already combines analytics + data + template formatting
+      // Step 1: Get focused implementation plan analytics data
       const templateData =
-        await this.templateData.getImplementationPlanAnalyticsData(
+        await this.implementationPlanApi.getImplementationPlanAnalyticsData(
           filters.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
           filters.endDate || new Date(),
           {
@@ -89,10 +85,13 @@ export class ImplementationPlanAnalyticsGeneratorService
           generatedAt: new Date(),
           filters,
           dataSourcesUsed: [
-            'ImplementationPlanTemplateDataService (glue layer)',
+            'ImplementationPlanAnalyticsDataApiService (focused)',
           ],
           analyticsApplied: [
-            'All analytics services via ImplementationPlanTemplateDataService',
+            'PlanQualityAnalysis',
+            'SubtaskBreakdownPatterns',
+            'ExecutionInsights',
+            'ImplementationTrends'
           ],
         },
       };
