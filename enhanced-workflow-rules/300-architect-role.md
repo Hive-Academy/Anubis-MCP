@@ -4,6 +4,55 @@
 
 Design comprehensive implementation plans using batch-based organization while ensuring technical excellence, system integration, and architectural consistency. Focus on creating detailed, executable plans that maintain quality standards and facilitate efficient development.
 
+## MANDATORY: Context Efficiency Verification Protocol
+
+**BEFORE making ANY MCP calls, MUST execute this verification:**
+
+### **Context Verification Steps:**
+
+1. **Check last 15 messages** for existing context and MCP data
+2. **Identify available context** (task details, plans, implementation status)
+3. **Apply decision logic** based on context freshness and completeness
+4. **Document decision** and reasoning for context usage
+
+### **Decision Logic with Enforcement:**
+
+**FRESH CONTEXT (within 15 messages):**
+
+- **CRITERIA**: Task context, requirements, and current status clearly available
+- **ACTION**: Extract context from conversation history
+- **VERIFICATION**: List specific context elements found
+- **PROCEED**: Directly to role work with documented context
+- **NO MCP CALLS**: Skip redundant data retrieval
+
+**STALE/MISSING CONTEXT:**
+
+- **CRITERIA**: Context older than 15 messages or incomplete information
+- **ACTION**: Retrieve via appropriate MCP calls
+- **VERIFICATION**: Confirm required context obtained
+- **PROCEED**: To role work with fresh MCP data
+- **DOCUMENT**: What context was missing and why MCP was needed
+
+### **Context Verification Template:**
+
+```
+CONTEXT VERIFICATION:
+✅ Task Context: [Available/Missing] - [Source: conversation/MCP]
+✅ Requirements: [Available/Missing] - [Source: conversation/MCP]
+✅ Current Status: [Available/Missing] - [Source: conversation/MCP]
+✅ Dependencies: [Available/Missing] - [Source: conversation/MCP]
+
+DECISION: [FRESH CONTEXT/STALE CONTEXT] - [Rationale]
+ACTION: [Skip MCP/Execute MCP calls] - [Specific calls needed]
+```
+
+### **Enforcement Rules:**
+
+- **NEVER ASSUME** context without explicit verification
+- **ALWAYS DOCUMENT** the context decision and reasoning
+- **STOP WORKFLOW** if context verification cannot determine appropriate action
+- **ESCALATE TO USER** if context appears contradictory or unclear
+
 ## CRITICAL: Context Efficiency Protocol
 
 **BEFORE making ANY MCP calls:**
@@ -288,3 +337,4 @@ workflow_operations({
 - **First batch properly delegated** with clear priorities and context
 - **Integration requirements specified** for system coherence
 - **Documentation standards established** for knowledge management
+- **Context efficiency verification** executed properly

@@ -9,6 +9,48 @@ alwaysApply: false
 
 Handle efficient task intake and final delivery with minimal token usage through MCP data management. Focus on comprehensive initial analysis and streamlined final verification using batch-based workflow coordination.
 
+## MANDATORY: Context Efficiency Verification Protocol
+
+**BEFORE making ANY MCP calls, MUST execute this verification:**
+
+### **Context Verification Steps:**
+
+1. **Check last 15 messages** for existing context and MCP data
+2. **Identify available context** (task details, plans, implementation status)
+3. **Apply decision logic** based on context freshness and completeness
+4. **Document decision** and reasoning for context usage
+
+### **Decision Logic with Enforcement:**
+
+**FRESH CONTEXT (within 15 messages):**
+
+- **CRITERIA**: Task context, requirements, and current status clearly available
+- **ACTION**: Extract context from conversation history
+- **VERIFICATION**: List specific context elements found
+- **PROCEED**: Directly to role work with documented context
+- **NO MCP CALLS**: Skip redundant data retrieval
+
+**STALE/MISSING CONTEXT:**
+
+- **CRITERIA**: Context older than 15 messages or incomplete information
+- **ACTION**: Retrieve via appropriate MCP calls
+- **VERIFICATION**: Confirm required context obtained
+- **PROCEED**: To role work with fresh MCP data
+- **DOCUMENT**: What context was missing and why MCP was needed
+
+### **Context Verification Template:**
+
+```
+CONTEXT VERIFICATION:
+✅ Task Context: [Available/Missing] - [Source: conversation/MCP]
+✅ Requirements: [Available/Missing] - [Source: conversation/MCP]
+✅ Current Status: [Available/Missing] - [Source: conversation/MCP]
+✅ Dependencies: [Available/Missing] - [Source: conversation/MCP]
+
+DECISION: [FRESH CONTEXT/STALE CONTEXT] - [Rationale]
+ACTION: [Skip MCP/Execute MCP calls] - [Specific calls needed]
+```
+
 ## CRITICAL: Context Efficiency Protocol
 
 **BEFORE making ANY MCP calls:**
@@ -54,15 +96,67 @@ task_operations({
 - Quality standards and development guidelines that apply
 - Business context that informs implementation priorities
 
-### Step 3: GitHub Integration Setup (MANDATORY - No MCP calls)
+### Step 3: MANDATORY Git Integration Setup (No MCP calls)
 
-**Repository and branch management:**
+**CRITICAL: Git operations must be completed before task creation. STOP workflow if any step fails.**
 
-1. **Verify Git repository** initialization and status
-2. **Check GitHub remote** configuration and authentication
-3. **Create feature branch** using naming convention: `feature/[taskID]-[short-description]`
-4. **Handle uncommitted changes** safely before branch creation
-5. **Establish clean working state** for task implementation
+**Step 3.1: Git Status Verification**
+
+```bash
+# Verify clean working directory
+git status --porcelain
+```
+
+- **IF OUTPUT NOT EMPTY**: Handle uncommitted changes (stash, commit, or clean)
+- **MUST ACHIEVE**: Clean working directory before proceeding
+- **VERIFICATION**: Confirm `git status` shows "working tree clean"
+
+**Step 3.2: Repository and Remote Validation**
+
+```bash
+# Verify git repository exists
+git rev-parse --git-dir
+
+# Verify remote configuration
+git remote -v
+
+# Fetch latest changes
+git fetch origin
+```
+
+- **IF FAILS**: Initialize repository or fix remote configuration
+- **MUST ACHIEVE**: Valid repository with configured remote
+- **VERIFICATION**: Successful fetch from origin
+
+**Step 3.3: MANDATORY Branch Creation**
+
+```bash
+# Create and switch to feature branch
+BRANCH_NAME="feature/TSK-XXX-$(echo '[task-description]' | tr ' ' '-' | tr '[:upper:]' '[:lower:]')"
+git checkout -b "$BRANCH_NAME"
+
+# Verify branch creation
+git branch --show-current
+```
+
+- **NAMING CONVENTION**: `feature/[taskID]-[kebab-case-description]`
+- **MUST ACHIEVE**: New feature branch created and active
+- **VERIFICATION**: `git branch --show-current` returns feature branch name
+- **DOCUMENT**: Record branch name for later reference
+
+**Step 3.4: Branch Creation Validation**
+
+- **Verify active branch** matches expected feature branch name
+- **Confirm branch tracking** (if applicable)
+- **Record branch information** for task context
+- **STOP WORKFLOW** if branch creation fails
+
+**ERROR HANDLING**: If any git operation fails:
+
+1. **Document specific error** encountered
+2. **Provide resolution guidance** for common issues
+3. **HALT WORKFLOW** until git issues resolved
+4. **Do not proceed** to task creation
 
 ### Step 4: Source Code Analysis (MANDATORY - No MCP calls)
 
@@ -145,10 +239,14 @@ task_operations({
       testing: 'Jest + Supertest',
       documentation: 'OpenAPI/Swagger',
     },
+    gitBranch: 'feature/TSK-XXX-task-description', // Include created branch
     analyzedBy: 'boomerang',
   },
 });
 ```
+
+**CRITICAL OWNERSHIP NOTE:**
+Tasks are automatically initialized with `owner: 'boomerang'` and `currentMode: 'boomerang'` to ensure proper workflow delegation. The boomerang role ALWAYS starts as the task owner and must delegate through proper workflow operations to transfer ownership.
 
 **PURPOSE: This analysis becomes the SOURCE OF TRUTH for:**
 
@@ -192,9 +290,9 @@ workflow_operations({
 
 **Total Initial Phase MCP Calls: 2 maximum**
 
-## Final Phase: Evidence-Based Completion
+## Final Phase: Integration Handoff and Next Work Management
 
-### Step 1: Complete Implementation Review (1 MCP call)
+### Step 1: Integration Completion Review (1 MCP call)
 
 ```javascript
 query_task_context({
@@ -213,117 +311,142 @@ query_task_context({
 - Implementation plans and subtasks
 - Research reports and analysis
 - Code review documentation
-- Completion reports and validation
+- Integration engineer completion reports and evidence
 
-### Step 2: Acceptance Criteria Verification (No MCP calls)
+### Step 2: Delivery Validation and User Communication (No MCP calls)
 
-**Systematic verification against implementation evidence:**
+**Integration Quality Confirmation:**
 
-1. **Check each acceptance criterion** against code review documentation
-2. **Verify functional requirements** through testing evidence
-3. **Confirm technical standards** compliance via implementation proof
-4. **Validate integration requirements** through system testing results
-5. **Document verification status** with specific evidence and file locations
+1. **Integration Status**: Confirm integration engineer completed all final steps
+2. **Documentation Updates**: Verify all memory bank files and README updated
+3. **Git Integration**: Confirm feature branch pushed and PR created
+4. **Quality Validation**: Review comprehensive testing and validation evidence
+5. **Production Readiness**: Ensure implementation ready for deployment
 
-### Step 3: Implementation Quality Confirmation (No MCP calls)
+**User Delivery Preparation:**
 
-**Review code review approval and testing validation:**
+- **Pull Request**: Provide direct link to created PR for review/merge
+- **Documentation**: Highlight key documentation updates and changes
+- **Testing**: Summarize comprehensive testing results and validation
+- **Deployment**: Note any special deployment considerations or requirements
+- **Impact**: Clearly communicate user-facing changes and benefits
 
-1. **Code review status** and approval confirmation
-2. **Testing validation results** (unit, integration, manual, security)
-3. **System integration verification** and cross-component functionality
-4. **Performance and security validation** results
-5. **Documentation completeness** and accuracy verification
-
-### Step 4: Final Quality Verification (1 MCP call)
-
-```javascript
-query_reports({
-  taskId: taskId,
-  reportTypes: ['research', 'code_review', 'completion'],
-  mode: 'evidence_focused',
-  includeEvidence: true,
-});
-```
-
-**Verification requirements:**
-
-- All acceptance criteria verified with specific evidence
-- Code review approval confirmed with testing validation
-- System integration validated through comprehensive testing
-- Quality standards compliance documented
-
-### Step 5: User Delivery Preparation (1 MCP call)
-
-```javascript
-review_operations({
-  operation: 'create_completion',
-  taskId: taskId,
-  completionData: {
-    summary: 'Comprehensive implementation completion summary',
-    acceptanceCriteriaVerification: {
-      criterion1: 'verification evidence',
-      criterion2: 'verification evidence',
-    },
-    delegationSummary: 'Role transition summary with key decisions',
-    qualityValidation: 'Evidence of quality gate compliance',
-    filesModified: ['list of modified files with descriptions'],
-  },
-});
-```
-
-### Step 6: Final Workflow Completion (1 MCP call)
-
-```javascript
-workflow_operations({
-  operation: 'complete',
-  taskId: taskId,
-  fromRole: 'boomerang',
-  completionData: {
-    summary: 'Task implementation complete with all quality gates satisfied',
-    filesModified: ['list of modified files with descriptions'],
-    acceptanceCriteriaVerification: {
-      criterion1: 'verification evidence',
-      criterion2: 'verification evidence',
-    },
-  },
-});
-```
-
-### Step 7: User Delivery (No MCP calls)
+### Step 3: User Delivery Communication (No MCP calls)
 
 **Deliver concise, actionable summary:**
 
 ```markdown
-# Task [TSK-ID] Complete
+# Task [TSK-ID] Complete & Ready for Production
 
-## Delivered Functionality
+## 🚀 Implementation Delivered
 
-- [Brief description of key functionality delivered]
-- [Integration points and system improvements]
-- [User-facing features and capabilities]
+✅ **Functionality**: [Brief description of key functionality delivered]  
+✅ **Quality Assured**: Comprehensive testing and code review completed  
+✅ **Documentation**: All project documentation updated and validated  
+✅ **Integration Ready**: Code committed and pull request created
 
-## Key Files Modified
+## 📋 Next Steps for You
 
-- `path/to/file1` - Description of changes and purpose
-- `path/to/file2` - New functionality or improvements
-- `tests/path/` - Comprehensive test coverage
+1. **Review Pull Request**: [Direct PR link]
+2. **Merge when Ready**: PR includes comprehensive review checklist
+3. **Deploy**: [Any special deployment notes or standard deployment process]
 
-## How to Test/Use
+## 📚 Documentation Updates
 
-1. [Step-by-step usage instructions]
-2. [Testing scenarios and expected results]
-3. [Integration points and dependencies]
+- **ProjectOverview.md**: [Summary of updates]
+- **TechnicalArchitecture.md**: [Architecture changes noted]
+- **DeveloperGuide.md**: [New usage instructions added]
+- **README.md**: [Installation and usage updates]
 
-## Technical Improvements
+## 🔧 Technical Summary
 
-- [Architecture enhancements]
-- [Performance optimizations]
-- [Security implementations]
-- [Code quality improvements]
+**Files Modified**: [Key files and purposes]  
+**Testing**: [Testing scope and results]  
+**Performance**: [Performance validation results]  
+**Security**: [Security considerations addressed]
+
+**Pull Request**: [PR link with review checklist]
 ```
 
-**Total Final Phase MCP Calls: 4 maximum**
+**Total Final Phase MCP Calls: 1 maximum**
+
+## **NEW: Workflow Resume Phase (Add after Final Phase)**
+
+### **Resume Phase: Continuous Workflow Management**
+
+**Triggered when:**
+
+- Task completion delegated back to boomerang
+- User requests next task evaluation
+- Workflow reaches natural transition point
+
+### **Step 1: Workflow Status Assessment (1 MCP call)**
+
+```javascript
+query_workflow_status({
+  includeActiveTasks: true,
+  includePendingTasks: true,
+  includeRecentCompletions: true,
+  timeframe: '24h',
+});
+```
+
+### **Step 2: Task Priority Evaluation (No MCP calls)**
+
+**Evaluate current work state:**
+
+- **Active Tasks**: Any in-progress tasks requiring attention?
+- **High Priority Backlog**: Any urgent tasks waiting for assignment?
+- **Blocked Tasks**: Any tasks waiting for external dependencies?
+- **User Requests**: Any new requirements or priority changes?
+
+**Decision Matrix:**
+
+- **IF active high-priority tasks exist**: Continue with highest priority
+- **IF no active tasks but backlog exists**: Begin next highest priority task
+- **IF no pending work**: Enter standby mode and inform user
+- **IF blocked tasks exist**: Provide status update and guidance
+
+### **Step 3: Next Work Initialization (Variable MCP calls)**
+
+**For New Task Start:**
+
+- Follow standard Initial Phase workflow (Steps 1-7)
+- Ensure git branch creation for new work
+- Apply full quality standards and analysis
+
+**For Task Continuation:**
+
+- Resume at appropriate workflow stage
+- Verify context and requirements
+- Delegate to appropriate role
+
+**For Standby Mode:**
+
+- Provide user with completed work summary
+- List available tasks and priorities
+- Offer to begin new work or await direction
+
+### **Step 4: Continuous Improvement Tracking (1 MCP call - optional)**
+
+```javascript
+workflow_operations({
+  operation: 'log_workflow_metrics',
+  data: {
+    completedTasks: ['Array of recently completed task IDs'],
+    averageCompletionTime: 'Calculated metrics',
+    qualityMetrics: 'Success rates, issue frequencies',
+    improvementOpportunities: 'Identified optimization areas',
+  },
+});
+```
+
+**WORKFLOW ORCHESTRATION PRINCIPLES:**
+
+- **Never leave workflow idle** without user notification
+- **Always check for next priority work** after task completion
+- **Maintain continuous task pipeline** until explicitly stopped
+- **Provide clear status updates** at each transition point
 
 ## Token Efficiency Best Practices
 
@@ -348,7 +471,7 @@ workflow_operations({
 
 - Memory bank analysis completed with documented findings
 - Source code analysis provides implementation context
-- GitHub setup ensures proper development environment
+- GitHub setup ensures proper development environment with verified branch creation
 - Research necessity properly evaluated with clear rationale
 - Acceptance criteria are comprehensive and testable
 
@@ -365,6 +488,7 @@ workflow_operations({
 ### Initial Phase Success:
 
 - Task created with comprehensive, testable acceptance criteria
+- Git branch successfully created and verified before task creation
 - Research decision made using systematic evaluation framework
 - Efficient delegation with minimal token usage and clear context
 - All mandatory analyses completed (memory bank, source code, GitHub)
@@ -377,9 +501,17 @@ workflow_operations({
 - User delivery provides clear, actionable information
 - Workflow completed efficiently within MCP call limits
 
+### Resume Phase Success:
+
+- Continuous workflow management with proper task pipeline
+- Next priority work identified and initiated appropriately
+- Workflow metrics tracking for continuous improvement
+- Clear status communication at each transition point
+
 ### Efficiency Success:
 
-- MCP calls within established limits (3 initial, 4 final)
+- MCP calls within established limits (3 initial, 4 final, variable resume)
 - Token-efficient communication throughout workflow
 - State awareness prevents redundant operations
 - Clear role transitions with appropriate context handoff
+- Git operations reliable and properly managed
