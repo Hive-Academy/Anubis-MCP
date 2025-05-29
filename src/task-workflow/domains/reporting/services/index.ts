@@ -1,55 +1,47 @@
 // src/task-workflow/domains/reporting/services/index.ts
 
 /**
- * Services Index - Centralized Export for Reporting Services
+ * Services Index - TSK-010 Focused Architecture
  *
- * ARCHITECTURE OVERVIEW:
+ * FOCUSED ARCHITECTURE:
  *
- * /core/
- *   - Core business logic services
- *   - High-level orchestration
+ * /data-api/
+ *   - 12 Focused [report-name]-data-api services following proven pattern
+ *   - Foundation services (CoreMetrics, ReportDataAccess, MetricsCalculator)
+ *   - TaskHealthAnalysisService (essential analytics)
  *
- * /rendering/
- *   - Template rendering and output generation
- *   - Chart generation and visualization
- *
- * /data/
- *   - Data aggregation and processing
- *   - Database queries and caching
- *
- * /analytics/
- *   - Advanced analytics and insights
- *   - Performance benchmarking
+ * /generators/
+ *   - Thin template rendering wrappers
+ *   - Simple pattern: data API → template → response
  *
  * /infrastructure/
- *   - Configuration and utilities
- *   - Logging and monitoring
+ *   - Essential configuration and logging only
+ *
+ * REMOVED:
+ *   - 8 Over-engineered analytics services
+ *   - Complex template data services
+ *   - Service pollution and unnecessary abstractions
  */
 
-// Core Services
-export * from './infrastructure/global-file-logger.service';
+// Foundation Services
+export * from './data-api/foundation';
 
-// Data Services
-export * from './data/metrics-calculator.service';
-export * from './data/template-data.service';
-export * from './data/specialized-template-data.service';
-export * from './data/individual-task-template-data.service';
-export * from './data/report-data-access.service';
+// Focused Data API Services
+export * from './data-api';
 
-// Analytics Services
-export * from './analytics/time-series-analysis.service';
-export * from './analytics/performance-benchmark.service';
-export * from './analytics/recommendation-engine.service';
-export * from './analytics/enhanced-insights-generator.service';
-export * from './analytics/smart-response-summarization.service';
-export * from './analytics/schema-driven-intelligence.service';
+// Generator Services
+export * from './generators/report-generator-factory.service';
 
-// Infrastructure Services
+// Essential Template Service
+export * from './handlebars-template.service';
+
+// Infrastructure Services (Essential only)
 export * from './infrastructure/reporting-config.service';
 export * from './infrastructure/file-logger.service';
 export * from './infrastructure/global-file-logger.service';
 
-// Legacy Services (for backward compatibility)
-// chart-generation.service - REMOVED (deprecated, replaced by chart-generation-refactored.service)
-// handlebars-template.service - REMOVED (replaced by template-rendering.service)
-// generators folder - REMOVED (moved to rendering folder)
+// TSK-010 REFACTORING COMPLETE:
+// ✅ Reduced from 20+ services to 12 focused services
+// ✅ Eliminated service pollution and over-engineering
+// ✅ Improved insights through focused business logic
+// ✅ Following proven task-summary-data-api pattern

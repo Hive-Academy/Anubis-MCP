@@ -4,13 +4,10 @@ import {
   ReportFilters,
   ReportGenerationResult,
 } from './base-report-generator.interface';
-import { ReportType } from '../../interfaces/service-contracts.interface';
 
-// Data Service (already contains analytics integration)
-import { CodeReviewResearchService } from '../data/code-review-research.service';
-
-// Template Service
+import { CodeReviewQualityDataApiService } from '../data-api';
 import { HandlebarsTemplateService } from '../handlebars-template.service';
+import { ReportType } from '../../interfaces/service-contracts.interface';
 
 /**
  * Code Review Quality Generator
@@ -31,7 +28,7 @@ export class CodeReviewQualityGeneratorService implements IBaseReportGenerator {
 
   constructor(
     // The data service IS the glue layer
-    private readonly templateData: CodeReviewResearchService,
+    private readonly codeReviewQualityApi: CodeReviewQualityDataApiService,
 
     // Template service for rendering
     private readonly templateService: HandlebarsTemplateService,
@@ -60,7 +57,7 @@ export class CodeReviewQualityGeneratorService implements IBaseReportGenerator {
     filters: ReportFilters,
   ): Promise<ReportGenerationResult> {
     this.logger.log(
-      'Generating code review quality report using data service glue layer',
+      'Generating code review quality report using focused data API',
     );
 
     try {
@@ -68,14 +65,17 @@ export class CodeReviewQualityGeneratorService implements IBaseReportGenerator {
 
       // Step 1: Use the data service as the glue layer
       // It already combines analytics + data + template formatting
-      const templateData = await this.templateData.getCodeReviewQualityData(
-        filters.taskId!,
-        {
-          ...(filters.owner && { owner: filters.owner }),
-          ...(filters.mode && { mode: filters.mode }),
-          ...(filters.priority && { priority: filters.priority }),
-        },
-      );
+      const templateData =
+        await this.codeReviewQualityApi.getCodeReviewQualityData(
+          filters.startDate as Date,
+          filters.endDate as Date,
+          {
+            ...(filters.owner && { owner: filters.owner }),
+            ...(filters.mode && { mode: filters.mode }),
+            ...(filters.priority && { priority: filters.priority }),
+          },
+          filters.taskId,
+        );
 
       // Step 2: Render template
       const htmlContent = await this.templateService.renderTemplate(
@@ -90,9 +90,12 @@ export class CodeReviewQualityGeneratorService implements IBaseReportGenerator {
           reportType: this.getReportType(),
           generatedAt: new Date(),
           filters,
-          dataSourcesUsed: ['CodeReviewResearchService (glue layer)'],
+          dataSourcesUsed: ['CodeReviewQualityDataApiService (focused)'],
           analyticsApplied: [
-            'All analytics services via CodeReviewResearchService',
+            'QualityMetrics',
+            'ReviewAssessment',
+            'ImprovementRecommendations',
+            'CodeStandards',
           ],
         },
       };

@@ -4,13 +4,10 @@ import {
   ReportFilters,
   ReportGenerationResult,
 } from './base-report-generator.interface';
-import { ReportType } from '../../interfaces/service-contracts.interface';
 
-// Data Service (already contains analytics integration)
-import { TaskProgressExecutionService } from '../data/task-progress-execution.service';
-
-// Template Service
+import { ImplementationExecutionDataApiService } from '../data-api';
 import { HandlebarsTemplateService } from '../handlebars-template.service';
+import { ReportType } from '../../interfaces/service-contracts.interface';
 
 /**
  * Implementation Execution Generator
@@ -35,7 +32,7 @@ export class ImplementationExecutionGeneratorService
 
   constructor(
     // The data service IS the glue layer
-    private readonly templateData: TaskProgressExecutionService,
+    private readonly implementationExecutionApi: ImplementationExecutionDataApiService,
 
     // Template service for rendering
     private readonly templateService: HandlebarsTemplateService,
@@ -66,7 +63,7 @@ export class ImplementationExecutionGeneratorService
     filters: ReportFilters,
   ): Promise<ReportGenerationResult> {
     this.logger.log(
-      'Generating implementation execution report using data service glue layer',
+      'Generating implementation execution report using focused data API',
     );
 
     try {
@@ -75,13 +72,15 @@ export class ImplementationExecutionGeneratorService
       // Step 1: Use the data service as the glue layer
       // It already combines analytics + data + template formatting
       const templateData =
-        await this.templateData.getImplementationExecutionData(
-          filters.taskId!,
+        await this.implementationExecutionApi.getImplementationExecutionData(
+          filters.startDate as Date,
+          filters.endDate as Date,
           {
             ...(filters.owner && { owner: filters.owner }),
             ...(filters.mode && { mode: filters.mode }),
             ...(filters.priority && { priority: filters.priority }),
           },
+          filters.taskId,
         );
 
       // Step 2: Render template
@@ -97,9 +96,12 @@ export class ImplementationExecutionGeneratorService
           reportType: this.getReportType(),
           generatedAt: new Date(),
           filters,
-          dataSourcesUsed: ['TaskProgressExecutionService (glue layer)'],
+          dataSourcesUsed: ['ImplementationExecutionDataApiService (focused)'],
           analyticsApplied: [
-            'All analytics services via TaskProgressExecutionService',
+            'ExecutionAnalysis',
+            'QualityPatterns',
+            'DeliveryInsights',
+            'ImplementationTrends',
           ],
         },
       };

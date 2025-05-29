@@ -6,24 +6,18 @@ import {
 } from './base-report-generator.interface';
 import { ReportType } from '../../interfaces/service-contracts.interface';
 
-// Data Service (already contains analytics integration)
-import { CodeReviewDelegationTemplateDataService } from '../data/code-review-delegation-template-data.service';
-
-// Template Service
+import { DelegationFlowAnalysisDataApiService } from '../data-api';
 import { HandlebarsTemplateService } from '../handlebars-template.service';
 
 /**
  * Delegation Flow Analysis Generator
  *
- * Uses the data services as the glue layer since they already:
- * - Combine data + analytics + insights
- * - Format data for template consumption
- * - Handle all the complex logic
+ * Clean, focused architecture using dedicated data API:
+ * 1. Use DelegationFlowAnalysisDataApiService (focused analytics)
+ * 2. Render template
+ * 3. Return result
  *
- * This generator just:
- * 1. Calls the appropriate data service method
- * 2. Renders the template
- * 3. Returns the result
+ * Follows the proven task-summary pattern for consistency
  */
 @Injectable()
 export class DelegationFlowAnalysisGeneratorService
@@ -34,8 +28,8 @@ export class DelegationFlowAnalysisGeneratorService
   );
 
   constructor(
-    // The data service IS the glue layer
-    private readonly templateData: CodeReviewDelegationTemplateDataService,
+    // Focused delegation flow analysis API
+    private readonly delegationFlowApi: DelegationFlowAnalysisDataApiService,
 
     // Template service for rendering
     private readonly templateService: HandlebarsTemplateService,
@@ -59,16 +53,15 @@ export class DelegationFlowAnalysisGeneratorService
     filters: ReportFilters,
   ): Promise<ReportGenerationResult> {
     this.logger.log(
-      'Generating delegation flow analysis report using data service glue layer',
+      'Generating delegation flow analysis report using focused data API',
     );
 
     try {
       this.validateFilters(filters);
 
-      // Step 1: Use the data service as the glue layer
-      // It already combines analytics + data + template formatting
+      // Step 1: Get focused delegation flow analysis data
       const templateData =
-        await this.templateData.getDelegationFlowAnalysisData(
+        await this.delegationFlowApi.getDelegationFlowAnalysisData(
           filters.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
           filters.endDate || new Date(),
           {
@@ -91,11 +84,12 @@ export class DelegationFlowAnalysisGeneratorService
           reportType: this.getReportType(),
           generatedAt: new Date(),
           filters,
-          dataSourcesUsed: [
-            'CodeReviewDelegationTemplateDataService (glue layer)',
-          ],
+          dataSourcesUsed: ['DelegationFlowAnalysisDataApiService (focused)'],
           analyticsApplied: [
-            'All analytics services via CodeReviewDelegationTemplateDataService',
+            'WorkflowBottleneckAnalysis',
+            'DelegationPathMapping',
+            'HandoffEfficiency',
+            'FlowOptimization',
           ],
         },
       };

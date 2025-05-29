@@ -4,13 +4,11 @@ import {
   ReportFilters,
   ReportGenerationResult,
 } from './base-report-generator.interface';
-import { ReportType } from '../../interfaces/service-contracts.interface';
-
-// Data Service (already contains analytics integration)
-import { CodeReviewResearchService } from '../data/code-review-research.service';
 
 // Template Service
 import { HandlebarsTemplateService } from '../handlebars-template.service';
+import { ResearchDocumentationDataApiService } from '../data-api';
+import { ReportType } from '../../interfaces/service-contracts.interface';
 
 /**
  * Research Documentation Generator
@@ -35,7 +33,7 @@ export class ResearchDocumentationGeneratorService
 
   constructor(
     // The data service IS the glue layer
-    private readonly templateData: CodeReviewResearchService,
+    private readonly researchDocumentationApi: ResearchDocumentationDataApiService,
 
     // Template service for rendering
     private readonly templateService: HandlebarsTemplateService,
@@ -64,7 +62,7 @@ export class ResearchDocumentationGeneratorService
     filters: ReportFilters,
   ): Promise<ReportGenerationResult> {
     this.logger.log(
-      'Generating research documentation report using data service glue layer',
+      'Generating research documentation report using focused data API',
     );
 
     try {
@@ -72,14 +70,17 @@ export class ResearchDocumentationGeneratorService
 
       // Step 1: Use the data service as the glue layer
       // It already combines analytics + data + template formatting
-      const templateData = await this.templateData.getResearchDocumentationData(
-        filters.taskId!,
-        {
-          ...(filters.owner && { owner: filters.owner }),
-          ...(filters.mode && { mode: filters.mode }),
-          ...(filters.priority && { priority: filters.priority }),
-        },
-      );
+      const templateData =
+        await this.researchDocumentationApi.getResearchDocumentationData(
+          filters.startDate as Date,
+          filters.endDate as Date,
+          {
+            ...(filters.owner && { owner: filters.owner }),
+            ...(filters.mode && { mode: filters.mode }),
+            ...(filters.priority && { priority: filters.priority }),
+          },
+          filters.taskId,
+        );
 
       // Step 2: Render template
       const htmlContent = await this.templateService.renderTemplate(
@@ -94,9 +95,12 @@ export class ResearchDocumentationGeneratorService
           reportType: this.getReportType(),
           generatedAt: new Date(),
           filters,
-          dataSourcesUsed: ['CodeReviewResearchService (glue layer)'],
+          dataSourcesUsed: ['ResearchDocumentationDataApiService (focused)'],
           analyticsApplied: [
-            'All analytics services via CodeReviewResearchService',
+            'ResearchQuality',
+            'DocumentationCompleteness',
+            'KnowledgeCapture',
+            'InsightGeneration',
           ],
         },
       };

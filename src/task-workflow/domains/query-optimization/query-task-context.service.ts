@@ -5,6 +5,18 @@ import {
   QueryTaskContextSchema,
   QueryTaskContextInput,
 } from './schemas/query-task-context.schema';
+import { ImplementationPlan } from 'generated/prisma';
+
+// Add interface for batch organization
+interface BatchGroup {
+  batchId: string;
+  batchTitle: string;
+  subtasks: any[];
+}
+
+interface BatchAccumulator {
+  [key: string]: BatchGroup;
+}
 
 /**
  * Query Task Context Service
@@ -110,21 +122,24 @@ Pre-configured task context retrieval with comprehensive relationships.
       if (task.implementationPlans && includeSubtasks) {
         task.implementationPlans = task.implementationPlans.map((plan: any) => {
           if (plan.subtasks) {
-            const batches = plan.subtasks.reduce((acc: any, subtask: any) => {
-              const batch = subtask.batchId || 'no-batch';
-              if (!acc[batch]) {
-                acc[batch] = {
-                  batchId: batch,
-                  batchTitle: subtask.batchTitle || 'Untitled Batch',
-                  subtasks: [],
-                };
-              }
-              acc[batch].subtasks.push(subtask);
-              return acc;
-            }, {});
+            const batches: BatchAccumulator = plan.subtasks.reduce(
+              (acc: BatchAccumulator, subtask: any): BatchAccumulator => {
+                const batch = subtask.batchId || 'no-batch';
+                if (!acc[batch]) {
+                  acc[batch] = {
+                    batchId: batch,
+                    batchTitle: subtask.batchTitle || 'Untitled Batch',
+                    subtasks: [],
+                  };
+                }
+                acc[batch].subtasks.push(subtask);
+                return acc;
+              },
+              {},
+            );
             plan.batches = Object.values(batches);
           }
-          return plan;
+          return plan as ImplementationPlan;
         });
       }
 

@@ -6,19 +6,21 @@ import {
 } from './base-report-generator.interface';
 import { ReportType } from '../../interfaces/service-contracts.interface';
 
-// Data Service (already contains analytics integration)
-import { IndividualTaskTemplateDataService } from '../data/individual-task-template-data.service';
+// Focused Data API Service
+import { TaskProgressHealthDataApiService } from '../data-api';
 
 // Template Service
 import { HandlebarsTemplateService } from '../handlebars-template.service';
 
 /**
- * Simplified Task Progress Health Generator
+ * Task Progress Health Generator
  *
- * Uses the data services as the glue layer since they already:
- * - Combine data + analytics + insights
- * - Format data for template consumption
- * - Handle all the complex logic
+ * Clean, focused architecture using dedicated data API:
+ * 1. Use TaskProgressHealthDataApiService (focused analytics)
+ * 2. Render template
+ * 3. Return result
+ *
+ * Follows the proven task-summary pattern for consistency
  */
 @Injectable()
 export class TaskProgressHealthGeneratorService
@@ -27,8 +29,8 @@ export class TaskProgressHealthGeneratorService
   private readonly logger = new Logger(TaskProgressHealthGeneratorService.name);
 
   constructor(
-    // The data service IS the glue layer
-    private readonly individualTaskData: IndividualTaskTemplateDataService,
+    // Focused task progress health API
+    private readonly taskProgressHealthApi: TaskProgressHealthDataApiService,
 
     // Template service for rendering
     private readonly templateService: HandlebarsTemplateService,
@@ -56,16 +58,10 @@ export class TaskProgressHealthGeneratorService
     try {
       this.validateFilters(filters);
 
-      // Step 1: Use the data service as the glue layer
-      // It already combines analytics + data + template formatting
+      // Step 1: Get focused task progress health data
       const templateData =
-        await this.individualTaskData.getTaskProgressHealthData(
+        await this.taskProgressHealthApi.getTaskProgressHealthData(
           filters.taskId!,
-          {
-            ...(filters.owner && { owner: filters.owner }),
-            ...(filters.mode && { mode: filters.mode }),
-            ...(filters.priority && { priority: filters.priority }),
-          },
         );
 
       // Step 2: Render template
@@ -81,9 +77,12 @@ export class TaskProgressHealthGeneratorService
           reportType: this.getReportType(),
           generatedAt: new Date(),
           filters,
-          dataSourcesUsed: ['IndividualTaskTemplateDataService (glue layer)'],
+          dataSourcesUsed: ['TaskProgressHealthDataApiService (focused)'],
           analyticsApplied: [
-            'All analytics services via IndividualTaskTemplateDataService',
+            'TaskHealthMetrics',
+            'ProgressTracking',
+            'RiskAssessment',
+            'ActionItemGeneration',
           ],
         },
       };

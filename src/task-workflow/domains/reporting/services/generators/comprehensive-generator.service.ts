@@ -6,32 +6,26 @@ import {
 } from './base-report-generator.interface';
 import { ReportType } from '../../interfaces/service-contracts.interface';
 
-// Data Service (already contains analytics integration)
-import { ComprehensiveTemplateDataService } from '../data/comprehensive-template-data.service';
-
-// Template Service
+import { ComprehensiveDataApiService } from '../data-api';
 import { HandlebarsTemplateService } from '../handlebars-template.service';
 
 /**
  * Comprehensive Generator
  *
- * Uses the data services as the glue layer since they already:
- * - Combine data + analytics + insights
- * - Format data for template consumption
- * - Handle all the complex logic
+ * Clean, focused architecture using dedicated data API:
+ * 1. Use ComprehensiveDataApiService (executive-level analytics)
+ * 2. Render template
+ * 3. Return result
  *
- * This generator just:
- * 1. Calls the appropriate data service method
- * 2. Renders the template
- * 3. Returns the result
+ * Follows the proven task-summary pattern for consistency
  */
 @Injectable()
 export class ComprehensiveGeneratorService implements IBaseReportGenerator {
   private readonly logger = new Logger(ComprehensiveGeneratorService.name);
 
   constructor(
-    // The data service IS the glue layer
-    private readonly templateData: ComprehensiveTemplateDataService,
+    // Focused comprehensive analytics API
+    private readonly comprehensiveApi: ComprehensiveDataApiService,
 
     // Template service for rendering
     private readonly templateService: HandlebarsTemplateService,
@@ -54,16 +48,13 @@ export class ComprehensiveGeneratorService implements IBaseReportGenerator {
   async generateReport(
     filters: ReportFilters,
   ): Promise<ReportGenerationResult> {
-    this.logger.log(
-      'Generating comprehensive report using data service glue layer',
-    );
+    this.logger.log('Generating comprehensive report using focused data API');
 
     try {
       this.validateFilters(filters);
 
-      // Step 1: Use the data service as the glue layer
-      // It already combines analytics + data + template formatting
-      const templateData = await this.templateData.getComprehensiveData(
+      // Step 1: Get comprehensive analytics data
+      const templateData = await this.comprehensiveApi.getComprehensiveData(
         filters.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
         filters.endDate || new Date(),
         {
@@ -86,9 +77,13 @@ export class ComprehensiveGeneratorService implements IBaseReportGenerator {
           reportType: this.getReportType(),
           generatedAt: new Date(),
           filters,
-          dataSourcesUsed: ['ComprehensiveTemplateDataService (glue layer)'],
+          dataSourcesUsed: ['ComprehensiveDataApiService (focused)'],
           analyticsApplied: [
-            'All analytics services via ComprehensiveTemplateDataService',
+            'TaskSummaryInsights',
+            'DelegationAnalytics',
+            'PerformanceMetrics',
+            'CodeReviewTrends',
+            'ExecutiveSummary',
           ],
         },
       };
