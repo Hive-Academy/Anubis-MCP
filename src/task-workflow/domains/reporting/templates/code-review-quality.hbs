@@ -1,338 +1,471 @@
-{{!-- Code Review Quality Analysis Template --}}
-{{#> layouts/base 
-    title="🔍 Code Review Quality Analysis"
-    subtitle="Quality Assurance & Testing Deep Dive"
-    headerIcon="🔍"
-    reportType="Code Review Quality"
-    generatedAt=data.generatedAt
-    dateRange=data.dateRange
-}}
-
-{{#*inline "content"}}
-<div class="min-h-screen bg-gray-900 text-white">
-    <!-- Review Overview -->
-    {{#with (default data.reviewReport (object status="APPROVED" summary="Implementation meets all quality standards and acceptance criteria."))}}
-    <div class="{{#if (eq this.status 'APPROVED')}}bg-gradient-to-br from-green-500 to-emerald-600{{else if (eq this.status 'APPROVED_WITH_RESERVATIONS')}}bg-gradient-to-br from-yellow-500 to-orange-500{{else if (eq this.status 'NEEDS_CHANGES')}}bg-gradient-to-br from-red-500 to-red-600{{else}}bg-gradient-to-br from-blue-500 to-indigo-600{{/if}} rounded-2xl p-8 mb-8 text-white relative overflow-hidden">
-        <div class="flex items-center gap-6 mb-6">
-            <div class="text-6xl">
-                {{#if (eq this.status 'APPROVED')}}✅{{else if (eq this.status 'APPROVED_WITH_RESERVATIONS')}}⚠️{{else if (eq this.status 'NEEDS_CHANGES')}}❌{{else}}🔄{{/if}}
-            </div>
-            <div class="flex-1">
-                <h2 class="text-3xl font-bold mb-2">
-                    Code Review: {{#if (eq this.status 'APPROVED')}}APPROVED{{else if (eq this.status 'APPROVED_WITH_RESERVATIONS')}}APPROVED WITH RESERVATIONS{{else if (eq this.status 'NEEDS_CHANGES')}}NEEDS CHANGES{{else}}PENDING{{/if}}
-                </h2>
-                <p class="text-lg opacity-90">
-                    {{#if (eq this.status 'APPROVED')}}All quality gates passed. Implementation meets acceptance criteria and coding standards.{{else if (eq this.status 'APPROVED_WITH_RESERVATIONS')}}Implementation approved with minor concerns. Address recommendations for optimal quality.{{else if (eq this.status 'NEEDS_CHANGES')}}Implementation requires changes before approval. Critical issues must be resolved.{{else}}Code review in progress. Quality assessment and testing underway.{{/if}}
-                </p>
-            </div>
-        </div>
-        
-        {{#if this.summary}}
-        <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-            <strong>Review Summary:</strong> {{this.summary}}
-        </div>
-        {{/if}}
-    </div>
-    {{/with}}
-
-    <!-- Quality Scores -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {{#each (default data.qualityScores (object 
-            codeQuality=85
-            testCoverage=78
-            security=92
-            performance=88
-            maintainability=83
-            documentation=75
-        ))}}
-            <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 text-center relative overflow-hidden hover:transform hover:scale-105 transition-all duration-200">
-                <!-- Top border indicator -->
-                <div class="absolute top-0 left-0 right-0 h-1 {{#if (gte this 90)}}bg-green-500{{else if (gte this 80)}}bg-blue-500{{else if (gte this 70)}}bg-yellow-500{{else}}bg-red-500{{/if}}"></div>
-                
-                <div class="text-4xl font-bold mb-2 {{#if (gte this 90)}}text-green-400{{else if (gte this 80)}}text-blue-400{{else if (gte this 70)}}text-yellow-400{{else}}text-red-400{{/if}}">{{this}}%</div>
-                <div class="text-sm text-gray-400 uppercase tracking-wide mb-3">{{camelToTitle @key}}</div>
-                <div class="text-xs text-gray-500 leading-tight">
-                    {{qualityDescription @key}}
-                </div>
-            </div>
-        {{/each}}
-    </div>
-
-    <!-- Acceptance Criteria Verification -->
-    <div class="bg-gray-800 border border-gray-700 rounded-2xl p-8 mb-8">
-        <div class="flex items-center gap-3 mb-6">
-            <span class="text-2xl">✅</span>
-            <h3 class="text-2xl font-bold">Acceptance Criteria Verification</h3>
-        </div>
-        
-        {{#with (default data.acceptanceCriteria (array 
-            (object criterion="Core functionality implemented" status="verified" evidence="All main features working as expected")
-            (object criterion="Unit tests with >80% coverage" status="verified" evidence="Test coverage at 85%")
-            (object criterion="Integration tests passing" status="verified" evidence="All integration tests pass")
-            (object criterion="Security validation complete" status="partial" evidence="Minor security recommendations pending")
-            (object criterion="Performance requirements met" status="verified" evidence="Response times under 200ms")
-            (object criterion="Documentation updated" status="partial" evidence="API docs complete, README needs update")
-        ))}}
-            {{#with (criteriaStats this)}}
-            <div class="mb-6 p-4 bg-gray-900 rounded-lg border border-gray-700">
-                <p class="text-lg"><strong>{{this.verified}}/{{this.total}}</strong> acceptance criteria verified 
-                (<span class="{{#if (gte this.percentage 90)}}text-green-400{{else if (gte this.percentage 80)}}text-blue-400{{else if (gte this.percentage 70)}}text-yellow-400{{else}}text-red-400{{/if}} font-semibold">{{this.percentage}}%</span> completion)</p>
-            </div>
-            {{/with}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Review Quality - Workflow Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .chart-container { position: relative; height: 400px; margin: 1rem 0; }
+        .metric-card { @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200; }
+        .status-badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border; }
+        .priority-badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
+        .print-hidden { @media print { display: none !important; } }
+        @media print { body { @apply text-sm; } .chart-container { height: 300px; } }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
-            <div class="space-y-4">
-                {{#each this}}
-                    <div class="flex gap-4 p-4 {{#if (eq this.status 'verified')}}bg-green-900/20 border-green-500/30{{else if (eq this.status 'partial')}}bg-yellow-900/20 border-yellow-500/30{{else}}bg-red-900/20 border-red-500/30{{/if}} border rounded-lg hover:bg-opacity-30 transition-all duration-200">
-                        <div class="text-2xl mt-1">
-                            {{#if (eq this.status 'verified')}}✅{{else if (eq this.status 'partial')}}⚠️{{else}}❌{{/if}}
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="font-semibold text-white mb-2">{{this.criterion}}</h4>
-                            {{#if this.description}}
-                                <p class="text-gray-400 mb-3 leading-relaxed">{{this.description}}</p>
-                            {{/if}}
-                            {{#if this.evidence}}
-                                <div class="text-sm text-gray-400 bg-gray-800 p-3 rounded border-l-4 {{#if (eq this.status 'verified')}}border-green-500{{else if (eq this.status 'partial')}}border-yellow-500{{else}}border-red-500{{/if}}">
-                                    <strong>Evidence:</strong> {{this.evidence}}
+            <!-- Enhanced Header -->
+            <div class="relative bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-700 rounded-2xl shadow-xl p-8 mb-8 overflow-hidden">
+                <!-- Background Pattern -->
+                <div class="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                <div class="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-48 translate-x-48"></div>
+                <div class="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-32 -translate-x-32"></div>
+                
+                <!-- Content -->
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <div class="flex items-center space-x-3 mb-3">
+                                <div class="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
                                 </div>
+                                <div>
+                                    <h1 class="text-4xl font-bold text-white mb-1">🔍 Code Review Quality</h1>
+                                    <p class="text-purple-100 text-lg">Task-specific code review quality metrics</p>
+                                </div>
+                            </div>
+                            <p class="text-purple-200">Generated on {{formatDate generatedAt "MMMM Do, YYYY [at] h:mm A"}}</p>
+                        </div>
+                        <div class="flex flex-col items-end space-y-3">
+                            <div class="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-medium border border-white/30">
+                                <div class="text-sm text-purple-100 mb-1">Report Period</div>
+                                <div class="text-lg font-semibold">{{dateRange.start}} - {{dateRange.end}}</div>
+                            </div>
+                            {{#if filters}}
+                            <div class="bg-white/15 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-sm border border-white/20">
+                                <div class="text-xs text-purple-100 mb-1">Active Filters</div>
+                                <div>{{#each filters}}{{@key}}: {{this}}{{#unless @last}}, {{/unless}}{{/each}}</div>
+                            </div>
                             {{/if}}
                         </div>
                     </div>
-                {{/each}}
+                </div>
             </div>
-        {{/with}}
+
+            <div class="space-y-8">
+                <!-- Code Review Overview -->
+                <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-200">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Code Review Quality Overview
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <div class="text-2xl font-bold text-purple-600">{{review.overallScore}}</div>
+                            <div class="text-sm text-gray-600">Overall Quality Score</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <div class="text-2xl font-bold text-green-600">{{review.approvalRate}}%</div>
+                            <div class="text-sm text-gray-600">Approval Rate</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <div class="text-2xl font-bold text-orange-600">{{review.avgReviewTime}}</div>
+                            <div class="text-sm text-gray-600">Avg Review Time</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <div class="text-2xl font-bold text-blue-600">{{review.issuesFound}}</div>
+                            <div class="text-sm text-gray-600">Issues Identified</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quality Dimensions -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        Quality Assessment Dimensions
+                    </h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <canvas id="qualityDimensionsChart" width="400" height="300"></canvas>
+                        </div>
+                        <div class="space-y-4">
+                            {{#each quality.dimensions}}
+                            <div class="border rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-semibold text-gray-800">{{this.dimension}}</h4>
+                                    <span class="px-2 py-1 text-xs rounded-full {{this.scoreClass}}">{{this.score}}/10</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                                    <div class="bg-{{this.color}}-500 h-2 rounded-full" style="width: {{this.percentage}}%"></div>
+                                </div>
+                                <p class="text-sm text-gray-600">{{this.description}}</p>
+                                {{#if this.recommendations}}
+                                <div class="mt-2 text-xs text-gray-500">
+                                    Recommendations: {{this.recommendations}}
+                                </div>
+                                {{/if}}
+                            </div>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Assessment -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                        Security Review Assessment
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {{#each security.areas}}
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-semibold text-gray-800">{{this.area}}</h4>
+                                <span class="px-2 py-1 text-xs rounded-full {{#if (eq this.status 'pass')}}bg-green-100 text-green-800{{else}}{{#if (eq this.status 'warning')}}bg-yellow-100 text-yellow-800{{else}}bg-red-100 text-red-800{{/if}}{{/if}}">{{this.status}}</span>
+                            </div>
+                            <div class="space-y-2">
+                                {{#each this.checks}}
+                                <div class="flex items-center text-sm">
+                                    {{#if this.passed}}
+                                    <svg class="w-4 h-4 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    {{else}}
+                                    <svg class="w-4 h-4 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                    {{/if}}
+                                    <span class="{{#if this.passed}}text-gray-700{{else}}text-red-700{{/if}}">{{this.check}}</span>
+                                </div>
+                                {{/each}}
+                            </div>
+                            {{#if this.recommendations}}
+                            <div class="mt-3 p-2 bg-blue-50 rounded text-xs text-blue-700">
+                                {{this.recommendations}}
+                            </div>
+                            {{/if}}
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
+
+                <!-- Performance Analysis -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        Performance Review Analysis
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <canvas id="performanceChart" width="400" height="300"></canvas>
+                        </div>
+                        <div class="space-y-4">
+                            {{#each performance.metrics}}
+                            <div class="bg-gray-50 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-semibold text-gray-800">{{this.metric}}</h4>
+                                    <span class="text-lg font-bold {{this.scoreColor}}">{{this.score}}</span>
+                                </div>
+                                <div class="text-sm text-gray-600 mb-2">{{this.description}}</div>
+                                {{#if this.benchmark}}
+                                <div class="text-xs text-gray-500">
+                                    Benchmark: {{this.benchmark}}
+                                </div>
+                                {{/if}}
+                                {{#if this.impact}}
+                                <div class="mt-2 text-xs {{#if (eq this.impact.level 'high')}}text-red-600{{else}}{{#if (eq this.impact.level 'medium')}}text-yellow-600{{else}}text-green-600{{/if}}{{/if}}">
+                                    Impact: {{this.impact.description}}
+                                </div>
+                                {{/if}}
+                            </div>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Standards Compliance -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Code Standards Compliance
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {{#each standards.categories}}
+                        <div class="border rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-semibold text-gray-800">{{this.category}}</h4>
+                                <div class="text-right">
+                                    <div class="text-lg font-bold {{#if (gte this.compliance 90)}}text-green-600{{else}}{{#if (gte this.compliance 80)}}text-yellow-600{{else}}text-red-600{{/if}}{{/if}}">{{this.compliance}}%</div>
+                                    <div class="text-xs text-gray-500">{{this.passed}}/{{this.total}} checks</div>
+                                </div>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
+                                <div class="{{#if (gte this.compliance 90)}}bg-green-500{{else}}{{#if (gte this.compliance 80)}}bg-yellow-500{{else}}bg-red-500{{/if}}{{/if}} h-2 rounded-full" style="width: {{this.compliance}}%"></div>
+                            </div>
+                            {{#if this.violations}}
+                            <div class="space-y-1">
+                                {{#each this.violations}}
+                                <div class="text-xs text-red-600 bg-red-50 p-2 rounded">
+                                    {{this.rule}}: {{this.description}}
+                                </div>
+                                {{/each}}
+                            </div>
+                            {{/if}}
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
+
+                <!-- Testing Coverage -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Testing Coverage Analysis
+                    </h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <canvas id="testingChart" width="400" height="300"></canvas>
+                        </div>
+                        <div class="space-y-4">
+                            {{#each testing.suites}}
+                            <div class="border rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-semibold text-gray-800">{{this.type}} Tests</h4>
+                                    <span class="px-2 py-1 text-xs rounded-full {{this.coverageClass}}">{{this.coverage}}%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                                    <div class="bg-{{this.color}}-500 h-2 rounded-full" style="width: {{this.coverage}}%"></div>
+                                </div>
+                                <div class="text-sm text-gray-600 grid grid-cols-3 gap-2">
+                                    <div class="text-center">
+                                        <div class="font-semibold">{{this.testsCount}}</div>
+                                        <div class="text-xs">Total</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="font-semibold text-green-600">{{this.passed}}</div>
+                                        <div class="text-xs">Passed</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="font-semibold text-red-600">{{this.failed}}</div>
+                                        <div class="text-xs">Failed</div>
+                                    </div>
+                                </div>
+                            </div>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Review Comments & Feedback -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
+                        Review Comments & Feedback
+                    </h3>
+                    {{#if review.comments}}
+                    <div class="space-y-4">
+                        {{#each review.comments}}
+                        <div class="border rounded-lg p-4 {{#if this.isPositive}}border-green-200 bg-green-50{{else}}border-yellow-200 bg-yellow-50{{/if}}">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0">
+                                    {{#if this.isPositive}}
+                                    <svg class="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    {{else}}
+                                    <svg class="w-5 h-5 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </svg>
+                                    {{/if}}
+                                </div>
+                                <div class="ml-3 flex-1">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h4 class="font-semibold text-gray-900">{{this.category}}</h4>
+                                        <span class="text-xs text-gray-500">{{this.timestamp}}</span>
+                                    </div>
+                                    <p class="text-gray-700">{{this.comment}}</p>
+                                    {{#if this.suggestion}}
+                                    <div class="mt-2 p-2 bg-blue-50 rounded text-sm text-blue-800">
+                                        <strong>Suggestion:</strong> {{this.suggestion}}
+                                    </div>
+                                    {{/if}}
+                                </div>
+                            </div>
+                        </div>
+                        {{/each}}
+                    </div>
+                    {{else}}
+                    <div class="text-center py-8">
+                        <div class="text-4xl mb-2">✅</div>
+                        <p class="text-gray-500">No specific review comments - code meets quality standards</p>
+                    </div>
+                    {{/if}}
+                </div>
+
+                <!-- Quality Recommendations -->
+                <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-6 border border-purple-200">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                        Quality Enhancement Recommendations
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {{#each recommendations}}
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0">
+                                    <div class="w-8 h-8 rounded-full bg-{{this.priority}}-100 flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-{{this.priority}}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{this.icon}}"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="ml-3">
+                                    <h4 class="text-sm font-medium text-gray-900">{{this.title}}</h4>
+                                    <p class="text-sm text-gray-600 mt-1">{{this.description}}</p>
+                                    <div class="mt-2 flex items-center space-x-2">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{this.impactClass}}">
+                                            {{this.impact}} Impact
+                                        </span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{this.effortClass}}">
+                                            {{this.effort}} Effort
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Testing Results -->
-    <div class="bg-gray-800 border border-gray-700 rounded-2xl p-8 mb-8">
-        <div class="flex items-center gap-3 mb-6">
-            <span class="text-2xl">🧪</span>
-            <h3 class="text-2xl font-bold">Testing Results</h3>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {{#with (default data.testingResults (object 
-                unit=(object passed=45 failed=2 coverage="85%" status="passed")
-                integration=(object passed=12 failed=0 coverage="78%" status="passed")
-                e2e=(object passed=8 failed=1 coverage="65%" status="warning")
-                manual=(object scenarios=15 passed=14 failed=1 status="warning")
-                performance=(object avgResponse="180ms" p95="250ms" status="passed")
-                security=(object vulnerabilities=0 warnings=2 status="warning")
-            ))}}
-                <div class="bg-gray-900 border border-gray-700 rounded-lg p-6">
-                    <div class="flex items-center gap-3 mb-4 pb-4 border-b border-gray-700">
-                        <span class="text-xl">🔬</span>
-                        <h4 class="font-semibold text-white">Unit Tests</h4>
-                    </div>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400">Tests Passed</span>
-                            <span class="font-semibold {{#if (eq this.unit.status 'passed')}}text-green-400{{else if (eq this.unit.status 'warning')}}text-yellow-400{{else}}text-red-400{{/if}}">
-                                {{this.unit.passed}}/{{add this.unit.passed this.unit.failed}}
-                            </span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400">Coverage</span>
-                            <span class="font-semibold {{#if (eq this.unit.status 'passed')}}text-green-400{{else if (eq this.unit.status 'warning')}}text-yellow-400{{else}}text-red-400{{/if}}">
-                                {{this.unit.coverage}}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-gray-900 border border-gray-700 rounded-lg p-6">
-                    <div class="flex items-center gap-3 mb-4 pb-4 border-b border-gray-700">
-                        <span class="text-xl">🔗</span>
-                        <h4 class="font-semibold text-white">Integration Tests</h4>
-                    </div>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400">Tests Passed</span>
-                            <span class="font-semibold {{#if (eq this.integration.status 'passed')}}text-green-400{{else if (eq this.integration.status 'warning')}}text-yellow-400{{else}}text-red-400{{/if}}">
-                                {{this.integration.passed}}/{{add this.integration.passed this.integration.failed}}
-                            </span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400">Coverage</span>
-                            <span class="font-semibold {{#if (eq this.integration.status 'passed')}}text-green-400{{else if (eq this.integration.status 'warning')}}text-yellow-400{{else}}text-red-400{{/if}}">
-                                {{this.integration.coverage}}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-gray-900 border border-gray-700 rounded-lg p-6">
-                    <div class="flex items-center gap-3 mb-4 pb-4 border-b border-gray-700">
-                        <span class="text-xl">🌐</span>
-                        <h4 class="font-semibold text-white">End-to-End Tests</h4>
-                    </div>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400">Tests Passed</span>
-                            <span class="font-semibold {{#if (eq this.e2e.status 'passed')}}text-green-400{{else if (eq this.e2e.status 'warning')}}text-yellow-400{{else}}text-red-400{{/if}}">
-                                {{this.e2e.passed}}/{{add this.e2e.passed this.e2e.failed}}
-                            </span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400">Coverage</span>
-                            <span class="font-semibold {{#if (eq this.e2e.status 'passed')}}text-green-400{{else if (eq this.e2e.status 'warning')}}text-yellow-400{{else}}text-red-400{{/if}}">
-                                {{this.e2e.coverage}}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-gray-900 border border-gray-700 rounded-lg p-6">
-                    <div class="flex items-center gap-3 mb-4 pb-4 border-b border-gray-700">
-                        <span class="text-xl">👤</span>
-                        <h4 class="font-semibold text-white">Manual Testing</h4>
-                    </div>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400">Scenarios Passed</span>
-                            <span class="font-semibold {{#if (eq this.manual.status 'passed')}}text-green-400{{else if (eq this.manual.status 'warning')}}text-yellow-400{{else}}text-red-400{{/if}}">
-                                {{this.manual.passed}}/{{this.manual.scenarios}}
-                            </span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400">Success Rate</span>
-                            <span class="font-semibold {{#if (eq this.manual.status 'passed')}}text-green-400{{else if (eq this.manual.status 'warning')}}text-yellow-400{{else}}text-red-400{{/if}}">
-                                {{percentage this.manual.passed this.manual.scenarios}}%
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-gray-900 border border-gray-700 rounded-lg p-6">
-                    <div class="flex items-center gap-3 mb-4 pb-4 border-b border-gray-700">
-                        <span class="text-xl">⚡</span>
-                        <h4 class="font-semibold text-white">Performance</h4>
-                    </div>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400">Avg Response</span>
-                            <span class="font-semibold {{#if (eq this.performance.status 'passed')}}text-green-400{{else if (eq this.performance.status 'warning')}}text-yellow-400{{else}}text-red-400{{/if}}">
-                                {{this.performance.avgResponse}}
-                            </span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400">95th Percentile</span>
-                            <span class="font-semibold {{#if (eq this.performance.status 'passed')}}text-green-400{{else if (eq this.performance.status 'warning')}}text-yellow-400{{else}}text-red-400{{/if}}">
-                                {{this.performance.p95}}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-gray-900 border border-gray-700 rounded-lg p-6">
-                    <div class="flex items-center gap-3 mb-4 pb-4 border-b border-gray-700">
-                        <span class="text-xl">🔒</span>
-                        <h4 class="font-semibold text-white">Security</h4>
-                    </div>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400">Vulnerabilities</span>
-                            <span class="font-semibold {{#if (gt this.security.vulnerabilities 0)}}text-red-400{{else}}text-green-400{{/if}}">
-                                {{this.security.vulnerabilities}}
-                            </span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-400">Warnings</span>
-                            <span class="font-semibold {{#if (gt this.security.warnings 0)}}text-yellow-400{{else}}text-green-400{{/if}}">
-                                {{this.security.warnings}}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            {{/with}}
-        </div>
-    </div>
+    <script>
+        // Quality Dimensions Chart
+        const qualityCtx = document.getElementById('qualityDimensionsChart').getContext('2d');
+        new Chart(qualityCtx, {
+            type: 'radar',
+            data: {
+                labels: {{{json quality.labels}}},
+                datasets: [{
+                    label: 'Quality Score',
+                    data: {{{json quality.data}}},
+                    backgroundColor: 'rgba(147, 51, 234, 0.2)',
+                    borderColor: 'rgba(147, 51, 234, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(147, 51, 234, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 10,
+                        ticks: {
+                            stepSize: 2
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
 
-    <!-- Issues Found -->
-    {{#if data.issuesFound}}
-    <div class="bg-gray-800 border border-gray-700 rounded-2xl p-8 mb-8">
-        <div class="flex items-center gap-3 mb-6">
-            <span class="text-2xl">🐛</span>
-            <h3 class="text-2xl font-bold">Issues Found</h3>
-        </div>
-        
-        <div class="space-y-4">
-            {{#each data.issuesFound}}
-                <div class="flex gap-4 p-4 bg-gray-900 border border-gray-700 rounded-lg">
-                    <span class="px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide min-w-fit {{#if (eq this.severity 'critical')}}bg-red-500 text-white{{else if (eq this.severity 'high')}}bg-orange-500 text-white{{else if (eq this.severity 'medium')}}bg-blue-500 text-white{{else}}bg-gray-600 text-gray-300{{/if}}">{{this.severity}}</span>
-                    <div class="flex-1">
-                        <h4 class="font-semibold text-white mb-2">{{this.title}}</h4>
-                        <p class="text-gray-400 mb-3 leading-relaxed">{{this.description}}</p>
-                        {{#if this.location}}
-                            <div class="text-sm text-gray-400 font-mono bg-gray-800 p-2 rounded">📍 {{this.location}}</div>
-                        {{/if}}
-                    </div>
-                </div>
-            {{/each}}
-        </div>
-    </div>
-    {{/if}}
+        // Performance Chart
+        const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+        new Chart(performanceCtx, {
+            type: 'bar',
+            data: {
+                labels: {{{json performance.labels}}},
+                datasets: [{
+                    label: 'Performance Score',
+                    data: {{{json performance.data}}},
+                    backgroundColor: 'rgba(251, 146, 60, 0.8)',
+                    borderColor: 'rgba(251, 146, 60, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Score'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
 
-    <!-- Recommendations -->
-    {{#if data.recommendations}}
-    <div class="bg-gray-800 border border-gray-700 rounded-2xl p-8 mb-8">
-        <div class="flex items-center gap-3 mb-6">
-            <span class="text-2xl">💡</span>
-            <h3 class="text-2xl font-bold">Quality Improvement Recommendations</h3>
-        </div>
-        
-        <div class="space-y-4">
-            {{#each data.recommendations}}
-                <div class="flex gap-4 p-4 bg-gray-900 border border-gray-700 rounded-lg">
-                    <span class="px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide min-w-fit {{#if (eq this.priority 'high')}}bg-red-500 text-white{{else if (eq this.priority 'medium')}}bg-yellow-500 text-white{{else}}bg-blue-500 text-white{{/if}}">{{this.priority}}</span>
-                    <div class="flex-1 text-gray-300 leading-relaxed">{{this.text}}</div>
-                </div>
-            {{/each}}
-        </div>
-    </div>
-    {{/if}}
-
-    <!-- Review Summary -->
-    {{#with data.reviewReport}}
-    {{#if (or this.manualTestingResults this.strengths this.requiredChanges)}}
-    <div class="bg-gray-800 border border-gray-700 rounded-2xl p-8">
-        <div class="flex items-center gap-3 mb-6">
-            <span class="text-2xl">📋</span>
-            <h3 class="text-2xl font-bold">Detailed Review Summary</h3>
-        </div>
-        
-        <div class="space-y-6">
-            {{#if this.strengths}}
-                <div>
-                    <h4 class="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                        <span>✅</span> Strengths
-                    </h4>
-                    <p class="text-gray-400 leading-relaxed">{{this.strengths}}</p>
-                </div>
-            {{/if}}
-            
-            {{#if this.manualTestingResults}}
-                <div>
-                    <h4 class="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                        <span>🧪</span> Manual Testing Results
-                    </h4>
-                    <p class="text-gray-400 leading-relaxed">{{this.manualTestingResults}}</p>
-                </div>
-            {{/if}}
-            
-            {{#if this.requiredChanges}}
-                <div>
-                    <h4 class="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                        <span>🔧</span> Required Changes
-                    </h4>
-                    <p class="text-gray-400 leading-relaxed">{{this.requiredChanges}}</p>
-                </div>
-            {{/if}}
-        </div>
-    </div>
-    {{/if}}
-    {{/with}}
-</div>
-{{/inline}}
-
-{{/layouts/base}}
+        // Testing Chart
+        const testingCtx = document.getElementById('testingChart').getContext('2d');
+        new Chart(testingCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{{json testing.labels}}},
+                datasets: [{
+                    data: {{{json testing.data}}},
+                    backgroundColor: ['#10B981', '#F59E0B', '#EF4444', '#6B7280'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

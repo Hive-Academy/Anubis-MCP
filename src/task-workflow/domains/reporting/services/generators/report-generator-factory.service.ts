@@ -11,6 +11,18 @@ import { PerformanceDashboardGeneratorService } from './performance-dashboard-ge
 import { TaskProgressHealthGeneratorService } from './task-progress-health-generator.service';
 import { TaskSummaryGeneratorService } from './task-summary-generator.service';
 
+// Import new generators
+import { DelegationAnalyticsGeneratorService } from './delegation-analytics-generator.service';
+import { ComprehensiveGeneratorService } from './comprehensive-generator.service';
+import { ImplementationPlanAnalyticsGeneratorService } from './implementation-plan-analytics-generator.service';
+import { CodeReviewInsightsGeneratorService } from './code-review-insights-generator.service';
+import { DelegationFlowAnalysisGeneratorService } from './delegation-flow-analysis-generator.service';
+import { ImplementationExecutionGeneratorService } from './implementation-execution-generator.service';
+import { CodeReviewQualityGeneratorService } from './code-review-quality-generator.service';
+import { ResearchDocumentationGeneratorService } from './research-documentation-generator.service';
+import { CommunicationCollaborationGeneratorService } from './communication-collaboration-generator.service';
+import { DelegationFlowAnalysisTaskGeneratorService } from './delegation-flow-analysis-task-generator.service';
+
 /**
  * Report Generator Factory
  *
@@ -29,17 +41,30 @@ export class ReportGeneratorFactoryService {
   private readonly generators = new Map<ReportType, IBaseReportGenerator>();
 
   constructor(
-    // Register all generators
+    // Existing generators
     private readonly performanceDashboardGenerator: PerformanceDashboardGeneratorService,
     private readonly taskProgressHealthGenerator: TaskProgressHealthGeneratorService,
     private readonly taskSummaryGenerator: TaskSummaryGeneratorService,
-    // TODO: Add other generators as we create them
+
+    // New aggregate generators
+    private readonly delegationAnalyticsGenerator: DelegationAnalyticsGeneratorService,
+    private readonly comprehensiveGenerator: ComprehensiveGeneratorService,
+    private readonly implementationPlanAnalyticsGenerator: ImplementationPlanAnalyticsGeneratorService,
+    private readonly codeReviewInsightsGenerator: CodeReviewInsightsGeneratorService,
+    private readonly delegationFlowAnalysisGenerator: DelegationFlowAnalysisGeneratorService,
+
+    // New individual task generators
+    private readonly implementationExecutionGenerator: ImplementationExecutionGeneratorService,
+    private readonly codeReviewQualityGenerator: CodeReviewQualityGeneratorService,
+    private readonly researchDocumentationGenerator: ResearchDocumentationGeneratorService,
+    private readonly communicationCollaborationGenerator: CommunicationCollaborationGeneratorService,
+    private readonly delegationFlowAnalysisTaskGenerator: DelegationFlowAnalysisTaskGeneratorService,
   ) {
     this.registerGenerators();
   }
 
   private registerGenerators(): void {
-    // Register each generator with its report type
+    // Register existing generators
     this.generators.set(
       'performance_dashboard',
       this.performanceDashboardGenerator,
@@ -50,10 +75,43 @@ export class ReportGeneratorFactoryService {
     );
     this.generators.set('task_summary', this.taskSummaryGenerator);
 
-    // TODO: Register other generators
-    // this.generators.set('delegation_analytics', this.delegationAnalyticsGenerator);
-    // this.generators.set('code_review_insights', this.codeReviewInsightsGenerator);
-    // etc.
+    // Register new aggregate generators
+    this.generators.set(
+      'delegation_analytics',
+      this.delegationAnalyticsGenerator,
+    );
+    this.generators.set('comprehensive', this.comprehensiveGenerator);
+    this.generators.set(
+      'implementation_plan_analytics',
+      this.implementationPlanAnalyticsGenerator,
+    );
+    this.generators.set(
+      'code_review_insights',
+      this.codeReviewInsightsGenerator,
+    );
+    this.generators.set(
+      'delegation_flow_analysis',
+      this.delegationFlowAnalysisGenerator,
+    );
+
+    // Register new individual task generators
+    this.generators.set(
+      'implementation_execution',
+      this.implementationExecutionGenerator,
+    );
+    this.generators.set('code_review_quality', this.codeReviewQualityGenerator);
+    this.generators.set(
+      'research_documentation',
+      this.researchDocumentationGenerator,
+    );
+    this.generators.set(
+      'communication_collaboration',
+      this.communicationCollaborationGenerator,
+    );
+    this.generators.set(
+      'delegation_flow_analysis_task',
+      this.delegationFlowAnalysisTaskGenerator,
+    );
 
     this.logger.log(`Registered ${this.generators.size} report generators`);
   }

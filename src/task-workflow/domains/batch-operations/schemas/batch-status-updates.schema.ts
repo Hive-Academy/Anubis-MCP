@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const BatchStatusUpdatesSchema = z.object({
   operation: z.enum([
     'sync_task_status',
-    'sync_plan_status', 
+    'sync_plan_status',
     'sync_batch_progress',
     'update_cross_entity',
     'get_sync_status',
@@ -16,7 +16,13 @@ export const BatchStatusUpdatesSchema = z.object({
   // For status synchronization
   sourceEntity: z.enum(['task', 'plan', 'batch', 'subtask']).optional(),
   targetStatus: z
-    .enum(['not-started', 'in-progress', 'needs-review', 'completed', 'needs-changes'])
+    .enum([
+      'not-started',
+      'in-progress',
+      'needs-review',
+      'completed',
+      'needs-changes',
+    ])
     .optional(),
 
   // For batch progress sync
