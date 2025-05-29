@@ -169,6 +169,10 @@ export class HandlebarsTemplateService {
     this.handlebars.registerHelper('gte', (a: number, b: number) => a >= b);
     this.handlebars.registerHelper('lte', (a: number, b: number) => a <= b);
     this.handlebars.registerHelper('abs', (num: number) => Math.abs(num));
+    this.handlebars.registerHelper(
+      'multiply',
+      (a: number, b: number) => (a || 0) * (b || 0),
+    );
 
     // String helpers
     this.handlebars.registerHelper('capitalize', (str: string) => {

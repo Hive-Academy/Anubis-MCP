@@ -70,7 +70,7 @@ export class TaskSummaryDataApiService implements TaskSummaryDataService {
       },
 
       // Generate task items from owner data
-      tasks: this.generateTaskItems(baseMetrics.tasks),
+      tasks: await this.getRealTaskItems(whereClause),
 
       // Chart data from real metrics (extracted from legacy method)
       statusDistribution: {
@@ -101,59 +101,38 @@ export class TaskSummaryDataApiService implements TaskSummaryDataService {
   // ===== BUSINESS LOGIC METHODS =====
 
   /**
-   * Generate task items from metrics data
+   * Get real task items from database instead of generating fake data
    */
-  private generateTaskItems(taskMetrics: any): TaskSummaryItem[] {
-    const tasks: TaskSummaryItem[] = [];
+  private async getRealTaskItems(whereClause: any): Promise<TaskSummaryItem[]> {
+    try {
+      // Get real tasks from database with proper fields
+      const realTasks = await this.reportDataAccess.prisma.task.findMany({
+        where: whereClause,
+        select: {
+          taskId: true,
+          name: true,
+          status: true,
+          priority: true,
+          owner: true,
+          creationDate: true,
+        },
+        orderBy: { creationDate: 'desc' },
+        take: 10, // Show up to 10 recent tasks
+      });
 
-    // Create realistic task items from owner data
-    if (taskMetrics.totalTasks > 0 && taskMetrics.tasksByOwner?.length > 0) {
-      taskMetrics.tasksByOwner
-        .slice(0, 5)
-        .forEach((ownerData: any, index: number) => {
-          tasks.push({
-            taskId: `TSK-${String(index + 1).padStart(3, '0')}`,
-            name: `Task assigned to ${ownerData.owner}`,
-            status: this.generateRealisticStatus(index, taskMetrics),
-            priority: this.generateRealisticPriority(index),
-            owner: ownerData.owner || 'Unassigned',
-            creationDate: new Date(Date.now() - index * 24 * 60 * 60 * 1000),
-          });
-        });
+      // Transform real tasks to template format
+      return realTasks.map((task) => ({
+        taskId: task.taskId,
+        name: task.name,
+        status: task.status as TaskSummaryItem['status'],
+        priority: task.priority as TaskSummaryItem['priority'],
+        owner: task.owner || 'Unassigned',
+        creationDate: task.creationDate,
+      }));
+    } catch (error) {
+      this.logger.error('Failed to fetch real tasks:', error);
+      return []; // Return empty array instead of fake data
     }
-
-    return tasks;
-  }
-
-  /**
-   * Generate realistic status based on completion rate
-   */
-  private generateRealisticStatus(
-    index: number,
-    taskMetrics: any,
-  ): TaskSummaryItem['status'] {
-    const completionRate = taskMetrics.completionRate || 0;
-
-    if (index === 0 && completionRate > 0) return 'completed';
-    if (index === 1 && taskMetrics.inProgressTasks > 0) return 'in-progress';
-    if (index < 3) return 'in-progress';
-    return 'not-started';
-  }
-
-  /**
-   * Generate realistic priority distribution
-   */
-  private generateRealisticPriority(
-    index: number,
-  ): TaskSummaryItem['priority'] {
-    const priorities: TaskSummaryItem['priority'][] = [
-      'Critical',
-      'High',
-      'Medium',
-      'Low',
-    ];
-    const safeIndex = Math.abs(index) % priorities.length;
-    return priorities[safeIndex];
   }
 
   /**

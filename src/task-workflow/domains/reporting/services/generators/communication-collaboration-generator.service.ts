@@ -95,7 +95,7 @@ export class CommunicationCollaborationGeneratorService
             'CommunicationPatterns',
             'CollaborationEffectiveness',
             'TeamCoordination',
-            'KnowledgeSharing'
+            'KnowledgeSharing',
           ],
         },
       };

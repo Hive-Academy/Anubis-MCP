@@ -84,14 +84,12 @@ export class DelegationFlowAnalysisGeneratorService
           reportType: this.getReportType(),
           generatedAt: new Date(),
           filters,
-          dataSourcesUsed: [
-            'DelegationFlowAnalysisDataApiService (focused)',
-          ],
+          dataSourcesUsed: ['DelegationFlowAnalysisDataApiService (focused)'],
           analyticsApplied: [
             'WorkflowBottleneckAnalysis',
             'DelegationPathMapping',
             'HandoffEfficiency',
-            'FlowOptimization'
+            'FlowOptimization',
           ],
         },
       };

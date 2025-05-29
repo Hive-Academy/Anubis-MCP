@@ -91,7 +91,7 @@ export class ImplementationPlanAnalyticsGeneratorService
             'PlanQualityAnalysis',
             'SubtaskBreakdownPatterns',
             'ExecutionInsights',
-            'ImplementationTrends'
+            'ImplementationTrends',
           ],
         },
       };

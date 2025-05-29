@@ -63,15 +63,16 @@ export class DelegationAnalyticsGeneratorService
       this.validateFilters(filters);
 
       // Step 1: Get focused delegation analytics data
-      const templateData = await this.delegationAnalyticsApi.getDelegationAnalyticsData(
-        filters.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-        filters.endDate || new Date(),
-        {
-          ...(filters.owner && { owner: filters.owner }),
-          ...(filters.mode && { mode: filters.mode }),
-          ...(filters.priority && { priority: filters.priority }),
-        },
-      );
+      const templateData =
+        await this.delegationAnalyticsApi.getDelegationAnalyticsData(
+          filters.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+          filters.endDate || new Date(),
+          {
+            ...(filters.owner && { owner: filters.owner }),
+            ...(filters.mode && { mode: filters.mode }),
+            ...(filters.priority && { priority: filters.priority }),
+          },
+        );
 
       // Step 2: Render template
       const htmlContent = await this.templateService.renderTemplate(
@@ -89,9 +90,9 @@ export class DelegationAnalyticsGeneratorService
           dataSourcesUsed: ['DelegationAnalyticsDataApiService (focused)'],
           analyticsApplied: [
             'DelegationPatterns',
-            'HandoffEfficiency', 
+            'HandoffEfficiency',
             'RolePerformance',
-            'WorkflowBottlenecks'
+            'WorkflowBottlenecks',
           ],
         },
       };

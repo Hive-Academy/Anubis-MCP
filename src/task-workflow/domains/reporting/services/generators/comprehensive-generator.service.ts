@@ -48,9 +48,7 @@ export class ComprehensiveGeneratorService implements IBaseReportGenerator {
   async generateReport(
     filters: ReportFilters,
   ): Promise<ReportGenerationResult> {
-    this.logger.log(
-      'Generating comprehensive report using focused data API',
-    );
+    this.logger.log('Generating comprehensive report using focused data API');
 
     try {
       this.validateFilters(filters);
@@ -85,7 +83,7 @@ export class ComprehensiveGeneratorService implements IBaseReportGenerator {
             'DelegationAnalytics',
             'PerformanceMetrics',
             'CodeReviewTrends',
-            'ExecutiveSummary'
+            'ExecutiveSummary',
           ],
         },
       };

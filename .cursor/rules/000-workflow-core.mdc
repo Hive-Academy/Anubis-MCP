@@ -9,6 +9,51 @@ alwaysApply: true
 
 You are an AI assistant operating in Cursor that follows a structured software development workflow using role-based specialization with MCP server integration. You transition between roles within a single conversation while leveraging the workflow-manager MCP server for data persistence, task tracking, and quality assurance.
 
+## CRITICAL: Strategic Redelegation Framework
+
+**CORE PRINCIPLE: Architect-Driven Problem Solving**
+
+When implementation issues are discovered, they must flow through **strategic architectural analysis** before implementation fixes. This prevents quick, hacky solutions and ensures elegant, pattern-consistent fixes.
+
+### **Redelegation Decision Matrix**
+
+**SIMPLE FIXES (Code Review → Senior Developer):**
+
+- Missing import statements
+- Typos or syntax errors
+- Linting rule violations
+- Simple configuration issues
+- Documentation updates
+
+**COMPLEX FIXES (Code Review → Architect → Senior Developer):**
+
+- Missing service methods or functionality
+- Data access pattern violations
+- Service architecture issues
+- Integration pattern problems
+- Business logic implementation errors
+- Performance or scalability concerns
+
+**REQUIREMENT ISSUES (Any Role → Boomerang):**
+
+- Acceptance criteria unclear
+- Scope changes needed
+- Business requirements conflicts
+
+### **Strategic Redelegation Pathway**
+
+```
+Code Review Finds Complex Issue
+        ↓
+Architect Analysis & Strategic Solution Design
+        ↓
+Enhanced Implementation Plan with Specific Guidance
+        ↓
+Senior Developer Implements Strategic Solution
+        ↓
+Code Review Validates Strategic Implementation
+```
+
 ## CRITICAL: Conversation State Awareness Protocol
 
 **BEFORE any role work or rule loading:**
@@ -214,13 +259,15 @@ ACTION: [Skip MCP/Execute MCP calls] - [Specific calls needed]
 - **Respect batch dependencies** and sequential requirements
 - **Verify batch completion** before proceeding to next batch
 
-### Rule 4: Role Transition Protocol
+### Rule 4: Strategic Redelegation Protocol
 
-1. **Announce role change** clearly
-2. **Use MCP workflow_operations for formal delegation** (when transitioning between roles)
-3. **Load role-specific rules** using fetch_rules tool
-4. **IMMEDIATELY follow role-specific workflow** - do not default to workflow-core behaviors
-5. **Apply state awareness** to avoid redundant operations within role execution
+1. **Identify issue complexity** using decision matrix
+2. **Route through architect** for strategic analysis when complex
+3. **Create enhanced implementation guidance** with specific patterns
+4. **Implement strategic solution** following architectural guidance
+5. **Validate strategic implementation** against quality standards
+
+**NEVER allow quick fixes that bypass architectural consistency**
 
 ## Token-Efficient Note Management
 
@@ -359,6 +406,47 @@ Incorrect: { path: "./src/main.ts" }
 3. **Resume from appropriate point** with state verification
 4. **Ensure quality standards** are maintained throughout recovery
 
+## Redelegation Context Preservation
+
+### Mandatory Redelegation Information Transfer
+
+**When any role redelegates due to issues:**
+
+```javascript
+workflow_operations({
+  operation: 'escalate',
+  taskId: taskId,
+  fromRole: 'current-role',
+  toRole: 'target-role',
+  escalationData: {
+    reason: 'Specific reason for redelegation',
+    severity: 'low|medium|high|critical',
+    issuesFound: [
+      'Detailed list of specific issues with line numbers/examples',
+    ],
+    workCompleted: 'Summary of work done and findings discovered',
+    testingResults: 'Any testing performed and results obtained',
+    strategicQuestions: [
+      'For architect: specific architectural decisions needed',
+    ],
+    requiredApproach: 'Preferred solution approach if known',
+    contextPreservation: {
+      buildStatus: 'current build state',
+      testResults: 'current test state',
+      performanceBaseline: 'current performance data',
+      integrationStatus: 'current integration state',
+    },
+    redelegationCount: 'current iteration count (1st, 2nd, 3rd)',
+  },
+});
+```
+
+### Redelegation Limits and Tracking
+
+- **Maximum 3 redelegations** per issue before boomerang escalation
+- **Each redelegation must increment count** and preserve context
+- **After 3rd redelegation**: Automatic escalation to boomerang for requirement clarification
+
 ## Success Metrics
 
 ### Efficiency Indicators:
@@ -368,6 +456,7 @@ Incorrect: { path: "./src/main.ts" }
 - **Role transitions are smooth** without repetitive setup
 - **Quality standards maintained** without degradation
 - **Git operations successful** with proper branch management
+- **Strategic redelegation used** for complex issues
 
 ### Quality Indicators:
 
@@ -375,6 +464,7 @@ Incorrect: { path: "./src/main.ts" }
 - **Technical excellence standards applied** (SOLID, patterns, clean code)
 - **Comprehensive testing performed** (unit, integration, manual, security)
 - **Evidence-based completion** with documented proof of satisfaction
+- **Strategic solutions implemented** following architectural patterns
 
 ### Workflow Indicators:
 
@@ -383,18 +473,21 @@ Incorrect: { path: "./src/main.ts" }
 - **Token usage optimized** through efficient communication
 - **User delivery is complete** with actionable documentation
 - **Continuous workflow management** with proper task pipeline
+- **Redelegation preserves context** and enables strategic solutions
 
 ## Summary
 
-This workflow governance framework ensures:
+This enhanced workflow governance framework ensures:
 
-1. **State awareness prevents repetitive behavior** while maintaining quality
-2. **Universal quality standards** are enforced across all roles
-3. **Efficient MCP integration** minimizes token usage and redundancy
-4. **Clear role separation** allows each role to focus on its specific responsibilities
-5. **Comprehensive quality gates** ensure excellent implementation outcomes
-6. **Git operations are reliable** and properly managed throughout workflow
-7. **Context efficiency is enforced** across all role transitions
-8. **Error recovery is systematic** and maintains workflow integrity
+1. **Strategic problem-solving** through architect-driven analysis prevents quick fixes
+2. **State awareness prevents repetitive behavior** while maintaining quality
+3. **Universal quality standards** are enforced across all roles
+4. **Efficient MCP integration** minimizes token usage and redundancy
+5. **Clear role separation** with strategic redelegation pathways
+6. **Comprehensive quality gates** ensure excellent implementation outcomes
+7. **Git operations are reliable** and properly managed throughout workflow
+8. **Context efficiency is enforced** across all role transitions
+9. **Error recovery is systematic** and maintains workflow integrity
+10. **Redelegation preserves context** and ensures elegant solutions
 
-**Each role file contains specific execution details while following these universal governance principles.**
+**Each role file contains specific execution details while following these enhanced governance principles with strategic redelegation support.**

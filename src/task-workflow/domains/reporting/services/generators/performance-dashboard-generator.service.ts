@@ -63,15 +63,16 @@ export class PerformanceDashboardGeneratorService
       this.validateFilters(filters);
 
       // Step 1: Get focused performance dashboard data
-      const templateData = await this.performanceDashboardApi.getPerformanceDashboardData(
-        filters.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-        filters.endDate || new Date(),
-        {
-          ...(filters.owner && { owner: filters.owner }),
-          ...(filters.mode && { mode: filters.mode }),
-          ...(filters.priority && { priority: filters.priority }),
-        },
-      );
+      const templateData =
+        await this.performanceDashboardApi.getPerformanceDashboardData(
+          filters.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+          filters.endDate || new Date(),
+          {
+            ...(filters.owner && { owner: filters.owner }),
+            ...(filters.mode && { mode: filters.mode }),
+            ...(filters.priority && { priority: filters.priority }),
+          },
+        );
 
       // Step 2: Render template
       const htmlContent = await this.templateService.renderTemplate(
@@ -91,7 +92,7 @@ export class PerformanceDashboardGeneratorService
             'RealTimeMetrics',
             'PerformanceTrending',
             'BenchmarkAnalysis',
-            'SystemHealth'
+            'SystemHealth',
           ],
         },
       };
