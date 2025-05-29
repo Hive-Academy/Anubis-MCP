@@ -1,484 +1,631 @@
-{{> layouts/base title="Research Documentation" subtitle="Task research and documentation quality analysis"}}
-
-{{#*inline "content"}}
-<div class="space-y-8">
-  <!-- Research Overview -->
-  <div class="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-6 border border-amber-200">
-    <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-      <svg class="w-6 h-6 mr-2 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-      </svg>
-      Research & Documentation Analysis
-    </h2>
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="bg-white rounded-lg p-4 shadow-sm">
-        <div class="text-2xl font-bold text-amber-600">{{research.completeness}}%</div>
-        <div class="text-sm text-gray-600">Research Completeness</div>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow-sm">
-        <div class="text-2xl font-bold text-blue-600">{{documentation.quality}}%</div>
-        <div class="text-sm text-gray-600">Documentation Quality</div>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow-sm">
-        <div class="text-2xl font-bold text-green-600">{{research.sourceCount}}</div>
-        <div class="text-sm text-gray-600">Sources Evaluated</div>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow-sm">
-        <div class="text-2xl font-bold text-purple-600">{{research.depth}}</div>
-        <div class="text-sm text-gray-600">Research Depth</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Research Findings -->
-  <div class="bg-white rounded-xl shadow-lg p-6">
-    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-      <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-      </svg>
-      Research Findings Summary
-    </h3>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div>
-        <canvas id="findingsChart" width="400" height="300"></canvas>
-      </div>
-      <div class="space-y-4">
-        {{#each research.findings}}
-        <div class="border rounded-lg p-4 {{this.categoryBorderClass}}">
-          <div class="flex items-center justify-between mb-2">
-            <h4 class="font-semibold text-gray-800">{{this.category}}</h4>
-            <span class="px-2 py-1 text-xs rounded-full {{this.confidenceClass}}">{{this.confidence}} Confidence</span>
-          </div>
-          <p class="text-sm text-gray-600 mb-2">{{this.summary}}</p>
-          <div class="flex items-center justify-between text-xs text-gray-500">
-            <span>Sources: {{this.sourceCount}}</span>
-            <span>Validation: {{this.validation}}</span>
-          </div>
-        </div>
-        {{/each}}
-      </div>
-    </div>
-  </div>
-
-  <!-- Knowledge Sources -->
-  <div class="bg-white rounded-xl shadow-lg p-6">
-    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-      <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-      </svg>
-      Knowledge Sources Analysis
-    </h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {{#each sources.categories}}
-      <div class="bg-{{this.color}}-50 rounded-lg p-4 border border-{{this.color}}-200">
-        <div class="flex items-center justify-between mb-2">
-          <h4 class="font-semibold text-{{this.color}}-800">{{this.type}}</h4>
-          <svg class="w-5 h-5 text-{{this.color}}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{this.icon}}"></path>
-          </svg>
-        </div>
-        <div class="text-2xl font-bold text-{{this.color}}-700 mb-1">{{this.count}}</div>
-        <div class="text-sm text-{{this.color}}-600 mb-2">{{this.description}}</div>
-        <div class="w-full bg-{{this.color}}-200 rounded-full h-2">
-          <div class="bg-{{this.color}}-500 h-2 rounded-full" style="width: {{this.reliability}}%"></div>
-        </div>
-        <div class="text-xs text-{{this.color}}-600 mt-1">Reliability: {{this.reliability}}%</div>
-      </div>
-      {{/each}}
-    </div>
-  </div>
-
-  <!-- Documentation Quality -->
-  <div class="bg-white rounded-xl shadow-lg p-6">
-    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-      <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-      </svg>
-      Documentation Quality Assessment
-    </h3>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div>
-        <canvas id="qualityChart" width="400" height="300"></canvas>
-      </div>
-      <div class="space-y-4">
-        {{#each documentation.metrics}}
-        <div class="border rounded-lg p-4">
-          <div class="flex items-center justify-between mb-2">
-            <h4 class="font-semibold text-gray-800">{{this.aspect}}</h4>
-            <span class="px-2 py-1 text-xs rounded-full {{this.scoreClass}}">{{this.score}}/10</span>
-          </div>
-          <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
-            <div class="bg-{{this.color}}-500 h-2 rounded-full" style="width: {{this.percentage}}%"></div>
-          </div>
-          <p class="text-sm text-gray-600">{{this.feedback}}</p>
-        </div>
-        {{/each}}
-      </div>
-    </div>
-  </div>
-
-  <!-- Research Methodology -->
-  <div class="bg-white rounded-xl shadow-lg p-6">
-    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-      <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-      </svg>
-      Research Methodology
-    </h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="space-y-4">
-        <div class="bg-blue-50 rounded-lg p-4">
-          <h4 class="font-semibold text-blue-800 mb-2">Research Approach</h4>
-          <ul class="space-y-2 text-sm text-blue-700">
-            {{#each methodology.approach}}
-            <li class="flex items-center">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-              </svg>
-              {{this}}
-            </li>
-            {{/each}}
-          </ul>
-        </div>
-        <div class="bg-green-50 rounded-lg p-4">
-          <h4 class="font-semibold text-green-800 mb-2">Validation Methods</h4>
-          <ul class="space-y-2 text-sm text-green-700">
-            {{#each methodology.validation}}
-            <li class="flex items-center">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              {{this}}
-            </li>
-            {{/each}}
-          </ul>
-        </div>
-      </div>
-      <div class="space-y-4">
-        <div class="bg-yellow-50 rounded-lg p-4">
-          <h4 class="font-semibold text-yellow-800 mb-2">Research Timeline</h4>
-          <div class="space-y-3">
-            {{#each methodology.timeline}}
-            <div class="flex items-center space-x-3">
-              <div class="w-8 h-8 rounded-full bg-{{this.statusColor}}-100 flex items-center justify-center">
-                <svg class="w-4 h-4 text-{{this.statusColor}}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{this.icon}}"></path>
-                </svg>
-              </div>
-              <div class="flex-1">
-                <div class="text-sm font-medium text-gray-900">{{this.phase}}</div>
-                <div class="text-xs text-gray-500">{{this.duration}} - {{this.status}}</div>
-              </div>
-            </div>
-            {{/each}}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Knowledge Gaps -->
-  <div class="bg-white rounded-xl shadow-lg p-6">
-    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-      <svg class="w-5 h-5 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-      </svg>
-      Knowledge Gaps & Limitations
-    </h3>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div>
-        <h4 class="font-semibold text-gray-800 mb-3">Identified Gaps</h4>
-        <div class="space-y-3">
-          {{#each gaps.identified}}
-          <div class="border-l-4 border-{{this.severity}}-400 bg-{{this.severity}}-50 p-3 rounded-r-lg">
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-sm font-medium text-{{this.severity}}-800">{{this.area}}</span>
-              <span class="text-xs px-2 py-1 bg-{{this.severity}}-200 text-{{this.severity}}-800 rounded-full">{{this.severity}}</span>
-            </div>
-            <p class="text-xs text-{{this.severity}}-700 mb-1">{{this.description}}</p>
-            <div class="text-xs text-{{this.severity}}-600">
-              <span>Impact: {{this.impact}}</span>
-              <span class="ml-2">Priority: {{this.priority}}</span>
-            </div>
-          </div>
-          {{/each}}
-        </div>
-      </div>
-      <div>
-        <h4 class="font-semibold text-gray-800 mb-3">Mitigation Strategies</h4>
-        <div class="space-y-3">
-          {{#each gaps.mitigations}}
-          <div class="border rounded-lg p-3 bg-blue-50">
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-sm font-medium text-blue-800">{{this.strategy}}</span>
-              <span class="text-xs px-2 py-1 bg-blue-200 text-blue-800 rounded-full">{{this.feasibility}}</span>
-            </div>
-            <p class="text-xs text-blue-700 mb-1">{{this.description}}</p>
-            <div class="text-xs text-blue-600">
-              <span>Effort: {{this.effort}}</span>
-              <span class="ml-2">Timeline: {{this.timeline}}</span>
-            </div>
-          </div>
-          {{/each}}
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Research Impact -->
-  <div class="bg-white rounded-xl shadow-lg p-6">
-    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-      <svg class="w-5 h-5 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-      </svg>
-      Research Impact Analysis
-    </h3>
-    <div class="mb-4">
-      <canvas id="impactChart" width="800" height="400"></canvas>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {{#each impact.areas}}
-      <div class="bg-{{this.color}}-50 rounded-lg p-4">
-        <h4 class="font-semibold text-{{this.color}}-800 mb-2">{{this.category}}</h4>
-        <div class="space-y-2 text-sm">
-          {{#each this.metrics}}
-          <div class="flex justify-between">
-            <span class="text-{{../color}}-700">{{this.metric}}:</span>
-            <span class="font-medium {{this.valueClass}}">{{this.value}}</span>
-          </div>
-          {{/each}}
-        </div>
-      </div>
-      {{/each}}
-    </div>
-  </div>
-
-  <!-- Recommendations -->
-  <div class="bg-white rounded-xl shadow-lg p-6">
-    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-      <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-      </svg>
-      Research-Based Recommendations
-    </h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {{#each recommendations}}
-      <div class="border rounded-lg p-4">
-        <div class="flex items-start">
-          <div class="flex-shrink-0">
-            <div class="w-8 h-8 rounded-full bg-{{this.priority}}-100 flex items-center justify-center">
-              <svg class="w-4 h-4 text-{{this.priority}}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{this.icon}}"></path>
-              </svg>
-            </div>
-          </div>
-          <div class="ml-3">
-            <h4 class="text-sm font-medium text-gray-900">{{this.title}}</h4>
-            <p class="text-sm text-gray-600 mt-1">{{this.description}}</p>
-            <div class="mt-2 flex items-center space-x-2">
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{this.confidenceClass}}">
-                {{this.confidence}}% Confidence
-              </span>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{this.evidenceClass}}">
-                {{this.evidenceLevel}} Evidence
-              </span>
-            </div>
-            {{#if this.supportingFindings}}
-            <div class="mt-2">
-              <p class="text-xs text-gray-500">Supporting findings: {{this.supportingFindings}}</p>
-            </div>
-            {{/if}}
-          </div>
-        </div>
-      </div>
-      {{/each}}
-    </div>
-  </div>
-
-  <!-- Future Research -->
-  <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-200">
-    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-      <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-      </svg>
-      Future Research Directions
-    </h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {{#each futureResearch}}
-      <div class="bg-white rounded-lg p-4 shadow-sm">
-        <div class="flex items-start">
-          <div class="flex-shrink-0">
-            <div class="w-8 h-8 rounded-full bg-{{this.priority}}-100 flex items-center justify-center">
-              <svg class="w-4 h-4 text-{{this.priority}}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{this.icon}}"></path>
-              </svg>
-            </div>
-          </div>
-          <div class="ml-3">
-            <h4 class="text-sm font-medium text-gray-900">{{this.area}}</h4>
-            <p class="text-sm text-gray-600 mt-1">{{this.description}}</p>
-            <div class="mt-2 flex items-center space-x-2">
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{this.priorityClass}}">
-                {{this.priority}} Priority
-              </span>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{this.complexityClass}}">
-                {{this.complexity}} Complexity
-              </span>
-            </div>
-            <div class="mt-2 text-xs text-gray-500">
-              <span>Estimated effort: {{this.estimatedEffort}}</span>
-              <span class="ml-2">Expected value: {{this.expectedValue}}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      {{/each}}
-    </div>
-  </div>
-</div>
-
-<script>
-// Research Findings Chart
-const findingsCtx = document.getElementById('findingsChart').getContext('2d');
-new Chart(findingsCtx, {
-  type: 'doughnut',
-  data: {
-    labels: {{{json research.findingsLabels}}},
-    datasets: [{
-      data: {{{json research.findingsData}}},
-      backgroundColor: {{{json research.findingsColors}}},
-      borderWidth: 2,
-      borderColor: '#ffffff'
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'bottom',
-        labels: {
-          padding: 20,
-          usePointStyle: true
-        }
-      },
-      title: {
-        display: true,
-        text: 'Research Findings Distribution'
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Research Documentation - Workflow Report</title>
+    <script src='https://cdn.tailwindcss.com'></script>
+    <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
+    <link
+      href='https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
+      rel='stylesheet'
+    />
+    <style>
+      body {
+        font-family: 'Inter', system-ui, sans-serif;
       }
-    }
-  }
-});
-
-// Documentation Quality Chart
-const qualityCtx = document.getElementById('qualityChart').getContext('2d');
-new Chart(qualityCtx, {
-  type: 'radar',
-  data: {
-    labels: {{{json documentation.qualityLabels}}},
-    datasets: [{
-      label: 'Quality Score',
-      data: {{{json documentation.qualityData}}},
-      borderColor: 'rgba(34, 197, 94, 1)',
-      backgroundColor: 'rgba(34, 197, 94, 0.2)',
-      borderWidth: 2
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      r: {
-        beginAtZero: true,
-        max: 10,
-        ticks: {
-          stepSize: 2
+      .chart-container {
+        position: relative;
+        height: 400px;
+        margin: 1rem 0;
+      }
+      .metric-card {
+        @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200;
+      }
+      .status-badge {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border;
+      }
+      .priority-badge {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+      }
+      .print-hidden {
+        @media print {
+          display: none !important;
         }
       }
-    },
-    plugins: {
-      legend: {
-        position: 'bottom'
+      @media print {
+        body {
+          @apply text-sm;
+        }
+        .chart-container {
+          height: 300px;
+        }
       }
-    }
-  }
-});
+    </style>
+  </head>
+  <body class='bg-gray-50'>
+    <div class='min-h-screen bg-gradient-to-br from-slate-50 to-amber-50 py-8'>
+      <div class='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
 
-// Research Impact Chart
-const impactCtx = document.getElementById('impactChart').getContext('2d');
-new Chart(impactCtx, {
-  type: 'line',
-  data: {
-    labels: {{{json impact.chartLabels}}},
-    datasets: [
-      {
-        label: 'Decision Confidence',
-        data: {{{json impact.confidenceData}}},
-        borderColor: 'rgba(59, 130, 246, 1)',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        borderWidth: 2,
-        fill: false,
-        tension: 0.4,
-        yAxisID: 'y'
-      },
-      {
-        label: 'Implementation Risk',
-        data: {{{json impact.riskData}}},
-        borderColor: 'rgba(239, 68, 68, 1)',
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-        borderWidth: 2,
-        fill: false,
-        tension: 0.4,
-        yAxisID: 'y1'
-      },
-      {
-        label: 'Knowledge Coverage',
-        data: {{{json impact.coverageData}}},
-        borderColor: 'rgba(34, 197, 94, 1)',
-        backgroundColor: 'rgba(34, 197, 94, 0.1)',
-        borderWidth: 2,
-        fill: false,
-        tension: 0.4,
-        yAxisID: 'y'
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      y: {
-        type: 'linear',
-        display: true,
-        position: 'left',
-        title: {
-          display: true,
-          text: 'Score (%)'
-        },
-        min: 0,
-        max: 100
-      },
-      y1: {
-        type: 'linear',
-        display: true,
-        position: 'right',
-        title: {
-          display: true,
-          text: 'Risk Level'
-        },
-        min: 0,
-        max: 10,
-        grid: {
-          drawOnChartArea: false,
-        },
-      }
-    },
-    plugins: {
-      legend: {
-        position: 'top'
-      }
-    }
-  }
-});
-</script>
-{{/inline}} 
+        <!-- Enhanced Header -->
+        <div
+          class='relative bg-gradient-to-br from-amber-600 via-orange-600 to-red-700 rounded-2xl shadow-xl p-8 mb-8 overflow-hidden'
+        >
+          <!-- Background Pattern -->
+          <div class='absolute inset-0 bg-white/10 backdrop-blur-sm'></div>
+          <div
+            class='absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-48 translate-x-48'
+          ></div>
+          <div
+            class='absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-32 -translate-x-32'
+          ></div>
+
+          <!-- Content -->
+          <div class='relative z-10'>
+            <div class='flex items-center justify-between mb-6'>
+              <div>
+                <div class='flex items-center space-x-3 mb-3'>
+                  <div class='bg-white/20 p-3 rounded-xl backdrop-blur-sm'>
+                    <svg
+                      class='w-8 h-8 text-white'
+                      fill='none'
+                      stroke='currentColor'
+                      viewBox='0 0 24 24'
+                    >
+                      <path
+                        stroke-linecap='round'
+                        stroke-linejoin='round'
+                        stroke-width='2'
+                        d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+                      ></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <h1 class='text-4xl font-bold text-white mb-1'>📚 Research
+                      Documentation</h1>
+                    <p class='text-amber-100 text-lg'>Task research and
+                      documentation quality analysis</p>
+                  </div>
+                </div>
+                <p class='text-amber-200'>Generated on
+                  {{formatDate generatedAt 'MMMM Do, YYYY [at] h:mm A'}}</p>
+              </div>
+              <div class='flex flex-col items-end space-y-3'>
+                <div
+                  class='bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-medium border border-white/30'
+                >
+                  <div class='text-sm text-amber-100 mb-1'>Report Period</div>
+                  <div class='text-lg font-semibold'>{{dateRange.start}}
+                    -
+                    {{dateRange.end}}</div>
+                </div>
+                {{#if filters}}
+                  <div
+                    class='bg-white/15 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-sm border border-white/20'
+                  >
+                    <div class='text-xs text-amber-100 mb-1'>Active Filters</div>
+                    <div>{{#each filters}}{{@key}}:
+                        {{this}}{{#unless @last}}, {{/unless}}{{/each}}</div>
+                  </div>
+                {{/if}}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class='space-y-8'>
+          <!-- Research Overview -->
+          <div
+            class='bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-6 border border-amber-200'
+          >
+            <h2 class='text-2xl font-bold text-gray-800 mb-4 flex items-center'>
+              <svg
+                class='w-6 h-6 mr-2 text-amber-600'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  stroke-linecap='round'
+                  stroke-linejoin='round'
+                  stroke-width='2'
+                  d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+                ></path>
+              </svg>
+              Research & Documentation Analysis
+            </h2>
+            <div class='grid grid-cols-1 md:grid-cols-4 gap-4'>
+              <div class='bg-white rounded-lg p-4 shadow-sm'>
+                <div
+                  class='text-2xl font-bold text-amber-600'
+                >{{research.completeness}}%</div>
+                <div class='text-sm text-gray-600'>Research Completeness</div>
+              </div>
+              <div class='bg-white rounded-lg p-4 shadow-sm'>
+                <div
+                  class='text-2xl font-bold text-blue-600'
+                >{{documentation.quality}}%</div>
+                <div class='text-sm text-gray-600'>Documentation Quality</div>
+              </div>
+              <div class='bg-white rounded-lg p-4 shadow-sm'>
+                <div
+                  class='text-2xl font-bold text-green-600'
+                >{{research.sourceCount}}</div>
+                <div class='text-sm text-gray-600'>Sources Evaluated</div>
+              </div>
+              <div class='bg-white rounded-lg p-4 shadow-sm'>
+                <div
+                  class='text-2xl font-bold text-purple-600'
+                >{{research.depth}}</div>
+                <div class='text-sm text-gray-600'>Research Depth</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Research Findings -->
+          <div class='bg-white rounded-xl shadow-lg p-6'>
+            <h3
+              class='text-xl font-semibold text-gray-800 mb-4 flex items-center'
+            >
+              <svg
+                class='w-5 h-5 mr-2 text-blue-600'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  stroke-linecap='round'
+                  stroke-linejoin='round'
+                  stroke-width='2'
+                  d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
+                ></path>
+              </svg>
+              Research Findings Summary
+            </h3>
+            <div class='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+              <div>
+                <canvas id='findingsChart' width='400' height='300'></canvas>
+              </div>
+              <div class='space-y-4'>
+                {{#each research.findings}}
+                  <div
+                    class='border rounded-lg p-4 {{this.categoryBorderClass}}'
+                  >
+                    <div class='flex items-center justify-between mb-2'>
+                      <h4
+                        class='font-semibold text-gray-800'
+                      >{{this.category}}</h4>
+                      <span
+                        class='px-2 py-1 text-xs rounded-full
+                          {{this.confidenceClass}}'
+                      >{{this.confidence}} Confidence</span>
+                    </div>
+                    <p class='text-sm text-gray-600 mb-2'>{{this.summary}}</p>
+                    <div
+                      class='flex items-center justify-between text-xs text-gray-500'
+                    >
+                      <span>Sources: {{this.sourceCount}}</span>
+                      <span>Validation: {{this.validation}}</span>
+                    </div>
+                  </div>
+                {{/each}}
+              </div>
+            </div>
+          </div>
+
+          <!-- Knowledge Sources -->
+          <div class='bg-white rounded-xl shadow-lg p-6'>
+            <h3
+              class='text-xl font-semibold text-gray-800 mb-4 flex items-center'
+            >
+              <svg
+                class='w-5 h-5 mr-2 text-indigo-600'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  stroke-linecap='round'
+                  stroke-linejoin='round'
+                  stroke-width='2'
+                  d='M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'
+                ></path>
+              </svg>
+              Knowledge Sources Analysis
+            </h3>
+            <div class='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+              {{#each sources.categories}}
+                <div
+                  class='bg-{{this.color}}-50 rounded-lg p-4 border border-{{this.color}}-200'
+                >
+                  <div class='flex items-center justify-between mb-2'>
+                    <h4
+                      class='font-semibold text-{{this.color}}-800'
+                    >{{this.type}}</h4>
+                    <svg
+                      class='w-5 h-5 text-{{this.color}}-600'
+                      fill='none'
+                      stroke='currentColor'
+                      viewBox='0 0 24 24'
+                    >
+                      <path
+                        stroke-linecap='round'
+                        stroke-linejoin='round'
+                        stroke-width='2'
+                        d='{{this.icon}}'
+                      ></path>
+                    </svg>
+                  </div>
+                  <div
+                    class='text-2xl font-bold text-{{this.color}}-700 mb-1'
+                  >{{this.count}}</div>
+                  <div
+                    class='text-sm text-{{this.color}}-600 mb-2'
+                  >{{this.description}}</div>
+                  <div class='w-full bg-{{this.color}}-200 rounded-full h-2'>
+                    <div
+                      class='bg-{{this.color}}-500 h-2 rounded-full'
+                      style='width: {{this.reliability}}%'
+                    ></div>
+                  </div>
+                  <div class='text-xs text-{{this.color}}-600 mt-1'>Reliability:
+                    {{this.reliability}}%</div>
+                </div>
+              {{/each}}
+            </div>
+          </div>
+
+          <!-- Documentation Quality -->
+          <div class='bg-white rounded-xl shadow-lg p-6'>
+            <h3
+              class='text-xl font-semibold text-gray-800 mb-4 flex items-center'
+            >
+              <svg
+                class='w-5 h-5 mr-2 text-green-600'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  stroke-linecap='round'
+                  stroke-linejoin='round'
+                  stroke-width='2'
+                  d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+                ></path>
+              </svg>
+              Documentation Quality Assessment
+            </h3>
+            <div class='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+              <div>
+                <canvas id='qualityChart' width='400' height='300'></canvas>
+              </div>
+              <div class='space-y-4'>
+                {{#each documentation.metrics}}
+                  <div class='border rounded-lg p-4'>
+                    <div class='flex items-center justify-between mb-2'>
+                      <h4
+                        class='font-semibold text-gray-800'
+                      >{{this.aspect}}</h4>
+                      <span
+                        class='px-2 py-1 text-xs rounded-full
+                          {{this.scoreClass}}'
+                      >{{this.score}}/10</span>
+                    </div>
+                    <div class='w-full bg-gray-200 rounded-full h-2 mb-2'>
+                      <div
+                        class='bg-{{this.color}}-500 h-2 rounded-full'
+                        style='width: {{this.percentage}}%'
+                      ></div>
+                    </div>
+                    <p class='text-sm text-gray-600'>{{this.feedback}}</p>
+                  </div>
+                {{/each}}
+              </div>
+            </div>
+          </div>
+
+          <!-- Research Methodology -->
+          <div class='bg-white rounded-xl shadow-lg p-6'>
+            <h3
+              class='text-xl font-semibold text-gray-800 mb-4 flex items-center'
+            >
+              <svg
+                class='w-5 h-5 mr-2 text-purple-600'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  stroke-linecap='round'
+                  stroke-linejoin='round'
+                  stroke-width='2'
+                  d='M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z'
+                ></path>
+              </svg>
+              Research Methodology
+            </h3>
+            <div class='grid grid-cols-1 md:grid-cols-2 gap-6'>
+              <div class='space-y-4'>
+                <div class='bg-blue-50 rounded-lg p-4'>
+                  <h4 class='font-semibold text-blue-800 mb-2'>Research Approach</h4>
+                  <ul class='space-y-2 text-sm text-blue-700'>
+                    {{#each methodology.approach}}
+                      <li class='flex items-center'>
+                        <svg
+                          class='w-4 h-4 mr-2'
+                          fill='none'
+                          stroke='currentColor'
+                          viewBox='0 0 24 24'
+                        >
+                          <path
+                            stroke-linecap='round'
+                            stroke-linejoin='round'
+                            stroke-width='2'
+                            d='M5 13l4 4L19 7'
+                          ></path>
+                        </svg>
+                        {{this}}
+                      </li>
+                    {{/each}}
+                  </ul>
+                </div>
+                <div class='bg-green-50 rounded-lg p-4'>
+                  <h4 class='font-semibold text-green-800 mb-2'>Validation
+                    Methods</h4>
+                  <ul class='space-y-2 text-sm text-green-700'>
+                    {{#each methodology.validation}}
+                      <li class='flex items-center'>
+                        <svg
+                          class='w-4 h-4 mr-2'
+                          fill='none'
+                          stroke='currentColor'
+                          viewBox='0 0 24 24'
+                        >
+                          <path
+                            stroke-linecap='round'
+                            stroke-linejoin='round'
+                            stroke-width='2'
+                            d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
+                          ></path>
+                        </svg>
+                        {{this}}
+                      </li>
+                    {{/each}}
+                  </ul>
+                </div>
+              </div>
+              <div class='space-y-4'>
+                <div class='bg-yellow-50 rounded-lg p-4'>
+                  <h4 class='font-semibold text-yellow-800 mb-2'>Research
+                    Timeline</h4>
+                  <div class='space-y-3'>
+                    {{#each methodology.timeline}}
+                      <div class='flex items-center space-x-3'>
+                        <div
+                          class='w-8 h-8 rounded-full bg-{{this.statusColor}}-100 flex items-center justify-center'
+                        >
+                          <svg
+                            class='w-4 h-4 text-{{this.statusColor}}-600'
+                            fill='none'
+                            stroke='currentColor'
+                            viewBox='0 0 24 24'
+                          >
+                            <path
+                              stroke-linecap='round'
+                              stroke-linejoin='round'
+                              stroke-width='2'
+                              d='{{this.icon}}'
+                            ></path>
+                          </svg>
+                        </div>
+                        <div class='flex-1'>
+                          <div
+                            class='text-sm font-medium text-gray-900'
+                          >{{this.phase}}</div>
+                          <div class='text-xs text-gray-500'>{{this.duration}}
+                            -
+                            {{this.status}}</div>
+                        </div>
+                      </div>
+                    {{/each}}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Knowledge Gaps -->
+          <div class='bg-white rounded-xl shadow-lg p-6'>
+            <h3
+              class='text-xl font-semibold text-gray-800 mb-4 flex items-center'
+            >
+              <svg
+                class='w-5 h-5 mr-2 text-red-600'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  stroke-linecap='round'
+                  stroke-linejoin='round'
+                  stroke-width='2'
+                  d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z'
+                ></path>
+              </svg>
+              Knowledge Gaps & Limitations
+            </h3>
+            <div class='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+              <div>
+                <h4 class='font-semibold text-gray-800 mb-3'>Identified Gaps</h4>
+                <div class='space-y-3'>
+                  {{#each gaps.identified}}
+                    <div
+                      class='border-l-4 border-{{this.severity}}-400 bg-{{this.severity}}-50 p-3 rounded-r-lg'
+                    >
+                      <div class='flex items-center justify-between mb-1'>
+                        <span
+                          class='text-sm font-medium text-{{this.severity}}-800'
+                        >{{this.area}}</span>
+                        <span
+                          class='text-xs px-2 py-1 bg-{{this.severity}}-200 text-{{this.severity}}-800 rounded-full'
+                        >{{this.severity}}</span>
+                      </div>
+                      <p
+                        class='text-xs text-{{this.severity}}-700 mb-1'
+                      >{{this.description}}</p>
+                      <div class='text-xs text-{{this.severity}}-600'>
+                        <span>Impact: {{this.impact}}</span>
+                        {{#if this.mitigation}}<span class='ml-2'>• Mitigation:
+                            {{this.mitigation}}</span>{{/if}}
+                      </div>
+                    </div>
+                  {{/each}}
+                </div>
+              </div>
+              <div>
+                <h4 class='font-semibold text-gray-800 mb-3'>Research
+                  Limitations</h4>
+                <div class='space-y-3'>
+                  {{#each gaps.limitations}}
+                    <div
+                      class='bg-gray-50 border border-gray-200 p-3 rounded-lg'
+                    >
+                      <div class='flex items-center justify-between mb-1'>
+                        <span
+                          class='text-sm font-medium text-gray-800'
+                        >{{this.type}}</span>
+                        <svg
+                          class='w-4 h-4 text-gray-500'
+                          fill='none'
+                          stroke='currentColor'
+                          viewBox='0 0 24 24'
+                        >
+                          <path
+                            stroke-linecap='round'
+                            stroke-linejoin='round'
+                            stroke-width='2'
+                            d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+                          ></path>
+                        </svg>
+                      </div>
+                      <p class='text-xs text-gray-600'>{{this.description}}</p>
+                      {{#if this.recommendation}}
+                        <div class='text-xs text-blue-600 mt-1'>
+                          <svg
+                            class='w-3 h-3 inline mr-1'
+                            fill='none'
+                            stroke='currentColor'
+                            viewBox='0 0 24 24'
+                          >
+                            <path
+                              stroke-linecap='round'
+                              stroke-linejoin='round'
+                              stroke-width='2'
+                              d='M13 10V3L4 14h7v7l9-11h-7z'
+                            ></path>
+                          </svg>
+                          {{this.recommendation}}
+                        </div>
+                      {{/if}}
+                    </div>
+                  {{/each}}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Research Recommendations -->
+          <div
+            class='bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200'
+          >
+            <h3
+              class='text-xl font-semibold text-gray-800 mb-4 flex items-center'
+            >
+              <svg
+                class='w-5 h-5 mr-2 text-green-600'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+              >
+                <path
+                  stroke-linecap='round'
+                  stroke-linejoin='round'
+                  stroke-width='2'
+                  d='M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z'
+                ></path>
+              </svg>
+              Research Quality Recommendations
+            </h3>
+            <div class='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              {{#each recommendations}}
+                <div class='bg-white rounded-lg p-4 shadow-sm'>
+                  <div class='flex items-start'>
+                    <div class='flex-shrink-0'>
+                      <div
+                        class='w-8 h-8 rounded-full bg-{{this.priority}}-100 flex items-center justify-center'
+                      >
+                        <svg
+                          class='w-4 h-4 text-{{this.priority}}-600'
+                          fill='none'
+                          stroke='currentColor'
+                          viewBox='0 0 24 24'
+                        >
+                          <path
+                            stroke-linecap='round'
+                            stroke-linejoin='round'
+                            stroke-width='2'
+                            d='{{this.icon}}'
+                          ></path>
+                        </svg>
+                      </div>
+                    </div>
+                    <div class='ml-3'>
+                      <h4
+                        class='text-sm font-medium text-gray-900'
+                      >{{this.title}}</h4>
+                      <p
+                        class='text-sm text-gray-600 mt-1'
+                      >{{this.description}}</p>
+                      <div class='mt-2'>
+                        <span
+                          class='inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            {{this.impactClass}}'
+                        >
+                          {{this.impact}}
+                          Impact
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {{/each}}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Research Findings Chart const findingsCtx =
+      document.getElementById('findingsChart').getContext('2d'); new
+      Chart(findingsCtx, { type: 'radar', data: { labels:
+      {{{json research.findingLabels}}}, datasets: [{ label: 'Confidence Level',
+      data:
+      {{{json research.findingData}}}, backgroundColor: 'rgba(59, 130, 246,
+      0.2)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 2,
+      pointBackgroundColor: 'rgba(59, 130, 246, 1)', pointBorderColor: '#fff',
+      pointBorderWidth: 2 }] }, options: { responsive: true,
+      maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 100,
+      ticks: { stepSize: 20 } } }, plugins: { legend: { display: false } } } });
+      // Documentation Quality Chart const qualityCtx =
+      document.getElementById('qualityChart').getContext('2d'); new
+      Chart(qualityCtx, { type: 'bar', data: { labels:
+      {{{json documentation.qualityLabels}}}, datasets: [{ label: 'Quality
+      Score', data:
+      {{{json documentation.qualityData}}}, backgroundColor: 'rgba(34, 197, 94,
+      0.8)', borderColor: 'rgba(34, 197, 94, 1)', borderWidth: 1 }] }, options:
+      { responsive: true, maintainAspectRatio: false, scales: { y: {
+      beginAtZero: true, max: 10, title: { display: true, text: 'Score (1-10)' }
+      } }, plugins: { legend: { display: false } } } });
+    </script>
+  </body>
+</html>

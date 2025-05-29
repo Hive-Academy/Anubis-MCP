@@ -1,469 +1,435 @@
-{{> layouts/base title="Delegation Flow Analysis" subtitle="Detailed workflow analysis showing delegation paths and bottlenecks"}}
-
-{{#*inline "content"}}
-<div class="space-y-8">
-  <!-- Executive Summary -->
-  <div class="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl p-6 border border-cyan-200">
-    <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-      <svg class="w-6 h-6 mr-2 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-      </svg>
-      Delegation Flow Overview
-    </h2>
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="bg-white rounded-lg p-4 shadow-sm">
-        <div class="text-2xl font-bold text-cyan-600">{{insights.totalDelegations}}</div>
-        <div class="text-sm text-gray-600">Total Delegations</div>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow-sm">
-        <div class="text-2xl font-bold text-green-600">{{insights.avgHandoffTime}}</div>
-        <div class="text-sm text-gray-600">Avg Handoff Time</div>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow-sm">
-        <div class="text-2xl font-bold text-orange-600">{{insights.bottleneckCount}}</div>
-        <div class="text-sm text-gray-600">Active Bottlenecks</div>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow-sm">
-        <div class="text-2xl font-bold text-purple-600">{{insights.efficiencyScore}}%</div>
-        <div class="text-sm text-gray-600">Flow Efficiency</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Workflow Flow Diagram -->
-  <div class="bg-white rounded-xl shadow-lg p-6">
-    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-      <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m-6 3l6-3"></path>
-      </svg>
-      Delegation Flow Visualization
-    </h3>
-    <div class="mb-6">
-      <div class="flex flex-wrap justify-center items-center space-x-4 space-y-4">
-        {{#each insights.roleFlow}}
-        <div class="flex items-center">
-          <div class="relative">
-            <div class="w-20 h-20 rounded-full bg-{{this.color}}-100 border-4 border-{{this.color}}-300 flex items-center justify-center shadow-lg">
-              <div class="text-center">
-                <div class="text-xs font-semibold text-{{this.color}}-800">{{this.role}}</div>
-                <div class="text-lg font-bold text-{{this.color}}-600">{{this.taskCount}}</div>
-              </div>
-            </div>
-            {{#if this.isBottleneck}}
-            <div class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
-              <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-              </svg>
-            </div>
-            {{/if}}
-          </div>
-          {{#unless @last}}
-          <div class="flex items-center ml-4">
-            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-            </svg>
-            <div class="ml-2 text-xs text-gray-500">
-              <div>{{this.avgTime}}</div>
-              <div>{{this.delegationCount}} handoffs</div>
-            </div>
-          </div>
-          {{/unless}}
-        </div>
-        {{/each}}
-      </div>
-    </div>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div>
-        <h4 class="font-semibold text-gray-800 mb-3">Flow Metrics</h4>
-        <div class="space-y-3">
-          {{#each insights.flowMetrics}}
-          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-            <span class="text-sm font-medium text-gray-700">{{this.metric}}</span>
-            <span class="text-sm font-bold {{this.valueClass}}">{{this.value}}</span>
-          </div>
-          {{/each}}
-        </div>
-      </div>
-      <div>
-        <h4 class="font-semibold text-gray-800 mb-3">Bottleneck Analysis</h4>
-        <div class="space-y-3">
-          {{#each insights.bottlenecks}}
-          <div class="border-l-4 border-{{this.severity}}-400 bg-{{this.severity}}-50 p-3 rounded-r-lg">
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-sm font-medium text-{{this.severity}}-800">{{this.role}}</span>
-              <span class="text-xs px-2 py-1 bg-{{this.severity}}-200 text-{{this.severity}}-800 rounded-full">{{this.severity}}</span>
-            </div>
-            <p class="text-xs text-{{this.severity}}-700">{{this.description}}</p>
-            <div class="text-xs text-{{this.severity}}-600 mt-1">Impact: {{this.impact}}</div>
-          </div>
-          {{/each}}
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Delegation Patterns -->
-  <div class="bg-white rounded-xl shadow-lg p-6">
-    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-      <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-      </svg>
-      Delegation Patterns & Trends
-    </h3>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div>
-        <canvas id="delegationPatternsChart" width="400" height="300"></canvas>
-      </div>
-      <div>
-        <canvas id="handoffTimeChart" width="400" height="300"></canvas>
-      </div>
-    </div>
-  </div>
-
-  <!-- Role Performance Analysis -->
-  <div class="bg-white rounded-xl shadow-lg p-6">
-    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-      <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-      </svg>
-      Role Performance in Workflow
-    </h3>
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tasks Handled</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Processing Time</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Success Rate</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bottleneck Risk</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          {{#each insights.rolePerformance}}
-          <tr class="hover:bg-gray-50">
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="flex items-center">
-                <div class="w-8 h-8 rounded-full bg-{{this.color}}-100 flex items-center justify-center">
-                  <span class="text-{{this.color}}-600 font-medium text-sm">{{this.initials}}</span>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delegation Flow Analysis - Workflow Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .chart-container { position: relative; height: 400px; margin: 1rem 0; }
+        .metric-card { @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200; }
+        .status-badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border; }
+        .priority-badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
+        .print-hidden { @media print { display: none !important; } }
+        @media print { body { @apply text-sm; } .chart-container { height: 300px; } }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen bg-gradient-to-br from-slate-50 to-cyan-50 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Enhanced Header -->
+            <div class="relative bg-gradient-to-br from-cyan-600 via-teal-600 to-blue-700 rounded-2xl shadow-xl p-8 mb-8 overflow-hidden">
+                <!-- Background Pattern -->
+                <div class="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                <div class="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-48 translate-x-48"></div>
+                <div class="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-32 -translate-x-32"></div>
+                
+                <!-- Content -->
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <div class="flex items-center space-x-3 mb-3">
+                                <div class="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18M3 12h18"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h1 class="text-4xl font-bold text-white mb-1">Delegation Flow Analysis</h1>
+                                    <p class="text-cyan-100 text-lg">Detailed workflow analysis showing delegation paths and bottlenecks</p>
+                                </div>
+                            </div>
+                            <p class="text-cyan-200">Generated on {{formatDate generatedAt "MMMM Do, YYYY [at] h:mm A"}}</p>
+                        </div>
+                        <div class="flex flex-col items-end space-y-3">
+                            <div class="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-medium border border-white/30">
+                                <div class="text-sm text-cyan-100 mb-1">Report Period</div>
+                                <div class="text-lg font-semibold">{{dateRange.start}} - {{dateRange.end}}</div>
+                            </div>
+                            {{#if filters}}
+                            <div class="bg-white/15 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-sm border border-white/20">
+                                <div class="text-xs text-cyan-100 mb-1">Active Filters</div>
+                                <div>{{#each filters}}{{@key}}: {{this}}{{#unless @last}}, {{/unless}}{{/each}}</div>
+                            </div>
+                            {{/if}}
+                        </div>
+                    </div>
                 </div>
-                <div class="ml-3">
-                  <div class="text-sm font-medium text-gray-900">{{this.role}}</div>
-                  <div class="text-sm text-gray-500">{{this.description}}</div>
-                </div>
-              </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{this.tasksHandled}}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{this.avgProcessingTime}}</td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="flex items-center">
-                <div class="text-sm text-gray-900">{{this.successRate}}%</div>
-                <div class="ml-2 w-16 bg-gray-200 rounded-full h-2">
-                  <div class="bg-{{this.successColor}}-500 h-2 rounded-full" style="width: {{this.successRate}}%"></div>
-                </div>
-              </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{this.riskClass}}">
-                {{this.bottleneckRisk}}
-              </span>
-            </td>
-          </tr>
-          {{/each}}
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Workflow Efficiency Timeline -->
-  <div class="bg-white rounded-xl shadow-lg p-6">
-    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-      <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-      </svg>
-      Workflow Efficiency Over Time
-    </h3>
-    <div class="mb-4">
-      <canvas id="efficiencyTimelineChart" width="800" height="400"></canvas>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="bg-blue-50 rounded-lg p-4">
-        <h4 class="font-semibold text-blue-800 mb-2">Efficiency Trends</h4>
-        <ul class="space-y-1 text-sm text-blue-700">
-          {{#each insights.efficiencyTrends}}
-          <li class="flex items-center">
-            <svg class="w-4 h-4 mr-2 {{this.iconClass}}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{this.icon}}"></path>
-            </svg>
-            {{this.trend}}
-          </li>
-          {{/each}}
-        </ul>
-      </div>
-      <div class="bg-yellow-50 rounded-lg p-4">
-        <h4 class="font-semibold text-yellow-800 mb-2">Optimization Opportunities</h4>
-        <ul class="space-y-1 text-sm text-yellow-700">
-          {{#each insights.optimizations}}
-          <li class="flex items-center">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-            </svg>
-            {{this}}
-          </li>
-          {{/each}}
-        </ul>
-      </div>
-      <div class="bg-green-50 rounded-lg p-4">
-        <h4 class="font-semibold text-green-800 mb-2">Best Practices</h4>
-        <ul class="space-y-1 text-sm text-green-700">
-          {{#each insights.bestPractices}}
-          <li class="flex items-center">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-            </svg>
-            {{this}}
-          </li>
-          {{/each}}
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- Delegation Success Factors -->
-  <div class="bg-white rounded-xl shadow-lg p-6">
-    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-      <svg class="w-5 h-5 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
-      </svg>
-      Success Factors Analysis
-    </h3>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div>
-        <canvas id="successFactorsChart" width="400" height="300"></canvas>
-      </div>
-      <div class="space-y-4">
-        {{#each insights.successFactors}}
-        <div class="border rounded-lg p-4">
-          <div class="flex items-center justify-between mb-2">
-            <h4 class="font-semibold text-gray-800">{{this.factor}}</h4>
-            <span class="px-2 py-1 text-xs rounded-full {{this.impactClass}}">{{this.impact}}% impact</span>
-          </div>
-          <p class="text-sm text-gray-600 mb-2">{{this.description}}</p>
-          <div class="w-full bg-gray-200 rounded-full h-2">
-            <div class="bg-{{this.color}}-500 h-2 rounded-full" style="width: {{this.score}}%"></div>
-          </div>
-          <div class="flex justify-between text-xs text-gray-500 mt-1">
-            <span>Current Score: {{this.score}}%</span>
-            <span>Target: {{this.target}}%</span>
-          </div>
-        </div>
-        {{/each}}
-      </div>
-    </div>
-  </div>
-
-  <!-- Recommendations -->
-  <div class="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-200">
-    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-      <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-      </svg>
-      Workflow Optimization Recommendations
-    </h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {{#each insights.recommendations}}
-      <div class="bg-white rounded-lg p-4 shadow-sm">
-        <div class="flex items-start">
-          <div class="flex-shrink-0">
-            <div class="w-8 h-8 rounded-full bg-{{this.priority}}-100 flex items-center justify-center">
-              <svg class="w-4 h-4 text-{{this.priority}}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{this.icon}}"></path>
-              </svg>
             </div>
-          </div>
-          <div class="ml-3">
-            <h4 class="text-sm font-medium text-gray-900">{{this.title}}</h4>
-            <p class="text-sm text-gray-600 mt-1">{{this.description}}</p>
-            <div class="mt-2 flex items-center space-x-2">
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{this.impactClass}}">
-                {{this.impact}} Impact
-              </span>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{this.effortClass}}">
-                {{this.effort}} Effort
-              </span>
+
+            <div class="space-y-8">
+                <!-- Flow Overview -->
+                <div class="bg-gradient-to-r from-cyan-50 to-teal-50 rounded-xl p-6 border border-cyan-200">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"></path>
+                        </svg>
+                        Delegation Flow Overview
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <div class="text-2xl font-bold text-cyan-600">{{analytics.totalDelegations}}</div>
+                            <div class="text-sm text-gray-600">Total Delegations</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <div class="text-2xl font-bold text-green-600">{{analytics.avgFlowTime}}</div>
+                            <div class="text-sm text-gray-600">Avg Flow Time</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <div class="text-2xl font-bold text-orange-600">{{analytics.bottleneckCount}}</div>
+                            <div class="text-sm text-gray-600">Bottlenecks Found</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <div class="text-2xl font-bold text-purple-600">{{analytics.flowEfficiency}}%</div>
+                            <div class="text-sm text-gray-600">Flow Efficiency</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delegation Flow Visualization -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        </svg>
+                        Complete Delegation Flow Map
+                    </h3>
+                    
+                    <!-- Flow Diagram -->
+                    <div class="overflow-x-auto bg-gray-50 rounded-xl p-6 mb-6">
+                        <div class="flex items-center justify-between min-w-max space-x-8">
+                            <!-- Boomerang -->
+                            <div class="text-center">
+                                <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center text-white shadow-lg">
+                                    <div class="text-center">
+                                        <div class="text-2xl mb-1">🪃</div>
+                                        <div class="text-xs font-semibold">BOOMERANG</div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-sm font-medium">{{analytics.roleStats.boomerang.tasks}} tasks</div>
+                                <div class="text-xs text-gray-500">{{analytics.roleStats.boomerang.avgTime}} avg</div>
+                            </div>
+                            
+                            <!-- Arrow -->
+                            <div class="flex flex-col items-center">
+                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                </svg>
+                                <div class="text-xs text-gray-500 mt-1">{{analytics.transitions.boomerangToResearcher}} transitions</div>
+                            </div>
+                            
+                            <!-- Researcher -->
+                            <div class="text-center">
+                                <div class="w-24 h-24 bg-gradient-to-br from-green-500 to-green-700 rounded-xl flex items-center justify-center text-white shadow-lg">
+                                    <div class="text-center">
+                                        <div class="text-2xl mb-1">🔬</div>
+                                        <div class="text-xs font-semibold">RESEARCHER</div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-sm font-medium">{{analytics.roleStats.researcher.tasks}} tasks</div>
+                                <div class="text-xs text-gray-500">{{analytics.roleStats.researcher.avgTime}} avg</div>
+                            </div>
+                            
+                            <!-- Arrow -->
+                            <div class="flex flex-col items-center">
+                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                </svg>
+                                <div class="text-xs text-gray-500 mt-1">{{analytics.transitions.researcherToArchitect}} transitions</div>
+                            </div>
+                            
+                            <!-- Architect -->
+                            <div class="text-center">
+                                <div class="w-24 h-24 bg-gradient-to-br from-yellow-500 to-yellow-700 rounded-xl flex items-center justify-center text-white shadow-lg">
+                                    <div class="text-center">
+                                        <div class="text-2xl mb-1">🏛️</div>
+                                        <div class="text-xs font-semibold">ARCHITECT</div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-sm font-medium">{{analytics.roleStats.architect.tasks}} tasks</div>
+                                <div class="text-xs text-gray-500">{{analytics.roleStats.architect.avgTime}} avg</div>
+                            </div>
+                            
+                            <!-- Arrow -->
+                            <div class="flex flex-col items-center">
+                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                </svg>
+                                <div class="text-xs text-gray-500 mt-1">{{analytics.transitions.architectToDeveloper}} transitions</div>
+                            </div>
+                            
+                            <!-- Senior Developer -->
+                            <div class="text-center">
+                                <div class="w-24 h-24 bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl flex items-center justify-center text-white shadow-lg">
+                                    <div class="text-center">
+                                        <div class="text-2xl mb-1">👨‍💻</div>
+                                        <div class="text-xs font-semibold">DEVELOPER</div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-sm font-medium">{{analytics.roleStats.seniorDeveloper.tasks}} tasks</div>
+                                <div class="text-xs text-gray-500">{{analytics.roleStats.seniorDeveloper.avgTime}} avg</div>
+                            </div>
+                            
+                            <!-- Arrow -->
+                            <div class="flex flex-col items-center">
+                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                </svg>
+                                <div class="text-xs text-gray-500 mt-1">{{analytics.transitions.developerToReview}} transitions</div>
+                            </div>
+                            
+                            <!-- Code Review -->
+                            <div class="text-center">
+                                <div class="w-24 h-24 bg-gradient-to-br from-red-500 to-red-700 rounded-xl flex items-center justify-center text-white shadow-lg">
+                                    <div class="text-center">
+                                        <div class="text-2xl mb-1">🔍</div>
+                                        <div class="text-xs font-semibold">REVIEW</div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-sm font-medium">{{analytics.roleStats.codeReview.tasks}} tasks</div>
+                                <div class="text-xs text-gray-500">{{analytics.roleStats.codeReview.avgTime}} avg</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottleneck Analysis -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                        Workflow Bottlenecks
+                    </h3>
+                    
+                    {{#if analytics.bottlenecks}}
+                    <div class="space-y-4">
+                        {{#each analytics.bottlenecks}}
+                        <div class="border rounded-lg p-4 {{#eq this.severity 'high'}}border-red-200 bg-red-50{{/eq}}{{#eq this.severity 'medium'}}border-yellow-200 bg-yellow-50{{/eq}}{{#eq this.severity 'low'}}border-blue-200 bg-blue-50{{/eq}}">
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="font-semibold text-gray-800">{{this.role}} - {{this.issue}}</h4>
+                                <span class="px-2 py-1 text-xs rounded-full {{#eq this.severity 'high'}}bg-red-100 text-red-800{{/eq}}{{#eq this.severity 'medium'}}bg-yellow-100 text-yellow-800{{/eq}}{{#eq this.severity 'low'}}bg-blue-100 text-blue-800{{/eq}}">
+                                    {{this.severity}} severity
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">{{this.description}}</p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                <div>
+                                    <span class="font-medium">Impact:</span> {{this.impact}}
+                                </div>
+                                <div>
+                                    <span class="font-medium">Avg Delay:</span> {{this.avgDelay}}
+                                </div>
+                                <div>
+                                    <span class="font-medium">Frequency:</span> {{this.frequency}}
+                                </div>
+                            </div>
+                            {{#if this.recommendation}}
+                            <div class="mt-3 p-3 bg-white rounded border">
+                                <span class="text-xs font-medium text-gray-500 uppercase">Recommendation:</span>
+                                <p class="text-sm text-gray-700 mt-1">{{this.recommendation}}</p>
+                            </div>
+                            {{/if}}
+                        </div>
+                        {{/each}}
+                    </div>
+                    {{else}}
+                    <div class="text-center py-8">
+                        <div class="text-4xl mb-2">✅</div>
+                        <p class="text-gray-500">No significant bottlenecks detected in the workflow</p>
+                    </div>
+                    {{/if}}
+                </div>
+
+                <!-- Flow Time Analysis -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Role Transition Times
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="flowTimeChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+
+                <!-- Delegation Patterns -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                        Delegation Patterns
+                    </h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <canvas id="delegationPatternsChart" width="400" height="300"></canvas>
+                        </div>
+                        <div class="space-y-4">
+                            {{#each analytics.patterns}}
+                            <div class="border rounded-lg p-4 bg-gray-50">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-semibold text-gray-800">{{this.pattern}}</h4>
+                                    <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                                        {{this.frequency}}% of cases
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-600">{{this.description}}</p>
+                                <div class="mt-2 text-xs text-gray-500">
+                                    Average duration: {{this.avgDuration}}
+                                </div>
+                            </div>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Efficiency Metrics -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-4">Flow Efficiency</h4>
+                        <div class="text-center">
+                            <div class="text-4xl font-bold text-green-600 mb-2">{{analytics.efficiency.overall}}%</div>
+                            <div class="text-sm text-gray-500 mb-4">Overall Efficiency</div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-600 h-2 rounded-full" style="width: {{analytics.efficiency.overall}}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-4">Lead Time</h4>
+                        <div class="text-center">
+                            <div class="text-4xl font-bold text-blue-600 mb-2">{{analytics.leadTime.average}}</div>
+                            <div class="text-sm text-gray-500 mb-4">Average Lead Time</div>
+                            <div class="text-xs text-gray-400">
+                                Min: {{analytics.leadTime.min}} | Max: {{analytics.leadTime.max}}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h4 class="text-lg font-semibold text-gray-800 mb-4">Cycle Time</h4>
+                        <div class="text-center">
+                            <div class="text-4xl font-bold text-purple-600 mb-2">{{analytics.cycleTime.average}}</div>
+                            <div class="text-sm text-gray-500 mb-4">Average Cycle Time</div>
+                            <div class="text-xs text-gray-400">
+                                Min: {{analytics.cycleTime.min}} | Max: {{analytics.cycleTime.max}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recommendations -->
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                        Flow Optimization Recommendations
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {{#each analytics.recommendations}}
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0">
+                                    <div class="w-8 h-8 rounded-full bg-{{this.priority}}-100 flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-{{this.priority}}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{this.icon}}"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="ml-3">
+                                    <h4 class="text-sm font-medium text-gray-900">{{this.title}}</h4>
+                                    <p class="text-sm text-gray-600 mt-1">{{this.description}}</p>
+                                    <div class="mt-2">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{this.impactClass}}">
+                                            {{this.impact}} Impact
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
-      {{/each}}
     </div>
-  </div>
-</div>
 
-<script>
-// Delegation Patterns Chart
-const delegationPatternsCtx = document.getElementById('delegationPatternsChart').getContext('2d');
-new Chart(delegationPatternsCtx, {
-  type: 'doughnut',
-  data: {
-    labels: {{{json insights.patternLabels}}},
-    datasets: [{
-      data: {{{json insights.patternData}}},
-      backgroundColor: {{{json insights.patternColors}}},
-      borderWidth: 2,
-      borderColor: '#ffffff'
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'bottom',
-        labels: {
-          padding: 20,
-          usePointStyle: true
-        }
-      },
-      title: {
-        display: true,
-        text: 'Delegation Patterns'
-      }
-    }
-  }
-});
+    <script>
+        // Flow Time Chart
+        const flowTimeCtx = document.getElementById('flowTimeChart').getContext('2d');
+        new Chart(flowTimeCtx, {
+            type: 'bar',
+            data: {
+                labels: {{{json analytics.flowTimeLabels}}},
+                datasets: [{
+                    label: 'Average Time (hours)',
+                    data: {{{json analytics.flowTimeData}}},
+                    backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                    borderColor: 'rgba(34, 197, 94, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Hours'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
 
-// Handoff Time Chart
-const handoffTimeCtx = document.getElementById('handoffTimeChart').getContext('2d');
-new Chart(handoffTimeCtx, {
-  type: 'bar',
-  data: {
-    labels: {{{json insights.handoffLabels}}},
-    datasets: [{
-      label: 'Average Time (hours)',
-      data: {{{json insights.handoffData}}},
-      backgroundColor: 'rgba(99, 102, 241, 0.8)',
-      borderColor: 'rgba(99, 102, 241, 1)',
-      borderWidth: 1
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      y: {
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: 'Hours'
-        }
-      }
-    },
-    plugins: {
-      title: {
-        display: true,
-        text: 'Average Handoff Times'
-      }
-    }
-  }
-});
-
-// Efficiency Timeline Chart
-const efficiencyTimelineCtx = document.getElementById('efficiencyTimelineChart').getContext('2d');
-new Chart(efficiencyTimelineCtx, {
-  type: 'line',
-  data: {
-    labels: {{{json insights.timelineLabels}}},
-    datasets: [
-      {
-        label: 'Workflow Efficiency',
-        data: {{{json insights.efficiencyData}}},
-        borderColor: 'rgba(34, 197, 94, 1)',
-        backgroundColor: 'rgba(34, 197, 94, 0.1)',
-        borderWidth: 2,
-        fill: true,
-        tension: 0.4
-      },
-      {
-        label: 'Bottleneck Index',
-        data: {{{json insights.bottleneckData}}},
-        borderColor: 'rgba(239, 68, 68, 1)',
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-        borderWidth: 2,
-        fill: false,
-        tension: 0.4
-      },
-      {
-        label: 'Handoff Speed',
-        data: {{{json insights.handoffSpeedData}}},
-        borderColor: 'rgba(59, 130, 246, 1)',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        borderWidth: 2,
-        fill: false,
-        tension: 0.4
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      y: {
-        beginAtZero: true,
-        max: 100,
-        title: {
-          display: true,
-          text: 'Score (%)'
-        }
-      }
-    },
-    plugins: {
-      legend: {
-        position: 'top'
-      }
-    }
-  }
-});
-
-// Success Factors Chart
-const successFactorsCtx = document.getElementById('successFactorsChart').getContext('2d');
-new Chart(successFactorsCtx, {
-  type: 'radar',
-  data: {
-    labels: {{{json insights.factorLabels}}},
-    datasets: [{
-      label: 'Current Performance',
-      data: {{{json insights.factorCurrentData}}},
-      borderColor: 'rgba(34, 197, 94, 1)',
-      backgroundColor: 'rgba(34, 197, 94, 0.2)',
-      borderWidth: 2
-    }, {
-      label: 'Target Performance',
-      data: {{{json insights.factorTargetData}}},
-      borderColor: 'rgba(59, 130, 246, 1)',
-      backgroundColor: 'rgba(59, 130, 246, 0.2)',
-      borderWidth: 2,
-      borderDash: [5, 5]
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      r: {
-        beginAtZero: true,
-        max: 100,
-        ticks: {
-          stepSize: 20
-        }
-      }
-    },
-    plugins: {
-      legend: {
-        position: 'bottom'
-      }
-    }
-  }
-});
-</script>
-{{/inline}} 
+        // Delegation Patterns Chart
+        const patternsCtx = document.getElementById('delegationPatternsChart').getContext('2d');
+        new Chart(patternsCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{{json analytics.patternLabels}}},
+                datasets: [{
+                    data: {{{json analytics.patternData}}},
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(245, 158, 11, 0.8)',
+                        'rgba(239, 68, 68, 0.8)',
+                        'rgba(139, 92, 246, 0.8)'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

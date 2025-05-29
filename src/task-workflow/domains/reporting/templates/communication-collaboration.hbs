@@ -1,286 +1,327 @@
-{{!-- Communication & Collaboration Analysis Template --}}
-{{#> layouts/base 
-    title="🤝 Communication & Collaboration Analysis"
-    subtitle="Team Dynamics & Workflow Efficiency"
-    headerIcon="🤝"
-    reportType="Communication Collaboration"
-    generatedAt=data.generatedAt
-    dateRange=data.dateRange
-}}
-
-{{#*inline "content"}}
-<div class="min-h-screen bg-gray-900 text-white">
-    <!-- Collaboration Overview -->
-    <div class="bg-gradient-to-br from-green-500 to-blue-500 rounded-2xl p-8 mb-8 text-white relative overflow-hidden">
-        <div class="relative z-10">
-            <h2 class="text-3xl font-bold mb-4">Communication & Collaboration Analysis</h2>
-            <p class="text-lg opacity-90 mb-6">Comprehensive analysis of team communication patterns, workflow efficiency, and collaboration effectiveness throughout the task lifecycle.</p>
-        </div>
-        
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
-            <div class="text-center bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                <div class="text-3xl font-bold mb-2">{{default data.collaborationStats.totalInteractions 47}}</div>
-                <div class="text-sm uppercase tracking-wide opacity-90">Total Interactions</div>
-            </div>
-            <div class="text-center bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                <div class="text-3xl font-bold mb-2">{{default data.collaborationStats.roleTransitions 8}}</div>
-                <div class="text-sm uppercase tracking-wide opacity-90">Role Transitions</div>
-            </div>
-            <div class="text-center bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                <div class="text-3xl font-bold mb-2">{{default data.collaborationStats.avgResponseTime "2.3h"}}</div>
-                <div class="text-sm uppercase tracking-wide opacity-90">Avg Response Time</div>
-            </div>
-            <div class="text-center bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                <div class="text-3xl font-bold mb-2">{{default data.collaborationStats.collaborationScore 85}}%</div>
-                <div class="text-sm uppercase tracking-wide opacity-90">Collaboration Score</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Communication Metrics -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {{#each (default data.communicationMetrics (object 
-            clarity=(object score=88 icon="💬")
-            responsiveness=(object score=92 icon="⚡")
-            collaboration=(object score=85 icon="🤝")
-            knowledgeSharing=(object score=79 icon="📚")
-            conflictResolution=(object score=83 icon="🔧")
-            teamAlignment=(object score=90 icon="🎯")
-        ))}}
-            <div class="bg-gray-800 border border-gray-700 rounded-xl p-6 text-center relative overflow-hidden hover:transform hover:scale-105 transition-all duration-200">
-                <!-- Top border indicator -->
-                <div class="absolute top-0 left-0 right-0 h-1 {{#if (gte this.score 90)}}bg-green-500{{else if (gte this.score 80)}}bg-blue-500{{else if (gte this.score 70)}}bg-yellow-500{{else}}bg-red-500{{/if}}"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Communication & Collaboration - Workflow Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .chart-container { position: relative; height: 400px; margin: 1rem 0; }
+        .metric-card { @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200; }
+        .status-badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border; }
+        .priority-badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
+        .print-hidden { @media print { display: none !important; } }
+        @media print { body { @apply text-sm; } .chart-container { height: 300px; } }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen bg-gradient-to-br from-slate-50 to-green-50 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Enhanced Header -->
+            <div class="relative bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 rounded-2xl shadow-xl p-8 mb-8 overflow-hidden">
+                <!-- Background Pattern -->
+                <div class="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                <div class="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-48 translate-x-48"></div>
+                <div class="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-32 -translate-x-32"></div>
                 
-                <div class="text-4xl mb-4">{{this.icon}}</div>
-                <div class="text-3xl font-bold mb-2 {{#if (gte this.score 90)}}text-green-400{{else if (gte this.score 80)}}text-blue-400{{else if (gte this.score 70)}}text-yellow-400{{else}}text-red-400{{/if}}">{{this.score}}%</div>
-                <div class="text-sm text-gray-400 uppercase tracking-wide mb-2">{{capitalize @key}}</div>
-                <div class="text-xs text-gray-500 leading-tight">
-                    {{metricDescription @key}}
+                <!-- Content -->
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <div class="flex items-center space-x-3 mb-3">
+                                <div class="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
+                                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h1 class="text-4xl font-bold text-white mb-1">🤝 Communication & Collaboration</h1>
+                                    <p class="text-green-100 text-lg">Task communication and collaboration metrics</p>
+                                </div>
+                            </div>
+                            <p class="text-green-200">Generated on {{formatDate generatedAt "MMMM Do, YYYY [at] h:mm A"}}</p>
+                        </div>
+                        <div class="flex flex-col items-end space-y-3">
+                            <div class="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl font-medium border border-white/30">
+                                <div class="text-sm text-green-100 mb-1">Report Period</div>
+                                <div class="text-lg font-semibold">{{dateRange.start}} - {{dateRange.end}}</div>
+                            </div>
+                            {{#if filters}}
+                            <div class="bg-white/15 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-sm border border-white/20">
+                                <div class="text-xs text-green-100 mb-1">Active Filters</div>
+                                <div>{{#each filters}}{{@key}}: {{this}}{{#unless @last}}, {{/unless}}{{/each}}</div>
+                            </div>
+                            {{/if}}
+                        </div>
+                    </div>
                 </div>
             </div>
-        {{/each}}
-    </div>
 
-    <!-- Workflow Efficiency Timeline -->
-    <div class="bg-gray-800 border border-gray-700 rounded-2xl p-8 mb-8">
-        <div class="flex items-center gap-3 mb-6">
-            <span class="text-2xl">⏱️</span>
-            <h3 class="text-2xl font-bold">Workflow Efficiency Timeline</h3>
-        </div>
-        
-        <div class="space-y-8">
-            {{#each (default data.workflowSteps (array 
-                (object step=1 title="Task Intake & Analysis" role="boomerang" status="completed" 
-                    description="Initial task analysis, requirement gathering, and research evaluation to determine implementation approach."
-                    duration="45m" interactions=3 efficiency="92%" quality="High")
-                (object step=2 title="Research & Investigation" role="researcher" status="completed"
-                    description="Comprehensive research on reporting system architecture, template engines, and integration patterns."
-                    duration="2.5h" interactions=8 efficiency="88%" quality="High")
-                (object step=3 title="Architecture & Planning" role="architect" status="completed"
-                    description="Technical architecture design, implementation plan creation, and subtask breakdown into logical batches."
-                    duration="1.8h" interactions=5 efficiency="85%" quality="High")
-                (object step=4 title="Implementation - Batch B001" role="senior-developer" status="completed"
-                    description="Service consolidation and integration implementation with comprehensive testing and documentation."
-                    duration="4.2h" interactions=12 efficiency="90%" quality="High")
-                (object step=5 title="Implementation - Batch B002" role="senior-developer" status="in-progress"
-                    description="Template system enhancement with modern EJS templates and sophisticated reporting capabilities."
-                    duration="3.1h" interactions=8 efficiency="87%" quality="High")
-                (object step=6 title="Quality Review & Testing" role="code-review" status="pending"
-                    description="Comprehensive code review, manual testing, and acceptance criteria verification."
-                    duration="TBD" interactions=0 efficiency="TBD" quality="TBD")
-            ))}}
-                <div class="flex gap-6 relative">
-                    {{#unless @last}}
-                    <div class="absolute left-5 top-12 bottom-0 w-0.5 bg-gray-600"></div>
-                    {{/unless}}
-                    
-                    <div class="w-10 h-10 rounded-full {{#if (eq this.status 'completed')}}bg-green-500{{else if (eq this.status 'in-progress')}}bg-yellow-500{{else if (eq this.status 'blocked')}}bg-red-500{{else}}bg-blue-500{{/if}} flex items-center justify-center text-white font-semibold text-sm relative z-10">
-                        {{this.step}}
-                    </div>
-                    
-                    <div class="flex-1 bg-gray-900 border border-gray-700 rounded-lg p-6">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h4 class="text-lg font-semibold text-white mb-2">{{this.title}}</h4>
-                                <span class="px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide {{#if (eq this.role 'boomerang')}}bg-blue-500 text-white{{else if (eq this.role 'researcher')}}bg-cyan-500 text-white{{else if (eq this.role 'architect')}}bg-yellow-500 text-white{{else if (eq this.role 'senior-developer')}}bg-green-500 text-white{{else if (eq this.role 'code-review')}}bg-red-500 text-white{{/if}}">{{this.role}}</span>
-                            </div>
+            <div class="space-y-8">
+                <!-- Collaboration Overview -->
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        Communication & Collaboration Analysis
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <div class="text-2xl font-bold text-green-600">{{collaboration.totalInteractions}}</div>
+                            <div class="text-sm text-gray-600">Total Interactions</div>
                         </div>
-                        
-                        <p class="text-gray-400 mb-4 leading-relaxed">{{this.description}}</p>
-                        
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-gray-700">
-                            <div class="text-center">
-                                <div class="text-lg font-semibold text-white mb-1">{{this.duration}}</div>
-                                <div class="text-xs text-gray-500 uppercase tracking-wide">Duration</div>
-                            </div>
-                            <div class="text-center">
-                                <div class="text-lg font-semibold text-white mb-1">{{this.interactions}}</div>
-                                <div class="text-xs text-gray-500 uppercase tracking-wide">Interactions</div>
-                            </div>
-                            <div class="text-center">
-                                <div class="text-lg font-semibold text-white mb-1">{{this.efficiency}}</div>
-                                <div class="text-xs text-gray-500 uppercase tracking-wide">Efficiency</div>
-                            </div>
-                            <div class="text-center">
-                                <div class="text-lg font-semibold text-white mb-1">{{this.quality}}</div>
-                                <div class="text-xs text-gray-500 uppercase tracking-wide">Quality</div>
-                            </div>
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <div class="text-2xl font-bold text-blue-600">{{collaboration.roleTransitions}}</div>
+                            <div class="text-sm text-gray-600">Role Transitions</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <div class="text-2xl font-bold text-orange-600">{{collaboration.avgResponseTime}}</div>
+                            <div class="text-sm text-gray-600">Avg Response Time</div>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <div class="text-2xl font-bold text-purple-600">{{collaboration.collaborationScore}}%</div>
+                            <div class="text-sm text-gray-600">Collaboration Score</div>
                         </div>
                     </div>
                 </div>
-            {{/each}}
-        </div>
-    </div>
 
-    <!-- Communication Channels -->
-    <div class="bg-gray-800 border border-gray-700 rounded-2xl p-8 mb-8">
-        <div class="flex items-center gap-3 mb-6">
-            <span class="text-2xl">📡</span>
-            <h3 class="text-2xl font-bold">Communication Channels Usage</h3>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {{#each (default data.channels (array 
-                (object name="MCP Workflow System" icon="🔄" usage=95 level="high")
-                (object name="Code Comments" icon="💬" usage=78 level="high")
-                (object name="Documentation" icon="📝" usage=85 level="high")
-                (object name="Task Descriptions" icon="📋" usage=92 level="high")
-                (object name="Implementation Plans" icon="🏗️" usage=88 level="high")
-                (object name="Review Reports" icon="🔍" usage=82 level="high")
-            ))}}
-                <div class="bg-gray-900 border border-gray-700 rounded-lg p-6 text-center hover:bg-gray-750 hover:transform hover:-translate-y-1 transition-all duration-200">
-                    <div class="text-3xl mb-4">{{this.icon}}</div>
-                    <h4 class="font-semibold text-white mb-3">{{this.name}}</h4>
-                    <div class="text-2xl font-bold mb-2 {{#if (eq this.level 'high')}}text-green-400{{else if (eq this.level 'medium')}}text-yellow-400{{else}}text-red-400{{/if}}">{{this.usage}}%</div>
-                    <div class="text-xs text-gray-500 uppercase tracking-wide">Usage Rate</div>
-                </div>
-            {{/each}}
-        </div>
-    </div>
-
-    <!-- Collaboration Issues -->
-    <div class="bg-gray-800 border border-gray-700 rounded-2xl p-8 mb-8">
-        <div class="flex items-center gap-3 mb-6">
-            <span class="text-2xl">⚠️</span>
-            <h3 class="text-2xl font-bold">Collaboration Challenges</h3>
-        </div>
-        
-        <div class="space-y-4">
-            {{#each (default data.issues (array 
-                (object severity="medium" title="Context Switching Overhead"
-                    description="Frequent role transitions require context loading and memory retrieval, which can impact efficiency when switching between complex tasks."
-                    impact="Approximately 10-15% time overhead during role transitions")
-                (object severity="low" title="Documentation Lag"
-                    description="Some implementation details are documented after completion rather than during development, which can affect knowledge transfer."
-                    impact="Minor delay in knowledge sharing and potential context loss")
-                (object severity="medium" title="Batch Dependency Management"
-                    description="Complex dependencies between batches require careful coordination and can create bottlenecks if not properly managed."
-                    impact="Potential delays in parallel development and integration challenges")
-                (object severity="low" title="Quality Gate Consistency"
-                    description="Varying levels of detail in quality checks across different roles and phases of the workflow."
-                    impact="Inconsistent quality standards and potential rework requirements")
-            ))}}
-                <div class="flex gap-4 p-4 bg-gray-900 border border-gray-700 rounded-lg">
-                    <span class="px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide min-w-fit {{#if (eq this.severity 'critical')}}bg-red-500 text-white{{else if (eq this.severity 'high')}}bg-orange-500 text-white{{else if (eq this.severity 'medium')}}bg-blue-500 text-white{{else}}bg-gray-600 text-gray-300{{/if}}">{{this.severity}}</span>
-                    <div class="flex-1">
-                        <h4 class="font-semibold text-white mb-2">{{this.title}}</h4>
-                        <p class="text-gray-400 mb-3 leading-relaxed">{{this.description}}</p>
-                        <div class="text-sm text-gray-500 bg-gray-800 p-3 rounded border-l-4 border-yellow-500">
-                            <strong>Impact:</strong> {{this.impact}}
+                <!-- Communication Metrics -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
+                        Communication Quality Metrics
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {{#each communication.metrics}}
+                        <div class="border rounded-lg p-4 text-center hover:shadow-md transition-shadow duration-200">
+                            <div class="text-3xl mb-2">{{this.icon}}</div>
+                            <div class="text-2xl font-bold mb-1 {{#if (gte this.score 90)}}text-green-600{{else}}{{#if (gte this.score 80)}}text-blue-600{{else}}{{#if (gte this.score 70)}}text-yellow-600{{else}}text-red-600{{/if}}{{/if}}{{/if}}">{{this.score}}%</div>
+                            <div class="text-sm font-medium text-gray-700 mb-2">{{this.metric}}</div>
+                            <div class="text-xs text-gray-500">{{this.description}}</div>
                         </div>
-                    </div>
-                </div>
-            {{/each}}
-        </div>
-    </div>
-
-    <!-- Team Performance by Role -->
-    <div class="bg-gray-800 border border-gray-700 rounded-2xl p-8 mb-8">
-        <div class="flex items-center gap-3 mb-6">
-            <span class="text-2xl">👥</span>
-            <h3 class="text-2xl font-bold">Performance by Role</h3>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {{#each (default data.rolePerformance (object 
-                boomerang=(object taskIntake=92 analysis=88 delegation=90 delivery=85)
-                researcher=(object thoroughness=90 accuracy=95 synthesis=87 recommendations=89)
-                architect=(object planning=88 design=92 breakdown=85 coordination=87)
-                senior-developer=(object implementation=90 testing=88 documentation=82 quality=89)
-                code-review=(object thoroughness=93 accuracy=91 feedback=87 standards=90)
-            ))}}
-                <div class="bg-gray-900 border border-gray-700 rounded-lg p-6">
-                    <h4 class="font-semibold text-white mb-4 text-center p-3 bg-gray-800 rounded">{{capitalize @key}}</h4>
-                    <div class="space-y-3">
-                        {{#each this}}
-                            <div class="flex justify-between items-center p-2 bg-gray-800 rounded">
-                                <span class="text-sm text-gray-400">{{capitalize @key}}</span>
-                                <span class="font-semibold {{#if (gte this 90)}}text-green-400{{else if (gte this 80)}}text-blue-400{{else if (gte this 70)}}text-yellow-400{{else}}text-red-400{{/if}}">{{this}}%</span>
-                            </div>
                         {{/each}}
                     </div>
                 </div>
-            {{/each}}
-        </div>
-    </div>
 
-    <!-- Recommendations -->
-    <div class="bg-gray-800 border border-gray-700 rounded-2xl p-8 mb-8">
-        <div class="flex items-center gap-3 mb-6">
-            <span class="text-2xl">💡</span>
-            <h3 class="text-2xl font-bold">Communication & Collaboration Recommendations</h3>
-        </div>
-        
-        <div class="space-y-4">
-            {{#each (default data.recommendations (array 
-                (object type="communication" text="Implement standardized handoff templates to reduce context switching overhead and ensure consistent information transfer between roles.")
-                (object type="process" text="Establish regular checkpoint meetings during long implementation phases to maintain alignment and address blockers proactively.")
-                (object type="tooling" text="Develop automated workflow status dashboards to provide real-time visibility into task progress and role transitions.")
-                (object type="training" text="Create role-specific communication guidelines and best practices documentation to improve consistency across team members.")
-                (object type="process" text="Implement parallel work streams where possible to reduce batch dependencies and improve overall workflow efficiency.")
-                (object type="communication" text="Establish clear escalation paths and communication protocols for handling blockers and quality issues across roles.")
-            ))}}
-                <div class="flex gap-4 p-4 bg-gray-900 border border-gray-700 rounded-lg">
-                    <span class="px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide min-w-fit {{#if (eq this.type 'communication')}}bg-blue-500 text-white{{else if (eq this.type 'process')}}bg-yellow-500 text-white{{else if (eq this.type 'tooling')}}bg-green-500 text-white{{else if (eq this.type 'training')}}bg-purple-500 text-white{{/if}}">{{this.type}}</span>
-                    <div class="flex-1 text-gray-300 leading-relaxed">{{this.text}}</div>
+                <!-- Workflow Efficiency Timeline -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Workflow Efficiency Timeline
+                    </h3>
+                    <div class="space-y-6">
+                        {{#each workflow.steps}}
+                        <div class="flex gap-4 relative">
+                            {{#unless @last}}
+                            <div class="absolute left-5 top-12 bottom-0 w-0.5 bg-gray-300"></div>
+                            {{/unless}}
+                            
+                            <div class="w-10 h-10 rounded-full {{#if (eq this.status 'completed')}}bg-green-500{{else}}{{#if (eq this.status 'in-progress')}}bg-yellow-500{{else}}{{#if (eq this.status 'blocked')}}bg-red-500{{else}}bg-blue-500{{/if}}{{/if}}{{/if}} flex items-center justify-center text-white font-semibold text-sm relative z-10">
+                                {{this.step}}
+                            </div>
+                            
+                            <div class="flex-1 bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h4 class="text-lg font-semibold text-gray-900 mb-1">{{this.title}}</h4>
+                                        <span class="px-2 py-1 rounded-full text-xs font-medium uppercase {{#if (eq this.role 'boomerang')}}bg-blue-100 text-blue-800{{else}}{{#if (eq this.role 'researcher')}}bg-cyan-100 text-cyan-800{{else}}{{#if (eq this.role 'architect')}}bg-yellow-100 text-yellow-800{{else}}{{#if (eq this.role 'senior-developer')}}bg-green-100 text-green-800{{else}}{{#if (eq this.role 'code-review')}}bg-red-100 text-red-800{{/if}}{{/if}}{{/if}}{{/if}}{{/if}}">{{this.role}}</span>
+                                    </div>
+                                </div>
+                                
+                                <p class="text-gray-600 mb-3">{{this.description}}</p>
+                                
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t border-gray-200">
+                                    <div class="text-center">
+                                        <div class="text-sm font-semibold text-gray-900">{{this.duration}}</div>
+                                        <div class="text-xs text-gray-500">Duration</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-sm font-semibold text-gray-900">{{this.interactions}}</div>
+                                        <div class="text-xs text-gray-500">Interactions</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-sm font-semibold text-gray-900">{{this.efficiency}}</div>
+                                        <div class="text-xs text-gray-500">Efficiency</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-sm font-semibold text-gray-900">{{this.quality}}</div>
+                                        <div class="text-xs text-gray-500">Quality</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {{/each}}
+                    </div>
                 </div>
-            {{/each}}
+
+                <!-- Communication Channels -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        Communication Channels Usage
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {{#each communication.channels}}
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center hover:shadow-md transition-shadow duration-200">
+                            <div class="text-2xl mb-3">{{this.icon}}</div>
+                            <h4 class="font-semibold text-gray-900 mb-2">{{this.name}}</h4>
+                            <div class="text-xl font-bold mb-1 {{#if (eq this.level 'high')}}text-green-600{{else}}{{#if (eq this.level 'medium')}}text-yellow-600{{else}}text-red-600{{/if}}{{/if}}">{{this.usage}}%</div>
+                            <div class="text-xs text-gray-500">Usage Rate</div>
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
+
+                <!-- Collaboration Issues -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                        Collaboration Challenges
+                    </h3>
+                    <div class="space-y-4">
+                        {{#each collaboration.issues}}
+                        <div class="flex gap-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                            <span class="px-2 py-1 rounded-full text-xs font-medium uppercase {{#if (eq this.severity 'critical')}}bg-red-100 text-red-800{{else}}{{#if (eq this.severity 'high')}}bg-orange-100 text-orange-800{{else}}{{#if (eq this.severity 'medium')}}bg-blue-100 text-blue-800{{else}}bg-gray-100 text-gray-800{{/if}}{{/if}}{{/if}}">{{this.severity}}</span>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-900 mb-2">{{this.title}}</h4>
+                                <p class="text-gray-600 mb-3">{{this.description}}</p>
+                                <div class="text-sm text-gray-700 bg-yellow-50 p-3 rounded border-l-4 border-yellow-400">
+                                    <strong>Impact:</strong> {{this.impact}}
+                                </div>
+                            </div>
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
+
+                <!-- Team Performance by Role -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        Team Performance by Role
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        {{#each team.rolePerformance}}
+                        <div class="text-center p-4 bg-gradient-to-br {{this.colorClass}} text-white rounded-lg hover:shadow-md transition-shadow duration-200">
+                            <div class="text-2xl mb-2">{{this.icon}}</div>
+                            <div class="text-sm font-semibold uppercase mb-2">{{this.role}}</div>
+                            <div class="text-xl font-bold mb-1">{{this.score}}%</div>
+                            <div class="text-xs opacity-90">{{this.tasksHandled}} tasks</div>
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
+
+                <!-- Communication Effectiveness Chart -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        Communication Effectiveness Over Time
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="communicationChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+
+                <!-- Collaboration Recommendations -->
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                        Collaboration Enhancement Recommendations
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {{#each recommendations}}
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0">
+                                    <div class="w-8 h-8 rounded-full bg-{{this.priority}}-100 flex items-center justify-center">
+                                        <svg class="w-4 h-4 text-{{this.priority}}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{this.icon}}"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="ml-3">
+                                    <h4 class="text-sm font-medium text-gray-900">{{this.title}}</h4>
+                                    <p class="text-sm text-gray-600 mt-1">{{this.description}}</p>
+                                    <div class="mt-2">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{this.impactClass}}">
+                                            {{this.impact}} Impact
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Task-Specific Communication Summary -->
-    {{#if data.task.comments}}
-    <div class="bg-gray-800 border border-gray-700 rounded-2xl p-8">
-        <div class="flex items-center gap-3 mb-6">
-            <span class="text-2xl">💬</span>
-            <h3 class="text-2xl font-bold">Task Communication Summary</h3>
-        </div>
-        
-        <div class="space-y-6">
-            <div>
-                <h4 class="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                    <span>📊</span> Communication Overview
-                </h4>
-                <p class="text-gray-400 leading-relaxed">Total of {{data.task.comments.length}} communication events recorded throughout the task lifecycle, demonstrating active collaboration and knowledge sharing across all workflow phases.</p>
-            </div>
-            
-            <div>
-                <h4 class="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                    <span>🎯</span> Key Communication Patterns
-                </h4>
-                <p class="text-gray-400 leading-relaxed">Strong emphasis on technical documentation, clear role transitions, and comprehensive progress reporting. Communication quality remains consistently high across all workflow phases.</p>
-            </div>
-            
-            <div>
-                <h4 class="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                    <span>🔍</span> Areas for Improvement
-                </h4>
-                <p class="text-gray-400 leading-relaxed">Consider implementing more proactive communication during long implementation phases and standardizing handoff documentation to reduce context switching overhead.</p>
-            </div>
-        </div>
-    </div>
-    {{/if}}
-</div>
-{{/inline}}
-
-{{/layouts/base}}
+    <script>
+        // Communication Effectiveness Chart
+        const communicationCtx = document.getElementById('communicationChart').getContext('2d');
+        new Chart(communicationCtx, {
+            type: 'line',
+            data: {
+                labels: {{{json communication.timeLabels}}},
+                datasets: [{
+                    label: 'Communication Quality',
+                    data: {{{json communication.qualityData}}},
+                    borderColor: 'rgba(34, 197, 94, 1)',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }, {
+                    label: 'Response Time',
+                    data: {{{json communication.responseData}}},
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Score (%)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
