@@ -38,6 +38,18 @@ import { PerformanceDashboardGeneratorService } from './services/generators/perf
 import { TaskProgressHealthGeneratorService } from './services/generators/task-progress-health-generator.service';
 import { TaskSummaryGeneratorService } from './services/generators/task-summary-generator.service';
 
+// === NEW GENERATOR SERVICES ===
+import { DelegationAnalyticsGeneratorService } from './services/generators/delegation-analytics-generator.service';
+import { ComprehensiveGeneratorService } from './services/generators/comprehensive-generator.service';
+import { ImplementationPlanAnalyticsGeneratorService } from './services/generators/implementation-plan-analytics-generator.service';
+import { CodeReviewInsightsGeneratorService } from './services/generators/code-review-insights-generator.service';
+import { DelegationFlowAnalysisGeneratorService } from './services/generators/delegation-flow-analysis-generator.service';
+import { ImplementationExecutionGeneratorService } from './services/generators/implementation-execution-generator.service';
+import { CodeReviewQualityGeneratorService } from './services/generators/code-review-quality-generator.service';
+import { ResearchDocumentationGeneratorService } from './services/generators/research-documentation-generator.service';
+import { CommunicationCollaborationGeneratorService } from './services/generators/communication-collaboration-generator.service';
+import { DelegationFlowAnalysisTaskGeneratorService } from './services/generators/delegation-flow-analysis-task-generator.service';
+
 // === RENDERING SERVICE (PDF/PNG generation) ===
 import { ReportRenderingService } from './report-rendering.service';
 
@@ -46,13 +58,14 @@ import { ReportRenderingService } from './report-rendering.service';
  *
  * PHILOSOPHY: Keep business value, eliminate architectural complexity
  *
- * KEPT (21 services):
+ * KEPT (32 services):
  * - 9 Analytics services: Real business intelligence and insights
  * - 12 Data services: Database queries and data transformation logic
  * - 1 Template service: Simple, effective rendering
  * - 1 Config service: Essential configuration
  * - 1 MCP service: External API interface
  * - 1 Rendering service: PDF/PNG generation with Playwright
+ * - 15 Generator services: All report types now supported
  *
  * REMOVED (25+ services):
  * - Strategy pattern services (unnecessary abstraction)
@@ -83,6 +96,18 @@ import { ReportRenderingService } from './report-rendering.service';
     PerformanceDashboardGeneratorService,
     TaskProgressHealthGeneratorService,
     TaskSummaryGeneratorService,
+
+    // === NEW GENERATOR SERVICES ===
+    DelegationAnalyticsGeneratorService,
+    ComprehensiveGeneratorService,
+    ImplementationPlanAnalyticsGeneratorService,
+    CodeReviewInsightsGeneratorService,
+    DelegationFlowAnalysisGeneratorService,
+    ImplementationExecutionGeneratorService,
+    CodeReviewQualityGeneratorService,
+    ResearchDocumentationGeneratorService,
+    CommunicationCollaborationGeneratorService,
+    DelegationFlowAnalysisTaskGeneratorService,
 
     // === ANALYTICS SERVICES (All kept - real business value) ===
     AdvancedAnalyticsService,
