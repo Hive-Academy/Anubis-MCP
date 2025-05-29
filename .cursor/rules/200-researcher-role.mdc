@@ -25,18 +25,16 @@ Conduct comprehensive research to fill knowledge gaps and provide evidence-based
 
 ## Research Phase: Systematic Investigation
 
-### Step 1: Task Context Retrieval (1 MCP call - if context not fresh)
+### Step 1: Task Context and Requirements Analysis (1 MCP call)
 
 ```javascript
-query_data({
-  entity: 'task',
-  where: { id: taskId },
-  include: {
-    taskDescription: true,
-    implementationPlans: true,
-    researchReports: true,
-    codebaseAnalysis: true, // MANDATORY: Get boomerang's codebase analysis
-  },
+query_task_context({
+  taskId: taskId,
+  includeLevel: 'comprehensive',
+  includePlans: false,
+  includeSubtasks: false,
+  includeAnalysis: true,
+  includeComments: true,
 });
 ```
 
@@ -157,44 +155,32 @@ For each research question:
 - **Fallback options** and contingency planning
 - **Testing strategies** to validate implementation
 
-### Step 6: Comprehensive Research Report Creation (1 MCP call)
+### Step 6: Research Report Creation (1 MCP call)
 
 ```javascript
-mutate_data({
-  operation: 'create',
-  entity: 'researchReport',
-  data: {
-    taskId: taskId,
-    title: 'Research Report: [Descriptive Title]',
+research_operations({
+  operation: 'create_research',
+  taskId: taskId,
+  researchData: {
+    title: 'Descriptive research title',
     summary: 'Executive summary of key findings and recommendations',
-    methodology: 'Research approaches and sources used',
-    findings:
-      'Detailed findings organized by research question with supporting evidence',
-    recommendations:
-      'Specific, actionable implementation guidance prioritized by importance',
-    riskAssessment:
-      'Identified risks, mitigation strategies, and alternative approaches',
-    references: [
-      'Authoritative source 1 with URL and relevance',
-      'Technical documentation 2 with specific sections',
-      'Code example 3 with implementation patterns',
-    ],
-    nextSteps:
-      'Recommended next steps for architecture and implementation phases',
+    findings: 'Detailed technical analysis with evidence and reasoning',
+    recommendations: 'Specific, actionable implementation guidance',
+    references: ['Array of sources, documentation, examples'],
   },
 });
 ```
 
-### Step 7: Return to Boomerang with Findings (1 MCP call)
+### Step 7: Architect Delegation (1 MCP call)
 
 ```javascript
 workflow_operations({
   operation: 'delegate',
   taskId: taskId,
   fromRole: 'researcher',
-  toRole: 'boomerang',
+  toRole: 'architect',
   message:
-    'Research complete. Key findings: [2-3 sentence summary of most critical discoveries and recommendations].',
+    'Research complete with validated recommendations and implementation guidance',
 });
 ```
 

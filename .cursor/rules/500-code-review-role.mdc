@@ -25,21 +25,16 @@ Conduct comprehensive quality assurance through mandatory manual testing, securi
 
 ## Code Review Phase: Comprehensive Quality Assurance
 
-### Step 1: Complete Implementation Context Retrieval (1 MCP call - if context not fresh)
+### Step 1: Implementation Review Context (1 MCP call)
 
 ```javascript
-query_data({
-  entity: 'task',
-  where: { id: taskId },
-  include: {
-    taskDescription: true,
-    implementationPlans: {
-      include: { subtasks: true },
-    },
-    researchReports: true,
-    reviewReports: true,
-    codebaseAnalysis: true, // MANDATORY: Get boomerang's codebase analysis
-  },
+query_task_context({
+  taskId: taskId,
+  includeLevel: 'comprehensive',
+  includePlans: true,
+  includeSubtasks: true,
+  includeAnalysis: true,
+  includeComments: false,
 });
 ```
 
@@ -257,77 +252,60 @@ query_data({
 - **Security Validation**: Document security testing results and compliance evidence
 - **Quality Metrics**: Document code quality metrics and standards compliance
 
-### Step 8: Comprehensive Review Report Creation (1 MCP call)
+### Step 8: Code Review Report Creation (1 MCP call)
 
 ```javascript
-mutate_data({
-  operation: 'create',
-  entity: 'reviewReport',
-  data: {
-    taskId: taskId,
-    status: 'APPROVED' | 'APPROVED_WITH_RESERVATIONS' | 'NEEDS_CHANGES',
-    summary: 'Overall assessment of implementation quality and compliance',
-
+review_operations({
+  operation: 'create_review',
+  taskId: taskId,
+  reviewData: {
+    status: 'APPROVED', // or 'APPROVED_WITH_RESERVATIONS' or 'NEEDS_CHANGES'
+    summary: 'Comprehensive review summary with key findings',
+    strengths: 'Implementation strengths and quality highlights',
+    issues: 'Identified issues and areas for improvement',
     acceptanceCriteriaVerification: {
-      functional_requirements: {
-        status: 'verified',
-        evidence:
-          'Specific evidence and test results demonstrating satisfaction',
-      },
-      technical_requirements: {
-        status: 'verified',
-        evidence: 'Performance metrics and technical validation results',
-      },
-      quality_requirements: {
-        status: 'verified',
-        evidence: 'Code quality metrics and standards compliance documentation',
-      },
+      criterion1: 'verification status and evidence',
+      criterion2: 'verification status and evidence',
     },
-
-    manualTestingResults:
-      'Comprehensive manual testing outcomes with specific test scenarios and results',
-    securityTestingResults:
-      'Security validation results including vulnerability assessment and protection verification',
-    performanceTestingResults:
-      'Performance testing outcomes with specific metrics and benchmarks',
-
-    technicalStandardsValidation: {
-      solid_principles:
-        'Systematic verification of SOLID principles application',
-      design_patterns:
-        'Design pattern implementation assessment and validation',
-      code_quality: 'Code quality standards compliance and metrics',
-      testing_coverage: 'Test coverage assessment and quality validation',
-      documentation: 'Documentation completeness and quality assessment',
-    },
-
-    issuesFound: [
-      {
-        severity: 'HIGH|MEDIUM|LOW',
-        category: 'security|performance|functionality|quality',
-        description: 'Specific issue description with location and impact',
-        recommendation: 'Specific remediation steps and timeline',
-      },
-    ],
-
-    recommendations:
-      'Specific recommendations for improvement and optimization',
-    evidence: 'Supporting documentation, test results, and validation proof',
-    nextSteps: 'Recommended next steps based on review outcomes',
+    manualTestingResults: 'Results of hands-on testing and validation',
+    requiredChanges: 'Specific changes required if status is NEEDS_CHANGES',
   },
 });
 ```
 
-### Step 9: Review Completion and Workflow Transition (1 MCP call)
+### Step 9: Workflow Completion or Escalation (1 MCP call)
+
+**If APPROVED:**
 
 ```javascript
 workflow_operations({
-  operation: 'delegate',
+  operation: 'complete',
   taskId: taskId,
   fromRole: 'code-review',
-  toRole: 'boomerang',
-  message:
-    'Code review complete. Status: [APPROVAL_STATUS]. [Brief summary of key findings and recommendations].',
+  completionData: {
+    summary: 'Implementation approved with all quality gates satisfied',
+    filesModified: ['Array of final implemented files'],
+    acceptanceCriteriaVerification: {
+      criterion1: 'verified with evidence',
+      criterion2: 'verified with evidence',
+    },
+  },
+});
+```
+
+**If NEEDS_CHANGES:**
+
+```javascript
+workflow_operations({
+  operation: 'escalate',
+  taskId: taskId,
+  fromRole: 'code-review',
+  toRole: 'senior-developer',
+  escalationData: {
+    reason: 'Implementation requires changes before approval',
+    severity: 'medium',
+    blockers: ['Specific issues requiring resolution'],
+  },
 });
 ```
 

@@ -28,11 +28,10 @@ Handle efficient task intake and final delivery with minimal token usage through
 ### Step 1: Existing Task Check (1 MCP call)
 
 ```javascript
-query_data({
-  entity: 'task',
-  where: { status: 'in-progress' },
-  select: { id: true, name: true, status: true },
-  pagination: { take: 10 },
+task_operations({
+  operation: 'list',
+  status: 'in-progress',
+  priority: 'High',
 });
 ```
 
@@ -42,9 +41,9 @@ query_data({
 
 **Verify and analyze memory bank files:**
 
-1. **ProjectOverview.md**: Extract business context, features, stakeholder requirements
-2. **TechnicalArchitecture.md**: Extract architecture patterns, component structure, technology stack
-3. **DeveloperGuide.md**: Extract implementation standards, coding patterns, quality guidelines
+1. **memory-bank/ProjectOverview.md**: Extract business context, features, stakeholder requirements
+2. **memory-bank/TechnicalArchitecture.md**: Extract architecture patterns, component structure, technology stack
+3. **memory-bank/DeveloperGuide.md**: Extract implementation standards, coding patterns, quality guidelines
 
 **If any memory bank file is missing:** Stop workflow and alert user with specific guidance
 
@@ -80,52 +79,74 @@ query_data({
 
 **Document comprehensive findings** with file locations and code examples
 
-### Step 4.1: CodebaseAnalysis Creation (MANDATORY - 1 MCP call)
+### Step 5: Comprehensive Task Creation with CodebaseAnalysis (MANDATORY - 1 MCP call)
 
-**CRITICAL: Create structured codebase analysis for ALL downstream roles:**
+**CRITICAL: Create task with structured codebase analysis for ALL downstream roles:**
 
 ```javascript
-mutate_data({
+task_operations({
   operation: 'create',
-  entity: 'codebaseAnalysis',
-  data: {
+  taskData: {
     taskId: taskId,
+    name: 'Clear, descriptive task name',
+    status: 'not-started',
+    priority: 'High',
+  },
+  description: {
+    description: 'Comprehensive what/why/how analysis',
+    businessRequirements: 'Business value and user impact',
+    technicalRequirements: 'Technical constraints and integration needs',
+    acceptanceCriteria: [
+      'Specific, testable functional requirements',
+      'Technical implementation standards to meet',
+      'Quality gates and validation requirements',
+      'Integration and compatibility requirements',
+    ],
+  },
+  codebaseAnalysis: {
     architectureFindings: {
-      moduleStructure: 'Domain-driven design with modules/layers',
-      techStack: 'Detailed technology stack with versions',
-      fileStructure: 'Important directories and their purposes',
-      dependencies: 'Key dependencies and integration points'
+      moduleStructure: 'Domain-driven design with feature modules',
+      techStack: ['NestJS 10.x', 'TypeScript 5.x', 'Prisma ORM', 'PostgreSQL'],
+      fileStructure: {
+        'src/': 'Main application source',
+        'src/domains/': 'Domain-specific modules',
+        'prisma/': 'Database schema and migrations',
+      },
+      dependencies: ['@nestjs/core', '@prisma/client', 'class-validator'],
     },
     problemsIdentified: {
-      codeSmells: ['Large classes', 'Duplicate logic', 'Complex dependencies'],
-      technicalDebt: 'Areas needing refactoring or improvement',
-      rootCauses: 'Why problems exist and impact assessment',
-      qualityIssues: 'Code quality concerns specific to task area'
+      codeSmells: ['Large service classes', 'Duplicate validation logic'],
+      technicalDebt: 'Missing error handling in older controllers',
+      rootCauses: 'Rapid development without refactoring cycles',
+      qualityIssues: 'Inconsistent error response formats',
     },
     implementationContext: {
-      patterns: ['Repository', 'Service layer', 'Dependency injection'],
-      codingStandards: 'TypeScript standards, naming conventions',
-      qualityGuidelines: 'Testing requirements, documentation standards',
-      integrationApproaches: 'How new code should integrate'
+      patterns: ['Repository pattern', 'Service layer', 'Dependency injection'],
+      codingStandards: 'ESLint + Prettier, TypeScript strict mode',
+      qualityGuidelines: 'Jest unit tests, E2E tests with Supertest',
+      integrationApproaches: 'RESTful APIs, OpenAPI documentation',
     },
     integrationPoints: {
-      apiBoundaries: 'External API endpoints and contracts',
-      serviceInterfaces: 'Internal service communication patterns',
-      dataLayer: 'Database schemas and data access patterns',
-      externalDependencies: 'Third-party services and libraries'
+      apiBoundaries: '/api/v1/* endpoints with OpenAPI specs',
+      serviceInterfaces: 'Injectable services with interface contracts',
+      dataLayer: 'Prisma ORM with PostgreSQL database',
+      externalDependencies: ['Authentication service', 'File storage service'],
     },
     qualityAssessment: {
-      testingCoverage: 'Current testing state and requirements',
-      performanceBaseline: 'Performance considerations and benchmarks',
-      securityConsiderations: 'Security patterns and requirements',
-      documentationState: 'Current documentation and gaps'
+      testingCoverage: '85% unit test coverage, E2E tests for critical paths',
+      performanceBaseline: '< 200ms API response time',
+      securityConsiderations: 'JWT authentication, input validation',
+      documentationState: 'OpenAPI specs up-to-date, README comprehensive',
     },
-    filesCovered: ['Array of analyzed files with their roles'],
+    filesCovered: ['src/auth/', 'src/users/', 'src/common/'],
     technologyStack: {
-      'detailed tech stack with versions and usage patterns'
+      backend: 'NestJS with TypeScript',
+      database: 'PostgreSQL with Prisma ORM',
+      testing: 'Jest + Supertest',
+      documentation: 'OpenAPI/Swagger',
     },
-    analyzedBy: 'boomerang'
-  }
+    analyzedBy: 'boomerang',
+  },
 });
 ```
 
@@ -136,7 +157,7 @@ mutate_data({
 - **Senior Developer**: Following established patterns and integration approaches
 - **Code Review**: Validating against established standards and quality requirements
 
-### Step 5: Research Decision Framework (No MCP calls)
+### Step 6: Research Decision Framework (No MCP calls)
 
 **Evaluate research necessity using decision criteria:**
 
@@ -157,34 +178,6 @@ mutate_data({
 
 **Document specific research questions** if research is needed
 
-### Step 6: Comprehensive Task Creation (1 MCP call)
-
-```javascript
-mutate_data({
-  operation: 'create',
-  entity: 'task',
-  data: {
-    id: 'TSK-001', // Sequential format
-    name: 'Clear, descriptive task name',
-    status: 'not-started',
-    taskDescription: {
-      create: {
-        description: 'Comprehensive what/why/how analysis',
-        businessRequirements: 'Business value and user impact',
-        technicalRequirements: 'Technical constraints and integration needs',
-        acceptanceCriteria: [
-          'Specific, testable functional requirements',
-          'Technical implementation standards to meet',
-          'Quality gates and validation requirements',
-          'Integration and compatibility requirements',
-        ],
-      },
-    },
-  },
-  include: { taskDescription: true },
-});
-```
-
 ### Step 7: Role Delegation (1 MCP call)
 
 ```javascript
@@ -192,32 +185,35 @@ workflow_operations({
   operation: 'delegate',
   taskId: 'TSK-001',
   fromRole: 'boomerang',
-  toRole: 'researcher' | 'architect', // Based on research decision
+  toRole: 'researcher', // or 'architect' based on research decision
   message: 'Brief, focused delegation message with key context',
 });
 ```
 
-**Total Initial Phase MCP Calls: 4 maximum (includes mandatory CodebaseAnalysis creation)**
+**Total Initial Phase MCP Calls: 2 maximum**
 
 ## Final Phase: Evidence-Based Completion
 
 ### Step 1: Complete Implementation Review (1 MCP call)
 
 ```javascript
-query_data({
-  entity: 'task',
-  where: { id: taskId },
-  include: {
-    taskDescription: true,
-    implementationPlans: {
-      include: { subtasks: true },
-    },
-    researchReports: true,
-    reviewReports: true,
-    completionReports: true,
-  },
+query_task_context({
+  taskId: taskId,
+  includeLevel: 'comprehensive',
+  includePlans: true,
+  includeSubtasks: true,
+  includeAnalysis: true,
+  includeComments: false,
 });
 ```
+
+**Comprehensive review of:**
+
+- Task description and acceptance criteria
+- Implementation plans and subtasks
+- Research reports and analysis
+- Code review documentation
+- Completion reports and validation
 
 ### Step 2: Acceptance Criteria Verification (No MCP calls)
 
@@ -239,31 +235,44 @@ query_data({
 4. **Performance and security validation** results
 5. **Documentation completeness** and accuracy verification
 
-### Step 4: Completion Documentation (1 MCP call)
+### Step 4: Final Quality Verification (1 MCP call)
 
 ```javascript
-mutate_data({
-  operation: 'create',
-  entity: 'completionReport',
-  data: {
-    taskId: taskId,
-    summary: 'Concise accomplishment summary with key deliverables',
-    delegationSummary: 'Workflow execution efficiency summary',
+query_reports({
+  taskId: taskId,
+  reportTypes: ['research', 'code_review', 'completion'],
+  mode: 'evidence_focused',
+  includeEvidence: true,
+});
+```
+
+**Verification requirements:**
+
+- All acceptance criteria verified with specific evidence
+- Code review approval confirmed with testing validation
+- System integration validated through comprehensive testing
+- Quality standards compliance documented
+
+### Step 5: User Delivery Preparation (1 MCP call)
+
+```javascript
+review_operations({
+  operation: 'create_completion',
+  taskId: taskId,
+  completionData: {
+    summary: 'Comprehensive implementation completion summary',
     acceptanceCriteriaVerification: {
-      // JSON object with verification results for each criterion
-      criterion1: { status: 'verified', evidence: 'file locations and proof' },
-      criterion2: {
-        status: 'verified',
-        evidence: 'test results and validation',
-      },
+      criterion1: 'verification evidence',
+      criterion2: 'verification evidence',
     },
-    filesModified: ['Array of changed/created files with descriptions'],
-    qualityValidation: 'Summary of quality standards compliance',
+    delegationSummary: 'Role transition summary with key decisions',
+    qualityValidation: 'Evidence of quality gate compliance',
+    filesModified: ['list of modified files with descriptions'],
   },
 });
 ```
 
-### Step 5: Final Workflow Completion (1 MCP call)
+### Step 6: Final Workflow Completion (1 MCP call)
 
 ```javascript
 workflow_operations({
@@ -271,13 +280,17 @@ workflow_operations({
   taskId: taskId,
   fromRole: 'boomerang',
   completionData: {
-    status: 'completed',
-    completedAt: new Date().toISOString(),
+    summary: 'Task implementation complete with all quality gates satisfied',
+    filesModified: ['list of modified files with descriptions'],
+    acceptanceCriteriaVerification: {
+      criterion1: 'verification evidence',
+      criterion2: 'verification evidence',
+    },
   },
 });
 ```
 
-### Step 6: User Delivery (No MCP calls)
+### Step 7: User Delivery (No MCP calls)
 
 **Deliver concise, actionable summary:**
 
@@ -310,7 +323,7 @@ workflow_operations({
 - [Code quality improvements]
 ```
 
-**Total Final Phase MCP Calls: 3 maximum**
+**Total Final Phase MCP Calls: 4 maximum**
 
 ## Token Efficiency Best Practices
 
@@ -366,7 +379,7 @@ workflow_operations({
 
 ### Efficiency Success:
 
-- MCP calls within established limits (3 initial, 3 final)
+- MCP calls within established limits (3 initial, 4 final)
 - Token-efficient communication throughout workflow
 - State awareness prevents redundant operations
 - Clear role transitions with appropriate context handoff

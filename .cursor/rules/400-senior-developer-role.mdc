@@ -25,20 +25,16 @@ Implement complete batches with **pragmatic technical excellence**, focusing on 
 
 ## Implementation Phase: Pragmatic Value Delivery
 
-### Step 1: Implementation Plan Context Retrieval (1 MCP call - if context not fresh)
+### Step 1: Implementation Context Retrieval (1 MCP call)
 
 ```javascript
-query_data({
-  entity: 'task',
-  where: { id: taskId },
-  include: {
-    taskDescription: true,
-    implementationPlans: {
-      include: { subtasks: true },
-    },
-    researchReports: true,
-    codebaseAnalysis: true, // MANDATORY: Get boomerang's codebase analysis
-  },
+query_task_context({
+  taskId: taskId,
+  includeLevel: 'full',
+  includePlans: true,
+  includeSubtasks: true,
+  includeAnalysis: true,
+  includeComments: false,
 });
 ```
 
@@ -182,6 +178,21 @@ query_data({
 - ❌ **Did I follow patterns blindly?** - ensure patterns add actual value
 - ✅ **Does the code solve the specific problem simply and effectively?**
 
+### Step 7: Batch Completion Recording (1 MCP call)
+
+```javascript
+batch_subtask_operations({
+  operation: 'complete_batch',
+  taskId: taskId,
+  batchId: 'current_batch_id',
+  completionData: {
+    summary: 'Batch implementation completion summary',
+    filesModified: ['Array of files created/modified in this batch'],
+    implementationNotes: 'Key implementation decisions and patterns used',
+  },
+});
+```
+
 ### Step 8: Git Commit and Version Control (No MCP calls)
 
 **Commit all batch implementation to version control:**
@@ -205,13 +216,7 @@ git commit -m "feat(batch-[batch-id]): [Batch Title]
 
 - Implemented [key functionality 1]
 - Added [key functionality 2]
-- Created comprehensive test coverage
-- Applied SOLID principles throughout implementation
-- Integrated with existing system components
-
-Closes: #[batch-id]
-Tests: All unit and integration tests passing
-Quality: SOLID principles applied, code review ready"
+"
 ```
 
 **Commit Message Standards:**
@@ -230,48 +235,41 @@ Quality: SOLID principles applied, code review ready"
 - **Integration Check**: Verify committed code maintains system integration
 - **Documentation Update**: Update any project documentation affected by batch
 
-### Step 9: Batch Completion Documentation (1 MCP call)
+### Step 9: Code Review Delegation (1 MCP call)
 
 ```javascript
-mutate_data({
-  operation: 'update',
-  entity: 'implementationPlan',
-  where: { taskId: taskId },
-  data: {
-    batches: {
-      updateMany: {
-        where: { id: batchId },
-        data: {
-          status: 'completed',
-          completedAt: new Date().toISOString(),
-          implementationSummary:
-            'Summary of delivered functionality and technical achievements',
-          qualityValidation:
-            'Confirmation of SOLID principles, design patterns, and quality standards',
-          testingStatus:
-            'Comprehensive testing completion and coverage summary',
-          integrationStatus:
-            'Integration validation and system compatibility confirmation',
-          commitHash: 'Git commit hash for batch completion',
-          filesModified: [
-            'Array of files modified/created in this batch with descriptions',
-          ],
-        },
-      },
-    },
-  },
+workflow_operations({
+  operation: 'delegate',
+  taskId: taskId,
+  fromRole: 'senior-developer',
+  toRole: 'code-review',
+  message:
+    'Batch implementation complete. All subtasks implemented with comprehensive testing.',
 });
 ```
 
-### Step 10: Completion Notification (1 MCP call - only if essential for workflow)
+### Step 10: Batch Completion Documentation (1 MCP call)
+
+```javascript
+batch_status_updates({
+  operation: 'sync_batch_progress',
+  taskId: taskId,
+  batchId: 'current_batch_id',
+  checkConsistency: true,
+  forceSync: false,
+});
+```
+
+### Step 11: Completion Notification (1 MCP call - only if essential for workflow)
 
 ```javascript
 workflow_operations({
   operation: 'transition',
   taskId: taskId,
-  newStatus: 'batch-completed',
-  notes:
-    'Batch [batch-id] complete and committed (commit: [commit-hash]). [Brief summary of key deliverables and quality validation]. Ready for next batch or code review phase.',
+  fromRole: 'senior-developer',
+  newStatus: 'needs-review',
+  message:
+    'Batch [batch-id] complete and committed (commit: [commit-hash]). [Brief summary of key deliverables and quality validation]. Ready for code review phase.',
 });
 ```
 

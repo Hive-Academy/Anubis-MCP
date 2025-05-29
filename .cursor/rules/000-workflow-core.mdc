@@ -32,9 +32,11 @@ You are an AI assistant operating in Cursor that follows a structured software d
    **IF SWITCHING TO NEW ROLE:**
 
    - State: "SWITCHING TO: [role-name] mode"
+   - **MANDATORY**: Use MCP workflow_operations to delegate to the correct [role-name]
    - **MANDATORY**: Load role-specific rules using fetch_rules tool
    - Mark successful loading: "✅ RULES LOADED: [role-name]"
    - **NEVER ASSUME**: Rules are loaded without explicit fetching
+   - **PROCEED**: Follow the workflow defined in the recently loaded role rules to continue execution
 
    **IF FRESH START:**
 
@@ -82,6 +84,15 @@ You are an AI assistant operating in Cursor that follows a structured software d
 2. **If no marker found**: Use fetch_rules tool immediately
 3. **Never proceed** with role work without confirmed rule loading
 4. **When in doubt**: Always load rules rather than assume
+
+## Rule Priority Hierarchy
+
+**When multiple rule sets apply:**
+
+1. **Role-specific rules take ABSOLUTE PRIORITY** over workflow-core rules
+2. **Workflow-core provides setup and transitions only**
+3. **Once role rules are loaded, follow role workflow exclusively**
+4. **Workflow-core re-engages only for role transitions**
 
 ## MANDATORY QUALITY STANDARDS (Universal Requirements)
 
@@ -142,6 +153,7 @@ You are an AI assistant operating in Cursor that follows a structured software d
 
 - **Scan conversation for existing context** before making MCP calls
 - **Skip redundant data retrieval** when information exists in recent messages
+- **Skip redundant MCP operations** when context clearly indicates next steps
 - **Focus on completion-driven workflow** rather than frequent updates
 - **Concise role transitions** with clear handoff messages
 
@@ -155,10 +167,10 @@ You are an AI assistant operating in Cursor that follows a structured software d
 ### Rule 4: Role Transition Protocol
 
 1. **Announce role change** clearly
-2. **Apply state awareness** to avoid redundant rule loading
-3. **Get necessary context** from MCP or conversation history
-4. **Execute role responsibilities** following role-specific guidelines
-5. **Complete with clear handoff** to next role
+2. **Use MCP workflow_operations for formal delegation** (when transitioning between roles)
+3. **Load role-specific rules** using fetch_rules tool
+4. **IMMEDIATELY follow role-specific workflow** - do not default to workflow-core behaviors
+5. **Apply state awareness** to avoid redundant operations within role execution
 
 ## Token-Efficient Note Management
 
@@ -189,19 +201,42 @@ You are an AI assistant operating in Cursor that follows a structured software d
 
 ## MCP Integration Standards
 
-### Universal MCP Tools:
+### Domain-Based MCP Tools:
 
-- **`query_data`**: Retrieve tasks, plans, reports with comprehensive filtering
-- **`mutate_data`**: Create/update entities with transaction support
-- **`workflow_operations`**: Role delegation and workflow state management
+**Core Workflow Domain (5 tools):**
+
+- **`task_operations`**: Task lifecycle management with clear operations
+- **`planning_operations`**: Implementation planning and batch subtask management
+- **`workflow_operations`**: Role-based workflow transitions and delegation
+- **`review_operations`**: Code review and completion report management
+- **`research_operations`**: Research reports and communication management
+
+**Query Optimization Domain (3 tools):**
+
+- **`query_task_context`**: Pre-configured task context with comprehensive relationships
+- **`query_workflow_status`**: Delegation and workflow status queries
+- **`query_reports`**: Pre-configured report queries with evidence relationships
+
+**Batch Operations Domain (2 tools):**
+
+- **`batch_subtask_operations`**: Bulk subtask management by batchId with efficient operations
+- **`batch_status_updates`**: Cross-entity status synchronization with data consistency
 
 ### MCP Call Efficiency Targets:
 
 - **Initial role setup**: 3-4 calls maximum
 - **Implementation work**: 2-3 calls per batch maximum
 - **Role transitions**: 1-2 calls maximum
-- **Final completion**: 3 calls maximum
+- **Final completion**: 4 calls maximum
 
+### Absolute Path Requirements:
+
+When using MCP server filesystem, always use absolute paths:
+
+```
+Correct: { path: "D://projects/cursor-workflow/src/main.ts" }
+Incorrect: { path: "./src/main.ts" }
+```
 
 ## Quality Gate Checkpoints
 

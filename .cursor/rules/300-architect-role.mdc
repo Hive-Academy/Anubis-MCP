@@ -25,18 +25,16 @@ Design comprehensive implementation plans using batch-based organization while e
 
 ## Architecture Phase: Technical Excellence Planning
 
-### Step 1: Full Context Retrieval (1 MCP call - if context not fresh)
+### Step 1: Comprehensive Context Retrieval (1 MCP call)
 
 ```javascript
-query_data({
-  entity: 'task',
-  where: { id: taskId },
-  include: {
-    taskDescription: true,
-    researchReports: true,
-    implementationPlans: true,
-    codebaseAnalysis: true, // MANDATORY: Get boomerang's codebase analysis
-  },
+query_task_context({
+  taskId: taskId,
+  includeLevel: 'comprehensive',
+  includePlans: true,
+  includeSubtasks: false,
+  includeAnalysis: true,
+  includeComments: true,
 });
 ```
 
@@ -167,67 +165,51 @@ Each batch should include:
 - **Security Implementation**: Authentication, authorization, and data protection
 - **Testing Organization**: Unit, integration, and end-to-end testing structure
 
-### Step 6: Comprehensive Implementation Plan Creation (1 MCP call)
+### Step 6: Implementation Plan Creation (1 MCP call)
 
 ```javascript
-mutate_data({
-  operation: 'create',
-  entity: 'implementationPlan',
-  data: {
-    taskId: taskId,
-    overview:
-      'Technical summary of implementation approach and key architectural decisions',
-    approach:
-      'Batch-based implementation methodology with quality gates and integration points',
-    technicalDecisions:
-      'Key architectural choices with justification and alternatives considered',
-    qualityStandards:
-      'SOLID principles, design patterns, and code quality requirements to be enforced',
-    integrationStrategy:
-      'How implementation integrates with existing system and external services',
-    testingStrategy:
-      'Comprehensive testing approach including unit, integration, and manual testing',
-    securityImplementation:
-      'Security measures, validation, and protection strategies',
+planning_operations({
+  operation: 'create_plan',
+  taskId: taskId,
+  planData: {
+    overview: 'Comprehensive implementation strategy overview',
+    approach: 'Technical approach with architectural patterns',
+    technicalDecisions: 'Key technical decisions with rationale',
+    filesToModify: ['Array of files to be created/modified'],
     createdBy: 'architect',
-    filesToModify: [
-      'Array of files to be created or modified with descriptions of changes',
-    ],
-    batches: [
-      {
-        id: 'B001',
-        title: 'Descriptive batch title',
-        description: 'Clear description of batch purpose and deliverables',
-        dependsOn: [], // Array of batch IDs this batch depends on
-        priority: 'HIGH', // HIGH, MEDIUM, LOW
-        estimatedEffort: 'Development time estimate',
-        subtasks: [
-          'Specific, actionable subtask with clear deliverable',
-          'Related subtask that contributes to batch goals',
-          'Additional subtasks (3-8 total per batch)',
-        ],
-        acceptanceCriteria: [
-          'Specific, testable criteria for batch completion',
-          'Integration requirements and validation needs',
-        ],
-        testingRequirements: [
-          'Unit testing requirements for batch components',
-          'Integration testing with other system components',
-          'Manual testing scenarios and expected outcomes',
-        ],
-        securityConsiderations: [
-          'Security requirements specific to this batch',
-          'Validation and protection measures to implement',
-        ],
-      },
-      // Additional batches following same structure
-    ],
   },
-  include: { subtasks: true },
 });
 ```
 
-### Step 7: First Batch Delegation (1 MCP call)
+### Step 7: Batch-Based Subtask Creation (1 MCP call)
+
+**Create 4-6 logical batches with 3-8 subtasks each:**
+
+```javascript
+planning_operations({
+  operation: 'create_subtasks',
+  taskId: taskId,
+  batchData: {
+    batchId: 'B001',
+    batchTitle: 'Core Foundation Implementation',
+    subtasks: [
+      {
+        name: 'Setup Module Structure',
+        description: 'Create module structure and dependencies',
+        sequenceNumber: 1,
+      },
+      {
+        name: 'Implement Core Services',
+        description: 'Create core service classes and interfaces',
+        sequenceNumber: 2,
+      },
+      // Additional subtasks...
+    ],
+  },
+});
+```
+
+### Step 8: Senior Developer Delegation (1 MCP call)
 
 ```javascript
 workflow_operations({
@@ -236,7 +218,7 @@ workflow_operations({
   fromRole: 'architect',
   toRole: 'senior-developer',
   message:
-    'Implementation plan ready. Begin with batch [B001]: [batch title]. Focus on [key priorities and technical considerations].',
+    'Implementation plan ready with batch-based subtasks. Dependencies clearly defined.',
 });
 ```
 
