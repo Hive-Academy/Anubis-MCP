@@ -78,7 +78,3 @@ export type TemplateDataServiceInterface =
   | ImplementationPlanAnalyticsDataService
   | CodeReviewInsightsDataService
   | DelegationFlowAnalysisDataService;
-
-// Template data service exports
-export { TemplateDataService } from '../../services/data/template-data.service';
-export { SpecializedTemplateDataService } from '../../services/data/specialized-template-data.service';

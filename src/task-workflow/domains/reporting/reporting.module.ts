@@ -15,19 +15,31 @@ import { EnhancedInsightsGeneratorService } from './services/analytics/enhanced-
 import { SmartResponseSummarizationService } from './services/analytics/smart-response-summarization.service';
 import { SchemaDrivenIntelligenceService } from './services/analytics/schema-driven-intelligence.service';
 
-// === DATA SERVICES (Keep all - database queries & transformations) ===
-import { CoreMetricsService } from './services/data/core-metrics.service';
-import { MetricsCalculatorService } from './services/data/metrics-calculator.service';
-import { ReportDataAccessService } from './services/data/report-data-access.service';
-import { TemplateDataService } from './services/data/template-data.service';
-import { SpecializedTemplateDataService } from './services/data/specialized-template-data.service';
-import { IndividualTaskTemplateDataService } from './services/data/individual-task-template-data.service';
-import { ComprehensiveTemplateDataService } from './services/data/comprehensive-template-data.service';
-import { ImplementationPlanTemplateDataService } from './services/data/implementation-plan-template-data.service';
-import { CodeReviewDelegationTemplateDataService } from './services/data/code-review-delegation-template-data.service';
-import { TaskProgressExecutionService } from './services/data/task-progress-execution.service';
-import { CodeReviewResearchService } from './services/data/code-review-research.service';
-import { CommunicationCollaborationService } from './services/data/communication-collaboration.service';
+// === NEW ORGANIZED DATA API SERVICES ===
+// Foundation Services
+import {
+  CoreMetricsService,
+  MetricsCalculatorService,
+  ReportDataAccessService,
+} from './services/data-api/foundation';
+
+// Report-Specific Data API Services
+import { TaskSummaryDataApiService } from './services/data-api/task-summary';
+import {
+  DelegationAnalyticsDataApiService,
+  CodeReviewDelegationTemplateDataService,
+} from './services/data-api/delegation-analytics';
+import {
+  PerformanceDashboardDataApiService,
+  TaskProgressExecutionService,
+} from './services/data-api/performance-dashboard';
+import {
+  ComprehensiveDataApiService,
+  ComprehensiveTemplateDataService,
+} from './services/data-api/comprehensive';
+import { CodeReviewResearchService } from './services/data-api/code-review';
+import { ImplementationPlanTemplateDataService } from './services/data-api/implementation-plan';
+import { CommunicationCollaborationService } from './services/data-api/communication';
 
 // === MINIMAL INFRASTRUCTURE (Only essentials) ===
 import { ReportingConfigService } from './services/infrastructure/reporting-config.service';
@@ -52,9 +64,6 @@ import { DelegationFlowAnalysisTaskGeneratorService } from './services/generator
 
 // === RENDERING SERVICE (PDF/PNG generation) ===
 import { ReportRenderingService } from './report-rendering.service';
-
-// === REPORT TEMPLATE DATA API SERVICES ===
-import { TaskSummaryDataApiService } from './services/report-templates-data-api/task-summary-data-api.service';
 
 /**
  * Simplified Reporting Module
@@ -126,9 +135,6 @@ import { TaskSummaryDataApiService } from './services/report-templates-data-api/
     CoreMetricsService,
     MetricsCalculatorService,
     ReportDataAccessService,
-    TemplateDataService,
-    SpecializedTemplateDataService,
-    IndividualTaskTemplateDataService,
     ComprehensiveTemplateDataService,
     ImplementationPlanTemplateDataService,
     CodeReviewDelegationTemplateDataService,
@@ -141,6 +147,9 @@ import { TaskSummaryDataApiService } from './services/report-templates-data-api/
 
     // === REPORT TEMPLATE DATA API SERVICES ===
     TaskSummaryDataApiService,
+    DelegationAnalyticsDataApiService,
+    PerformanceDashboardDataApiService,
+    ComprehensiveDataApiService,
   ],
   exports: [
     // === PRIMARY EXPORTS ===
@@ -162,7 +171,6 @@ import { TaskSummaryDataApiService } from './services/report-templates-data-api/
 
     // === DATA EXPORTS (for external use) ===
     CoreMetricsService,
-    TemplateDataService,
     ReportDataAccessService,
 
     // === RENDERING SERVICE (PDF/PNG generation) ===
