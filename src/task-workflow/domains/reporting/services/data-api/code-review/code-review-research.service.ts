@@ -17,16 +17,16 @@ import {
   ReviewMetric,
   QualityIssue,
   ReviewRecommendation,
-} from '../../interfaces/templates/code-review-quality.interface';
+} from './code-review-quality.interface';
 import {
   ResearchDocumentationData,
   ResearchFinding,
   DocumentationSection,
   KnowledgeGap,
   ResearchRecommendation,
-} from '../../interfaces/templates/research-documentation.interface';
-import { ReportDataAccessService } from './report-data-access.service';
-import { MetricsCalculatorService } from './metrics-calculator.service';
+} from '../communication/research-documentation.interface';
+import { ReportDataAccessService } from '../foundation/report-data-access.service';
+import { MetricsCalculatorService } from '../foundation/metrics-calculator.service';
 
 @Injectable()
 export class CodeReviewResearchService {

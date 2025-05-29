@@ -18,9 +18,9 @@ import {
   CollaborationEvent,
   TeamInteraction,
   WorkflowCoordination,
-} from '../../interfaces/templates/communication-collaboration.interface';
-import { ReportDataAccessService } from './report-data-access.service';
-import { MetricsCalculatorService } from './metrics-calculator.service';
+} from './communication-collaboration.interface';
+import { ReportDataAccessService } from '../foundation/report-data-access.service';
+import { MetricsCalculatorService } from '../foundation/metrics-calculator.service';
 
 @Injectable()
 export class CommunicationCollaborationService {

@@ -13,7 +13,6 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { ReportFilters } from '../../interfaces/report-data.interface';
 import {
   ComprehensiveDataService,
   ComprehensiveTemplateData,
@@ -21,13 +20,16 @@ import {
   RecentActivityItem,
   RolePerformanceItem,
   StrategicRecommendationItem,
-} from '../../interfaces/templates/comprehensive-template.interface';
-import { MetricsCalculatorService } from './metrics-calculator.service';
-import { ReportDataAccessService } from './report-data-access.service';
-import { AdvancedAnalyticsService } from '../analytics/advanced-analytics.service';
-import { TimeSeriesAnalysisService } from '../analytics/time-series-analysis.service';
-import { PerformanceBenchmarkService } from '../analytics/performance-benchmark.service';
-import { EnhancedInsightsGeneratorService } from '../analytics/enhanced-insights-generator.service';
+} from './comprehensive-template.interface';
+import { AdvancedAnalyticsService } from '../../analytics/advanced-analytics.service';
+import { EnhancedInsightsGeneratorService } from '../../analytics/enhanced-insights-generator.service';
+import { PerformanceBenchmarkService } from '../../analytics/performance-benchmark.service';
+import { TimeSeriesAnalysisService } from '../../analytics/time-series-analysis.service';
+import { ReportFilters } from '../../generators/base-report-generator.interface';
+import {
+  ReportDataAccessService,
+  MetricsCalculatorService,
+} from '../foundation';
 
 @Injectable()
 export class ComprehensiveTemplateDataService
@@ -174,10 +176,10 @@ export class ComprehensiveTemplateDataService
 
     return roles.map((role) => {
       const roleTransitions = delegationMetrics.modeTransitions.filter(
-        (t) => t.toMode === role,
+        (t: { toMode: string }) => t.toMode === role,
       );
       const tasksHandled = roleTransitions.reduce(
-        (sum, t) => sum + (t.count || 0),
+        (sum: number, t: { count?: number }) => sum + (t.count || 0),
         0,
       );
       const efficiency = Math.round(Math.random() * 20 + 75); // TODO: Calculate from actual efficiency data
@@ -460,6 +462,8 @@ export class ComprehensiveTemplateDataService
     );
     const codeReviewMetrics =
       await this.metricsCalculator.getCodeReviewMetrics(whereClause);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return codeReviewMetrics.totalReviews;
   }
 

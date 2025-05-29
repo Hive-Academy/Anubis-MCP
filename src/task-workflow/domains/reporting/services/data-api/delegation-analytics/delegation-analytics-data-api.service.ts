@@ -13,10 +13,10 @@ import {
   DelegationAnalyticsDataService,
   DelegationMetrics,
   DelegationBottleneck,
-} from '../../interfaces/templates/delegation-analytics-template.interface';
+} from './delegation-analytics-template.interface';
 
 // Foundation services
-import { ReportDataAccessService } from '../data/report-data-access.service';
+import { ReportDataAccessService } from '../foundation/report-data-access.service';
 
 @Injectable()
 export class DelegationAnalyticsDataApiService

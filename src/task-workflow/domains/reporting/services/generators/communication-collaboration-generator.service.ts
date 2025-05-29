@@ -6,10 +6,7 @@ import {
 } from './base-report-generator.interface';
 import { ReportType } from '../../interfaces/service-contracts.interface';
 
-// Data Service (already contains analytics integration)
-import { CommunicationCollaborationService } from '../data/communication-collaboration.service';
-
-// Template Service
+import { CommunicationCollaborationService } from '../data-api';
 import { HandlebarsTemplateService } from '../handlebars-template.service';
 
 /**

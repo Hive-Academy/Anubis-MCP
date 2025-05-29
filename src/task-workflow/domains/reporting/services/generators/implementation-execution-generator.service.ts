@@ -6,10 +6,7 @@ import {
 } from './base-report-generator.interface';
 import { ReportType } from '../../interfaces/service-contracts.interface';
 
-// Data Service (already contains analytics integration)
-import { TaskProgressExecutionService } from '../data/task-progress-execution.service';
-
-// Template Service
+import { TaskProgressExecutionService } from '../data-api';
 import { HandlebarsTemplateService } from '../handlebars-template.service';
 
 /**

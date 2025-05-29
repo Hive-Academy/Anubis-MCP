@@ -7,7 +7,7 @@ import {
 import { ReportType } from '../../interfaces/service-contracts.interface';
 
 // Data Service (already contains analytics integration)
-import { IndividualTaskTemplateDataService } from '../data/individual-task-template-data.service';
+import { TaskSummaryDataApiService } from '../data-api';
 
 // Template Service
 import { HandlebarsTemplateService } from '../handlebars-template.service';
@@ -28,7 +28,7 @@ export class TaskProgressHealthGeneratorService
 
   constructor(
     // The data service IS the glue layer
-    private readonly individualTaskData: IndividualTaskTemplateDataService,
+    private readonly individualTaskData: TaskSummaryDataApiService,
 
     // Template service for rendering
     private readonly templateService: HandlebarsTemplateService,

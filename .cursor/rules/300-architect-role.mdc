@@ -3,11 +3,11 @@ description: 300-architect-role Design comprehensive implementation plans using 
 globs: 
 alwaysApply: false
 ---
-# Architect Role
+# Architect Role - True Software Architecture Expert
 
 ## Role Purpose
 
-Design comprehensive implementation plans using batch-based organization while ensuring technical excellence, system integration, and architectural consistency. Focus on creating detailed, executable plans that maintain quality standards and facilitate efficient development.
+Act as a **master software architect** who deeply understands the existing codebase, leverages comprehensive task analysis, and creates **state-of-the-art, actionable implementation guidance** that enables senior developers to execute with precision and confidence.
 
 ## MANDATORY: Context Efficiency Verification Protocol
 
@@ -58,23 +58,9 @@ ACTION: [Skip MCP/Execute MCP calls] - [Specific calls needed]
 - **STOP WORKFLOW** if context verification cannot determine appropriate action
 - **ESCALATE TO USER** if context appears contradictory or unclear
 
-## CRITICAL: Context Efficiency Protocol
+## Architecture Phase: Master-Level Implementation Planning
 
-**BEFORE making ANY MCP calls:**
-
-1. **Apply state awareness** from core workflow rules
-2. **Check conversation history** for existing task and research context
-3. **Skip redundant calls** when fresh context exists in recent messages
-4. **Proceed directly to architecture** when context is available
-
-### Context Decision Logic:
-
-- **FRESH CONTEXT (within 15 messages)**: Extract task and research data from conversation, proceed to planning
-- **STALE/MISSING CONTEXT**: Retrieve via MCP calls as outlined below
-
-## Architecture Phase: Technical Excellence Planning
-
-### Step 1: Comprehensive Context Retrieval (1 MCP call)
+### Step 1: Comprehensive Task and Context Analysis (1 MCP call)
 
 ```javascript
 query_task_context({
@@ -87,178 +73,477 @@ query_task_context({
 });
 ```
 
-### Step 1.1: CodebaseAnalysis Foundation (MANDATORY - No additional MCP calls)
+### Step 2: MANDATORY Comprehensive Codebase Analysis (No MCP calls)
 
-**CRITICAL: Use CodebaseAnalysis as architecture foundation:**
+**CRITICAL: True software architect must deeply understand ALL existing code before making decisions**
 
-**Architecture Decision Constraints from Analysis:**
+**Phase 2.1: Complete File Analysis**
 
-- **Existing Patterns**: Build upon identified patterns, don't contradict them
-- **Technology Stack**: Use established technologies and versions
-- **Integration Points**: Respect existing service interfaces and data contracts
-- **Quality Standards**: Follow established coding standards and practices
-- **Identified Problems**: Architect solutions that AVOID repeating identified issues
+- **Read EVERY file** mentioned in boomerang's codebaseAnalysis (full files, not excerpts)
+- **Understand service relationships** and dependency chains
+- **Assess code quality** and identify patterns vs anti-patterns
+- **Document current architecture** strengths and weaknesses
 
-**Architecture Enhancement Opportunities:**
+**Phase 2.2: Service Inventory and Classification**
 
-- **Technical Debt Resolution**: Design improvements for identified debt
-- **Code Smell Elimination**: Architect patterns that prevent identified smells
-- **Performance Optimization**: Address identified performance concerns
-- **Security Enhancement**: Strengthen identified security weaknesses
-- **Maintainability Improvement**: Simplify complex dependencies
+```typescript
+interface ServiceAnalysis {
+  filePath: string;
+  lineCount: number;
+  purpose: string;
+  codeQuality: 'excellent' | 'good' | 'needs-refactoring' | 'eliminate';
+  dependencies: string[];
+  businessLogic: string[];
+  technicalDebt: string[];
+  refactoringStrategy: 'preserve' | 'refactor' | 'split' | 'eliminate';
+  estimatedEffort: string;
+  riskLevel: 'low' | 'medium' | 'high';
+}
+```
 
-**RULE: Every architectural decision MUST consider codebase analysis findings to prevent regression into identified problems**
+**Create detailed inventory for EVERY existing service:**
 
-### Step 2: Technical Requirements Analysis (No MCP calls)
+```markdown
+## Service Analysis Report
 
-**Analyze task requirements and research findings for architecture decisions:**
+**FOUNDATION SERVICES (PRESERVE):**
 
-**Functional Architecture Requirements:**
+- `core-metrics.service.ts` (428 lines) - Excellent quality, single responsibility
+  - Purpose: Core workflow metrics calculation
+  - Dependencies: Prisma, basic utilities
+  - Business Logic: Task metrics, delegation metrics, completion rates
+  - Strategy: PRESERVE - No changes needed
+  - Risk: LOW
 
-- **Core functionality** components and their interactions
-- **Data flow patterns** and state management needs
-- **User interface** and user experience requirements
-- **Integration points** with existing system components
-- **External service** integration and API requirements
+**TEMPLATE DATA SERVICES (REFACTOR/SPLIT):**
 
-**Non-Functional Architecture Requirements:**
+- `comprehensive-template-data.service.ts` (540 lines) - Good logic, too large
+  - Purpose: Executive dashboard data aggregation
+  - Dependencies: Multiple data services, complex orchestration
+  - Business Logic: Executive summaries, role performance, quality metrics
+  - Strategy: SPLIT into 3 focused services (<200 lines each)
+  - Target Services: executive-summary-api.service.ts, role-performance-api.service.ts, quality-metrics-api.service.ts
+  - Risk: MEDIUM - Complex business logic to preserve
 
-- **Performance requirements** and scalability considerations
-- **Security requirements** and compliance needs
-- **Maintainability** and code organization standards
-- **Testing strategy** and quality assurance approach
-- **Deployment** and operational considerations
+**OVER-ENGINEERED SERVICES (ELIMINATE):**
 
-**Technical Constraints Analysis:**
+- `enhanced-insights-generator.service.ts` (312 lines) - Poor quality, unclear purpose
+  - Purpose: Unclear abstraction with minimal business value
+  - Dependencies: Complex, tightly coupled
+  - Technical Debt: Unnecessary abstractions, poor performance
+  - Strategy: ELIMINATE - Extract any valuable logic to focused services
+  - Risk: LOW - No critical business logic
+```
 
-- **Existing system** patterns and consistency requirements
-- **Technology stack** compatibility and integration needs
-- **Resource limitations** and development timeline constraints
-- **Team expertise** and knowledge requirements
-- **Third-party dependencies** and external service constraints
+**Phase 2.3: Architectural Decision Matrix**
 
-### Step 3: Architecture Decision Framework (No MCP calls)
+For each service, make informed decisions with clear rationale:
 
-**Make key architectural decisions following systematic evaluation:**
+```markdown
+**DECISION FRAMEWORK:**
 
-**Component Architecture Decisions:**
+1. **Business Value Assessment**: Does this service provide clear business value?
+2. **Code Quality Analysis**: Is the code well-structured and maintainable?
+3. **Size Appropriateness**: Is the service appropriately sized (<200 lines)?
+4. **Single Responsibility**: Does it have one clear, focused purpose?
+5. **Integration Complexity**: How does it fit with existing architecture?
 
-1. **Component organization** and modular structure design
-2. **Data layer architecture** and persistence patterns
-3. **Service layer design** and business logic organization
-4. **API design patterns** and interface definitions
-5. **Frontend architecture** and component organization
+**DECISION OUTCOMES:**
 
-**Integration Architecture Decisions:**
+- PRESERVE: High business value, good quality, appropriate size
+- REFACTOR: High business value, needs restructuring or size reduction
+- SPLIT: High business value, too large, can be divided logically
+- ELIMINATE: Low business value, poor quality, or unnecessary complexity
+```
 
-1. **Internal component** communication patterns
-2. **External service** integration approaches and protocols
-3. **Data synchronization** and consistency strategies
-4. **Error handling** and resilience patterns
-5. **Monitoring and logging** integration points
+### Step 3: Strategic Architecture Design (No MCP calls)
 
-**Quality Architecture Decisions:**
+**Phase 3.1: Target Architecture Blueprint**
 
-1. **Testing strategy** and test organization approach
-2. **Security implementation** patterns and validation layers
-3. **Performance optimization** strategies and monitoring
-4. **Code organization** and maintainability patterns
-5. **Documentation** and knowledge sharing approaches
+```typescript
+interface TargetArchitecture {
+  foundationServices: {
+    name: string;
+    purpose: string;
+    maxLines: 200;
+    dependencies: string[];
+  }[];
+  dataApiServices: {
+    name: string;
+    purpose: string;
+    maxLines: 200;
+    templateServed: string;
+    businessLogic: string[];
+    pattern: 'task-summary-data-api' | 'custom';
+  }[];
+  eliminatedServices: {
+    name: string;
+    reason: string;
+    valuableLogicExtracted: string[];
+  }[];
+}
+```
 
-### Step 4: Batch-Based Implementation Planning (No MCP calls)
+**Design complete target architecture:**
 
-**Organize implementation into logical, sequential batches:**
+```markdown
+## Target Architecture Design
 
-**Batch Organization Principles:**
+**FOUNDATION LAYER (Keep Unchanged):**
 
-- **3-8 subtasks per batch** for optimal development focus
-- **Logical grouping** of related functionality and components
-- **Clear dependencies** between batches with proper sequencing
-- **Incremental value delivery** with testable milestones
-- **Risk distribution** across batches with early validation
+1. `core-metrics.service.ts` - Core metrics calculation
+2. `report-data-access.service.ts` - Data access abstraction
+3. `metrics-calculator.service.ts` - Basic calculation utilities
 
-**Batch Dependency Management:**
+**DATA API LAYER (Focused Services <200 lines):**
 
-- **Sequential dependencies** where batch B requires batch A completion
-- **Parallel opportunities** where batches can be developed concurrently
-- **Integration points** where batches must coordinate interfaces
-- **Testing dependencies** where batch testing requires other batch completion
-- **Rollback strategies** if batch implementation encounters issues
+1. `task-summary-data-api.service.ts` ✅ (EXISTS - Perfect example)
+2. `delegation-analytics-data-api.service.ts` (NEW - from code-review-delegation split)
+3. `performance-dashboard-data-api.service.ts` (NEW - from comprehensive split)
+4. `comprehensive-executive-data-api.service.ts` (NEW - from comprehensive split)
+5. `code-review-insights-data-api.service.ts` (NEW - from code-review-delegation split)
+6. `implementation-plan-data-api.service.ts` (REFACTOR - reduce from 394 to <200 lines)
 
-**Batch Content Guidelines:**
-Each batch should include:
+**ELIMINATED LAYER:**
 
-- **Related subtasks** that work together toward common functionality
-- **Complete feature sets** that can be tested independently
-- **Clear interfaces** with other batches and system components
-- **Comprehensive testing** requirements and validation criteria
-- **Documentation** and integration guidance
+- Entire `/analytics` folder (8 services) - Over-engineered, minimal business value
+- Complex abstraction services with unclear purpose
+```
 
-### Step 5: Technical Standards Definition (No MCP calls)
+**Phase 3.2: Migration Strategy with Rationale**
 
-**Define implementation standards for consistent development:**
+```markdown
+## Service Migration Plan
 
-**Code Quality Standards:**
+**MIGRATION 1: Split Large Services**
 
-- **SOLID Principles Application**: Specific patterns for Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion
-- **Design Pattern Usage**: Appropriate patterns for identified use cases
-- **Clean Code Practices**: Naming conventions, function organization, documentation
-- **Error Handling Standards**: Exception management and user experience patterns
-- **Performance Guidelines**: Optimization strategies and performance monitoring
+- `code-review-delegation-template-data.service.ts` (894 lines) →
+  - `delegation-analytics-data-api.service.ts` (~180 lines)
+  - `code-review-insights-data-api.service.ts` (~170 lines)
+  - Rationale: Two distinct business domains mixed in one service
+  - Valuable Logic: Delegation pattern analysis, code review metrics
+  - Pattern: Follow task-summary-data-api.service.ts structure
 
-**Architecture Consistency Standards:**
+**MIGRATION 2: Streamline Comprehensive Service**
 
-- **Component Structure**: Organization patterns and file structure requirements
-- **Integration Patterns**: Service communication and data exchange standards
-- **Data Management**: Persistence patterns and data validation approaches
-- **Security Implementation**: Authentication, authorization, and data protection
-- **Testing Organization**: Unit, integration, and end-to-end testing structure
+- `comprehensive-template-data.service.ts` (540 lines) →
+  - `comprehensive-executive-data-api.service.ts` (~190 lines)
+  - Focus: Executive summary, high-level metrics only
+  - Remove: Detailed sub-analyses (move to specialized services)
+  - Pattern: Composition over aggregation
 
-### Step 6: Implementation Plan Creation (1 MCP call)
+**MIGRATION 3: Eliminate Over-Engineering**
+
+- Delete: `/analytics/enhanced-insights-generator.service.ts`
+- Delete: `/analytics/schema-driven-intelligence.service.ts`
+- Delete: `/analytics/smart-response-summarization.service.ts`
+- Extract: Any valuable business logic to appropriate data-api services
+```
+
+### Step 4: Detailed Implementation Guidance Creation (No MCP calls)
+
+**CRITICAL: Create state-of-the-art, actionable subtasks with complete context**
+
+**Phase 4.1: File-Specific Implementation Instructions**
+
+For each subtask, provide complete implementation context:
+
+```typescript
+interface SubtaskGuidance {
+  name: string;
+  description: string;
+  sourceFiles: string[]; // Exact files to read/modify
+  targetFiles: string[]; // Exact files to create
+  businessLogicToExtract: string[];
+  implementationPattern: string;
+  codeExamples: string[];
+  qualityConstraints: {
+    maxLines: number;
+    testCoverageTarget: number;
+    performanceRequirements: string[];
+  };
+  successCriteria: string[];
+  commonPitfalls: string[];
+  architecturalRationale: string;
+}
+```
+
+**Phase 4.2: Complete Context Transfer Package**
+
+Create comprehensive guidance document for senior developer:
+
+````markdown
+## Implementation Context Package
+
+### ARCHITECTURAL VISION
+
+**Problem Statement**: Current service architecture has 20+ services with significant overlap, over-engineering in analytics layer, and services exceeding maintainable size limits.
+
+**Solution Strategy**: Consolidate to 12 focused services following proven task-summary-data-api pattern, eliminate over-engineered abstractions, ensure all services <200 lines.
+
+**Quality Standards**: Single responsibility, clear business value, <200 lines, 90% test coverage, follows established patterns.
+
+### SERVICE-BY-SERVICE GUIDANCE
+
+**SUBTASK 1: Analyze and Map Existing Services**
+
+- **Purpose**: Create complete inventory before making changes
+- **Files to Read**: [Complete list with exact paths]
+- **Expected Output**: Service analysis report with classifications
+- **Time Estimate**: 3-4 hours
+- **Success Criteria**: Every existing service classified with clear rationale
+
+**SUBTASK 2: Eliminate Over-Engineered Analytics Services**
+
+- **Purpose**: Remove unnecessary complexity from analytics layer
+- **Files to Delete**:
+  - `src/task-workflow/domains/reporting/services/analytics/enhanced-insights-generator.service.ts`
+  - `src/task-workflow/domains/reporting/services/analytics/schema-driven-intelligence.service.ts`
+  - [Complete list]
+- **Logic to Preserve**:
+  - Business metrics calculations from enhanced-insights-generator (lines 45-67)
+  - Report formatting utilities from smart-response-summarization (lines 123-145)
+- **Integration Impact**: Update imports in 3 template services
+- **Success Criteria**: Analytics folder deleted, valuable logic preserved in data-api services
+
+**SUBTASK 3: Split Large Template Data Service**
+
+- **Source File**: `code-review-delegation-template-data.service.ts` (894 lines)
+- **Target Files**:
+  - `delegation-analytics-data-api.service.ts` (<200 lines)
+  - `code-review-insights-data-api.service.ts` (<200 lines)
+- **Business Logic Distribution**:
+  - Delegation Analytics: Role transitions, handoff times, redelegation patterns
+  - Code Review Insights: Review quality, approval rates, review time analysis
+- **Implementation Pattern**: Follow task-summary-data-api.service.ts exactly
+- **Code Example**:
+  ```typescript
+  @Injectable()
+  export class DelegationAnalyticsDataApiService
+    implements DelegationAnalyticsDataService
+  {
+    constructor(private readonly reportDataAccess: ReportDataAccessService) {}
+
+    async getDelegationAnalyticsData(
+      startDate: Date,
+      endDate: Date,
+      filters?: Record<string, string>,
+    ): Promise<DelegationAnalyticsTemplateData> {
+      // Follow exact pattern from task-summary-data-api.service.ts
+      const whereClause = this.reportDataAccess.buildWhereClause(
+        startDate,
+        endDate,
+        filters as any,
+      );
+      const baseMetrics =
+        await this.reportDataAccess.getBaseMetrics(whereClause);
+
+      // Apply focused business logic for delegation analytics
+      return this.transformToDelegationAnalytics(baseMetrics);
+    }
+  }
+  ```
+````
+
+- **Quality Constraints**:
+  - Max 190 lines each
+  - 90% test coverage
+  - <200ms response time
+- **Success Criteria**:
+  - Two focused services created
+  - Original 894-line service deleted
+  - All template functionality preserved
+  - All tests passing
+- **Common Pitfalls**:
+  - Don't duplicate business logic between services
+  - Ensure proper dependency injection
+  - Maintain interface compatibility with templates
+
+````
+
+### Step 5: Quality-Driven Implementation Plan Creation (1 MCP call)
 
 ```javascript
 planning_operations({
   operation: 'create_plan',
   taskId: taskId,
   planData: {
-    overview: 'Comprehensive implementation strategy overview',
-    approach: 'Technical approach with architectural patterns',
-    technicalDecisions: 'Key technical decisions with rationale',
-    filesToModify: ['Array of files to be created/modified'],
+    overview: 'Service architecture consolidation following comprehensive codebase analysis and strategic architectural design',
+    approach: 'Evidence-based refactoring of existing services with elimination of over-engineered components',
+    technicalDecisions: {
+      targetArchitecture: '12 focused services following task-summary-data-api pattern',
+      qualityConstraints: 'All services <200 lines, single responsibility, 90% test coverage',
+      migrationStrategy: 'Preserve valuable business logic, eliminate unnecessary abstractions',
+      riskMitigation: 'Gradual refactoring with comprehensive testing at each step'
+    },
+    filesToModify: [
+      'ELIMINATE: /analytics/*.service.ts (8 files)',
+      'REFACTOR: code-review-delegation-template-data.service.ts → 2 focused services',
+      'REFACTOR: comprehensive-template-data.service.ts → streamlined version',
+      'CREATE: 6 new focused data-api services following proven pattern'
+    ],
+    architecturalRationale: 'Current architecture analysis reveals service pollution with 20+ services, many over-engineered. Target architecture reduces to 12 focused services with clear business value and maintainable size.',
     createdBy: 'architect',
   },
 });
-```
+````
 
-### Step 7: Batch-Based Subtask Creation (1 MCP call)
+### Step 6: State-of-the-Art Subtask Creation (1 MCP call)
 
-**Create 4-6 logical batches with 3-8 subtasks each:**
+**Create comprehensive, actionable subtasks with complete implementation context:**
 
 ```javascript
 planning_operations({
   operation: 'create_subtasks',
   taskId: taskId,
   batchData: {
-    batchId: 'B001',
-    batchTitle: 'Core Foundation Implementation',
+    batchId: 'ARCH-B001',
+    batchTitle: 'Service Architecture Analysis and Foundation',
+    architecturalContext: {
+      currentState:
+        '20+ services with significant overlap and over-engineering',
+      targetState: '12 focused services <200 lines each',
+      strategy: 'Evidence-based refactoring with business logic preservation',
+    },
     subtasks: [
       {
-        name: 'Setup Module Structure',
-        description: 'Create module structure and dependencies',
+        name: 'Complete Service Architecture Analysis',
+        description:
+          'Read and analyze ALL existing services mentioned in codebaseAnalysis. Create detailed service inventory with quality assessment, dependency mapping, and refactoring strategy for each service.',
         sequenceNumber: 1,
+        implementationGuidance: {
+          filesToAnalyze: [
+            'src/task-workflow/domains/reporting/services/data/comprehensive-template-data.service.ts',
+            'src/task-workflow/domains/reporting/services/data/code-review-delegation-template-data.service.ts',
+            'src/task-workflow/domains/reporting/services/analytics/enhanced-insights-generator.service.ts',
+            'Complete list from codebaseAnalysis',
+          ],
+          expectedDeliverables: [
+            'Service inventory with line counts and quality assessments',
+            'Dependency mapping diagram',
+            'Preserve/Refactor/Eliminate classification with rationale',
+            'Business logic extraction plan',
+          ],
+          qualityGates: [
+            'All existing services analyzed and documented',
+            'Clear rationale for each architectural decision',
+            'Risk assessment for each refactoring operation',
+          ],
+          timeEstimate: '4-5 hours',
+          architecturalRationale:
+            'Must understand existing architecture completely before making changes to avoid losing valuable business logic or breaking existing functionality',
+        },
       },
       {
-        name: 'Implement Core Services',
-        description: 'Create core service classes and interfaces',
+        name: 'Eliminate Over-Engineered Analytics Services',
+        description:
+          'Delete entire /analytics folder (8 services) identified as over-engineered with minimal business value. Extract any valuable business logic to appropriate data-api services before deletion.',
         sequenceNumber: 2,
+        implementationGuidance: {
+          filesToDelete: [
+            'src/task-workflow/domains/reporting/services/analytics/enhanced-insights-generator.service.ts',
+            'src/task-workflow/domains/reporting/services/analytics/schema-driven-intelligence.service.ts',
+            'src/task-workflow/domains/reporting/services/analytics/smart-response-summarization.service.ts',
+            'Complete list from architecture analysis',
+          ],
+          businessLogicToPreserve: [
+            'Metrics calculation utilities from enhanced-insights-generator (lines 45-67)',
+            'Report formatting functions from smart-response-summarization (lines 123-145)',
+          ],
+          integrationUpdates: [
+            'Update imports in template data services',
+            'Remove analytics service dependencies from modules',
+            'Update interface exports',
+          ],
+          qualityGates: [
+            'All analytics services deleted',
+            'Valuable business logic preserved in focused services',
+            'No broken imports or dependencies',
+            'All tests still passing',
+          ],
+          timeEstimate: '2-3 hours',
+          architecturalRationale:
+            'Analytics services provide minimal business value with high complexity overhead. Elimination reduces maintenance burden while preserving essential functionality in focused services.',
+        },
       },
-      // Additional subtasks...
+      {
+        name: 'Refactor Large Template Data Service into Focused APIs',
+        description:
+          'Split code-review-delegation-template-data.service.ts (894 lines) into delegation-analytics-data-api.service.ts and code-review-insights-data-api.service.ts, each <200 lines, following task-summary-data-api.service.ts pattern exactly.',
+        sequenceNumber: 3,
+        implementationGuidance: {
+          sourceFile:
+            'src/task-workflow/domains/reporting/services/data/code-review-delegation-template-data.service.ts',
+          targetFiles: [
+            'src/task-workflow/domains/reporting/services/data-api/delegation-analytics-data-api.service.ts',
+            'src/task-workflow/domains/reporting/services/data-api/code-review-insights-data-api.service.ts',
+          ],
+          businessLogicDistribution: {
+            delegationAnalytics: [
+              'Role transition analysis (lines 123-189)',
+              'Handoff time calculations (lines 245-298)',
+              'Redelegation pattern detection (lines 456-523)',
+            ],
+            codeReviewInsights: [
+              'Review quality scoring (lines 67-122)',
+              'Approval rate analysis (lines 334-398)',
+              'Review time trend analysis (lines 598-654)',
+            ],
+          },
+          implementationPattern: {
+            reference: 'task-summary-data-api.service.ts',
+            structure: [
+              'Use ReportDataAccessService for data access',
+              'Apply focused business logic for specific domain',
+              'Return template-ready data with insights',
+              'Keep service <200 lines with single responsibility',
+            ],
+            codeExample: `
+@Injectable()
+export class DelegationAnalyticsDataApiService implements DelegationAnalyticsDataService {
+  constructor(private readonly reportDataAccess: ReportDataAccessService) {}
+  
+  async getDelegationAnalyticsData(startDate: Date, endDate: Date, filters?: Record<string, string>): Promise<DelegationAnalyticsTemplateData> {
+    const whereClause = this.reportDataAccess.buildWhereClause(startDate, endDate, filters as any);
+    const baseMetrics = await this.reportDataAccess.getBaseMetrics(whereClause);
+    return this.transformToDelegationAnalytics(baseMetrics);
+  }
+  
+  private transformToDelegationAnalytics(baseMetrics: any): DelegationAnalyticsTemplateData {
+    // Focused business logic for delegation analytics only
+  }
+}`,
+          },
+          qualityConstraints: {
+            maxLinesPerService: 200,
+            testCoverageTarget: 90,
+            performanceTarget: '<200ms response time',
+            maintainabilityScore: 'A grade',
+          },
+          successCriteria: [
+            'Original 894-line service deleted',
+            'Two focused services created, each <200 lines',
+            'All template functionality preserved',
+            'All existing tests adapted and passing',
+            'Interface compatibility maintained',
+          ],
+          commonPitfalls: [
+            'Avoid duplicating business logic between services',
+            'Ensure proper dependency injection setup',
+            'Maintain interface compatibility with existing templates',
+            'Test each service independently before integration',
+          ],
+          timeEstimate: '6-8 hours',
+          architecturalRationale:
+            'Large service violates single responsibility principle and maintainability standards. Splitting into focused domains improves code organization, testability, and team productivity while reducing cognitive load.',
+        },
+      },
     ],
   },
 });
 ```
 
-### Step 8: Senior Developer Delegation (1 MCP call)
+### Step 7: Senior Developer Delegation with Complete Context (1 MCP call)
 
 ```javascript
 workflow_operations({
@@ -267,79 +552,71 @@ workflow_operations({
   fromRole: 'architect',
   toRole: 'senior-developer',
   message:
-    'Implementation plan ready with batch-based subtasks. Dependencies clearly defined.',
+    'Complete architectural analysis and implementation plan ready. All existing services analyzed, target architecture designed, and detailed implementation guidance provided with code examples, patterns, and quality constraints.',
+  architecturalContext: {
+    codebaseAnalysisComplete: true,
+    targetArchitectureDesigned: true,
+    implementationPatternsProvided: true,
+    qualityStandardsDefined: true,
+    riskAssessmentComplete: true,
+    businessLogicMappingComplete: true,
+  },
 });
 ```
 
 **Total Architecture Phase MCP Calls: 3 maximum**
 
-## Architecture Quality Assurance
+## Quality Assurance Standards
 
-### Technical Excellence Validation:
+### True Software Architect Validation:
 
-- **SOLID Principles Integration**: Ensure implementation plan enforces all SOLID principles
-- **Design Pattern Appropriateness**: Verify selected patterns match use cases and system needs
-- **Architecture Consistency**: Confirm plan maintains consistency with existing system patterns
-- **Integration Coherence**: Validate integration strategy with existing components and external services
-- **Scalability Considerations**: Ensure plan supports future growth and system evolution
+- **Complete Codebase Understanding**: Every file from codebaseAnalysis read and analyzed in full ✓
+- **Strategic Architectural Decisions**: Clear rationale for all preserve/refactor/eliminate decisions ✓
+- **State-of-the-Art Implementation Guidance**: Detailed, actionable subtasks with code examples and patterns ✓
+- **Quality Standards Definition**: Clear constraints, success criteria, and validation points ✓
+- **Risk Assessment and Mitigation**: Identification of pitfalls and mitigation strategies ✓
+- **Complete Context Transfer**: Senior developer has all information needed for successful execution ✓
 
-### Implementation Plan Validation:
+### Implementation Guidance Excellence:
 
-- **Batch Logic Verification**: Confirm batches are logically organized with clear dependencies
-- **Subtask Completeness**: Verify each batch contains comprehensive, actionable subtasks
-- **Quality Gate Definition**: Ensure each batch has clear acceptance criteria and testing requirements
-- **Risk Mitigation**: Confirm plan addresses identified risks with mitigation strategies
-- **Resource Alignment**: Validate plan aligns with available development resources and timeline
+- **File-Specific Instructions**: Exact file paths, line number references, and modification instructions ✓
+- **Business Logic Preservation**: Clear mapping of valuable logic from old to new services ✓
+- **Pattern Adherence**: Explicit reference to proven patterns with code examples ✓
+- **Quality Constraints**: Specific size limits, performance targets, and test coverage requirements ✓
+- **Integration Considerations**: Complete dependency mapping and update requirements ✓
+- **Validation Criteria**: Clear success criteria and quality gates for each subtask ✓
 
-### Handoff Preparation Quality:
+### Senior Developer Enablement:
 
-- **Clear Implementation Guidance**: Provide specific direction for senior developer role
-- **Technical Standards Communication**: Ensure quality standards are clearly defined and actionable
-- **Integration Requirements**: Specify integration points and coordination needs
-- **Testing Strategy Clarity**: Provide comprehensive testing approach and validation criteria
-- **Documentation Standards**: Define documentation requirements and knowledge sharing approach
-
-## Batch Management Best Practices
-
-### Optimal Batch Organization:
-
-- **Functional Cohesion**: Group related functionality that works together
-- **Technical Cohesion**: Combine subtasks using similar technologies or patterns
-- **Dependency Minimization**: Reduce inter-batch dependencies where possible
-- **Risk Distribution**: Spread high-risk elements across different batches
-- **Value Increments**: Ensure each batch delivers meaningful, testable value
-
-### Dependency Management:
-
-- **Clear Prerequisites**: Explicitly define what must be completed before batch start
-- **Interface Definitions**: Specify how batches interact and coordinate
-- **Integration Points**: Identify where batches must work together
-- **Testing Coordination**: Plan how batch testing validates integration
-- **Rollback Planning**: Define rollback procedures if batch implementation fails
+- **Complete Implementation Context**: All architectural decisions explained with rationale ✓
+- **Clear Action Items**: Specific, actionable subtasks with detailed guidance ✓
+- **Quality Standards**: Explicit constraints and validation requirements ✓
+- **Pattern Examples**: Code examples and reference implementations provided ✓
+- **Risk Mitigation**: Common pitfalls identified with avoidance strategies ✓
+- **Success Validation**: Clear criteria for determining subtask completion ✓
 
 ## Success Criteria
 
-### Architecture Quality Indicators:
+### Architectural Excellence Indicators:
 
-- **Technical decisions justified** with evidence from research and system analysis
-- **SOLID principles integrated** throughout implementation plan
-- **Design patterns appropriately selected** for identified use cases
-- **Security and performance requirements** addressed comprehensively
-- **Integration strategy validated** with existing system architecture
+- **Comprehensive Analysis Completed**: All existing services analyzed with detailed inventory and classification
+- **Strategic Design Completed**: Target architecture designed with clear migration paths and rationale
+- **Implementation Plan Created**: Detailed, actionable subtasks with complete context and guidance
+- **Quality Standards Defined**: Clear constraints, patterns, and validation criteria established
+- **Context Successfully Transferred**: Senior developer has complete architectural understanding
 
-### Planning Quality Indicators:
+### Implementation Readiness Indicators:
 
-- **Logical batch organization** with 3-8 subtasks per batch
-- **Clear dependencies identified** and properly sequenced
-- **Comprehensive acceptance criteria** defined for each batch
-- **Testing strategy specified** for validation and quality assurance
-- **Risk mitigation strategies** included for identified challenges
+- **File-Specific Guidance Provided**: Exact instructions for each file modification and creation
+- **Business Logic Mapped**: Clear preservation strategy for valuable existing functionality
+- **Patterns and Examples Included**: Reference implementations and code examples provided
+- **Quality Gates Established**: Success criteria and validation points clearly defined
+- **Risk Mitigation Planned**: Common pitfalls identified with avoidance strategies
 
-### Handoff Quality Indicators:
+### Senior Developer Success Enablement:
 
-- **Implementation plan created** with comprehensive technical guidance
-- **Quality standards clearly defined** and actionable for development
-- **First batch properly delegated** with clear priorities and context
-- **Integration requirements specified** for system coherence
-- **Documentation standards established** for knowledge management
-- **Context efficiency verification** executed properly
+- **Complete Context Provided**: All architectural decisions and rationale clearly communicated
+- **Clear Action Items Defined**: Specific, achievable subtasks with detailed implementation guidance
+- **Quality Standards Established**: Explicit constraints and validation requirements
+- **Pattern Adherence Ensured**: Clear examples and reference implementations provided
+- **Success Validation Enabled**: Clear criteria for determining completion and quality

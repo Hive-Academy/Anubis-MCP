@@ -11,18 +11,32 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  ReportType,
-  WhereClause,
-} from '../../interfaces/service-contracts.interface';
-import {
-  CodeReviewMetrics,
-  DelegationMetrics,
-  PerformanceMetrics,
-  ReportFilters,
-  TaskMetrics,
-} from '../../interfaces/report-data.interface';
+
+// Import basic metrics from our core metrics service
+import type { TaskMetrics, CodeReviewMetrics } from './core-metrics.service';
 import { MetricsCalculatorService } from './metrics-calculator.service';
+
+// Import template-specific interfaces
+import type { DelegationMetrics } from '../delegation-analytics/delegation-analytics-template.interface';
+import type { PerformanceMetrics } from '../performance-dashboard/performance-dashboard-template.interface';
+
+// Local type definitions (moved from deleted interface files)
+type WhereClause = Record<string, any>;
+
+type ReportType =
+  | 'task_progress_health'
+  | 'implementation_execution'
+  | 'code_review_quality'
+  | 'delegation_flow_analysis_task'
+  | 'research_documentation'
+  | 'communication_collaboration';
+
+interface ReportFilters {
+  owner?: string;
+  mode?: string;
+  priority?: string;
+  taskId?: string;
+}
 
 @Injectable()
 export class ReportDataAccessService {
@@ -63,22 +77,10 @@ export class ReportDataAccessService {
     this.logger.debug(`Fetching individual task metrics for ${taskId}`);
 
     switch (reportType) {
-      case 'task_progress_health':
-        return await this.metricsCalculator.getTaskProgressHealthMetrics(
-          taskId,
-        );
-      case 'implementation_execution':
-        return this.metricsCalculator.getImplementationExecutionMetrics(taskId);
       case 'code_review_quality':
-        return this.metricsCalculator.getCodeReviewQualityMetrics(taskId);
-      case 'delegation_flow_analysis_task':
-        return this.metricsCalculator.getTaskDelegationFlowMetrics(taskId);
+        return await this.metricsCalculator.getCodeReviewQualityMetrics(taskId);
       case 'research_documentation':
         return this.metricsCalculator.getResearchDocumentationMetrics(taskId);
-      case 'communication_collaboration':
-        return this.metricsCalculator.getCommunicationCollaborationMetrics(
-          taskId,
-        );
       default: {
         // Generic task metrics
         const whereClause = { taskId };
@@ -160,6 +162,7 @@ export class ReportDataAccessService {
       { taskId },
     );
 
-    return delegationMetrics.modeTransitions || [];
+    // Return empty array if no transitions available
+    return delegationMetrics.weeklyTrends?.successful || [];
   }
 }

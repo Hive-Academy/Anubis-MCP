@@ -12,6 +12,22 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+
+import { TaskHealthAnalysisService } from '../../analytics/task-health-analysis.service';
+import { ReportDataAccessService } from '../foundation/report-data-access.service';
+import { MetricsCalculatorService } from '../foundation/metrics-calculator.service';
+import { ImpactArea } from '../communication';
+import {
+  ImplementationExecutionData,
+  BatchProgress,
+  QualityMetric,
+  TestingCategory,
+  PerformanceCategory,
+  TimelineEvent,
+  BlockerIssue,
+  ResolvedIssue,
+  ExecutionRecommendation,
+} from '../implementation-plan';
 import {
   TaskProgressHealthData,
   HealthIndicator,
@@ -19,22 +35,7 @@ import {
   RiskAssessment,
   DelegationEvent,
   ActionItem,
-} from '../../interfaces/templates/task-progress-health.interface';
-import {
-  ImplementationExecutionData,
-  BatchProgress,
-  QualityMetric,
-  ImpactArea,
-  TestingCategory,
-  PerformanceCategory,
-  TimelineEvent,
-  BlockerIssue,
-  ResolvedIssue,
-  ExecutionRecommendation,
-} from '../../interfaces/templates/implementation-execution.interface';
-import { TaskHealthAnalysisService } from '../analytics/task-health-analysis.service';
-import { ReportDataAccessService } from './report-data-access.service';
-import { MetricsCalculatorService } from './metrics-calculator.service';
+} from '../task-summary';
 
 @Injectable()
 export class TaskProgressExecutionService {
@@ -604,19 +605,19 @@ export class TaskProgressExecutionService {
     // TODO: Get real file impact data from version control or task analysis
     const impactAreas: ImpactArea[] = [
       {
-        area: 'Services',
-        impact: 'High',
-        impactClass: 'text-danger',
+        metrics: [],
+        category: 'Services',
+        color: '#28a745',
       },
       {
-        area: 'Tests',
-        impact: 'Medium',
-        impactClass: 'text-warning',
+        metrics: [],
+        category: 'Tests',
+        color: '#17a2b8',
       },
       {
-        area: 'Interfaces',
-        impact: 'Low',
-        impactClass: 'text-success',
+        metrics: [],
+        category: 'Interfaces',
+        color: '#ffc107',
       },
     ];
 
@@ -626,7 +627,7 @@ export class TaskProgressExecutionService {
       linesAdded: 457,
       linesRemoved: 65,
       impactAreas,
-      chartLabels: impactAreas.map((area) => area.area),
+      chartLabels: impactAreas.map((area) => area.category),
       chartData: [234, 156, 67], // Lines added per area
       chartColors: ['#dc3545', '#ffc107', '#28a745'],
     });

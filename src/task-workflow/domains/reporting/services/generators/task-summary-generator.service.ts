@@ -6,11 +6,9 @@ import {
 } from './base-report-generator.interface';
 import { ReportType } from '../../interfaces/service-contracts.interface';
 
-// Direct API Service (uses real analytics)
-import { TaskSummaryDataApiService } from '../report-templates-data-api/task-summary-data-api.service';
-
 // Template Service
 import { HandlebarsTemplateService } from '../handlebars-template.service';
+import { TaskSummaryDataApiService } from '../data-api';
 
 /**
  * Task Summary Generator

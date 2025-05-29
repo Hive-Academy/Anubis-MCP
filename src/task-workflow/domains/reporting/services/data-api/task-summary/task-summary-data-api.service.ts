@@ -12,10 +12,10 @@ import {
   TaskSummaryTemplateData,
   TaskSummaryDataService,
   TaskSummaryItem,
-} from '../../interfaces/templates/task-summary-template.interface';
+} from './task-summary-template.interface';
 
 // Data Access Layer (Prisma API)
-import { ReportDataAccessService } from '../data/report-data-access.service';
+import { ReportDataAccessService } from '../foundation/report-data-access.service';
 
 @Injectable()
 export class TaskSummaryDataApiService implements TaskSummaryDataService {
@@ -63,7 +63,8 @@ export class TaskSummaryDataApiService implements TaskSummaryDataService {
         ),
         highPriorityTasks: this.calculateHighPriorityCount(
           baseMetrics.tasks.priorityDistribution.filter(
-            (p) => p.priority !== null,
+            (p: { priority: string | null; count: number }) =>
+              p.priority !== null,
           ) as { priority: string; count: number }[],
         ),
       },
@@ -83,9 +84,12 @@ export class TaskSummaryDataApiService implements TaskSummaryDataService {
 
       priorityDistribution: {
         labels: baseMetrics.tasks.priorityDistribution.map(
-          (p) => p.priority || 'Unknown',
+          (p: { priority: string | null; count: number }) =>
+            p.priority || 'Unknown',
         ),
-        data: baseMetrics.tasks.priorityDistribution.map((p) => p.count),
+        data: baseMetrics.tasks.priorityDistribution.map(
+          (p: { priority: string | null; count: number }) => p.count,
+        ),
       },
 
       // Generate insights from real data

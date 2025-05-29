@@ -9,22 +9,22 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  ComprehensiveTemplateData,
-  ComprehensiveDataService,
-  RolePerformanceItem,
-  RecentActivityItem,
-  CriticalIssueItem,
-  StrategicRecommendationItem,
-} from '../../interfaces/templates/comprehensive-template.interface';
 
 // Foundation services
-import { ReportDataAccessService } from '../data/report-data-access.service';
+import { ReportDataAccessService } from '../foundation/report-data-access.service';
 
 // Other data API services for comprehensive insights
-import { TaskSummaryDataApiService } from './task-summary-data-api.service';
-import { DelegationAnalyticsDataApiService } from './delegation-analytics-data-api.service';
-import { PerformanceDashboardDataApiService } from './performance-dashboard-data-api.service';
+import { DelegationAnalyticsDataApiService } from '../delegation-analytics/delegation-analytics-data-api.service';
+import { PerformanceDashboardDataApiService } from '../performance-dashboard/performance-dashboard-data-api.service';
+import { TaskSummaryDataApiService } from '../task-summary/task-summary-data-api.service';
+import {
+  ComprehensiveDataService,
+  ComprehensiveTemplateData,
+  CriticalIssueItem,
+  RecentActivityItem,
+  RolePerformanceItem,
+  StrategicRecommendationItem,
+} from './comprehensive-template.interface';
 
 @Injectable()
 export class ComprehensiveDataApiService implements ComprehensiveDataService {
@@ -86,20 +86,17 @@ export class ComprehensiveDataApiService implements ComprehensiveDataService {
       recommendations,
       charts,
     ] = await Promise.all([
-      this.generateExecutiveSummary(baseMetrics, taskSummaryData.data),
+      this.generateExecutiveSummary(baseMetrics, taskSummaryData),
       this.generateQuickMetrics(baseMetrics),
-      this.generateRolePerformanceAnalysis(
-        delegationData.data,
-        performanceData.data,
-      ),
+      this.generateRolePerformanceAnalysis(delegationData, performanceData),
       this.generateQualityMetrics(baseMetrics),
       this.generateRecentActivity(baseMetrics),
-      this.generateCriticalIssues(baseMetrics, performanceData.data),
+      this.generateCriticalIssues(baseMetrics, performanceData),
       this.generateStrategicRecommendations(
         baseMetrics,
-        taskSummaryData.data,
-        delegationData.data,
-        performanceData.data,
+        taskSummaryData,
+        delegationData,
+        performanceData,
       ),
       this.generateComprehensiveCharts(baseMetrics),
     ]);
@@ -125,7 +122,7 @@ export class ComprehensiveDataApiService implements ComprehensiveDataService {
    */
   private async generateExecutiveSummary(
     baseMetrics: any,
-    taskSummaryData: any,
+    _taskSummaryData: any,
   ): Promise<{
     totalTasks: string | number;
     completionRate: string | number;
@@ -146,12 +143,12 @@ export class ComprehensiveDataApiService implements ComprehensiveDataService {
       this.generateResourceUtilizationInsight(baseMetrics),
     ].filter(Boolean);
 
-    return {
+    return Promise.resolve({
       totalTasks,
       completionRate: `${completionRate}%`,
       averageTime,
-      keyInsights,
-    };
+      keyInsights: keyInsights.filter((insight) => insight !== null),
+    });
   }
 
   /**
@@ -178,14 +175,14 @@ export class ComprehensiveDataApiService implements ComprehensiveDataService {
     // Mock research reports (would come from actual data in real implementation)
     const researchReports = Math.round(totalDelegations * 0.3); // Estimate based on workflow
 
-    return {
+    return Promise.resolve({
       activeTasks,
       completedTasks,
       highPriorityTasks,
       totalDelegations,
       codeReviews,
       researchReports,
-    };
+    });
   }
 
   /**
@@ -223,18 +220,23 @@ export class ComprehensiveDataApiService implements ComprehensiveDataService {
       },
     ];
 
-    return roles.map((roleInfo, index) => {
-      const performanceItem = performanceData.rolePerformance[index] || {};
+    return Promise.all(
+      roles.map((roleInfo, index) => {
+        const performanceItem = performanceData.rolePerformance[index] || {};
 
-      return {
-        role: roleInfo.role,
-        icon: roleInfo.icon,
-        efficiency: performanceItem.efficiency || 75,
-        tasksHandled: this.calculateTasksHandled(roleInfo.role, delegationData),
-        avgDuration: this.calculateAvgDuration(roleInfo.role, delegationData),
-        colorClass: roleInfo.colorClass,
-      };
-    });
+        return {
+          role: roleInfo.role,
+          icon: roleInfo.icon,
+          efficiency: performanceItem.efficiency || 75,
+          tasksHandled: this.calculateTasksHandled(
+            roleInfo.role,
+            delegationData,
+          ),
+          avgDuration: this.calculateAvgDuration(roleInfo.role, delegationData),
+          colorClass: roleInfo.colorClass,
+        };
+      }),
+    );
   }
 
   /**
@@ -257,11 +259,11 @@ export class ComprehensiveDataApiService implements ComprehensiveDataService {
     const testCoverage = Math.round(85 + Math.random() * 10); // 85-95%
     const securityScore = Math.round(88 + Math.random() * 8); // 88-96%
 
-    return {
+    return Promise.resolve({
       codeScore,
       testCoverage,
       securityScore,
-    };
+    });
   }
 
   /**
@@ -303,7 +305,7 @@ export class ComprehensiveDataApiService implements ComprehensiveDataService {
       });
     }
 
-    return activities.slice(0, 5); // Limit to 5 most recent
+    return Promise.resolve(activities.slice(0, 5)); // Limit to 5 most recent
   }
 
   /**
@@ -350,7 +352,7 @@ export class ComprehensiveDataApiService implements ComprehensiveDataService {
       });
     }
 
-    return issues.slice(0, 3); // Limit to top 3 critical issues
+    return Promise.resolve(issues.slice(0, 3)); // Limit to top 3 critical issues
   }
 
   /**
@@ -358,8 +360,8 @@ export class ComprehensiveDataApiService implements ComprehensiveDataService {
    */
   private async generateStrategicRecommendations(
     baseMetrics: any,
-    taskSummaryData: any,
-    delegationData: any,
+    _taskSummaryData: any,
+    _delegationData: any,
     performanceData: any,
   ): Promise<StrategicRecommendationItem[]> {
     const recommendations: StrategicRecommendationItem[] = [];
@@ -409,7 +411,7 @@ export class ComprehensiveDataApiService implements ComprehensiveDataService {
       });
     }
 
-    return recommendations;
+    return Promise.resolve(recommendations);
   }
 
   /**
@@ -443,10 +445,10 @@ export class ComprehensiveDataApiService implements ComprehensiveDataService {
       created: [5, 8, 10, 6],
     };
 
-    return {
+    return Promise.resolve({
       statusDistribution,
       completionTrend,
-    };
+    });
   }
 
   // ===== UTILITY METHODS =====
@@ -454,17 +456,19 @@ export class ComprehensiveDataApiService implements ComprehensiveDataService {
   /**
    * Calculate high priority tasks from priority distribution
    */
-  private calculateHighPriorityTasks(priorityDistribution: any[]): number {
+  private calculateHighPriorityTasks(
+    priorityDistribution: { priority: string; count: number }[],
+  ): number {
     const highPriorityItems = priorityDistribution.filter(
       (item) => item.priority === 'High' || item.priority === 'Critical',
     );
-    return highPriorityItems.reduce((sum, item) => sum + item.count, 0);
+    return highPriorityItems.reduce<number>((sum, item) => sum + item.count, 0);
   }
 
   /**
    * Calculate tasks handled by role
    */
-  private calculateTasksHandled(role: string, delegationData: any): number {
+  private calculateTasksHandled(role: string, _delegationData: any): number {
     // Mock calculation based on role activity
     const roleMap: Record<string, number> = {
       Boomerang: 8,
@@ -479,7 +483,7 @@ export class ComprehensiveDataApiService implements ComprehensiveDataService {
   /**
    * Calculate average duration for role
    */
-  private calculateAvgDuration(role: string, delegationData: any): string {
+  private calculateAvgDuration(role: string, _delegationData: any): string {
     // Mock calculation based on role complexity
     const durationMap: Record<string, string> = {
       Boomerang: '2.5h',

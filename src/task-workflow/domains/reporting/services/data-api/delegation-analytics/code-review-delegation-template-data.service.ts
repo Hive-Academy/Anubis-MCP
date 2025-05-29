@@ -18,16 +18,16 @@ import {
   CodeReviewInsightsTemplateData,
   ReviewerStatsItem,
   ReviewRecommendationItem,
-} from '../../interfaces/templates/code-review-insights-template.interface';
+} from '../code-review/code-review-insights-template.interface';
 import {
   DelegationFlowAnalysisDataService,
   DelegationFlowAnalysisTemplateData,
   FlowRecommendationItem,
   RolePerformanceFlowItem,
-} from '../../interfaces/templates/delegation-flow-analysis-template.interface';
-import { AdvancedAnalyticsService } from '../analytics/advanced-analytics.service';
-import { MetricsCalculatorService } from './metrics-calculator.service';
-import { ReportDataAccessService } from './report-data-access.service';
+} from './delegation-flow-analysis-template.interface';
+import { MetricsCalculatorService } from '../foundation/metrics-calculator.service';
+import { ReportDataAccessService } from '../foundation/report-data-access.service';
+import { AdvancedAnalyticsService } from '../../analytics/advanced-analytics.service';
 
 @Injectable()
 export class CodeReviewDelegationTemplateDataService
@@ -493,23 +493,29 @@ export class CodeReviewDelegationTemplateDataService
     const transitions = delegationMetrics.modeTransitions || [];
     const directCount = transitions
       .filter(
-        (t) =>
+        (t: { fromMode: string; toMode: string }) =>
           (t.fromMode === 'boomerang' && t.toMode === 'senior-developer') ||
           (t.fromMode === 'architect' && t.toMode === 'senior-developer'),
       )
-      .reduce((sum, t) => sum + (t.count || 0), 0);
+      .reduce((sum: number, t: { count?: number }) => sum + (t.count || 0), 0);
 
     const researchFirstCount = transitions
-      .filter((t) => t.fromMode === 'boomerang' && t.toMode === 'researcher')
-      .reduce((sum, t) => sum + (t.count || 0), 0);
+      .filter(
+        (t: { fromMode: string; toMode: string }) =>
+          t.fromMode === 'boomerang' && t.toMode === 'researcher',
+      )
+      .reduce((sum: number, t: { count?: number }) => sum + (t.count || 0), 0);
 
     const architectureFirstCount = transitions
-      .filter((t) => t.fromMode === 'boomerang' && t.toMode === 'architect')
-      .reduce((sum, t) => sum + (t.count || 0), 0);
+      .filter(
+        (t: { fromMode: string; toMode: string }) =>
+          t.fromMode === 'boomerang' && t.toMode === 'architect',
+      )
+      .reduce((sum: number, t: { count?: number }) => sum + (t.count || 0), 0);
 
     const reviewLoopCount = transitions
-      .filter((t) => t.toMode === 'code-review')
-      .reduce((sum, t) => sum + (t.count || 0), 0);
+      .filter((t: { toMode: string }) => t.toMode === 'code-review')
+      .reduce((sum: number, t: { count?: number }) => sum + (t.count || 0), 0);
 
     // Calculate handoff time distribution based on flow duration
     const handoffTimes = {
@@ -576,12 +582,18 @@ export class CodeReviewDelegationTemplateDataService
     const roleData = roles.map((role) => {
       const roleName = role.name.toLowerCase().replace(' ', '-');
       const taskCount = transitions
-        .filter((t) => t.toMode === roleName)
-        .reduce((sum, t) => sum + (t.count || 0), 0);
+        .filter((t: { toMode: string }) => t.toMode === roleName)
+        .reduce(
+          (sum: number, t: { count?: number }) => sum + (t.count || 0),
+          0,
+        );
 
       const delegationCount = transitions
-        .filter((t) => t.fromMode === roleName)
-        .reduce((sum, t) => sum + (t.count || 0), 0);
+        .filter((t: { fromMode: string }) => t.fromMode === roleName)
+        .reduce(
+          (sum: number, t: { count?: number }) => sum + (t.count || 0),
+          0,
+        );
 
       const isBottleneck = bottleneckRoles.includes(roleName);
       const avgTime = flowMetrics.avgFlowDuration
@@ -691,8 +703,11 @@ export class CodeReviewDelegationTemplateDataService
     return roles.map((role) => {
       const roleName = role.name.toLowerCase().replace(' ', '-');
       const tasksHandled = transitions
-        .filter((t) => t.toMode === roleName)
-        .reduce((sum, t) => sum + (t.count || 0), 0);
+        .filter((t: { toMode: string }) => t.toMode === roleName)
+        .reduce(
+          (sum: number, t: { count?: number }) => sum + (t.count || 0),
+          0,
+        );
 
       const isBottleneck = bottleneckRoles.includes(roleName);
       const avgProcessingTime = `${(Math.random() * 3 + 1).toFixed(1)}h`; // TODO: Calculate from actual data

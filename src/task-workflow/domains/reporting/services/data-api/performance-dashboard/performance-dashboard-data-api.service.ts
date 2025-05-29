@@ -18,10 +18,10 @@ import {
   SystemHealthData,
   VelocityData,
   GoalProgressData,
-} from '../../interfaces/templates/performance-dashboard-template.interface';
+} from './performance-dashboard-template.interface';
 
 // Foundation services
-import { ReportDataAccessService } from '../data/report-data-access.service';
+import { ReportDataAccessService } from '../foundation/report-data-access.service';
 
 @Injectable()
 export class PerformanceDashboardDataApiService
