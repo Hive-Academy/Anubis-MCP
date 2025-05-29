@@ -37,9 +37,13 @@ Implementation planning and batch subtask management.
 - Clear plan-to-subtask relationships
 - Batch status updates (update entire batches at once)
 
+**Subtask Creation Requirements:**
+- REQUIRED: name, description, sequenceNumber
+- OPTIONAL: status (defaults to 'not-started' if not provided)
+
 **Examples:**
 - Create plan: { operation: "create_plan", taskId: "TSK-001", planData: { overview: "Auth implementation", approach: "JWT-based" } }
-- Create batch: { operation: "create_subtasks", taskId: "TSK-001", batchData: { batchId: "B001", subtasks: [...] } }
+- Create batch: { operation: "create_subtasks", taskId: "TSK-001", batchData: { batchId: "B001", subtasks: [{ name: "Task", description: "Desc", sequenceNumber: 1 }] } }
 - Update batch: { operation: "update_batch", taskId: "TSK-001", batchId: "B001", newStatus: "completed" }
 `,
     parameters: PlanningOperationsSchema,
@@ -284,7 +288,7 @@ Implementation planning and batch subtask management.
       name: subtask.name,
       description: subtask.description,
       sequenceNumber: subtask.sequenceNumber,
-      status: subtask.status,
+      status: subtask.status || 'not-started',
       batchId: batchData.batchId,
       batchTitle: batchData.batchTitle || 'Untitled Batch',
     }));

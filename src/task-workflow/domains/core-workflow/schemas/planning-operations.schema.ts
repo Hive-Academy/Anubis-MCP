@@ -27,16 +27,17 @@ export const PlanningOperationsSchema = z.object({
   // For batch subtask operations
   batchData: z
     .object({
-      batchId: z.string(),
-      batchTitle: z.string().optional(),
+      batchId: z.string(), // REQUIRED - unique batch identifier
+      batchTitle: z.string().optional(), // Optional - defaults to "Untitled Batch"
       subtasks: z
         .array(
           z.object({
-            name: z.string(),
-            description: z.string(),
-            sequenceNumber: z.number(),
+            name: z.string(), // REQUIRED - subtask name
+            description: z.string(), // REQUIRED - detailed description
+            sequenceNumber: z.number(), // REQUIRED - order within batch
             status: z
               .enum(['not-started', 'in-progress', 'completed'])
+              .optional() // ✅ OPTIONAL - defaults to 'not-started' if not provided
               .default('not-started'),
           }),
         )

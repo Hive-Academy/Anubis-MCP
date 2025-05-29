@@ -4,6 +4,55 @@
 
 Implement complete batches with **pragmatic technical excellence**, focusing on **solving the specific task requirements** efficiently while maintaining quality standards. Prioritize **value delivery over perfect architecture** and **working solutions over theoretical purity**.
 
+## MANDATORY: Context Efficiency Verification Protocol
+
+**BEFORE making ANY MCP calls, MUST execute this verification:**
+
+### **Context Verification Steps:**
+
+1. **Check last 15 messages** for existing context and MCP data
+2. **Identify available context** (task details, plans, implementation status)
+3. **Apply decision logic** based on context freshness and completeness
+4. **Document decision** and reasoning for context usage
+
+### **Decision Logic with Enforcement:**
+
+**FRESH CONTEXT (within 15 messages):**
+
+- **CRITERIA**: Task context, requirements, and current status clearly available
+- **ACTION**: Extract context from conversation history
+- **VERIFICATION**: List specific context elements found
+- **PROCEED**: Directly to role work with documented context
+- **NO MCP CALLS**: Skip redundant data retrieval
+
+**STALE/MISSING CONTEXT:**
+
+- **CRITERIA**: Context older than 15 messages or incomplete information
+- **ACTION**: Retrieve via appropriate MCP calls
+- **VERIFICATION**: Confirm required context obtained
+- **PROCEED**: To role work with fresh MCP data
+- **DOCUMENT**: What context was missing and why MCP was needed
+
+### **Context Verification Template:**
+
+```
+CONTEXT VERIFICATION:
+✅ Task Context: [Available/Missing] - [Source: conversation/MCP]
+✅ Requirements: [Available/Missing] - [Source: conversation/MCP]
+✅ Current Status: [Available/Missing] - [Source: conversation/MCP]
+✅ Dependencies: [Available/Missing] - [Source: conversation/MCP]
+
+DECISION: [FRESH CONTEXT/STALE CONTEXT] - [Rationale]
+ACTION: [Skip MCP/Execute MCP calls] - [Specific calls needed]
+```
+
+### **Enforcement Rules:**
+
+- **NEVER ASSUME** context without explicit verification
+- **ALWAYS DOCUMENT** the context decision and reasoning
+- **STOP WORKFLOW** if context verification cannot determine appropriate action
+- **ESCALATE TO USER** if context appears contradictory or unclear
+
 ## CRITICAL: Context Efficiency Protocol
 
 **BEFORE making ANY MCP calls:**
@@ -188,47 +237,93 @@ batch_subtask_operations({
 });
 ```
 
-### Step 8: Git Commit and Version Control (No MCP calls)
+### Step 8: MANDATORY Git Commit with Verification (No MCP calls)
 
-**Commit all batch implementation to version control:**
+**CRITICAL: All batch implementation must be committed with verification before delegation**
 
-**Pre-Commit Validation:**
-
-- **Code Quality Check**: Verify all code meets quality standards before commit
-- **Test Execution**: Run all tests to ensure they pass before committing
-- **Linting Validation**: Ensure code passes all linting and formatting checks
-- **File Organization**: Verify all files are properly organized and named
-- **Documentation Update**: Ensure all documentation is current and accurate
-
-**Git Commit Process:**
+**Step 8.1: Pre-Commit Quality Gates**
 
 ```bash
-# Stage all changes for the completed batch
-git add .
+# Verify all files are properly staged
+git status --porcelain
 
-# Create comprehensive commit message
-git commit -m "feat(batch-[batch-id]): [Batch Title]
+# Run linting and formatting
+npm run lint
+npm run format
 
-- Implemented [key functionality 1]
-- Added [key functionality 2]
-"
+# Execute all tests
+npm test
+
+# Verify no uncommitted changes remain
+git diff --cached --stat
 ```
 
-**Commit Message Standards:**
+- **MUST PASS**: All quality checks before commit
+- **MUST RESOLVE**: Any linting, formatting, or test failures
+- **VERIFICATION**: Clean staging area ready for commit
 
-- **Type**: feat (new feature), fix (bug fix), refactor (code refactoring)
-- **Scope**: batch-[id] to clearly identify batch completion
-- **Description**: Clear, concise summary of batch deliverables
-- **Body**: Detailed list of implemented functionality and quality measures
-- **Footer**: Reference to batch ID and testing status
+**Step 8.2: Structured Commit Creation**
 
-**Post-Commit Validation:**
+```bash
+# Create comprehensive commit message
+COMMIT_MSG="feat(batch-${BATCH_ID}): ${BATCH_TITLE}
 
-- **Commit Verification**: Verify commit was successful and properly recorded
-- **Branch Status**: Confirm branch is up to date with all batch changes
-- **Remote Sync**: Push changes to remote repository for backup and collaboration
-- **Integration Check**: Verify committed code maintains system integration
-- **Documentation Update**: Update any project documentation affected by batch
+Implemented:
+- ${SUBTASK_1_SUMMARY}
+- ${SUBTASK_2_SUMMARY}
+- ${SUBTASK_3_SUMMARY}
+
+Quality Gates:
+✅ All tests passing
+✅ Code review self-checks completed
+✅ Integration validation successful
+✅ Performance requirements met
+
+Files: ${MODIFIED_FILES_COUNT} modified, ${NEW_FILES_COUNT} added"
+
+# Execute commit
+git commit -m "$COMMIT_MSG"
+```
+
+**Step 8.3: MANDATORY Commit Verification**
+
+```bash
+# Verify commit was successful
+COMMIT_HASH=$(git rev-parse HEAD)
+echo "Commit created: $COMMIT_HASH"
+
+# Verify commit message and content
+git show --stat HEAD
+
+# Verify branch status
+git status
+
+# Push to remote (with verification)
+git push origin $(git branch --show-current)
+```
+
+**Step 8.4: Commit Success Validation**
+
+- **Verify commit hash** is generated and valid
+- **Confirm push successful** to remote repository
+- **Validate branch status** shows clean working tree
+- **Record commit information** for traceability
+- **HALT WORKFLOW** if any git operation fails
+
+**ERROR HANDLING**: If commit or push fails:
+
+1. **Document specific git error** encountered
+2. **Attempt resolution** (conflict resolution, authentication)
+3. **Re-verify quality gates** after any changes
+4. **DO NOT PROCEED** to code review until commit successful
+5. **Escalate to user** if git issues cannot be resolved
+
+**SUCCESS CRITERIA**:
+
+- ✅ Commit hash generated and verified
+- ✅ Changes pushed to remote successfully
+- ✅ Working directory clean after commit
+- ✅ All quality gates maintained through commit process
 
 ### Step 9: Code Review Delegation (1 MCP call)
 
@@ -340,3 +435,4 @@ workflow_operations({
 - **Practical Documentation**: Clear documentation for maintenance without over-documentation
 - **System Integration**: Seamless integration maintaining existing system stability
 - **Value Delivered**: Tangible user or system value provided through focused implementation
+- **Context efficiency verification**: Executed properly throughout implementation phase

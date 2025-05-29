@@ -592,19 +592,16 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
       };
     }
 
-    // Handle aggregate reports (performance dashboard, task summary, delegation analytics, etc.)
+    // Handle aggregate reports - extract from our new template data structure
+    // Our TaskSummaryDataApiService returns: { metrics: { totalTasks, completionRate, ... }, ... }
+    const metrics = reportData.metrics || {};
+
     return {
-      totalTasks:
-        reportData.taskMetrics?.totalTasks || reportData.totalTasks || 0,
-      completionRate: `${((reportData.taskMetrics?.completionRate || reportData.completionRate || 0) * 100).toFixed(1)}%`,
+      totalTasks: metrics.totalTasks || 0,
+      completionRate: `${(metrics.completionRate || 0).toFixed(1)}%`, // Already a percentage number
       totalDelegations:
-        reportData.delegationMetrics?.totalDelegations ||
-        reportData.totalDelegations ||
-        0,
-      codeReviews:
-        reportData.codeReviewMetrics?.totalReviews ||
-        reportData.totalReviews ||
-        0,
+        metrics.totalDelegations || reportData.totalDelegations || 0,
+      codeReviews: metrics.codeReviews || reportData.totalReviews || 0,
       recommendationsCount: reportData.recommendations?.length || 0,
     };
   }

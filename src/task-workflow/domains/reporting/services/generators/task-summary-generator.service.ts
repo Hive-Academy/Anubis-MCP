@@ -6,8 +6,8 @@ import {
 } from './base-report-generator.interface';
 import { ReportType } from '../../interfaces/service-contracts.interface';
 
-// Data Service (already contains analytics integration)
-import { TemplateDataService } from '../data/template-data.service';
+// Direct API Service (uses real analytics)
+import { TaskSummaryDataApiService } from '../report-templates-data-api/task-summary-data-api.service';
 
 // Template Service
 import { HandlebarsTemplateService } from '../handlebars-template.service';
@@ -15,23 +15,21 @@ import { HandlebarsTemplateService } from '../handlebars-template.service';
 /**
  * Task Summary Generator
  *
- * Uses the data services as the glue layer since they already:
- * - Combine data + analytics + insights
- * - Format data for template consumption
- * - Handle all the complex logic
+ * Clean, direct architecture:
+ * 1. Use TaskSummaryDataApiService (real analytics, no intermediate layers)
+ * 2. Render template
+ * 3. Return result
  *
- * This generator just:
- * 1. Calls the appropriate data service method
- * 2. Renders the template
- * 3. Returns the result
+ * Removed layers: TemplateDataService → BasicTemplateCoordinator → etc.
+ * Now: Generator → TaskSummaryDataApiService → Analytics (DIRECT)
  */
 @Injectable()
 export class TaskSummaryGeneratorService implements IBaseReportGenerator {
   private readonly logger = new Logger(TaskSummaryGeneratorService.name);
 
   constructor(
-    // The data service IS the glue layer
-    private readonly templateData: TemplateDataService,
+    // Direct API service with real analytics
+    private readonly taskSummaryApi: TaskSummaryDataApiService,
 
     // Template service for rendering
     private readonly templateService: HandlebarsTemplateService,
@@ -55,15 +53,14 @@ export class TaskSummaryGeneratorService implements IBaseReportGenerator {
     filters: ReportFilters,
   ): Promise<ReportGenerationResult> {
     this.logger.log(
-      'Generating task summary report using data service glue layer',
+      'Generating task summary report using DIRECT analytics API',
     );
 
     try {
       this.validateFilters(filters);
 
-      // Step 1: Use the data service as the glue layer
-      // It already combines analytics + data + template formatting
-      const templateData = await this.templateData.getTaskSummaryData(
+      // Step 1: Get real analytics data directly (no intermediate layers)
+      const templateData = await this.taskSummaryApi.getTaskSummaryData(
         filters.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
         filters.endDate || new Date(),
         {
@@ -86,8 +83,13 @@ export class TaskSummaryGeneratorService implements IBaseReportGenerator {
           reportType: this.getReportType(),
           generatedAt: new Date(),
           filters,
-          dataSourcesUsed: ['TemplateDataService (glue layer)'],
-          analyticsApplied: ['All analytics services via TemplateDataService'],
+          dataSourcesUsed: ['TaskSummaryDataApiService (direct analytics)'],
+          analyticsApplied: [
+            'CoreMetrics',
+            'EnhancedInsights',
+            'RecommendationEngine',
+            'TaskHealthAnalysis',
+          ],
         },
       };
     } catch (error) {

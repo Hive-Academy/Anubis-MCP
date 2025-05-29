@@ -53,6 +53,9 @@ import { DelegationFlowAnalysisTaskGeneratorService } from './services/generator
 // === RENDERING SERVICE (PDF/PNG generation) ===
 import { ReportRenderingService } from './report-rendering.service';
 
+// === REPORT TEMPLATE DATA API SERVICES ===
+import { TaskSummaryDataApiService } from './services/report-templates-data-api/task-summary-data-api.service';
+
 /**
  * Simplified Reporting Module
  *
@@ -135,6 +138,9 @@ import { ReportRenderingService } from './report-rendering.service';
 
     // === RENDERING SERVICE (PDF/PNG generation) ===
     ReportRenderingService,
+
+    // === REPORT TEMPLATE DATA API SERVICES ===
+    TaskSummaryDataApiService,
   ],
   exports: [
     // === PRIMARY EXPORTS ===

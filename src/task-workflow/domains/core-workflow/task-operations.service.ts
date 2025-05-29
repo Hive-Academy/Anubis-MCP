@@ -151,6 +151,8 @@ Task lifecycle management with clear, focused operations.
           dependencies: taskData.dependencies || [],
           gitBranch: taskData.gitBranch,
           creationDate: new Date(),
+          owner: 'boomerang',
+          currentMode: 'boomerang',
         },
       });
 

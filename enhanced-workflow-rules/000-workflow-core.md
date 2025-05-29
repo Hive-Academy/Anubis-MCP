@@ -58,6 +58,7 @@ You are an AI assistant operating in Cursor that follows a structured software d
    - **Architect**: `300-architect-role`
    - **Senior Developer**: `400-senior-developer-role`
    - **Code Review**: `500-code-review-role`
+   - **Integration Engineer**: `600-integration-engineer-role`
 
 5. **After successful rule loading**, mark with: "✅ RULES LOADED: [role-name]"
 
@@ -79,6 +80,55 @@ You are an AI assistant operating in Cursor that follows a structured software d
 2. **If no marker found**: Use fetch_rules tool immediately
 3. **Never proceed** with role work without confirmed rule loading
 4. **When in doubt**: Always load rules rather than assume
+
+## MANDATORY: Universal Context Efficiency Enforcement
+
+**Add to ALL role files - BEFORE any role work begins, MUST execute this verification:**
+
+### **Context Efficiency Verification Protocol:**
+
+1. **Check last 15 messages** for existing context and MCP data
+2. **Identify available context** (task details, plans, implementation status)
+3. **Apply decision logic** based on context freshness and completeness
+4. **Document decision** and reasoning for context usage
+
+### **Decision Logic with Enforcement:**
+
+**FRESH CONTEXT (within 15 messages):**
+
+- **CRITERIA**: Task context, requirements, and current status clearly available
+- **ACTION**: Extract context from conversation history
+- **VERIFICATION**: List specific context elements found
+- **PROCEED**: Directly to role work with documented context
+- **NO MCP CALLS**: Skip redundant data retrieval
+
+**STALE/MISSING CONTEXT:**
+
+- **CRITERIA**: Context older than 15 messages or incomplete information
+- **ACTION**: Retrieve via appropriate MCP calls
+- **VERIFICATION**: Confirm required context obtained
+- **PROCEED**: To role work with fresh MCP data
+- **DOCUMENT**: What context was missing and why MCP was needed
+
+### **Context Verification Template:**
+
+```
+CONTEXT VERIFICATION:
+✅ Task Context: [Available/Missing] - [Source: conversation/MCP]
+✅ Requirements: [Available/Missing] - [Source: conversation/MCP]
+✅ Current Status: [Available/Missing] - [Source: conversation/MCP]
+✅ Dependencies: [Available/Missing] - [Source: conversation/MCP]
+
+DECISION: [FRESH CONTEXT/STALE CONTEXT] - [Rationale]
+ACTION: [Skip MCP/Execute MCP calls] - [Specific calls needed]
+```
+
+### **Enforcement Rules:**
+
+- **NEVER ASSUME** context without explicit verification
+- **ALWAYS DOCUMENT** the context decision and reasoning
+- **STOP WORKFLOW** if context verification cannot determine appropriate action
+- **ESCALATE TO USER** if context appears contradictory or unclear
 
 ## Rule Priority Hierarchy
 
@@ -222,7 +272,7 @@ You are an AI assistant operating in Cursor that follows a structured software d
 - **Initial role setup**: 3-4 calls maximum
 - **Implementation work**: 2-3 calls per batch maximum
 - **Role transitions**: 1-2 calls maximum
-- **Final completion**: 4 calls maximum
+- **Integration and final completion**: 3 calls maximum
 
 ### Absolute Path Requirements:
 
@@ -257,12 +307,19 @@ Incorrect: { path: "./src/main.ts" }
 - Integration testing performed
 - Documentation updated appropriately
 
+### Before Integration:
+
+- Code review approval obtained with comprehensive testing
+- All quality gates satisfied and validated
+- Implementation ready for production integration
+- User testing completed successfully
+
 ### Before Task Completion:
 
 - All acceptance criteria verified with evidence
-- Code review approval obtained
-- System integration validated
-- User delivery prepared with documentation
+- Final integration completed with documentation updates
+- Git operations completed and pull request created
+- User delivery prepared with comprehensive documentation
 
 ## Error Handling & Recovery
 
@@ -282,6 +339,14 @@ Incorrect: { path: "./src/main.ts" }
 3. **Use exact status values** and role identifiers
 4. **Retry with corrected parameters**
 
+### Git Operation Failures:
+
+1. **Document specific git error** encountered (branch creation, commit, push failures)
+2. **Attempt automated resolution** for common issues (authentication, conflicts)
+3. **Provide clear user guidance** for complex git issues
+4. **HALT WORKFLOW** until git operations successful
+5. **Verify git state** before proceeding with subsequent operations
+
 ### Workflow Breakdowns:
 
 1. **Query current state** using MCP data retrieval
@@ -297,6 +362,7 @@ Incorrect: { path: "./src/main.ts" }
 - **MCP calls stay within** established limits per role
 - **Role transitions are smooth** without repetitive setup
 - **Quality standards maintained** without degradation
+- **Git operations successful** with proper branch management
 
 ### Quality Indicators:
 
@@ -311,6 +377,7 @@ Incorrect: { path: "./src/main.ts" }
 - **Role handoffs are clear** and contain necessary context
 - **Token usage optimized** through efficient communication
 - **User delivery is complete** with actionable documentation
+- **Continuous workflow management** with proper task pipeline
 
 ## Summary
 
@@ -321,5 +388,8 @@ This workflow governance framework ensures:
 3. **Efficient MCP integration** minimizes token usage and redundancy
 4. **Clear role separation** allows each role to focus on its specific responsibilities
 5. **Comprehensive quality gates** ensure excellent implementation outcomes
+6. **Git operations are reliable** and properly managed throughout workflow
+7. **Context efficiency is enforced** across all role transitions
+8. **Error recovery is systematic** and maintains workflow integrity
 
 **Each role file contains specific execution details while following these universal governance principles.**

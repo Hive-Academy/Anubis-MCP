@@ -51,20 +51,27 @@ export interface TaskSummaryTemplateData {
   /** Task list for the table display */
   tasks?: TaskSummaryItem[];
 
-  /** Chart data for visualizations */
-  chartData: {
+  /** Status distribution chart data matching template expectations */
+  statusDistribution: {
     /** Labels for status distribution chart */
-    statusLabels: string[];
+    labels: string[];
     /** Data values for status distribution */
-    statusData: number[];
-    /** Labels for priority breakdown chart */
-    priorityLabels: string[];
-    /** Data values for priority breakdown */
-    priorityData: number[];
+    data: number[];
   };
 
-  /** Key insights and recommendations */
-  insights?: TaskSummaryInsight[];
+  /** Priority distribution chart data matching template expectations */
+  priorityDistribution: {
+    /** Labels for priority breakdown chart */
+    labels: string[];
+    /** Data values for priority breakdown */
+    data: number[];
+  };
+
+  /** Performance insights as string array for template {{#each insights}} */
+  insights?: string[];
+
+  /** Recommended actions as string array for template {{#each recommendations}} */
+  recommendations?: string[];
 }
 
 /**
