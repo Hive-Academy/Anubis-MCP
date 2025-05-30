@@ -1,8 +1,21 @@
 {
   "mcpServers": {
     "workflow-manager": {
-      "command": "node",
-      "args": ["D://projects/cursor-workflow/dist/main.js"]
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "--network=host",
+        "-v",
+        "cursor-workflow-mcp-data:/app/data",
+        "-v",
+        "D:/projects/cursor-workflow/workflow-reports:/app/data/workflow-manager-mcp-reports",
+        "-e",
+        "DATABASE_URL=file:D:/projects/cursor-workflow/data/cursor-workflow-workflow.db",
+
+        "test-mcp-workflow-fixed"
+      ]
     }
   }
 }

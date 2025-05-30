@@ -22,84 +22,45 @@ The MCP Workflow Manager provides a structured, role-based workflow system for A
 - **Production Ready** with NestJS + Prisma architecture
 - **Automatic Database Setup** with migrations on container start
 
-## 🔧 Quick Start
+## 🚀 Quick Setup
 
-### Option 1: Docker Run (Simplest)
+**No manual installation required** - just add the configuration to your MCP client and everything works automatically!
 
-```bash
-# Run with SQLite (data persists in named volume)
-docker run -p 3000:3000 -v mcp-workflow-data:/app/data hiveacademy/mcp-workflow-manager
+### NPX Setup (Recommended - Automatic Project Isolation)
 
-# Run with custom environment
-docker run -p 3000:3000 \
-  -e MCP_TRANSPORT_TYPE=SSE \
-  -e MCP_SERVER_NAME=My-Workflow-Manager \
-  -v mcp-workflow-data:/app/data \
-  hiveacademy/mcp-workflow-manager
+#### Claude Desktop
+
+Add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "workflow-manager": {
+      "command": "npx",
+      "args": ["-y", "@hive-academy/mcp-workflow-manager"]
+    }
+  }
+}
 ```
 
-### Option 2: Docker Compose (Recommended)
+#### Cursor IDE
 
-```yaml
-version: '3.8'
-services:
-  mcp-workflow:
-    image: hiveacademy/mcp-workflow-manager
-    ports:
-      - '3000:3000'
-    volumes:
-      - mcp-workflow-data:/app/data
-    environment:
-      - DATABASE_URL=file:./data/workflow.db
-      - MCP_SERVER_NAME=Workflow-Manager
-      - MCP_TRANSPORT_TYPE=STDIO
-    restart: unless-stopped
+Add to your `.cursor/mcp.json`:
 
-volumes:
-  mcp-workflow-data:
+```json
+{
+  "mcpServers": {
+    "workflow-manager": {
+      "command": "npx",
+      "args": ["-y", "@hive-academy/mcp-workflow-manager"]
+    }
+  }
+}
 ```
 
-### Option 3: With PostgreSQL Database
+### Docker Setup (Production/Teams)
 
-```yaml
-version: '3.8'
-services:
-  mcp-workflow:
-    image: hiveacademy/mcp-workflow-manager
-    ports:
-      - '3000:3000'
-    environment:
-      - DATABASE_URL=postgresql://workflow:secure_password@postgres:5432/workflow_db
-      - MCP_SERVER_NAME=Workflow-Manager
-      - MCP_TRANSPORT_TYPE=SSE
-    depends_on:
-      postgres:
-        condition: service_healthy
-    restart: unless-stopped
-
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      - POSTGRES_DB=workflow_db
-      - POSTGRES_USER=workflow
-      - POSTGRES_PASSWORD=secure_password
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U workflow -d workflow_db']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-volumes:
-  postgres_data:
-```
-
-## 🎯 MCP Client Configuration
-
-### Claude Desktop Configuration
-
-Add to your Claude Desktop `claude_desktop_config.json`:
+#### Claude Desktop
 
 ```json
 {
@@ -108,10 +69,10 @@ Add to your Claude Desktop `claude_desktop_config.json`:
       "command": "docker",
       "args": [
         "run",
-        "--rm",
         "-i",
         "-v",
-        "mcp-workflow-data:/app/data",
+        "workflow-manager-data:/app/data",
+        "--rm",
         "hiveacademy/mcp-workflow-manager"
       ]
     }
@@ -119,9 +80,7 @@ Add to your Claude Desktop `claude_desktop_config.json`:
 }
 ```
 
-### Cursor IDE Configuration
-
-Add to your Cursor MCP settings:
+#### Cursor IDE
 
 ```json
 {
@@ -130,11 +89,11 @@ Add to your Cursor MCP settings:
       "command": "docker",
       "args": [
         "run",
-        "--rm",
         "-i",
         "--network=host",
         "-v",
-        "mcp-workflow-data:/app/data",
+        "workflow-manager-data:/app/data",
+        "--rm",
         "hiveacademy/mcp-workflow-manager"
       ]
     }
@@ -142,70 +101,90 @@ Add to your Cursor MCP settings:
 }
 ```
 
-### HTTP/SSE Transport (Alternative)
+## 🔒 Project Isolation & Multi-Project Setup
 
-For HTTP/SSE transport instead of STDIO:
+### **IMPORTANT**: Avoiding Database Conflicts Between Projects
+
+When using Docker across multiple projects, ensure each project has its own isolated database to prevent data conflicts:
+
+#### ✅ **Recommended: Project-Specific Volume Names**
 
 ```json
+// For project "my-auth-app"
 {
   "mcpServers": {
     "workflow-manager": {
-      "transport": {
-        "type": "sse",
-        "url": "http://localhost:3000/sse"
-      }
+      "command": "docker",
+      "args": ["run", "-i", "-v", "my-auth-app-mcp-data:/app/data", "--rm", "hiveacademy/mcp-workflow-manager"]
+    }
+  }
+}
+
+// For project "my-ecommerce-app"
+{
+  "mcpServers": {
+    "workflow-manager": {
+      "command": "docker",
+      "args": ["run", "-i", "-v", "my-ecommerce-app-mcp-data:/app/data", "--rm", "hiveacademy/mcp-workflow-manager"]
     }
   }
 }
 ```
 
-First, start the container with SSE transport:
+#### ❌ **Avoid: Shared Volume Names**
 
-```bash
-docker run -p 3000:3000 \
-  -e MCP_TRANSPORT_TYPE=SSE \
-  -v mcp-workflow-data:/app/data \
-  hiveacademy/mcp-workflow-manager
+```json
+// DON'T DO THIS - All projects will share the same database!
+{
+  "mcpServers": {
+    "workflow-manager": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "-v",
+        "mcp-workflow-data:/app/data",
+        "--rm",
+        "hiveacademy/mcp-workflow-manager"
+      ]
+    }
+  }
+}
 ```
+
+### **NPX vs Docker: When to Use Which**
+
+| Use Case                                | Recommended Approach                 | Reason                             |
+| --------------------------------------- | ------------------------------------ | ---------------------------------- |
+| **Single Developer, Multiple Projects** | NPX with automatic isolation         | Simpler setup, automatic isolation |
+| **Team Development**                    | Docker with project-specific volumes | Consistent environment across team |
+| **Production Deployment**               | Docker with external database        | Scalability and reliability        |
+| **Quick Testing/Prototyping**           | NPX                                  | Fastest setup                      |
+| **CI/CD Pipelines**                     | Docker                               | Reproducible builds                |
 
 ## 🛠️ Available MCP Tools
 
 ### Core Task Management
 
-- `create_task` - Create new workflow tasks
-- `get_task_context` - Retrieve complete task context
-- `update_task_status` - Update task status and progress
-- `list_tasks` - List and filter tasks
-- `search_tasks` - Advanced task searching
-- `delete_task` - Remove tasks
+- `task_operations` - Task lifecycle management
+- `planning_operations` - Implementation planning and batch management
+- `workflow_operations` - Role-based delegation and transitions
+- `review_operations` - Code review and completion reports
+- `research_operations` - Research reports and communication
 
-### Workflow Orchestration
+### Query & Analytics
 
-- `delegate_task` - Delegate tasks between AI roles
-- `complete_task` - Mark tasks as completed
-- `handle_role_transition` - Manage role transitions
-- `workflow_status` - Get workflow state
-- `workflow_map` - Visualize workflow diagram
+- `query_task_context` - Comprehensive task context retrieval
+- `query_workflow_status` - Delegation and workflow status
+- `query_reports` - Report queries with evidence
+- `batch_subtask_operations` - Bulk subtask management
+- `batch_status_updates` - Cross-entity synchronization
 
-### Implementation Planning
+### Reporting & Analytics
 
-- `create_implementation_plan` - Create detailed implementation plans
-- `add_subtask_to_batch` - Add subtasks to work batches
-- `update_subtask_status` - Update individual subtask progress
-- `check_batch_status` - Verify batch completion
-
-### Reporting & Documentation
-
-- `create_research_report` - Generate research findings
-- `create_code_review_report` - Document code reviews
-- `create_completion_report` - Final task completion reports
-- `add_task_note` - Add notes and comments
-
-### Analytics & Monitoring
-
-- `task_dashboard` - Get workflow dashboard
-- `get_context_diff` - Track context changes
-- `continue_task` - Resume interrupted tasks
+- `generate_workflow_report` - Comprehensive analytics and reports
+- `get_report_status` - Report generation status
+- `cleanup_report` - Report file management
 
 ## 🔄 Workflow Roles
 
@@ -219,144 +198,31 @@ The system implements a structured workflow with specialized AI roles:
 
 ## 📊 Environment Variables
 
-| Variable             | Default                   | Description                                     |
-| -------------------- | ------------------------- | ----------------------------------------------- |
-| `DATABASE_URL`       | `file:./data/workflow.db` | Database connection string                      |
-| `MCP_SERVER_NAME`    | `MCP-Workflow-Manager`    | Server name for MCP protocol                    |
-| `MCP_SERVER_VERSION` | `1.0.0`                   | Server version                                  |
-| `MCP_TRANSPORT_TYPE` | `STDIO`                   | Transport type: STDIO, SSE, or STREAMABLE_HTTP  |
-| `PORT`               | `3000`                    | HTTP server port (only for SSE/STREAMABLE_HTTP) |
-| `HOST`               | `0.0.0.0`                 | HTTP server host                                |
-| `NODE_ENV`           | `production`              | Runtime environment                             |
+| Variable             | Default                   | Description                                    |
+| -------------------- | ------------------------- | ---------------------------------------------- |
+| `DATABASE_URL`       | `file:./data/workflow.db` | Database connection string                     |
+| `MCP_SERVER_NAME`    | `MCP-Workflow-Manager`    | Server name for MCP protocol                   |
+| `MCP_SERVER_VERSION` | `1.0.0`                   | Server version                                 |
+| `MCP_TRANSPORT_TYPE` | `STDIO`                   | Transport type: STDIO, SSE, or STREAMABLE_HTTP |
+| `PORT`               | `3000`                    | HTTP server port (SSE/HTTP only)               |
 
-## 🗄️ Data Persistence & Database Setup
+## ✅ Verification
 
-### Automatic Database Initialization
+After adding the configuration:
 
-The container automatically handles database setup:
+1. **Restart your MCP client** (Claude Desktop, Cursor, VS Code)
+2. **Check for workflow tools** in your MCP client
+3. **Create a test task** to verify everything works
 
-1. **First Run**: Creates database and runs all migrations
-2. **Subsequent Runs**: Checks for pending migrations and applies them
-3. **Multiple Database Support**: SQLite, PostgreSQL, MySQL/MariaDB
+You should see 10+ workflow management tools available!
 
-### SQLite (Default)
+## 📚 Additional Resources
 
-Data is stored in `/app/data/workflow.db` inside the container. Use volumes for persistence:
-
-```bash
-# Named volume (recommended)
-docker run -v mcp-workflow-data:/app/data hiveacademy/mcp-workflow-manager
-
-# Bind mount (development)
-docker run -v $(pwd)/data:/app/data hiveacademy/mcp-workflow-manager
-```
-
-### PostgreSQL (Production)
-
-Set `DATABASE_URL` to your PostgreSQL connection string:
-
-```bash
-docker run \
-  -e DATABASE_URL="postgresql://user:pass@host:5432/db" \
-  hiveacademy/mcp-workflow-manager
-```
-
-### MySQL/MariaDB
-
-```bash
-docker run \
-  -e DATABASE_URL="mysql://user:pass@host:3306/db" \
-  hiveacademy/mcp-workflow-manager
-```
-
-## 🔍 Health Monitoring
-
-The container includes intelligent health checks:
-
-- **STDIO Transport**: Always healthy (no HTTP server)
-- **SSE/HTTP Transports**: Checks HTTP endpoint at `/health`
-
-```bash
-# Check container health
-docker ps  # Shows health status in STATUS column
-
-# Manual health check (for HTTP transports)
-curl http://localhost:3000/health
-```
-
-## 📈 Usage Examples
-
-### Basic Task Creation with STDIO
-
-```bash
-# Start container with STDIO transport
-docker run -i --rm -v mcp-workflow-data:/app/data hiveacademy/mcp-workflow-manager
-
-# Connect via MCP client and create tasks
-# (Container expects JSON-RPC over STDIO)
-```
-
-### HTTP/SSE API Usage
-
-```bash
-# Start with SSE transport
-docker run -p 3000:3000 -e MCP_TRANSPORT_TYPE=SSE hiveacademy/mcp-workflow-manager
-
-# Connect MCP clients to http://localhost:3000/sse
-```
-
-## 🔧 Development & Customization
-
-### Building from Source
-
-```bash
-git clone https://github.com/Hive-Academy/Workflow_Manager_MCP.git
-cd Workflow_Manager_MCP
-docker build -t hiveacademy/mcp-workflow-manager .
-```
-
-### Custom Configuration
-
-```bash
-# Mount custom environment file
-docker run -v $(pwd)/custom.env:/app/.env hiveacademy/mcp-workflow-manager
-```
-
-### Development Mode
-
-```bash
-# Run with development settings
-docker run \
-  -e NODE_ENV=development \
-  -e MCP_TRANSPORT_TYPE=SSE \
-  -p 3000:3000 \
-  -v $(pwd):/app \
-  hiveacademy/mcp-workflow-manager
-```
-
-## 📚 Documentation
-
-- **[GitHub Repository](https://github.com/Hive-Academy/Workflow_Manager_MCP)** - Complete source code
-- **[MCP Protocol](https://modelcontextprotocol.io/)** - Learn about Model Context Protocol
-- **[NestJS Docs](https://nestjs.com/)** - Framework documentation
-- **[Prisma Docs](https://www.prisma.io/)** - ORM documentation
-
-## 🤝 Contributing
-
-We welcome contributions! See our [Contributing Guide](https://github.com/Hive-Academy/Workflow_Manager_MCP/blob/main/CONTRIBUTING.md) for details.
-
-## 📄 License
-
-MIT License - see [LICENSE](https://github.com/Hive-Academy/Workflow_Manager_MCP/blob/main/LICENSE) file.
-
-## 🆘 Support
-
-- **GitHub Issues**: [Report bugs or request features](https://github.com/Hive-Academy/Workflow_Manager_MCP/issues)
-- **Documentation**: [Full technical documentation](https://github.com/Hive-Academy/Workflow_Manager_MCP/wiki)
-- **MCP Community**: [Join the MCP Discord](https://discord.gg/modelcontextprotocol)
+- **NPM Package**: [@hive-academy/mcp-workflow-manager](https://www.npmjs.com/package/@hive-academy/mcp-workflow-manager)
+- **GitHub Repository**: [Hive-Academy/Workflow_Manager_MCP](https://github.com/Hive-Academy/Workflow_Manager_MCP)
+- **Complete Setup Guide**: [Deployment Guide](https://github.com/Hive-Academy/Workflow_Manager_MCP/blob/main/docs/DEPLOYMENT_GUIDE.md)
+- **MCP Protocol**: [Model Context Protocol](https://modelcontextprotocol.io/)
 
 ---
 
-**Built with ❤️ for the AI development community by Hive Academy**
-
-Made possible by the [Model Context Protocol](https://modelcontextprotocol.io/) and the amazing MCP ecosystem.
+**🎉 That's it!** No manual installation, no complex setup - just add the config and start using your workflow manager.

@@ -235,21 +235,16 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
         startDate,
         endDate,
         filters,
-        input.basePath,
       );
 
       this.logger.debug(`Generated filename: ${filename}`);
       this.logger.debug(`Generated folderPath: ${folderPath}`);
       this.logger.debug(`Input basePath: ${input.basePath}`);
 
-      // Ensure basePath is defined, default to current working directory
-      const basePath = input.basePath || process.cwd();
-
-      // Handle base path with workflow-manager-mcp-reports structure
-      // Validate that the base path exists
-      await fs.access(basePath);
+      // Always use data directory for reliable storage with proper permissions
+      // This ensures reports are saved in the persistent volume and accessible
       const customTempPath = path.join(
-        basePath,
+        '/app/data',
         'workflow-manager-mcp-reports',
         'temp',
       );
@@ -628,7 +623,6 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
     startDate?: Date,
     endDate?: Date,
     filters?: Record<string, any>,
-    basePath?: string,
   ): { filename: string; folderPath: string } {
     const timestamp = new Date()
       .toISOString()
@@ -662,10 +656,12 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
     // Generate filename
     const filename = `${reportType}${dateRange}${filtersStr}_${timestamp}.${outputFormat}`;
 
-    // Generate folder structure - simplified without year/month subdirectories
-    const baseReportsPath = basePath
-      ? path.join(basePath, 'workflow-manager-mcp-reports')
-      : path.join(process.cwd(), 'workflow-manager-mcp-reports');
+    // Always use data directory for reliable storage with proper permissions
+    // This ensures reports are saved in the persistent volume and accessible
+    const baseReportsPath = path.join(
+      '/app/data',
+      'workflow-manager-mcp-reports',
+    );
 
     // Organize by report type only (no date subdirectories)
     const folderPath = path.join(baseReportsPath, reportType);

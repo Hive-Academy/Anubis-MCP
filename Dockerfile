@@ -94,7 +94,8 @@ RUN chown -R nestjs:nodejs /app/node_modules
 
 # Copy built application and generated Prisma client from builder stage
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nestjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nestjs:nodejs /app/prisma/schema.prisma ./prisma/schema.prisma
+COPY --from=builder --chown=nestjs:nodejs /app/prisma/migrations ./prisma/migrations
 COPY --from=builder --chown=nestjs:nodejs /app/generated ./generated
 
 # Copy report directories from builder stage
@@ -111,9 +112,12 @@ COPY --chown=nestjs:nodejs README.md ./
 # Create data directory for SQLite with proper permissions
 RUN mkdir -p /app/data && chown -R nestjs:nodejs /app/data
 
-# Ensure report directories exist with proper permissions
-RUN mkdir -p /app/temp/reports /app/temp/rendered-reports /app/templates/reports \
-    && chown -R nestjs:nodejs /app/temp /app/templates
+# Create the actual report directory structure where reports are generated
+RUN mkdir -p /app/data/workflow-manager-mcp-reports/temp \
+    && chown -R nestjs:nodejs /app/data/workflow-manager-mcp-reports
+
+# Ensure temp and templates directories exist with proper permissions (for other functionality)
+RUN chown -R nestjs:nodejs /app/temp /app/templates
 
 # Set default environment variables
 ENV DATABASE_URL="file:./data/workflow.db"

@@ -28,11 +28,20 @@
     "playwright"
   ],
   "main": "dist/main.js",
+  "bin": {
+    "mcp-workflow-manager": "./dist/cli.js"
+  },
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"
   },
-  "private": true,
+  "files": [
+    "dist/**/*",
+    "prisma/**/*",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
