@@ -10,6 +10,7 @@
  * - Role-specific data: boomerang, researcher, architect, senior-developer, code-review
  * - Chart data for delegation flow trends and role efficiency
  * - Bottleneck analysis and transition matrix data
+ * - Task-specific context and available tasks for focused analysis
  */
 
 export interface DelegationAnalyticsTemplateData {
@@ -25,10 +26,64 @@ export interface DelegationAnalyticsTemplateData {
   /** Report type identifier */
   reportType: 'delegation_analytics';
 
+  /** Task-specific context when analyzing a single task */
+  taskContext?: TaskDelegationContext | null;
+
+  /** Available tasks for task selector */
+  availableTasks?: TaskSummary[];
+
+  /** Whether this is a task-specific analysis */
+  isTaskSpecific?: boolean;
+
   /** Comprehensive delegation metrics */
   metrics: {
     delegations: DelegationMetrics;
   };
+}
+
+/**
+ * Task delegation context for task-specific analysis
+ */
+export interface TaskDelegationContext {
+  taskId: string;
+  name: string;
+  status: string;
+  priority: string | null;
+  currentMode: string | null;
+  creationDate: Date;
+  completionDate: Date | null;
+  description: string;
+  totalDelegations: number;
+  delegationFlow: DelegationStep[];
+  currentStep: number;
+  isCompleted: boolean;
+  totalDuration: number | null;
+}
+
+/**
+ * Individual delegation step in task flow
+ */
+export interface DelegationStep {
+  step: number;
+  fromRole: string;
+  toRole: string;
+  timestamp: Date;
+  completed: boolean;
+  success: boolean | null;
+  duration: number | null;
+  redelegationCount: number;
+}
+
+/**
+ * Task summary for task selector
+ */
+export interface TaskSummary {
+  taskId: string;
+  name: string;
+  status: string;
+  priority: string | null;
+  delegationCount: number;
+  creationDate: Date;
 }
 
 /**

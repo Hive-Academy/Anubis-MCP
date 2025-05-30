@@ -54,7 +54,31 @@ export class HandlebarsTemplateService {
         },
       };
 
-      return template(enhancedData);
+      // Debug: Log key data being passed to template
+      this.logger.debug(`Rendering template for ${reportType}`);
+      this.logger.debug(`Template path: ${templatePath}`);
+      this.logger.debug(`Data keys: ${Object.keys(enhancedData).join(', ')}`);
+      this.logger.debug(`TaskContext exists: ${!!enhancedData.taskContext}`);
+      if (enhancedData.taskContext) {
+        this.logger.debug(`TaskContext name: ${enhancedData.taskContext.name}`);
+        this.logger.debug(
+          `TaskContext taskId: ${enhancedData.taskContext.taskId}`,
+        );
+      }
+
+      const renderedHtml = template(enhancedData);
+
+      // Debug: Check if task name appears in rendered HTML
+      if (enhancedData.taskContext?.name) {
+        const taskNameInHtml = renderedHtml.includes(
+          enhancedData.taskContext.name,
+        );
+        this.logger.debug(
+          `Task name "${enhancedData.taskContext.name}" found in rendered HTML: ${taskNameInHtml}`,
+        );
+      }
+
+      return renderedHtml;
     } catch (error) {
       this.logger.error(
         `Template rendering failed for ${reportType}:`,
@@ -94,32 +118,24 @@ export class HandlebarsTemplateService {
   }
 
   /**
-   * Register only essential helpers
+   * Register comprehensive Handlebars helpers in organized groups
+   * Following SOLID principles: Single responsibility per helper
    */
   private registerBasicHelpers(): void {
-    // JSON helper for debugging
-    this.handlebars.registerHelper('json', (obj: any) => {
-      return JSON.stringify(obj, null, 2);
-    });
-
-    // Basic conditionals
+    // === CONDITIONAL & LOGICAL HELPERS ===
     this.handlebars.registerHelper('eq', (a: unknown, b: unknown) => a === b);
     this.handlebars.registerHelper('gt', (a: number, b: number) => a > b);
     this.handlebars.registerHelper('gte', (a: number, b: number) => a >= b);
     this.handlebars.registerHelper('lte', (a: number, b: number) => a <= b);
+    this.handlebars.registerHelper('lt', (a: number, b: number) => a < b);
 
-    // Logical helpers
     this.handlebars.registerHelper('or', (...args: any[]) => {
-      // Remove the options object (last argument)
       const values = args.slice(0, -1);
-      // Return true if any value is truthy, false otherwise
       return values.some((value) => Boolean(value));
     });
 
     this.handlebars.registerHelper('and', (...args: any[]) => {
-      // Remove the options object (last argument)
       const values = args.slice(0, -1);
-      // Return true only if all values are truthy
       return values.every((value) => !!value);
     });
 
@@ -130,7 +146,7 @@ export class HandlebarsTemplateService {
       },
     );
 
-    // Default value helper
+    // === UTILITY HELPERS ===
     this.handlebars.registerHelper(
       'defaultValue',
       <T>(value: T | null | undefined | '', defaultVal: T): T => {
@@ -140,17 +156,61 @@ export class HandlebarsTemplateService {
       },
     );
 
-    // Section helper (for the templates that use it)
+    this.handlebars.registerHelper('json', (obj: any) => {
+      return JSON.stringify(obj, null, 2);
+    });
+
+    // === MATH HELPERS ===
+    this.handlebars.registerHelper('abs', (num: number) => Math.abs(num));
     this.handlebars.registerHelper(
-      'section',
-      function (this: any, name: string, options: any) {
-        if (!this._sections) this._sections = {};
-        this._sections[name] = options.fn(this);
-        return null;
+      'multiply',
+      (a: number, b: number) => (a || 0) * (b || 0),
+    );
+    this.handlebars.registerHelper(
+      'round',
+      (num: number, decimals: number = 0) => {
+        if (typeof num !== 'number') return 0;
+        const factor = Math.pow(10, decimals);
+        return Math.round(num * factor) / factor;
       },
     );
 
-    // Date formatting helpers
+    // === ARRAY & OBJECT HELPERS ===
+    this.handlebars.registerHelper(
+      'length',
+      (array: any[] | null | undefined) => {
+        if (!array || !Array.isArray(array)) return 0;
+        return array.length;
+      },
+    );
+
+    this.handlebars.registerHelper('array', (...args: any[]): unknown[] => {
+      return args.slice(0, -1) as unknown[];
+    });
+
+    this.handlebars.registerHelper(
+      'lookup',
+      (obj: any, key: string): unknown => {
+        if (!obj || typeof obj !== 'object') return null;
+        return obj[key] as unknown;
+      },
+    );
+
+    // === STRING HELPERS ===
+    this.handlebars.registerHelper('capitalize', (str: string) => {
+      if (!str) return '';
+      return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    });
+
+    this.handlebars.registerHelper(
+      'replace',
+      (str: string, searchValue: string, replaceValue: string) => {
+        if (!str || typeof str !== 'string') return str;
+        return str.replace(new RegExp(searchValue, 'g'), replaceValue);
+      },
+    );
+
+    // === DATE HELPERS ===
     this.handlebars.registerHelper(
       'formatDate',
       (date: string | Date, format?: string) => {
@@ -190,55 +250,56 @@ export class HandlebarsTemplateService {
       });
     });
 
-    // Math helpers
-    this.handlebars.registerHelper('abs', (num: number) => Math.abs(num));
+    // === UI COMPONENT HELPERS ===
     this.handlebars.registerHelper(
-      'multiply',
-      (a: number, b: number) => (a || 0) * (b || 0),
+      'statusBadge',
+      (status: string | null | undefined) => {
+        // Enhanced statusBadge with better null handling
+        if (!status) {
+          return new this.handlebars.SafeString(
+            '<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">No Status</span>',
+          );
+        }
+
+        const statusMap: Record<string, { class: string; label: string }> = {
+          completed: {
+            class: 'bg-green-100 text-green-800',
+            label: 'Completed',
+          },
+          'in-progress': {
+            class: 'bg-blue-100 text-blue-800',
+            label: 'In Progress',
+          },
+          'not-started': {
+            class: 'bg-slate-100 text-slate-700',
+            label: 'Not Started',
+          },
+          'needs-review': {
+            class: 'bg-yellow-100 text-yellow-800',
+            label: 'Needs Review',
+          },
+          'needs-changes': {
+            class: 'bg-red-100 text-red-800',
+            label: 'Needs Changes',
+          },
+          paused: { class: 'bg-gray-100 text-gray-800', label: 'Paused' },
+          cancelled: { class: 'bg-red-100 text-red-800', label: 'Cancelled' },
+        };
+
+        const config = statusMap[status] || {
+          class: 'bg-gray-100 text-gray-600',
+          label: status,
+        };
+
+        return new this.handlebars.SafeString(
+          `<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${config.class}">${config.label}</span>`,
+        );
+      },
     );
-
-    // String helpers
-    this.handlebars.registerHelper('capitalize', (str: string) => {
-      if (!str) return '';
-      return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    });
-
-    // Status and Priority helpers to avoid boolean rendering issues
-    this.handlebars.registerHelper('statusBadge', (status: string) => {
-      const statusMap: Record<string, { class: string; label: string }> = {
-        completed: { class: 'bg-green-100 text-green-800', label: 'Completed' },
-        'in-progress': {
-          class: 'bg-blue-100 text-blue-800',
-          label: 'In Progress',
-        },
-        'not-started': {
-          class: 'bg-slate-100 text-slate-700',
-          label: 'Not Started',
-        },
-        'needs-review': {
-          class: 'bg-yellow-100 text-yellow-800',
-          label: 'Needs Review',
-        },
-        'needs-changes': {
-          class: 'bg-red-100 text-red-800',
-          label: 'Needs Changes',
-        },
-        paused: { class: 'bg-gray-100 text-gray-800', label: 'Paused' },
-        cancelled: { class: 'bg-red-100 text-red-800', label: 'Cancelled' },
-      };
-
-      const config = statusMap[status] || {
-        class: 'bg-gray-100 text-gray-600',
-        label: status || 'Unknown',
-      };
-      return new this.handlebars.SafeString(
-        `<span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${config.class}">${config.label}</span>`,
-      );
-    });
 
     this.handlebars.registerHelper(
       'priorityBadge',
-      (priority: string | null) => {
+      (priority: string | null | undefined) => {
         if (!priority) {
           return new this.handlebars.SafeString(
             '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">Unset</span>',
@@ -256,13 +317,27 @@ export class HandlebarsTemplateService {
           class: 'bg-slate-100 text-slate-600',
           label: priority,
         };
+
         return new this.handlebars.SafeString(
           `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${config.class}">${config.label}</span>`,
         );
       },
     );
 
-    this.logger.log('Basic Handlebars helpers registered');
+    // === LEGACY HELPERS (for backward compatibility) ===
+    this.handlebars.registerHelper(
+      'section',
+      function (this: any, name: string, options: any) {
+        if (!this._sections) this._sections = {};
+        this._sections[name] = options.fn(this);
+        return null;
+      },
+    );
+
+    this.logger.log('✅ All Handlebars helpers registered successfully');
+    this.logger.debug(
+      'Registered helpers: conditional, logical, utility, math, array, object, string, date, UI components',
+    );
   }
 
   /**

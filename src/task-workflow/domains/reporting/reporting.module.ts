@@ -59,6 +59,16 @@ import { DelegationFlowAnalysisTaskGeneratorService } from './services/generator
 // === RENDERING SERVICE (PDF/PNG generation) ===
 import { ReportRenderingService } from './report-rendering.service';
 import { TaskSummaryAnalyticsService } from './services/data-api/task-summary/task-summary-analytics.service';
+import { TaskMetricsService } from './services/data-api/foundation/task-metrics.service';
+import { DelegationMetricsService } from './services/data-api/foundation/delegation-metrics.service';
+import { CodeReviewMetricsService } from './services/data-api/foundation/code-review-metrics.service';
+import { ImplementationPlanMetricsService } from './services/data-api/foundation/implementation-plan-metrics.service';
+
+// === DELEGATION ANALYTICS HELPER SERVICES ===
+import { RoleStatisticsService } from './services/data-api/delegation-analytics/helpers/role-statistics.service';
+import { TimingMetricsService } from './services/data-api/delegation-analytics/helpers/timing-metrics.service';
+import { WorkflowAnalysisService } from './services/data-api/delegation-analytics/helpers/workflow-analysis.service';
+import { DelegationDataQueryService } from './services/data-api/delegation-analytics/helpers/delegation-data-query.service';
 
 /**
  * Focused Reporting Module - TSK-010 Refactored Architecture
@@ -135,6 +145,17 @@ import { TaskSummaryAnalyticsService } from './services/data-api/task-summary/ta
     // === RENDERING SERVICE (PDF/PNG generation) ===
     ReportRenderingService,
     TaskSummaryAnalyticsService,
+
+    TaskMetricsService,
+    DelegationMetricsService,
+    CodeReviewMetricsService,
+    ImplementationPlanMetricsService,
+
+    // === DELEGATION ANALYTICS HELPER SERVICES ===
+    RoleStatisticsService,
+    TimingMetricsService,
+    WorkflowAnalysisService,
+    DelegationDataQueryService,
   ],
   exports: [
     // === PRIMARY EXPORTS ===

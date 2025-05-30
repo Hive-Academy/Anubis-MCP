@@ -112,7 +112,7 @@ const GenerateReportInputSchema = z.object({
     .string()
     .optional()
     .describe(
-      'Base directory for report generation (e.g., D:/projects/cursor-workflow)',
+      'Base directory for report generation (defaults to current working directory)',
     ),
 });
 
@@ -238,28 +238,30 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
         input.basePath,
       );
 
-      // Handle custom base path with workflow-manager-mcp-reports structure
-      let customTempPath: string | undefined;
-      let customRenderedPath: string | undefined;
+      this.logger.debug(`Generated filename: ${filename}`);
+      this.logger.debug(`Generated folderPath: ${folderPath}`);
+      this.logger.debug(`Input basePath: ${input.basePath}`);
 
-      if (input.basePath) {
-        // Validate that the base path exists
-        await fs.access(input.basePath);
-        customTempPath = path.join(
-          input.basePath,
-          'workflow-manager-mcp-reports',
-          'temp',
-        );
-        customRenderedPath = folderPath;
+      // Ensure basePath is defined, default to current working directory
+      const basePath = input.basePath || process.cwd();
 
-        // Ensure custom directories exist
-        await fs.mkdir(customTempPath, { recursive: true });
-        if (customRenderedPath) {
-          await fs.mkdir(customRenderedPath, { recursive: true });
-        }
+      // Handle base path with workflow-manager-mcp-reports structure
+      // Validate that the base path exists
+      await fs.access(basePath);
+      const customTempPath = path.join(
+        basePath,
+        'workflow-manager-mcp-reports',
+        'temp',
+      );
+      const customRenderedPath = folderPath;
 
-        this.logger.log(`Using organized report structure: ${folderPath}`);
-      }
+      // Ensure directories exist
+      await fs.mkdir(customTempPath, { recursive: true });
+      await fs.mkdir(customRenderedPath, { recursive: true });
+
+      this.logger.log(
+        `Using organized report structure: ${customRenderedPath}`,
+      );
 
       // Generate complete report using our new focused generator architecture
       this.logger.log(`Generating complete report for ${input.reportType}`);
@@ -287,17 +289,9 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
       };
 
       if (input.outputFormat === 'html') {
-        // For HTML, save the content directly
-        let filepath: string;
-
-        if (customTempPath && customRenderedPath) {
-          // Use organized structure
-          filepath = path.join(customRenderedPath, filename);
-          await fs.writeFile(filepath, htmlContent, 'utf-8');
-        } else {
-          // Use default service path
-          filepath = 'html';
-        }
+        // For HTML, save the content directly using organized structure
+        const filepath = path.join(customRenderedPath, filename);
+        await fs.writeFile(filepath, htmlContent, 'utf-8');
 
         result = {
           filename,
@@ -323,18 +317,9 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
           renderOptions,
         );
 
-        // Save the rendered report with meaningful name
-        let filepath: string;
-
-        if (customRenderedPath) {
-          // Use organized structure with meaningful filename
-          filepath = path.join(customRenderedPath, filename);
-          await fs.writeFile(filepath, renderedReport.buffer);
-        } else {
-          // Use default service path
-          filepath =
-            await this.reportRenderer.saveRenderedReport(renderedReport);
-        }
+        // Save the rendered report with meaningful name using organized structure
+        const filepath = path.join(customRenderedPath, filename);
+        await fs.writeFile(filepath, renderedReport.buffer);
 
         result = {
           filename,
@@ -596,11 +581,17 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
     // Our TaskSummaryDataApiService returns: { metrics: { totalTasks, completionRate, ... }, ... }
     const metrics = reportData.metrics || {};
 
+    // For delegation analytics, the data is nested under metrics.delegations
+    const delegationMetrics = metrics.delegations || {};
+
     return {
       totalTasks: metrics.totalTasks || 0,
       completionRate: `${(metrics.completionRate || 0).toFixed(1)}%`, // Already a percentage number
       totalDelegations:
-        metrics.totalDelegations || reportData.totalDelegations || 0,
+        delegationMetrics.totalDelegations || // For delegation analytics reports
+        metrics.totalDelegations || // For other reports
+        reportData.totalDelegations ||
+        0,
       codeReviews: metrics.codeReviews || reportData.totalReviews || 0,
       recommendationsCount: reportData.recommendations?.length || 0,
     };
