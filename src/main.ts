@@ -1,24 +1,26 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { GlobalFileLoggerService } from './task-workflow/domains/reporting/services';
+import { GlobalFileLoggerService } from './task-workflow/utils/global-file-logger.service';
 
-// async function bootstrap() {
-//   // Create the global file logger BEFORE creating the app
-//   const globalLogger = new GlobalFileLoggerService();
+async function bootstrapProduction() {
+  // Pass the logger to NestFactory.create to override ALL logging calls
+  const app = await NestFactory.createApplicationContext(AppModule, {
+    logger: false,
+  });
 
-//   // Pass the logger to NestFactory.create to override ALL logging calls
-//   const app = await NestFactory.createApplicationContext(AppModule, {
-//     logger: globalLogger,
-//   });
+  return app.close();
+}
 
-//   return app.close();
-// }
-
-async function bootstrap() {
+async function bootstrapDevelopment() {
   const app = await NestFactory.create(AppModule);
+
   const globalLogger = new GlobalFileLoggerService();
   app.useLogger(globalLogger);
   await app.listen(process.env.PORT ?? 3000);
 }
 
-void bootstrap();
+if (process.env.NODE_ENV === 'production') {
+  void bootstrapProduction();
+} else {
+  void bootstrapDevelopment();
+}

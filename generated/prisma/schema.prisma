@@ -35,6 +35,7 @@ model Task {
   completionReports   CompletionReport[]
   comments            Comment[]
   workflowTransitions WorkflowTransition[]
+  codebaseAnalysis    CodebaseAnalysis?
   // @@map("tasks") // If table name in DB should be 'tasks'
 
   @@index([status])
@@ -191,4 +192,34 @@ model WorkflowTransition {
   task Task @relation(fields: [taskId], references: [taskId])
 
   // @@map("workflow_transitions")
+}
+
+// CodebaseAnalysis model for storing structured codebase analysis results
+// Critical for maintaining consistency across roles and preventing re-analysis
+model CodebaseAnalysis {
+  id     Int    @id @default(autoincrement())
+  taskId String @unique
+
+  // Analysis Content - JSON fields for structured data
+  architectureFindings  Json // Current patterns, tech stack, file structure, dependencies
+  problemsIdentified    Json // Issues found, root causes, impact assessment, technical debt
+  implementationContext Json // Existing patterns, coding standards, quality guidelines
+  integrationPoints     Json // API boundaries, service interfaces, external dependencies
+  qualityAssessment     Json // Code quality metrics, testing coverage, documentation state
+
+  // Additional Context
+  filesCovered    Json // Array of files analyzed with their roles and importance
+  technologyStack Json // Detailed tech stack with versions and usage patterns
+
+  // Metadata
+  analyzedAt      DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  analyzedBy      String // Role that performed the analysis (boomerang, architect, etc.)
+  analysisVersion String   @default("1.0") // For tracking analysis evolution
+
+  task Task @relation(fields: [taskId], references: [taskId])
+  // @@map("codebase_analysis")
+
+  @@index([taskId])
+  @@index([analyzedBy])
 }

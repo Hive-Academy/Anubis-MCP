@@ -2,7 +2,11 @@
   "mcpServers": {
     "workflow-manager": {
       "command": "node",
-      "args": ["D://projects/cursor-workflow/dist/main.js"]
+      "args": [
+        "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npx-cli.js",
+        "-y",
+        "@hive-academy/mcp-workflow-manager@1.0.3"
+      ]
     }
   }
 }

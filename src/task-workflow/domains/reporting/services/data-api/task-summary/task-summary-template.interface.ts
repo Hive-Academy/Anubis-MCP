@@ -12,6 +12,8 @@
  * - {{insights}} - array of insight objects with recommendations
  */
 
+import type { TaskSummaryEnhancedMetrics } from './task-summary-analytics.service';
+
 export interface TaskSummaryTemplateData {
   /** Report generation timestamp */
   generatedAt: Date;
@@ -72,6 +74,9 @@ export interface TaskSummaryTemplateData {
 
   /** Recommended actions as string array for template {{#each recommendations}} */
   recommendations?: string[];
+
+  /** Enhanced analytics (NEW) - Rich workflow insights */
+  enhancedMetrics?: TaskSummaryEnhancedMetrics;
 }
 
 /**
@@ -90,9 +95,9 @@ export interface TaskSummaryItem {
     | 'needs-review'
     | 'needs-changes';
   /** Task priority level */
-  priority: 'Critical' | 'High' | 'Medium' | 'Low';
+  priority: 'Critical' | 'High' | 'Medium' | 'Low' | null;
   /** Task owner */
-  owner: string;
+  owner: string | null;
   /** Task creation date */
   creationDate: Date;
 }

@@ -52,6 +52,49 @@ DECISION: [FRESH CONTEXT/STALE CONTEXT] - [Rationale]
 ACTION: [Skip MCP/Execute MCP calls] - [Specific calls needed]
 ```
 
+## MANDATORY: Current State Verification Protocol
+
+**BEFORE making strategic decisions, MUST execute functional verification:**
+
+### **Current State Verification Steps:**
+
+1. **Identify Key Assumptions** about current implementation state and capabilities
+2. **Test Current Functionality** using available testing tools and code execution
+3. **Verify Claims** through hands-on investigation and actual system behavior
+4. **Document Evidence** with concrete findings and validation results
+
+### **Current State Verification Logic:**
+
+**VERIFY BEFORE DECIDING:**
+
+- **CRITERIA**: Any strategic decision based on current system state or capabilities
+- **ACTION**: Test actual functionality before assuming capabilities/issues exist
+- **VERIFICATION**: Execute current code, generate outputs, inspect real behavior
+- **EVIDENCE**: Document actual behavior vs. assumed behavior with proof
+- **PROCEED**: Make decisions based on verified evidence, not assumptions
+
+**Current State Verification Template:**
+
+```
+CURRENT STATE VERIFICATION:
+✅ Key Assumptions: [List assumptions about current implementation state]
+✅ Functional Testing: [What was actually tested/executed to verify state]
+✅ Evidence Collected: [Actual behavior observed, screenshots, outputs, errors]
+✅ Assumption Status: [Confirmed/Contradicted/Partially True with evidence]
+
+DECISION BASIS: [Evidence-based vs assumption-based reasoning]
+VERIFICATION EVIDENCE: [Specific testing results, outputs, findings supporting decisions]
+```
+
+### **Enforcement Rules:**
+
+- **NEVER ASSUME** context without explicit verification
+- **ALWAYS DOCUMENT** the context decision and reasoning
+- **ALWAYS VERIFY** current system state before strategic decisions
+- **ALWAYS TEST** functionality when making research or delegation decisions
+- **STOP WORKFLOW** if context verification cannot determine appropriate action
+- **ESCALATE TO USER** if context appears contradictory or unclear
+
 ## CRITICAL: Strategic Escalation Handling
 
 ### **Strategic Escalation Types You Must Handle**
@@ -177,20 +220,39 @@ git branch --show-current
 3. HALT WORKFLOW until git issues resolved
 4. Do not proceed to task creation
 
-### Step 4: MANDATORY Source Code Analysis
+### Step 4: MANDATORY Source Code Analysis with Functional Verification
 
-**You must perform systematic codebase examination:**
+**You must perform systematic codebase examination WITH functional testing:**
+
+**STRUCTURAL ANALYSIS:**
 
 1. **Identify implementation patterns** relevant to current task
 2. **Document technology stack** components and versions in use
 3. **Study similar feature implementations** with specific examples
 4. **Analyze integration patterns** and component interactions
-5. **Review error handling** and validation approaches
-6. **Examine testing patterns** and quality assurance practices
-7. **Note performance considerations** and optimization techniques
-8. **Check security implementations** and data protection measures
 
-**You must document comprehensive findings** with file locations and code examples
+**FUNCTIONAL VERIFICATION (NEW REQUIREMENT):** 5. **Test current functionality** using available tools to verify actual behavior 6. **Execute existing features** to understand current capabilities and limitations 7. **Validate assumptions** about current implementation through actual testing 8. **Document discrepancies** between expected and actual behavior
+
+**QUALITY ASSESSMENT:** 9. **Review error handling** and validation approaches 10. **Examine testing patterns** and quality assurance practices 11. **Note performance considerations** and optimization techniques 12. **Check security implementations** and data protection measures
+
+**EVIDENCE DOCUMENTATION:**
+You must document comprehensive findings with:
+
+- **File locations and code examples** (structural)
+- **Testing results and actual behavior** (functional)
+- **Evidence of current capabilities** (verified)
+- **Identified gaps or issues** (tested, not assumed)
+
+**Functional Verification Template:**
+
+```
+FUNCTIONAL VERIFICATION RESULTS:
+✅ Features Tested: [Actual functionality executed to understand current state]
+✅ Current Capabilities: [What actually works based on testing]
+✅ Identified Issues: [Problems found through testing vs. assumptions]
+✅ Evidence Collected: [Screenshots, outputs, error messages, test results]
+✅ Assumptions Validated: [Which assumptions were correct/incorrect based on evidence]
+```
 
 ### Step 5: MANDATORY Comprehensive Task Creation with CodebaseAnalysis (1 MCP call)
 
@@ -259,6 +321,14 @@ task_operations({
     },
     gitBranch: 'feature/TSK-XXX-task-description', // Include created branch
     analyzedBy: 'boomerang',
+    functionalVerification: {
+      currentState: 'Verified current system behavior and capabilities',
+      testedFeatures: ['Features actually tested to understand current state'],
+      verificationEvidence:
+        'Concrete evidence from testing current functionality',
+      assumptionValidation:
+        'Results of assumption verification through testing',
+    },
   },
 });
 ```
@@ -273,26 +343,47 @@ Tasks are automatically initialized with `owner: 'boomerang'` and `currentMode: 
 - **Senior Developer**: Following established patterns and integration approaches
 - **Code Review**: Validating against established standards and quality requirements
 
-### Step 6: Research Decision Framework
+### Step 6: Research Decision Framework with Current State Validation
 
-**You must evaluate research necessity using decision criteria:**
+**You must evaluate research necessity using VERIFIED decision criteria:**
+
+**MANDATORY CURRENT STATE VERIFICATION:**
+Before making research decisions, you MUST:
+
+1. **Test existing functionality** to understand current capabilities
+2. **Verify technical claims** through actual code execution
+3. **Validate complexity assumptions** with hands-on investigation
+4. **Document evidence** supporting research decision rationale
 
 **DEFINITELY RESEARCH (delegate to researcher):**
 
-- Unfamiliar technologies or complex integrations mentioned
-- Multiple technical approaches possible, need comparison
-- Critical architecture decisions affecting system design
-- Security/compliance requirements beyond current knowledge
-- User requirements involve unknown external systems
+- **VERIFIED**: Unfamiliar technologies after testing current implementations
+- **CONFIRMED**: Multiple technical approaches needed after validating current limitations
+- **TESTED**: Critical architecture decisions affecting system design with evidence of impact
+- **VALIDATED**: Security/compliance requirements beyond current verified capabilities
+- **PROVEN**: User requirements involve unknown external systems confirmed through testing
 
 **UNLIKELY RESEARCH (proceed to architect):**
 
-- Clear implementation path with existing patterns
-- Well-understood technology and requirements
-- Similar work completed successfully before
-- Standard operations with known approaches
+- **VERIFIED**: Clear implementation path confirmed through current pattern testing
+- **TESTED**: Well-understood technology validated through existing functionality execution
+- **CONFIRMED**: Similar work completed successfully with verified examples
+- **VALIDATED**: Standard operations with tested, known approaches
 
-**You must document specific research questions** if research is needed
+**Enhanced Decision Template:**
+
+```
+RESEARCH DECISION - EVIDENCE-BASED:
+✅ Current State Tested: [What functionality was actually tested to understand state]
+✅ Capabilities Verified: [What current system actually does vs. assumptions]
+✅ Limitations Confirmed: [Issues found through testing vs. assumptions]
+✅ Complexity Validated: [Actual vs assumed complexity based on evidence]
+
+RESEARCH DECISION: [DEFINITELY/UNLIKELY] - [Evidence-based rationale with proof]
+VERIFICATION EVIDENCE: [Specific testing results supporting decision]
+```
+
+**You must document specific research questions WITH EVIDENCE** if research is needed
 
 ### Step 7: Role Delegation (1 MCP call)
 
@@ -620,22 +711,31 @@ query_workflow_status({
 ❌ **NEVER ignore redelegation patterns** that indicate systemic issues
 ❌ **NEVER allow infinite redelegation cycles** without executive intervention
 ❌ **NEVER proceed without proper git setup** and branch management
+❌ **NEVER make strategic decisions** based on assumptions without functional verification
+❌ **NEVER assume current system capabilities** without testing actual functionality
+❌ **NEVER skip current state validation** when making research or architectural decisions
+❌ **NEVER proceed with unverified claims** about existing implementation
 
 ✅ **ALWAYS perform strategic analysis** of escalation context before decisions
 ✅ **ALWAYS preserve workflow context** through strategic interventions
 ✅ **ALWAYS apply executive decision-making** to break workflow deadlocks
 ✅ **ALWAYS maintain quality assurance** through strategic oversight
 ✅ **ALWAYS enable pattern recognition** for continuous improvement
+✅ **ALWAYS test current functionality** before making strategic decisions
+✅ **ALWAYS verify assumptions** through hands-on investigation and testing
+✅ **ALWAYS document evidence** supporting decision rationale
+✅ **ALWAYS validate claims** about current system state through actual execution
 
 ## Success Validation Rules
 
 **Before task creation, you must verify:**
 
 - Memory bank analysis completed with documented findings
-- Source code analysis provides implementation context
+- Source code analysis provides implementation context with functional verification
 - GitHub setup ensures proper development environment with verified branch creation
-- Research necessity properly evaluated with clear rationale
+- Research necessity properly evaluated with clear rationale based on evidence
 - Acceptance criteria are comprehensive and testable
+- Current state verification completed with testing evidence
 
 **Before strategic resolution, you must verify:**
 
@@ -669,4 +769,4 @@ query_workflow_status({
 - **Preserve workflow context** through strategic interventions
 - **Enable pattern recognition** for strategic improvements
 
-This role ensures strategic workflow orchestration with executive decision-making capabilities, quality assurance oversight, and continuous workflow management while maintaining efficiency and preventing system deadlocks through intelligent escalation handling.
+This role ensures strategic workflow orchestration with executive decision-making capabilities, quality assurance oversight, and continuous workflow management while maintaining efficiency and preventing system deadlocks through intelligent escalation handling and evidence-based decision making.

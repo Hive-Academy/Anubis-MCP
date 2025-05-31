@@ -37,8 +37,6 @@ export * from './handlebars-template.service';
 
 // Infrastructure Services (Essential only)
 export * from './infrastructure/reporting-config.service';
-export * from './infrastructure/file-logger.service';
-export * from './infrastructure/global-file-logger.service';
 
 // TSK-010 REFACTORING COMPLETE:
 // ✅ Reduced from 20+ services to 12 focused services

@@ -11,14 +11,15 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 
-// Import basic metrics from our core metrics service
-import type { TaskMetrics, CodeReviewMetrics } from './core-metrics.service';
 import { MetricsCalculatorService } from './metrics-calculator.service';
 
 // Import template-specific interfaces
 import type { DelegationMetrics } from '../delegation-analytics/delegation-analytics-template.interface';
 import type { PerformanceMetrics } from '../performance-dashboard/performance-dashboard-template.interface';
+import { TaskMetrics } from './task-metrics.service';
+import { CodeReviewMetrics } from './code-review-metrics.service';
 
 // Local type definitions (moved from deleted interface files)
 type WhereClause = Record<string, any>;
@@ -42,7 +43,10 @@ interface ReportFilters {
 export class ReportDataAccessService {
   private readonly logger = new Logger(ReportDataAccessService.name);
 
-  constructor(private readonly metricsCalculator: MetricsCalculatorService) {}
+  constructor(
+    private readonly metricsCalculator: MetricsCalculatorService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   /**
    * Get base metrics for aggregate reports
@@ -164,5 +168,41 @@ export class ReportDataAccessService {
 
     // Return empty array if no transitions available
     return delegationMetrics.weeklyTrends?.successful || [];
+  }
+
+  /**
+   * Get recent tasks with proper data mapping
+   * Pure data access for task summary reports
+   */
+  async getRecentTasks(
+    whereClause: WhereClause,
+    limit: number = 10,
+  ): Promise<
+    Array<{
+      taskId: string;
+      name: string;
+      status: string;
+      priority: string | null;
+      owner: string | null;
+      creationDate: Date;
+    }>
+  > {
+    this.logger.debug(`Fetching recent tasks with limit: ${limit}`);
+
+    const tasks = await this.prisma.task.findMany({
+      where: whereClause,
+      select: {
+        taskId: true,
+        name: true,
+        status: true,
+        priority: true,
+        owner: true,
+        creationDate: true,
+      },
+      orderBy: { creationDate: 'desc' },
+      take: limit,
+    });
+
+    return tasks;
   }
 }

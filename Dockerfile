@@ -45,6 +45,9 @@ RUN npm run build
 # Create necessary directories for reports
 RUN mkdir -p temp/reports temp/rendered-reports templates/reports
 
+# Verify system browser installation
+RUN chromium-browser --version && echo "✅ System Chromium browser verified in builder stage"
+
 # Production stage
 FROM node:22-alpine AS production
 
@@ -86,15 +89,13 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --only=production --ignore-scripts && npm cache clean --force
 
-# Install Playwright for production runtime
-RUN npx playwright install chromium --with-deps || true
-
 # Fix ownership of node_modules for the nestjs user
 RUN chown -R nestjs:nodejs /app/node_modules
 
 # Copy built application and generated Prisma client from builder stage
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nestjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nestjs:nodejs /app/prisma/schema.prisma ./prisma/schema.prisma
+COPY --from=builder --chown=nestjs:nodejs /app/prisma/migrations ./prisma/migrations
 COPY --from=builder --chown=nestjs:nodejs /app/generated ./generated
 
 # Copy report directories from builder stage
@@ -111,9 +112,19 @@ COPY --chown=nestjs:nodejs README.md ./
 # Create data directory for SQLite with proper permissions
 RUN mkdir -p /app/data && chown -R nestjs:nodejs /app/data
 
-# Ensure report directories exist with proper permissions
-RUN mkdir -p /app/temp/reports /app/temp/rendered-reports /app/templates/reports \
-    && chown -R nestjs:nodejs /app/temp /app/templates
+# Create the actual report directory structure where reports are generated
+RUN mkdir -p /app/data/workflow-manager-mcp-reports/temp \
+    && chown -R nestjs:nodejs /app/data/workflow-manager-mcp-reports
+
+# Create the reports directory that ReportRenderingService expects
+RUN mkdir -p /app/reports/rendered \
+    && chown -R nestjs:nodejs /app/reports
+
+# Ensure temp and templates directories exist with proper permissions (for other functionality)
+RUN chown -R nestjs:nodejs /app/temp /app/templates
+
+# Verify system browser installation in production stage
+RUN chromium-browser --version && echo "✅ System Chromium browser verified in production stage"
 
 # Set default environment variables
 ENV DATABASE_URL="file:./data/workflow.db"

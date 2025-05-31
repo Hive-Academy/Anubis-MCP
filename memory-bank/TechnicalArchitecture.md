@@ -2,7 +2,7 @@
 
 ## 1. Modern Architecture Overview
 
-The MCP Workflow Manager is now built on NestJS, Prisma, and @rekog/mcp-nest, replacing the legacy file-system-based approach. This enables modularity, scalability, and maintainability.
+The MCP Workflow Manager is now built on NestJS, Prisma, and @rekog/mcp-nest, replacing the legacy file-system-based approach. This enables modularity, scalability, and maintainability with self-contained NPX package distribution.
 
 ### Key Components
 
@@ -10,6 +10,44 @@ The MCP Workflow Manager is now built on NestJS, Prisma, and @rekog/mcp-nest, re
 - **Prisma**: ORM, schema migrations, and type-safe DB access
 - **@rekog/mcp-nest**: MCP tool/resource exposure via decorators and Zod validation
 - **Zod**: Parameter validation for all tools
+- **CLI Dependency Manager**: Automatic dependency management for NPX distribution
+- **Environment-Aware Initialization**: Adapts behavior for NPX, global, and local installations
+
+### NPX Package Architecture
+
+The NPX package includes a sophisticated dependency management system that ensures self-contained operation:
+
+```mermaid
+graph TD
+    A[NPX Command] --> B[CLI Bootstrap]
+    B --> C{Environment Detection}
+    C -->|NPX| D[NPX Mode]
+    C -->|Global| E[Global Mode]
+    C -->|Local| F[Local Mode]
+
+    D --> G[Dependency Manager]
+    E --> G
+    F --> G
+
+    G --> H{Check Dependencies}
+    H -->|Missing Prisma Client| I[Generate Prisma Client]
+    H -->|Missing Database| J[Run Migrations]
+    H -->|Missing Playwright| K[Install Browsers]
+
+    I --> L[NestJS Application]
+    J --> L
+    K --> L
+
+    L --> M[MCP Server Ready]
+```
+
+**Dependency Management Components:**
+
+- **DependencyManager Class**: Centralized dependency detection and management
+- **Environment Detection**: Identifies NPX vs global vs local installation context
+- **Automatic Prisma Setup**: Generates client and runs migrations on first run
+- **Conditional Playwright**: Installs browsers only when report generation needed
+- **Graceful Degradation**: Disables optional features if dependencies unavailable
 
 ### High-Level Architecture Diagram
 
@@ -73,6 +111,7 @@ This structure replaces a flatter organization where services, MCP operations, a
 - **Performance**: Optimized query patterns and efficient field mapping implemented
 
 **Migration Notes**:
+
 - Template, SchemaVersion, MemoryBank, and Commit models planned for removal from database
 - Focus maintained on 10 operational core models for active workflow management
 

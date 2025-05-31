@@ -20,11 +20,9 @@ import {
 
 // Foundation Services
 import { ReportDataAccessService } from '../foundation/report-data-access.service';
-import {
-  CoreMetricsService,
-  CodeReviewMetrics,
-} from '../foundation/core-metrics.service';
+import { CoreMetricsService } from '../foundation/core-metrics.service';
 import { MetricsCalculatorService } from '../foundation/metrics-calculator.service';
+import { CodeReviewMetrics } from '../foundation/code-review-metrics.service';
 
 @Injectable()
 export class CodeReviewInsightsDataApiService

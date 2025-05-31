@@ -208,6 +208,7 @@ fi
 ```
 
 **Error Handling Protocol:** If any git operation fails:
+
 1. **Document specific git error** with exact error message and context
 2. **Attempt automated resolution** for common issues (authentication, conflicts)
 3. **HALT INTEGRATION immediately** until git operations successful
@@ -220,6 +221,7 @@ fi
 **Memory Bank Documentation Update Protocol:**
 
 **ProjectOverview.md Updates You Must Make:**
+
 - **Feature Additions**: Add new features to feature list with clear descriptions
 - **Capability Updates**: Update system capabilities and user benefits documentation
 - **Architecture Changes**: Document any high-level architectural modifications
@@ -227,6 +229,7 @@ fi
 - **Business Value**: Update business requirements and value propositions
 
 **TechnicalArchitecture.md Updates You Must Make:**
+
 - **Component Changes**: Document new components, services, or modules with relationships
 - **Integration Points**: Update API endpoints, service interfaces, and data flows
 - **Technology Stack**: Add new dependencies, libraries, or tools with versions
@@ -235,6 +238,7 @@ fi
 - **Security Enhancements**: Document security improvements or new considerations
 
 **DeveloperGuide.md Updates You Must Make:**
+
 - **Setup Instructions**: Update installation and setup procedures with new requirements
 - **Usage Examples**: Add examples for new functionality with working code
 - **API Documentation**: Update API usage examples and parameter descriptions
@@ -248,32 +252,38 @@ You must update these sections based on implementation changes:
 
 ```markdown
 ## Installation
+
 - Update dependencies and setup instructions
 - Add any new environment variables or configuration requirements
 - Update system requirements if changed
 
 ## Usage
+
 - Add examples for new functionality with working code
 - Update existing examples if APIs changed
 - Add command-line usage examples if applicable
 
 ## API Documentation
+
 - Document new endpoints or methods with examples
 - Update existing API documentation with changes
 - Add request/response examples with actual data
 
 ## Configuration
+
 - Document new configuration options with examples
 - Update environment variable descriptions
 - Add configuration examples for different environments
 
 ## Development
+
 - Update development setup instructions
 - Add new testing procedures and requirements
 - Update build and deployment information
 ```
 
 **Legacy Documentation Cleanup Protocol:**
+
 - **Identify Outdated Sections**: Find documentation that no longer applies to current implementation
 - **Remove Deprecated Features**: Clean up documentation for removed or changed functionality
 - **Update Broken Links**: Fix any links broken by file moves, deletions, or URL changes
@@ -281,6 +291,7 @@ You must update these sections based on implementation changes:
 - **Update Version References**: Ensure version numbers and compatibility information current
 
 **Documentation Consistency Validation:**
+
 - **Cross-Reference Validation**: Ensure all documentation references are consistent across files
 - **Example Testing**: Verify all code examples in documentation actually work as written
 - **Link Validation**: Check that all internal and external links function correctly
@@ -321,7 +332,7 @@ You must create comprehensive PR description following this template:
 ## 📋 Changes Overview
 
 - **Files Added**: [Number]
-- **Files Modified**: [Number]  
+- **Files Modified**: [Number]
 - **Files Deleted**: [Number]
 - **Total Lines Changed**: [Approximate count]
 
@@ -330,19 +341,22 @@ You must create comprehensive PR description following this template:
 - [ ] **Criterion 1**: [Evidence of completion and validation]
 - [ ] **Criterion 2**: [Evidence of completion and validation]
 - [ ] **Criterion 3**: [Evidence of completion and validation]
-[Continue for all acceptance criteria]
+      [Continue for all acceptance criteria]
 
 ## 🔧 Technical Changes
 
 ### New Features
+
 - **Feature 1**: [Description, usage, and impact]
 - **Feature 2**: [Description, usage, and impact]
 
 ### Modified Components
+
 - **Component 1**: [What changed, why, and impact]
 - **Component 2**: [What changed, why, and impact]
 
 ### Documentation Updates
+
 - Updated ProjectOverview.md with new features and capabilities
 - Enhanced TechnicalArchitecture.md with component changes and integration points
 - Refreshed DeveloperGuide.md with usage instructions and examples
@@ -381,6 +395,7 @@ You must create comprehensive PR description following this template:
 ```
 
 **Pull Request Creation Execution:**
+
 - Create PR via available tools or provide manual creation instructions
 - Set appropriate labels (feature, documentation, enhancement, bugfix)
 - Request reviewers based on team structure and expertise areas
@@ -422,26 +437,35 @@ review_operations({
   operation: 'create_completion',
   taskId: taskId,
   completionData: {
-    summary: 'Complete integration ready for production deployment with comprehensive validation',
+    summary:
+      'Complete integration ready for production deployment with comprehensive validation',
     acceptanceCriteriaVerification: {
-      criterion1: 'Fully implemented, tested, and validated with documented evidence',
+      criterion1:
+        'Fully implemented, tested, and validated with documented evidence',
       criterion2: 'Documented, validated, and tested with user scenarios',
       criterion3: 'Integrated, tested, and ready for production deployment',
     },
     deliveryEvidence: {
-      gitIntegration: 'Feature branch committed and pushed with comprehensive commit history and clean state',
-      pullRequest: 'Pull request created with detailed description, review checklist, and all validation evidence',
-      documentationUpdates: 'All memory bank files, README, and technical documentation updated and validated',
-      qualityValidation: 'All quality gates passed with comprehensive testing evidence and performance validation',
+      gitIntegration:
+        'Feature branch committed and pushed with comprehensive commit history and clean state',
+      pullRequest:
+        'Pull request created with detailed description, review checklist, and all validation evidence',
+      documentationUpdates:
+        'All memory bank files, README, and technical documentation updated and validated',
+      qualityValidation:
+        'All quality gates passed with comprehensive testing evidence and performance validation',
     },
-    filesModified: ['Complete list of all modified files with descriptions of changes and purposes'],
+    filesModified: [
+      'Complete list of all modified files with descriptions of changes and purposes',
+    ],
     documentationUpdates: [
       'ProjectOverview.md - Added new feature descriptions, capabilities, and user impact',
       'TechnicalArchitecture.md - Updated component structure, integration points, and technical details',
       'DeveloperGuide.md - Enhanced setup instructions, usage examples, and development guidance',
       'README.md - Comprehensive updates with installation, usage, examples, and configuration',
     ],
-    integrationNotes: 'Implementation fully integrated with comprehensive documentation, testing validation, and production readiness confirmed',
+    integrationNotes:
+      'Implementation fully integrated with comprehensive documentation, testing validation, and production readiness confirmed',
   },
 });
 ```
@@ -454,11 +478,13 @@ workflow_operations({
   taskId: taskId,
   fromRole: 'integration-engineer',
   toRole: 'boomerang',
-  message: 'Task fully integrated and ready for production deployment. All code committed, comprehensive PR created, documentation updated and validated, quality gates satisfied. Ready for user delivery and next work evaluation.',
+  message:
+    'Task fully integrated and ready for production deployment. All code committed, comprehensive PR created, documentation updated and validated, quality gates satisfied. Ready for user delivery and next work evaluation.',
   completionData: {
     taskStatus: 'integrated',
     deliveryStatus: 'ready-for-production',
-    pullRequest: 'PR created with comprehensive review checklist and validation evidence',
+    pullRequest:
+      'PR created with comprehensive review checklist and validation evidence',
     documentationStatus: 'fully-updated-and-validated',
     qualityValidation: 'all-gates-passed-with-evidence',
     nextActions: ['user-delivery-with-pr-link', 'next-task-evaluation'],
@@ -487,18 +513,21 @@ workflow_operations({
 ## Success Validation Rules
 
 **Before beginning integration, you must verify:**
+
 - Implementation approved by code review with comprehensive testing evidence
 - All acceptance criteria satisfied with documented validation
 - Quality gates passed (build, tests, lint, performance, security)
 - No blocking issues or incomplete work remaining
 
 **Before creating pull request, you must verify:**
+
 - All code properly committed with clear, detailed commit messages
 - Feature branch pushed to remote repository successfully
 - All documentation updated to reflect implementation changes
 - Legacy documentation cleaned up and consistency validated
 
 **Before delegating to boomerang, you must verify:**
+
 - Pull request created with comprehensive description and review checklist
 - All quality validation completed with documented evidence
 - Documentation accuracy verified through testing and validation

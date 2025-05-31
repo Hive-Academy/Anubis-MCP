@@ -2,11 +2,12 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { CoreMetricsService } from './core-metrics.service';
-import type { TaskMetrics, CodeReviewMetrics } from './core-metrics.service';
 
 // Import template-specific interfaces
 import type { DelegationMetrics } from '../delegation-analytics/delegation-analytics-template.interface';
 import type { PerformanceMetrics } from '../performance-dashboard/performance-dashboard-template.interface';
+import { CodeReviewMetrics } from './code-review-metrics.service';
+import { TaskMetrics } from './task-metrics.service';
 
 type WhereClause = Record<string, any>;
 
@@ -38,9 +39,7 @@ export class MetricsCalculatorService {
     return this.coreMetrics.getCodeReviewMetrics(whereClause);
   }
 
-  async getPerformanceMetrics(
-    whereClause: WhereClause,
-  ): Promise<PerformanceMetrics> {
+  getPerformanceMetrics(whereClause: WhereClause): PerformanceMetrics {
     return this.coreMetrics.getPerformanceMetrics(whereClause);
   }
 

@@ -21,9 +21,7 @@ import {
 // Foundation Services
 import { ReportDataAccessService } from '../foundation/report-data-access.service';
 import { CoreMetricsService } from '../foundation/core-metrics.service';
-
-// Import correct TaskMetrics interface
-import type { TaskMetrics } from '../foundation/core-metrics.service';
+import { TaskMetrics } from '../foundation/task-metrics.service';
 
 @Injectable()
 export class ImplementationPlanAnalyticsDataApiService

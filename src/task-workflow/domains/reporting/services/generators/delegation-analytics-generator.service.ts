@@ -71,8 +71,30 @@ export class DelegationAnalyticsGeneratorService
             ...(filters.owner && { owner: filters.owner }),
             ...(filters.mode && { mode: filters.mode }),
             ...(filters.priority && { priority: filters.priority }),
+            ...(filters.taskId && { taskId: filters.taskId }),
           },
         );
+
+      // Debug: Log the template data structure
+      this.logger.debug(
+        'Template data structure:',
+        JSON.stringify(
+          {
+            isTaskSpecific: templateData.isTaskSpecific,
+            hasTaskContext: !!templateData.taskContext,
+            taskContextKeys: templateData.taskContext
+              ? Object.keys(templateData.taskContext)
+              : [],
+            availableTasksCount: templateData.availableTasks?.length || 0,
+            metricsKeys: Object.keys(templateData.metrics || {}),
+            delegationMetricsKeys: Object.keys(
+              templateData.metrics?.delegations || {},
+            ),
+          },
+          null,
+          2,
+        ),
+      );
 
       // Step 2: Render template
       const htmlContent = await this.templateService.renderTemplate(

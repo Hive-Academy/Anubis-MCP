@@ -40,7 +40,11 @@
                                 </div>
                                 <div>
                                     <h1 class="text-4xl font-bold text-white mb-1">Delegation Analytics</h1>
-                                    <p class="text-purple-100 text-lg">Delegation patterns, handoff efficiency, and role performance analysis</p>
+                                    {{#if isTaskSpecific}}
+                                        <p class="text-purple-100 text-lg">Task-specific delegation flow analysis</p>
+                                    {{else}}
+                                        <p class="text-purple-100 text-lg">Delegation patterns, handoff efficiency, and role performance analysis</p>
+                                    {{/if}}
                                 </div>
                             </div>
                             <p class="text-purple-200">Generated on {{formatDate generatedAt "MMMM Do, YYYY [at] h:mm A"}}</p>
@@ -61,6 +65,129 @@
                 </div>
             </div>
 
+            {{#if taskContext}}
+            <!-- Task-Specific Context -->
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-8 mb-8">
+                <h3 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <span class="text-2xl mr-3">🎯</span>
+                    Task Context: {{taskContext.name}}
+                </h3>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <!-- Task Details -->
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6">
+                        <h4 class="font-semibold text-gray-900 mb-3">Task Details</h4>
+                        <div class="space-y-2 text-sm">
+                            <div><span class="font-medium">ID:</span> {{taskContext.taskId}}</div>
+                            <div><span class="font-medium">Status:</span> 
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    {{#eq taskContext.status 'completed'}}bg-green-100 text-green-800{{/eq}}
+                                    {{#eq taskContext.status 'in-progress'}}bg-blue-100 text-blue-800{{/eq}}
+                                    {{#eq taskContext.status 'not-started'}}bg-gray-100 text-gray-800{{/eq}}">
+                                    {{taskContext.status}}
+                                </span>
+                            </div>
+                            <div><span class="font-medium">Priority:</span> {{defaultValue taskContext.priority 'Not Set'}}</div>
+                            <div><span class="font-medium">Current Role:</span> {{defaultValue taskContext.currentMode 'None'}}</div>
+                        </div>
+                    </div>
+
+                    <!-- Delegation Stats -->
+                    <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6">
+                        <h4 class="font-semibold text-gray-900 mb-3">Delegation Stats</h4>
+                        <div class="space-y-2 text-sm">
+                            <div><span class="font-medium">Total Delegations:</span> {{taskContext.totalDelegations}}</div>
+                            <div><span class="font-medium">Current Step:</span> {{taskContext.currentStep}}</div>
+                            <div><span class="font-medium">Duration:</span> 
+                                {{#if taskContext.totalDuration}}
+                                    {{round taskContext.totalDuration 1}} hours
+                                {{else}}
+                                    In Progress
+                                {{/if}}
+                            </div>
+                            <div><span class="font-medium">Completed:</span> 
+                                {{#if taskContext.isCompleted}}
+                                    <span class="text-green-600">✓ Yes</span>
+                                {{else}}
+                                    <span class="text-orange-600">⏳ In Progress</span>
+                                {{/if}}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Task Description -->
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-6">
+                        <h4 class="font-semibold text-gray-900 mb-3">Description</h4>
+                        <p class="text-sm text-gray-700">{{taskContext.description}}</p>
+                    </div>
+                </div>
+
+                <!-- Delegation Flow Timeline -->
+                {{#if taskContext.delegationFlow}}
+                <div class="mt-6">
+                    <h4 class="font-semibold text-gray-900 mb-4">Delegation Flow Timeline</h4>
+                    <div class="space-y-3">
+                        {{#each taskContext.delegationFlow}}
+                        <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                                {{step}}
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-medium text-gray-900">{{fromRole}}</span>
+                                    <span class="text-gray-400">→</span>
+                                    <span class="font-medium text-gray-900">{{toRole}}</span>
+                                    {{#if completed}}
+                                        <span class="text-green-500">✓</span>
+                                    {{else}}
+                                        <span class="text-orange-500">⏳</span>
+                                    {{/if}}
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    {{formatDate timestamp "MMM DD, YYYY HH:mm"}}
+                                    {{#if duration}} • Duration: {{round duration 1}}h{{/if}}
+                                    {{#if redelegationCount}} • Redelegations: {{redelegationCount}}{{/if}}
+                                </div>
+                            </div>
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
+                {{/if}}
+            </div>
+            {{else}}
+            <!-- Task Selector for Global View -->
+            {{#if availableTasks}}
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-8 mb-8">
+                <h3 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <span class="text-2xl mr-3">📋</span>
+                    Available Tasks with Delegations
+                </h3>
+                <p class="text-gray-600 mb-4">Select a task to view its specific delegation analytics:</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {{#each availableTasks}}
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
+                        <div class="font-medium text-gray-900 mb-2">{{name}}</div>
+                        <div class="text-sm text-gray-500 space-y-1">
+                            <div>ID: {{taskId}}</div>
+                            <div>Status: {{status}}</div>
+                            <div>Delegations: {{delegationCount}}</div>
+                            <div>Created: {{formatDate creationDate "MMM DD, YYYY"}}</div>
+                        </div>
+                    </div>
+                    {{/each}}
+                </div>
+                
+                <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                    <p class="text-sm text-blue-800">
+                        <strong>Tip:</strong> To view task-specific delegation analytics, add <code>taskId</code> filter when generating the report.
+                    </p>
+                </div>
+            </div>
+            {{/if}}
+            {{/if}}
+
             <!-- Delegation Flow Visualization -->
             <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-8 mb-8">
                 <h3 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
@@ -73,7 +200,7 @@
                             <div class="font-semibold text-sm mb-2 uppercase tracking-wide">🪃 Boomerang</div>
                             <div class="text-2xl font-bold mb-2">{{defaultValue metrics.delegations.roleStats.boomerang 0}}</div>
                             <div class="text-xs opacity-90">
-                                {{defaultValue (multiply (defaultValue metrics.delegations.roleEfficiency.boomerang 0) 100) 0}}% efficiency
+                                {{round (multiply (defaultValue metrics.delegations.roleEfficiency.boomerang 0) 100) 1}}% efficiency
                             </div>
                         </div>
                         <div class="text-2xl text-gray-400 mx-4 animate-pulse">→</div>
@@ -81,7 +208,7 @@
                             <div class="font-semibold text-sm mb-2 uppercase tracking-wide">🔬 Researcher</div>
                             <div class="text-2xl font-bold mb-2">{{defaultValue metrics.delegations.roleStats.researcher 0}}</div>
                             <div class="text-xs opacity-90">
-                                {{defaultValue (multiply (defaultValue metrics.delegations.roleEfficiency.researcher 0) 100) 0}}% efficiency
+                                {{round (multiply (defaultValue metrics.delegations.roleEfficiency.researcher 0) 100) 1}}% efficiency
                             </div>
                         </div>
                         <div class="text-2xl text-gray-400 mx-4 animate-pulse">→</div>
@@ -89,7 +216,7 @@
                             <div class="font-semibold text-sm mb-2 uppercase tracking-wide">🏛️ Architect</div>
                             <div class="text-2xl font-bold mb-2">{{defaultValue metrics.delegations.roleStats.architect 0}}</div>
                             <div class="text-xs opacity-90">
-                                {{defaultValue (multiply (defaultValue metrics.delegations.roleEfficiency.architect 0) 100) 0}}% efficiency
+                                {{round (multiply (defaultValue metrics.delegations.roleEfficiency.architect 0) 100) 1}}% efficiency
                             </div>
                         </div>
                         <div class="text-2xl text-gray-400 mx-4 animate-pulse">→</div>
@@ -97,7 +224,7 @@
                             <div class="font-semibold text-sm mb-2 uppercase tracking-wide">👨‍💻 Developer</div>
                             <div class="text-2xl font-bold mb-2">{{defaultValue metrics.delegations.roleStats.senior-developer 0}}</div>
                             <div class="text-xs opacity-90">
-                                {{defaultValue (multiply (defaultValue metrics.delegations.roleEfficiency.senior-developer 0) 100) 0}}% efficiency
+                                {{round (multiply (defaultValue metrics.delegations.roleEfficiency.senior-developer 0) 100) 1}}% efficiency
                             </div>
                         </div>
                         <div class="text-2xl text-gray-400 mx-4 animate-pulse">→</div>
@@ -105,7 +232,7 @@
                             <div class="font-semibold text-sm mb-2 uppercase tracking-wide">🔍 Code Review</div>
                             <div class="text-2xl font-bold mb-2">{{defaultValue metrics.delegations.roleStats.code-review 0}}</div>
                             <div class="text-xs opacity-90">
-                                {{defaultValue (multiply (defaultValue metrics.delegations.roleEfficiency.code-review 0) 100) 0}}% efficiency
+                                {{round (multiply (defaultValue metrics.delegations.roleEfficiency.code-review 0) 100) 1}}% efficiency
                             </div>
                         </div>
                     </div>
@@ -128,7 +255,7 @@
                         <div class="text-xl">⚡</div>
                         <div class="text-xs px-2 py-1 rounded font-semibold bg-red-100 text-red-600">↘ -8%</div>
                     </div>
-                    <div class="text-3xl font-bold mb-2 text-blue-600">{{defaultValue metrics.delegations.avgHandoffTime 0}}h</div>
+                    <div class="text-3xl font-bold mb-2 text-blue-600">{{round (defaultValue metrics.delegations.avgHandoffTime 0) 1}}h</div>
                     <div class="text-gray-600 text-sm font-medium">Avg Handoff Time</div>
                 </div>
 
@@ -137,7 +264,7 @@
                         <div class="text-xl">🔄</div>
                         <div class="text-xs px-2 py-1 rounded font-semibold bg-gray-100 text-gray-600">→ Stable</div>
                     </div>
-                    <div class="text-3xl font-bold mb-2 text-yellow-600">{{defaultValue metrics.delegations.avgRedelegationCount 0}}</div>
+                    <div class="text-3xl font-bold mb-2 text-yellow-600">{{round (defaultValue metrics.delegations.avgRedelegationCount 0) 1}}</div>
                     <div class="text-gray-600 text-sm font-medium">Avg Redelegations</div>
                 </div>
 
@@ -155,7 +282,7 @@
                         <div class="text-xl">⏱️</div>
                         <div class="text-xs px-2 py-1 rounded font-semibold bg-red-100 text-red-600">↘ -15%</div>
                     </div>
-                    <div class="text-3xl font-bold mb-2 text-green-600">{{defaultValue metrics.delegations.avgCompletionTime 0}}h</div>
+                    <div class="text-3xl font-bold mb-2 text-green-600">{{round (defaultValue metrics.delegations.avgCompletionTime 0) 1}}h</div>
                     <div class="text-gray-600 text-sm font-medium">Avg Role Completion Time</div>
                 </div>
 
@@ -226,22 +353,51 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{#each (array 'boomerang' 'researcher' 'architect' 'senior-developer' 'code-review')}}
-                            <tr>
-                                <td class="p-4 text-center border border-gray-200 bg-white text-gray-600"><strong>{{this}}</strong></td>
-                                {{#each (array 'boomerang' 'researcher' 'architect' 'senior-developer' 'code-review')}}
-                                    {{#with (lookup ../metrics.delegations.transitionMatrix ../this)}}
-                                        {{#with (lookup this @this)}}
-                                            <td class="p-4 text-center border border-gray-200 bg-white text-gray-600 font-semibold text-gray-900 {{#if (gt this 10)}}bg-green-100 text-green-800{{else}}{{#if (gt this 5)}}bg-yellow-100 text-yellow-800{{else}}bg-gray-100 text-gray-600{{/if}}{{/if}}">{{this}}</td>
-                                        {{else}}
-                                            <td class="p-4 text-center border border-gray-200 bg-white text-gray-600 font-semibold text-gray-900 bg-gray-100 text-gray-600">0</td>
-                                        {{/with}}
-                                    {{else}}
-                                        <td class="p-4 text-center border border-gray-200 bg-white text-gray-600 font-semibold text-gray-900 bg-gray-100 text-gray-600">0</td>
-                                    {{/with}}
-                                {{/each}}
-                            </tr>
-                        {{/each}}
+                        <!-- Boomerang Row -->
+                        <tr>
+                            <td class="p-4 text-center border border-gray-200 bg-gray-50 font-semibold">🪃 Boomerang</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.boomerang.boomerang 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.boomerang.boomerang 0}}</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.boomerang.researcher 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.boomerang.researcher 0}}</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.boomerang.architect 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.boomerang.architect 0}}</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.boomerang.senior-developer 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.boomerang.senior-developer 0}}</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.boomerang.code-review 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.boomerang.code-review 0}}</td>
+                        </tr>
+                        <!-- Researcher Row -->
+                        <tr>
+                            <td class="p-4 text-center border border-gray-200 bg-gray-50 font-semibold">🔬 Researcher</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.researcher.boomerang 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.researcher.boomerang 0}}</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.researcher.researcher 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.researcher.researcher 0}}</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.researcher.architect 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.researcher.architect 0}}</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.researcher.senior-developer 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.researcher.senior-developer 0}}</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.researcher.code-review 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.researcher.code-review 0}}</td>
+                        </tr>
+                        <!-- Architect Row -->
+                        <tr>
+                            <td class="p-4 text-center border border-gray-200 bg-gray-50 font-semibold">🏛️ Architect</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.architect.boomerang 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.architect.boomerang 0}}</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.architect.researcher 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.architect.researcher 0}}</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.architect.architect 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.architect.architect 0}}</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.architect.senior-developer 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.architect.senior-developer 0}}</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.architect.code-review 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.architect.code-review 0}}</td>
+                        </tr>
+                        <!-- Senior Developer Row -->
+                        <tr>
+                            <td class="p-4 text-center border border-gray-200 bg-gray-50 font-semibold">👨‍💻 Developer</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.senior-developer.boomerang 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.senior-developer.boomerang 0}}</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.senior-developer.researcher 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.senior-developer.researcher 0}}</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.senior-developer.architect 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.senior-developer.architect 0}}</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.senior-developer.senior-developer 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.senior-developer.senior-developer 0}}</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.senior-developer.code-review 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.senior-developer.code-review 0}}</td>
+                        </tr>
+                        <!-- Code Review Row -->
+                        <tr>
+                            <td class="p-4 text-center border border-gray-200 bg-gray-50 font-semibold">🔍 Code Review</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.code-review.boomerang 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.code-review.boomerang 0}}</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.code-review.researcher 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.code-review.researcher 0}}</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.code-review.architect 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.code-review.architect 0}}</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.code-review.senior-developer 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.code-review.senior-developer 0}}</td>
+                            <td class="p-4 text-center border border-gray-200 {{#if (gt (defaultValue metrics.delegations.transitionMatrix.code-review.code-review 0) 5)}}bg-green-100 text-green-800{{else}}bg-gray-100 text-gray-600{{/if}}">{{defaultValue metrics.delegations.transitionMatrix.code-review.code-review 0}}</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -258,7 +414,7 @@
                             {{#with (multiply this 100)}}
                                 <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 text-center transition-all duration-300 hover:shadow-xl">
                                     <div class="text-3xl font-bold mb-2 {{#if (gt this 80)}}text-green-600{{else}}{{#if (gt this 60)}}text-yellow-600{{else}}text-red-600{{/if}}{{/if}}">
-                                        {{defaultValue this 0}}%
+                                        {{defaultValue (round this 1) 0.0}}%
                                     </div>
                                     <div class="text-sm text-gray-600 font-medium">{{defaultValue (replace ../this '-' ' ') this}}</div>
                                 </div>
@@ -337,7 +493,7 @@
     </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
+  
         // Delegation Flow Trends Chart
         const delegationFlowCtx = document.getElementById('delegationFlowChart').getContext('2d');
         new Chart(delegationFlowCtx, {
@@ -346,13 +502,13 @@
                 labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
                 datasets: [{
                     label: 'Successful Delegations',
-                    data: [{{defaultValue metrics.delegations.weeklyTrends.successful '12, 15, 18, 22'}},
+                    data: {{{json metrics.delegations.weeklyTrends.successful}}},
                     borderColor: '#10b981',
                     backgroundColor: 'rgba(16, 185, 129, 0.1)',
                     tension: 0.4
                 }, {
                     label: 'Failed Delegations',
-                    data: [{{defaultValue metrics.delegations.weeklyTrends.failed '3, 2, 4, 1'}},
+                    data: {{{json metrics.delegations.weeklyTrends.failed}}},
                     borderColor: '#ef4444',
                     backgroundColor: 'rgba(239, 68, 68, 0.1)',
                     tension: 0.4
@@ -391,8 +547,8 @@
                         {{multiply (defaultValue metrics.delegations.roleEfficiency.boomerang 0) 100}},
                         {{multiply (defaultValue metrics.delegations.roleEfficiency.researcher 0) 100}},
                         {{multiply (defaultValue metrics.delegations.roleEfficiency.architect 0) 100}},
-                        {{multiply (defaultValue metrics.delegations.roleEfficiency.senior-developer 0) 100}},
-                        {{multiply (defaultValue metrics.delegations.roleEfficiency.code-review 0) 100}}
+                        {{multiply (defaultValue (lookup metrics.delegations.roleEfficiency 'senior-developer') 0) 100}},
+                        {{multiply (defaultValue (lookup metrics.delegations.roleEfficiency 'code-review') 0) 100}}
                     ],
                     borderColor: '#3b82f6',
                     backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -425,7 +581,7 @@
                 }
             }
         });
-    });
+   
     </script>
 </body>
 </html>

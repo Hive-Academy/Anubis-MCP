@@ -16,12 +16,18 @@ import {
 
 // Data Access Layer (Prisma API)
 import { ReportDataAccessService } from '../foundation/report-data-access.service';
+import { CoreMetricsService } from '../foundation/core-metrics.service';
+import { TaskSummaryAnalyticsService } from './task-summary-analytics.service';
 
 @Injectable()
 export class TaskSummaryDataApiService implements TaskSummaryDataService {
   private readonly logger = new Logger(TaskSummaryDataApiService.name);
 
-  constructor(private readonly reportDataAccess: ReportDataAccessService) {}
+  constructor(
+    private readonly reportDataAccess: ReportDataAccessService,
+    private readonly coreMetricsService: CoreMetricsService,
+    private readonly taskSummaryAnalyticsService: TaskSummaryAnalyticsService,
+  ) {}
 
   /**
    * Get comprehensive task summary data using real analytics
@@ -95,7 +101,39 @@ export class TaskSummaryDataApiService implements TaskSummaryDataService {
       // Generate insights from real data
       insights: this.generateInsights(baseMetrics.tasks),
       recommendations: this.generateRecommendations(baseMetrics.tasks),
+
+      // Enhanced analytics (NEW) - Rich workflow insights
+      enhancedMetrics: await this.getEnhancedMetrics(
+        whereClause,
+        baseMetrics.tasks,
+      ),
     };
+  }
+
+  /**
+   * Get enhanced metrics using the analytics aggregator service
+   */
+  private async getEnhancedMetrics(
+    whereClause: any,
+    _taskMetrics: any,
+  ): Promise<any> {
+    try {
+      // Extract task IDs from recent tasks for detailed analytics
+      const recentTasks = await this.reportDataAccess.getRecentTasks(
+        whereClause,
+        10,
+      );
+      const taskIds = recentTasks.map((task) => task.taskId);
+
+      // Get enhanced metrics using the analytics service
+      return await this.taskSummaryAnalyticsService.getEnhancedMetrics(
+        taskIds,
+        whereClause,
+      );
+    } catch (error) {
+      this.logger.error('Failed to get enhanced metrics:', error);
+      return null; // Return null instead of dummy data
+    }
   }
 
   // ===== BUSINESS LOGIC METHODS =====
@@ -105,20 +143,11 @@ export class TaskSummaryDataApiService implements TaskSummaryDataService {
    */
   private async getRealTaskItems(whereClause: any): Promise<TaskSummaryItem[]> {
     try {
-      // Get real tasks from database with proper fields
-      const realTasks = await this.reportDataAccess.prisma.task.findMany({
-        where: whereClause,
-        select: {
-          taskId: true,
-          name: true,
-          status: true,
-          priority: true,
-          owner: true,
-          creationDate: true,
-        },
-        orderBy: { creationDate: 'desc' },
-        take: 10, // Show up to 10 recent tasks
-      });
+      // Use proper abstraction instead of direct Prisma access
+      const realTasks = await this.reportDataAccess.getRecentTasks(
+        whereClause,
+        10,
+      );
 
       // Transform real tasks to template format
       return realTasks.map((task) => ({
@@ -126,7 +155,7 @@ export class TaskSummaryDataApiService implements TaskSummaryDataService {
         name: task.name,
         status: task.status as TaskSummaryItem['status'],
         priority: task.priority as TaskSummaryItem['priority'],
-        owner: task.owner || 'Unassigned',
+        owner: task.owner,
         creationDate: task.creationDate,
       }));
     } catch (error) {
