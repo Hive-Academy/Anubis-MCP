@@ -1,12 +1,8 @@
 {
   "mcpServers": {
     "workflow-manager": {
-      "command": "node",
-      "args": [
-        "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npx-cli.js",
-        "-y",
-        "@hive-academy/mcp-workflow-manager@1.0.3"
-      ]
+      "command": "npx",
+      "args": ["-y", "@hive-academy/mcp-workflow-manager@1.0.5"]
     }
   }
 }

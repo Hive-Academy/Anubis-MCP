@@ -31,6 +31,7 @@
   "bin": {
     "mcp-workflow-manager": "./dist/cli.js"
   },
+  "preferGlobal": false,
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"
@@ -53,8 +54,7 @@
     "db:migrate": "npx prisma migrate deploy",
     "db:generate": "npx prisma generate",
     "db:init": "npm run db:generate && npm run db:migrate",
-    "postinstall": "npm run setup:conditional",
-    "setup:conditional": "node -e \"const fs = require('fs'); const path = require('path'); const isNpx = process.env.npm_config_cache && process.env.npm_config_cache.includes('.npm/_npx'); const isGlobal = process.env.npm_config_global === 'true'; if (isNpx || isGlobal) { console.log('🔧 NPX/Global installation detected - preparing Prisma client...'); try { require('child_process').execSync('npx prisma generate', { stdio: 'inherit', cwd: process.cwd() }); console.log('✅ Prisma client prepared for NPX usage'); } catch (error) { console.warn('⚠️ Prisma client preparation failed - will be handled at runtime'); } } else { console.log('📦 Local installation - Prisma client will be generated at runtime if needed'); }\"",
+    "postinstall": "node -e \"console.log('📦 @hive-academy/mcp-workflow-manager installed successfully'); console.log('🔧 Dependencies will be initialized automatically on first run'); console.log('💡 Use --skip-playwright flag to disable report generation if needed');\"",
     "setup:force": "npm run db:generate",
     "playwright:install": "playwright install chromium",
     "playwright:install-deps": "playwright install-deps chromium",
@@ -133,8 +133,5 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  },
-  "optionalDependencies": {
-    "playwright": "^1.48.2"
   }
 }
