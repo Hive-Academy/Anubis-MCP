@@ -83,6 +83,64 @@ Add to your settings or `.vscode/mcp.json`:
 4. **Playwright Browsers**: Installs browsers conditionally for report generation
 5. **Project Isolation**: Creates project-specific database based on directory
 
+### NPX Environment Variables (Optional)
+
+For enhanced control over NPX package behavior, you can set environment variables:
+
+#### Cursor IDE with Environment Variables
+
+```json
+{
+  "mcpServers": {
+    "workflow-manager": {
+      "command": "npx",
+      "args": ["-y", "@hive-academy/mcp-workflow-manager"],
+      "env": {
+        "PROJECT_ROOT": "D:/projects/your-project",
+        "DISABLE_REPORT_GENERATION": "false"
+      }
+    }
+  }
+}
+```
+
+#### Claude Desktop with Environment Variables
+
+```json
+{
+  "mcpServers": {
+    "workflow-manager": {
+      "command": "npx",
+      "args": ["-y", "@hive-academy/mcp-workflow-manager"],
+      "env": {
+        "PROJECT_ROOT": "/Users/username/projects/your-project",
+        "DISABLE_REPORT_GENERATION": "false"
+      }
+    }
+  }
+}
+```
+
+**Available Environment Variables:**
+
+- **`PROJECT_ROOT`**: Explicit project root directory (defaults to current working directory)
+
+  - **Purpose**: Ensures reports and database are created in the correct project location
+  - **When to use**: When the current working directory doesn't match your project root
+  - **Example**: `"PROJECT_ROOT": "D:/projects/my-app"`
+
+- **`DISABLE_REPORT_GENERATION`**: Disable Playwright browser installation and report generation
+  - **Purpose**: Faster startup when reports aren't needed
+  - **Values**: `"true"` or `"false"` (default: `"false"`)
+  - **Example**: `"DISABLE_REPORT_GENERATION": "true"`
+
+**✅ Benefits of Setting PROJECT_ROOT:**
+
+- **📊 Correct Report Location**: Reports generated in your project directory
+- **🗄️ Proper Database Location**: Database created in project-specific location
+- **🔒 Project Isolation**: Prevents data mixing between different projects
+- **🎯 Predictable Paths**: Always know where your workflow data is stored
+
 ### Docker Setup (Production/Teams)
 
 **No manual setup required!** Docker automatically creates directories and initializes the database.

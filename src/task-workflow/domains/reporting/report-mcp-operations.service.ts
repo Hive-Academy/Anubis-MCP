@@ -113,7 +113,7 @@ const GenerateReportInputSchema = z.object({
     .string()
     .optional()
     .describe(
-      'Base directory for report generation (defaults to current working directory)',
+      'Base directory for report generation (defaults to PROJECT_ROOT environment variable or current working directory). **IMPORTANT**: When using NPX package, always provide the project root path to ensure reports are generated in the correct location.',
     ),
 });
 
@@ -168,6 +168,8 @@ export class ReportMcpOperationsService {
   @Tool({
     name: 'generate_workflow_report',
     description: `Generate comprehensive workflow reports with analytics, charts, and recommendations. Supports multiple output formats including PDF, PNG, JPEG, and HTML.
+
+**IMPORTANT FOR AI AGENTS**: Always provide the 'basePath' parameter with the project root directory to ensure reports are generated in the correct location. Use the current working directory or project root path.
 
 ** REPORT TYPES AVAILABLE:**
 
@@ -230,11 +232,12 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
         ...(input.taskId && { taskId: input.taskId }),
       };
 
-      // Ensure basePath is always set to current working directory if not provided
-      const effectiveBasePath = input.basePath || process.cwd();
+      // Ensure basePath is always set to PROJECT_ROOT or current working directory if not provided
+      const effectiveBasePath =
+        input.basePath || process.env.PROJECT_ROOT || process.cwd();
 
       this.logger.log(
-        `Using base path: ${effectiveBasePath} (${input.basePath ? 'provided' : 'auto-detected'})`,
+        `Using base path: ${effectiveBasePath} (${input.basePath ? 'provided' : process.env.PROJECT_ROOT ? 'from PROJECT_ROOT env' : 'auto-detected'})`,
       );
 
       // Generate meaningful filename and folder structure

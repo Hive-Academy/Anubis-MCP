@@ -77,6 +77,71 @@ The MCP Workflow Manager provides a structured, role-based workflow system for A
 - Project isolation with unique databases per project
 - Report generation capabilities with browser support
 
+## 📦 Alternative: NPX Package
+
+**Prefer NPX over Docker?** The MCP Workflow Manager is also available as a self-contained NPX package with automatic dependency management.
+
+### NPX Setup
+
+#### Claude Desktop
+
+```json
+{
+  "mcpServers": {
+    "workflow-manager": {
+      "command": "npx",
+      "args": ["-y", "@hive-academy/mcp-workflow-manager"]
+    }
+  }
+}
+```
+
+#### Cursor IDE
+
+```json
+{
+  "mcpServers": {
+    "workflow-manager": {
+      "command": "npx",
+      "args": ["-y", "@hive-academy/mcp-workflow-manager"]
+    }
+  }
+}
+```
+
+### NPX with Environment Variables
+
+For enhanced control over project paths and report generation:
+
+```json
+{
+  "mcpServers": {
+    "workflow-manager": {
+      "command": "npx",
+      "args": ["-y", "@hive-academy/mcp-workflow-manager"],
+      "env": {
+        "PROJECT_ROOT": "/path/to/your/project",
+        "DISABLE_REPORT_GENERATION": "false"
+      }
+    }
+  }
+}
+```
+
+**✅ NPX Benefits:**
+
+- **🔧 Automatic Dependency Management**: Prisma client generation and database migrations
+- **🎭 Conditional Playwright Setup**: Browser installation only when needed
+- **🌍 Environment Detection**: Adapts for different installation types
+- **🛡️ Graceful Degradation**: Disables optional features if dependencies unavailable
+- **🚀 Works on Clean Systems**: No local dependencies required beyond Node.js
+- **📊 Automatic Project Isolation**: Each project gets its own database automatically
+
+**Docker vs NPX:**
+
+- **Docker**: Better for production, teams, and consistent environments
+- **NPX**: Better for development, quick setup, and local workflows
+
 ## 🔒 Project Isolation & Multi-Project Setup
 
 **Each project gets its own isolated database automatically!** No manual setup required.
