@@ -13,6 +13,10 @@
         "D:/projects/cursor-workflow/workflow-reports:/app/data/workflow-manager-mcp-reports",
         "hiveacademy/mcp-workflow-manager"
       ]
+    },
+    "workflow-manager-test": {
+      "command": "npx",
+      "args": ["-y", "@hive-academy/mcp-workflow-manager@1.0.7"]
     }
   }
 }
