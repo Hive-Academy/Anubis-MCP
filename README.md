@@ -10,6 +10,8 @@ A comprehensive **Model Context Protocol (MCP) server** for AI workflow automati
 - **📈 Analytics & Reporting**: Comprehensive workflow analytics and progress monitoring
 - **🔒 Project Isolation**: Automatic database separation for multi-project workflows
 - **🚀 Zero Setup**: Just add to MCP config - no manual installation required
+- **📦 Self-Contained NPX Package**: Automatic dependency management with no external requirements
+- **🔧 Environment-Aware**: Adapts behavior for NPX, global, and local installations
 
 ## 🚀 Quick Setup
 
@@ -64,7 +66,26 @@ Add to your settings or `.vscode/mcp.json`:
 }
 ```
 
+**✅ Self-Contained Package Benefits:**
+
+- **🔧 Automatic Dependency Management**: Prisma client generation and database migrations
+- **🎭 Conditional Playwright Setup**: Browser installation only when report generation needed
+- **🌍 Environment Detection**: Adapts for NPX vs global vs local installations
+- **🛡️ Graceful Degradation**: Disables optional features if dependencies unavailable
+- **🚀 Works on Clean Systems**: No local dependencies required beyond Node.js
+- **📊 Automatic Project Isolation**: Each project gets its own database automatically
+
+**What happens automatically on first run:**
+
+1. **Environment Detection**: Identifies NPX vs global vs local installation
+2. **Prisma Client Generation**: Generates database client automatically
+3. **Database Setup**: Creates and migrates database schema
+4. **Playwright Browsers**: Installs browsers conditionally for report generation
+5. **Project Isolation**: Creates project-specific database based on directory
+
 ### Docker Setup (Production/Teams)
+
+**No manual setup required!** Docker automatically creates directories and initializes the database.
 
 #### Claude Desktop
 
@@ -77,7 +98,7 @@ Add to your settings or `.vscode/mcp.json`:
         "run",
         "-i",
         "-v",
-        "workflow-manager-data:/app/data",
+        "workflow-manager-data:/app/prisma/data",
         "--rm",
         "hiveacademy/mcp-workflow-manager"
       ]
@@ -98,7 +119,7 @@ Add to your settings or `.vscode/mcp.json`:
         "-i",
         "--network=host",
         "-v",
-        "workflow-manager-data:/app/data",
+        "workflow-manager-data:/app/prisma/data",
         "--rm",
         "hiveacademy/mcp-workflow-manager"
       ]
@@ -106,6 +127,13 @@ Add to your settings or `.vscode/mcp.json`:
   }
 }
 ```
+
+**✅ What happens automatically:**
+
+- Database creation and initialization
+- Directory structure setup
+- Schema migrations
+- Permissions configuration
 
 ## 🔒 Project Isolation
 
@@ -118,17 +146,102 @@ Each project automatically gets its own database:
 /project-b/workflow.db  ← Project B's data
 ```
 
-### Docker (Manual)
+### Docker (Automatic Directory Creation)
 
-Use project-specific volume names:
+**No manual directory creation needed!** Use project-specific volume names:
 
 ```json
 // Project A
-"args": ["run", "-i", "-v", "project-a-workflow:/app/data", "--rm", "hiveacademy/mcp-workflow-manager"]
+"args": ["run", "-i", "-v", "project-a-workflow:/app/prisma/data", "--rm", "hiveacademy/mcp-workflow-manager"]
 
 // Project B
-"args": ["run", "-i", "-v", "project-b-workflow:/app/data", "--rm", "hiveacademy/mcp-workflow-manager"]
+"args": ["run", "-i", "-v", "project-b-workflow:/app/prisma/data", "--rm", "hiveacademy/mcp-workflow-manager"]
 ```
+
+**Why `/app/prisma/data`?** Prisma resolves the `DATABASE_URL="file:./data/workflow.db"` relative to the schema location (`/app/prisma/schema.prisma`), resulting in `/app/prisma/data/workflow.db`. Docker automatically creates this path and ensures proper database persistence.
+
+## 📊 Local Report Access
+
+**Want to access generated reports directly on your file system?** Use host directory mounting:
+
+### Setup (Automatic Directory Creation)
+
+**No manual directory creation needed!** Docker creates all directories automatically.
+
+#### Cursor IDE (Recommended)
+
+```json
+{
+  "mcpServers": {
+    "workflow-manager": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "--network=host",
+        "-v",
+        "D:/projects/your-project/prisma/data:/app/prisma/data",
+        "-v",
+        "D:/projects/your-project/workflow-reports:/app/data/workflow-manager-mcp-reports",
+        "hiveacademy/mcp-workflow-manager"
+      ]
+    }
+  }
+}
+```
+
+#### Windows Example
+
+```json
+{
+  "mcpServers": {
+    "workflow-manager": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "--network=host",
+        "-v",
+        "D:/projects/my-project/prisma/data:/app/prisma/data",
+        "-v",
+        "D:/projects/my-project/workflow-reports:/app/data/workflow-manager-mcp-reports",
+        "hiveacademy/mcp-workflow-manager"
+      ]
+    }
+  }
+}
+```
+
+#### macOS/Linux Example
+
+```json
+{
+  "mcpServers": {
+    "workflow-manager": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "--network=host",
+        "-v",
+        "/Users/username/projects/my-project/prisma/data:/app/prisma/data",
+        "-v",
+        "/Users/username/projects/my-project/workflow-reports:/app/data/workflow-manager-mcp-reports",
+        "hiveacademy/mcp-workflow-manager"
+      ]
+    }
+  }
+}
+```
+
+### What You Get
+
+- **Database**: `your-project/prisma/data/workflow.db` (automatically created)
+- **Reports**: `your-project/workflow-reports/` (automatically created)
+- **Project Isolation**: Each project gets its own database and reports
 
 ## 🛠️ Available MCP Tools
 
@@ -173,11 +286,9 @@ To access generated reports directly in your local project directory, mount a lo
         "-i",
         "--network=host",
         "-v",
-        "project-workflow-data:/app/data",
+        "D:/projects/your-project/prisma/data:/app/prisma/data",
         "-v",
-        "/absolute/path/to/your/project/workflow-reports:/app/data/workflow-manager-mcp-reports",
-        "-e",
-        "DATABASE_URL=file:./data/your-project-workflow.db",
+        "D:/projects/your-project/workflow-reports:/app/data/workflow-manager-mcp-reports",
         "hiveacademy/mcp-workflow-manager"
       ]
     }
@@ -198,11 +309,9 @@ To access generated reports directly in your local project directory, mount a lo
         "-i",
         "--network=host",
         "-v",
-        "my-project-data:/app/data",
+        "D:/projects/my-project/prisma/data:/app/prisma/data",
         "-v",
         "D:/projects/my-project/workflow-reports:/app/data/workflow-manager-mcp-reports",
-        "-e",
-        "DATABASE_URL=file:./data/my-project-workflow.db",
         "hiveacademy/mcp-workflow-manager"
       ]
     }
@@ -223,11 +332,9 @@ To access generated reports directly in your local project directory, mount a lo
         "-i",
         "--network=host",
         "-v",
-        "my-project-data:/app/data",
+        "/Users/username/projects/my-project/prisma/data:/app/prisma/data",
         "-v",
         "/Users/username/projects/my-project/workflow-reports:/app/data/workflow-manager-mcp-reports",
-        "-e",
-        "DATABASE_URL=file:./data/my-project-workflow.db",
         "hiveacademy/mcp-workflow-manager"
       ]
     }

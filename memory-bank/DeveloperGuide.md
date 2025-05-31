@@ -1,6 +1,6 @@
 # Developer Guide
 
-This guide provides essential information for developers working on this project, including setup, coding standards, architectural patterns, and best practices. With the adoption of NestJS, Prisma, and `@rekog/mcp-nest`, this guide has been updated to reflect these technologies.
+This guide provides essential information for developers working on this project, including setup, coding standards, architectural patterns, and best practices. With the adoption of NestJS, Prisma, and `@rekog/mcp-nest`, this guide has been updated to reflect these technologies and the new NPX self-contained package architecture.
 
 ## 1. Development Setup
 
@@ -24,6 +24,57 @@ npm install
 - Prisma is used for all database operations (see `prisma/schema.prisma`).
 - `@rekog/mcp-nest` exposes MCP tools as decorated service methods.
 - Zod is used for all tool parameter validation.
+
+### 1.4. NPX Package Development
+
+The project includes a sophisticated CLI dependency management system for NPX distribution:
+
+**Key Files:**
+
+- `src/cli.ts`: Main CLI entry point with environment-aware initialization
+- `src/utils/dependency-manager.ts`: Centralized dependency management utility
+- `scripts/test-clean-system.js`: Comprehensive clean system testing framework
+- `package.json`: Enhanced with intelligent postinstall scripts
+
+**Development Commands:**
+
+```bash
+# Build and test CLI locally
+npm run build
+node dist/cli.js --help
+
+# Test clean system functionality
+npm run test:clean-system
+npm run test:clean-system-verbose
+
+# Test NPX package simulation
+npm pack
+npx ./hive-academy-mcp-workflow-manager-*.tgz
+```
+
+**CLI Development Guidelines:**
+
+1. **Environment Detection**: Always check for NPX vs global vs local installation context
+2. **Graceful Degradation**: Disable optional features if dependencies unavailable
+3. **Automatic Setup**: Handle Prisma client generation and database migrations automatically
+4. **Error Handling**: Provide helpful troubleshooting guidance for common issues
+5. **Performance**: Minimize startup time through conditional dependency loading
+
+**Dependency Management Patterns:**
+
+```typescript
+// Example: Environment-aware dependency checking
+const dependencyManager = new DependencyManager({ verbose: true });
+const status = await dependencyManager.checkDependencies();
+
+if (!status.prismaClientExists) {
+  await dependencyManager.setupPrisma();
+}
+
+if (!status.playwrightBrowsersInstalled && !options.skipPlaywright) {
+  await dependencyManager.setupPlaywright();
+}
+```
 
 ## 2. Project Structure
 
