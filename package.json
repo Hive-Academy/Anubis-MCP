@@ -53,14 +53,19 @@
     "db:migrate": "npx prisma migrate deploy",
     "db:generate": "npx prisma generate",
     "db:init": "npm run db:generate && npm run db:migrate",
-    "postinstall": "npm run db:generate",
+    "postinstall": "npm run setup:conditional",
+    "setup:conditional": "node -e \"const fs = require('fs'); const path = require('path'); const isNpx = process.env.npm_config_cache && process.env.npm_config_cache.includes('.npm/_npx'); const isGlobal = process.env.npm_config_global === 'true'; if (isNpx || isGlobal) { console.log('🔧 NPX/Global installation detected - preparing Prisma client...'); try { require('child_process').execSync('npx prisma generate', { stdio: 'inherit', cwd: process.cwd() }); console.log('✅ Prisma client prepared for NPX usage'); } catch (error) { console.warn('⚠️ Prisma client preparation failed - will be handled at runtime'); } } else { console.log('📦 Local installation - Prisma client will be generated at runtime if needed'); }\"",
+    "setup:force": "npm run db:generate",
+    "playwright:install": "playwright install chromium",
+    "playwright:install-deps": "playwright install-deps chromium",
+    "test:clean-system": "node scripts/test-clean-system.js",
+    "test:clean-system-verbose": "node scripts/test-clean-system.js --verbose",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
-    "playwright:install": "playwright install chromium"
+    "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.4",
@@ -128,5 +133,8 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "optionalDependencies": {
+    "playwright": "^1.48.2"
   }
 }
