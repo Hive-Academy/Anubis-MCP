@@ -28,9 +28,17 @@ export class ReportRenderingService implements OnModuleDestroy {
   private readonly logger = new Logger(ReportRenderingService.name);
   private browser: Browser | null = null;
   private readonly outputPath = path.join(process.cwd(), 'reports', 'rendered');
+  private browserValidated = false;
 
   constructor() {
     this.ensureOutputDirectory();
+    // Validate browser availability on service initialization
+    this.validateBrowserAvailability().catch((error) => {
+      this.logger.error(
+        'Browser validation failed during service initialization',
+        error,
+      );
+    });
   }
 
   async onModuleDestroy() {
@@ -45,10 +53,20 @@ export class ReportRenderingService implements OnModuleDestroy {
     }
   }
 
-  private async getBrowser(): Promise<Browser> {
-    if (!this.browser) {
-      this.logger.log('Launching Playwright browser...');
-      this.browser = await chromium.launch({
+  /**
+   * Validates browser availability and functionality
+   * Follows existing service patterns with comprehensive error handling
+   */
+  async validateBrowserAvailability(): Promise<boolean> {
+    try {
+      this.logger.log('Validating browser availability...');
+
+      // Get cross-platform browser executable path
+      const executablePath = this.getBrowserExecutablePath();
+      this.logger.log(`Checking browser executable at: ${executablePath}`);
+
+      // Attempt to launch browser with system configuration
+      const launchOptions: any = {
         headless: true,
         args: [
           '--no-sandbox',
@@ -58,9 +76,115 @@ export class ReportRenderingService implements OnModuleDestroy {
           '--no-first-run',
           '--no-zygote',
           '--disable-gpu',
+          '--disable-background-timer-throttling',
+          '--disable-backgrounding-occluded-windows',
+          '--disable-renderer-backgrounding',
         ],
+      };
+
+      // Only set executablePath if we have a specific path
+      if (executablePath) {
+        launchOptions.executablePath = executablePath;
+      }
+
+      const testBrowser = await chromium.launch(launchOptions);
+
+      // Test basic browser functionality
+      const testPage = await testBrowser.newPage();
+      await testPage.setContent(
+        '<html><head><title>Browser Test</title></head><body><h1>Browser Validation</h1></body></html>',
+      );
+
+      // Verify page content
+      const title = await testPage.title();
+      if (title !== 'Browser Test') {
+        throw new Error(
+          'Browser functionality test failed - page content not rendered correctly',
+        );
+      }
+
+      await testPage.close();
+      await testBrowser.close();
+
+      this.browserValidated = true;
+      this.logger.log(
+        '✅ Browser validation successful - Chromium is available and functional',
+      );
+      return true;
+    } catch (error) {
+      this.browserValidated = false;
+      this.logger.error('❌ Browser validation failed', {
+        error: error.message,
+        executablePath: this.getBrowserExecutablePath(),
+        browsersPath: process.env.PLAYWRIGHT_BROWSERS_PATH,
+        stack: error.stack,
       });
-      this.logger.log('Playwright browser launched successfully');
+      throw new Error(`Browser validation failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get cross-platform browser executable path
+   */
+  private getBrowserExecutablePath(): string | undefined {
+    // First check environment variable override
+    if (process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH) {
+      return process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
+    }
+
+    // For Docker/Linux environments
+    if (process.platform === 'linux') {
+      return '/usr/bin/chromium-browser';
+    }
+
+    // For other platforms, let Playwright use its bundled browser
+    // This works for Windows, macOS, and other systems
+    return undefined;
+  }
+
+  private async getBrowser(): Promise<Browser> {
+    // Validate browser availability before launching if not already validated
+    if (!this.browserValidated) {
+      await this.validateBrowserAvailability();
+    }
+
+    if (!this.browser) {
+      this.logger.log('Launching Playwright browser...');
+
+      try {
+        const executablePath = this.getBrowserExecutablePath();
+
+        const launchOptions: any = {
+          headless: true,
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--disable-gpu',
+            '--disable-background-timer-throttling',
+            '--disable-backgrounding-occluded-windows',
+            '--disable-renderer-backgrounding',
+          ],
+        };
+
+        // Only set executablePath if we have a specific path
+        if (executablePath) {
+          launchOptions.executablePath = executablePath;
+        }
+
+        this.browser = await chromium.launch(launchOptions);
+        this.logger.log('✅ Playwright browser launched successfully');
+      } catch (error) {
+        this.logger.error('❌ Failed to launch browser', {
+          error: error.message,
+          executablePath: this.getBrowserExecutablePath(),
+          browsersPath: process.env.PLAYWRIGHT_BROWSERS_PATH,
+        });
+        throw new Error(`Browser launch failed: ${error.message}`);
+      }
     }
     return this.browser;
   }
@@ -240,13 +364,8 @@ export class ReportRenderingService implements OnModuleDestroy {
   // Health check method to ensure browser is working
   async healthCheck(): Promise<boolean> {
     try {
-      const browser = await this.getBrowser();
-      const page = await browser.newPage();
-      await page.setContent(
-        '<html><head><title>Health Check</title></head><body><h1>OK</h1></body></html>',
-      );
-      await page.close();
-      return true;
+      // Use the comprehensive browser validation instead of basic check
+      return await this.validateBrowserAvailability();
     } catch (error) {
       this.logger.error('Health check failed', error);
       return false;

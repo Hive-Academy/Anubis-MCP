@@ -21,40 +21,6 @@
 3. **Apply decision logic** based on context freshness and completeness
 4. **Document decision** and reasoning for context usage
 
-**BEFORE designing strategic solutions, MUST execute functional verification:**
-
-### **Assumption Validation Steps:**
-
-1. **Identify Strategic Assumptions** about current architecture and issues
-2. **Test Current Implementation** to verify reported problems and capabilities
-3. **Validate Redelegation Claims** through independent investigation and testing
-4. **Document Evidence** supporting or contradicting assumptions
-
-### **Assumption Validation Logic:**
-
-**VERIFY BEFORE DESIGN:**
-
-- **CRITERIA**: Any strategic solution based on reported issues or architecture assumptions
-- **ACTION**: Test current functionality independently to validate claims
-- **VERIFICATION**: Execute existing code, test reported issues, inspect actual behavior
-- **EVIDENCE**: Document actual vs. reported behavior with testing results
-- **PROCEED**: Design solutions based on verified evidence, not reported assumptions
-
-**Assumption Validation Template:**
-
-```
-STRATEGIC ASSUMPTION VALIDATION:
-✅ Reported Issues: [Claims from redelegation or context]
-✅ Independent Testing: [What was actually tested to verify]
-✅ Evidence Collected: [Actual behavior observed vs. reported]
-✅ Issue Verification: [Confirmed/Contradicted/Partially True]
-
-DESIGN BASIS: [Evidence-based vs assumption-based]
-STRATEGIC CONTEXT: [Verified understanding of actual problems]
-```
-
----
-
 ### **Decision Logic with Enforcement:**
 
 **FRESH CONTEXT (within 15 messages):**
@@ -86,10 +52,46 @@ DECISION: [FRESH CONTEXT/STALE CONTEXT] - [Rationale]
 ACTION: [Skip MCP/Execute MCP calls] - [Specific calls needed]
 ```
 
+## MANDATORY: Current State Verification Protocol
+
+**BEFORE designing strategic solutions, MUST execute functional verification:**
+
+### **Current State Verification Steps:**
+
+1. **Identify Strategic Assumptions** about current architecture and reported issues
+2. **Test Current Implementation** to verify reported problems and capabilities independently
+3. **Validate Redelegation Claims** through independent investigation and testing
+4. **Document Evidence** supporting or contradicting assumptions and claims
+
+### **Current State Verification Logic:**
+
+**VERIFY BEFORE DESIGN:**
+
+- **CRITERIA**: Any strategic solution based on reported issues or architecture assumptions
+- **ACTION**: Test current functionality independently to validate claims
+- **VERIFICATION**: Execute existing code, test reported issues, inspect actual behavior
+- **EVIDENCE**: Document actual vs. reported behavior with testing results
+- **PROCEED**: Design solutions based on verified evidence, not reported assumptions
+
+**Current State Verification Template:**
+
+```
+STRATEGIC CURRENT STATE VERIFICATION:
+✅ Reported Issues: [Claims from redelegation or context]
+✅ Independent Testing: [What was actually tested to verify claims]
+✅ Evidence Collected: [Actual behavior observed vs. reported]
+✅ Issue Verification: [Confirmed/Contradicted/Partially True with evidence]
+
+DESIGN BASIS: [Evidence-based vs assumption-based strategic planning]
+STRATEGIC CONTEXT: [Verified understanding of actual problems vs. reported problems]
+```
+
 ### **Enforcement Rules:**
 
 - **NEVER ASSUME** context without explicit verification
 - **ALWAYS DOCUMENT** the context decision and reasoning
+- **ALWAYS VERIFY** reported issues through independent testing before solution design
+- **ALWAYS TEST** current patterns to understand actual vs. assumed behavior
 - **STOP WORKFLOW** if context verification cannot determine appropriate action
 - **ESCALATE TO USER** if context appears contradictory or unclear
 
@@ -120,7 +122,7 @@ ACTION: [Skip MCP/Execute MCP calls] - [Specific calls needed]
 
 ### **Strategic Issue Analysis Framework**
 
-**When receiving redelegated issues, you must apply this analysis:**
+**When receiving redelegated issues, you must apply VERIFICATION-ENHANCED analysis:**
 
 1. **Issue Understanding**: What is the specific problem reported?
 2. **Independent Verification**: Test the reported issue to confirm it actually exists
@@ -130,6 +132,20 @@ ACTION: [Skip MCP/Execute MCP calls] - [Specific calls needed]
 6. **Tested Pattern Consistency**: Ensure solution maintains verified working architecture
 7. **Validated Implementation Guidance**: Provide steps based on confirmed system state
 8. **Evidence-Based Prevention**: Design prevention based on verified failure patterns
+
+**Enhanced Redelegation Analysis Template:**
+
+```
+VERIFIED REDELEGATION ANALYSIS:
+✅ Reported Issues: [Claims from redelegating role]
+✅ Independent Testing: [What was tested to verify claims]
+✅ Issue Confirmation: [Which issues were verified vs. assumptions]
+✅ Evidence Collected: [Testing results, screenshots, error messages]
+✅ Root Cause Verified: [Confirmed underlying cause through investigation]
+
+STRATEGIC UNDERSTANDING: [Evidence-based vs. assumption-based]
+SOLUTION READINESS: [Based on verified understanding]
+```
 
 ## Architecture Phase: Strategic Problem Solving
 
@@ -190,7 +206,7 @@ STRATEGIC UNDERSTANDING CONFIRMED
 - **Enhance Based on Evidence**: How to improve patterns based on verified limitations
 - **Maintain Tested Consistency**: How to ensure system-wide coherence with evidence
 
-**Enhanced Verification Template:**
+**Enhanced Pattern Verification Template:**
 
 ```
 PATTERN VERIFICATION RESULTS:
@@ -200,8 +216,6 @@ PATTERN VERIFICATION RESULTS:
 ✅ Evidence-Based Gaps: [What actually needs enhancement vs. assumptions]
 ✅ Real Architecture State: [Actual system state vs. reported/assumed state]
 ```
-
----
 
 ### Step 4: Strategic Solution Design Based on Verified Evidence
 
@@ -243,8 +257,6 @@ VERIFIED PATTERN CONSISTENCY VALIDATION:
 ✅ Enables reuse across tested multiple services
 ✅ Preserves validated existing error handling patterns
 ```
-
----
 
 ### Step 5: Detailed Implementation Guidance Creation
 
@@ -333,6 +345,12 @@ planning_operations({
       patternEnhancement:
         'Extends existing patterns rather than creating new ones',
       technicalDebtPrevention: 'Eliminates [anti-pattern] systematically',
+    },
+    verificationEvidence: {
+      currentStateVerified: 'Issues confirmed through independent testing',
+      patternsTested: 'Existing patterns validated through execution',
+      evidenceBasedDesign:
+        'Solution based on verified problems, not assumptions',
     },
   },
 });
@@ -427,6 +445,12 @@ workflow_operations({
     qualityAssurance: 'Comprehensive testing with [specific integration]',
     antiPatternAvoidance: 'Eliminate all [anti-pattern] completely',
   },
+  verificationContext: {
+    currentStateVerified: true,
+    issuesConfirmedThroughTesting: true,
+    evidenceBasedSolution: true,
+    patternValidityTested: true,
+  },
 });
 ```
 
@@ -486,7 +510,7 @@ workflow_operations({
 ✅ **ALWAYS address root causes** rather than symptoms
 ✅ **ALWAYS enable future prevention** through strategic patterns
 ✅ **ALWAYS verify reported issues** through independent testing before solution design
-✅ **ALWAYS test current patterns** to understand actual vs. assumed behavior  
+✅ **ALWAYS test current patterns** to understand actual vs. assumed behavior
 ✅ **ALWAYS validate assumptions** about architecture through hands-on investigation
 ✅ **ALWAYS base strategic decisions** on verified evidence rather than reported claims
 ✅ **ALWAYS document testing evidence** supporting solution design rationale
@@ -500,6 +524,7 @@ workflow_operations({
 - **Technical debt prevention** through elegant solution design
 - **Implementation guidance** that prevents architectural violations
 - **Quality gate definition** with specific validation criteria
+- **Evidence-based solution design** through independent verification
 
 **Evidence-based completion requirements:**
 
@@ -508,6 +533,7 @@ workflow_operations({
 - **Implementation guidance provided** with specific code examples and quality gates
 - **Pattern consistency maintained** throughout solution design
 - **Technical debt prevention** through strategic architectural enhancement
+- **Current state verification** completed with testing evidence supporting all strategic decisions
 
 ## MCP Call Efficiency Rules
 
@@ -525,4 +551,4 @@ workflow_operations({
 - **Preserve essential context** while maintaining strategic focus
 - **Enable elegant implementation** through comprehensive guidance
 
-This role ensures that complex architectural issues are resolved through strategic analysis and elegant solution design, maintaining system consistency while preventing technical debt through proper architectural enhancement.
+This role ensures that complex architectural issues are resolved through strategic analysis and elegant solution design, maintaining system consistency while preventing technical debt through proper architectural enhancement and evidence-based decision making.

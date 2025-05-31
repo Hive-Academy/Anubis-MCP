@@ -12,53 +12,22 @@ The MCP Workflow Manager provides a structured, role-based workflow system for A
 
 ### ⭐ Key Features
 
-- **42+ MCP Tools** for comprehensive workflow management
-- **Role-Based Workflow** with automatic task delegation
-- **Persistent Task Tracking** with SQLite/PostgreSQL support
+- **10+ Domain-Based MCP Tools** for comprehensive workflow management
+- **Role-Based Workflow** with automatic task delegation and strategic redelegation
+- **Persistent Task Tracking** with SQLite database and automatic project isolation
 - **Implementation Planning** with batch-based subtask organization
-- **Research & Code Review** integrated reporting
-- **Real-time Status Updates** and progress monitoring
-- **Multi-Transport Support** (STDIO, SSE, Streamable HTTP)
-- **Production Ready** with NestJS + Prisma architecture
-- **Automatic Database Setup** with migrations on container start
+- **Advanced Reporting** with PDF, PNG, HTML, and JPEG report generation
+- **Real-time Analytics** with delegation patterns and performance monitoring
+- **Multi-Platform Support** (linux/amd64, linux/arm64) for Intel and Apple Silicon
+- **Production Ready** with NestJS + Prisma architecture and Alpine Linux security
+- **Zero Setup Required** - Docker handles all initialization automatically
+- **Browser Integration** with Playwright and system Chromium for report generation
 
-## 🚀 Quick Setup
+## 🚀 Quick Start
 
-**No manual installation required** - just add the configuration to your MCP client and everything works automatically!
+**No manual setup required!** Docker automatically creates directories, initializes the database, and handles all configuration.
 
-### NPX Setup (Recommended - Automatic Project Isolation)
-
-#### Claude Desktop
-
-Add to your `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "workflow-manager": {
-      "command": "npx",
-      "args": ["-y", "@hive-academy/mcp-workflow-manager"]
-    }
-  }
-}
-```
-
-#### Cursor IDE
-
-Add to your `.cursor/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "workflow-manager": {
-      "command": "npx",
-      "args": ["-y", "@hive-academy/mcp-workflow-manager"]
-    }
-  }
-}
-```
-
-### Docker Setup (Production/Teams)
+### Simple Setup (Recommended)
 
 #### Claude Desktop
 
@@ -71,7 +40,7 @@ Add to your `.cursor/mcp.json`:
         "run",
         "-i",
         "-v",
-        "workflow-manager-data:/app/data",
+        "workflow-manager-data:/app/prisma/data",
         "--rm",
         "hiveacademy/mcp-workflow-manager"
       ]
@@ -92,7 +61,7 @@ Add to your `.cursor/mcp.json`:
         "-i",
         "--network=host",
         "-v",
-        "workflow-manager-data:/app/data",
+        "workflow-manager-data:/app/prisma/data",
         "--rm",
         "hiveacademy/mcp-workflow-manager"
       ]
@@ -101,13 +70,18 @@ Add to your `.cursor/mcp.json`:
 }
 ```
 
+**✅ What happens automatically:**
+
+- Database creation and initialization with schema migrations
+- Directory structure setup with proper permissions
+- Project isolation with unique databases per project
+- Report generation capabilities with browser support
+
 ## 🔒 Project Isolation & Multi-Project Setup
 
-### **IMPORTANT**: Avoiding Database Conflicts Between Projects
+**Each project gets its own isolated database automatically!** No manual setup required.
 
-When using Docker across multiple projects, ensure each project has its own isolated database to prevent data conflicts:
-
-#### ✅ **Recommended: Project-Specific Volume Names**
+### ✅ **Recommended: Project-Specific Volume Names**
 
 ```json
 // For project "my-auth-app"
@@ -115,7 +89,7 @@ When using Docker across multiple projects, ensure each project has its own isol
   "mcpServers": {
     "workflow-manager": {
       "command": "docker",
-      "args": ["run", "-i", "-v", "my-auth-app-mcp-data:/app/data", "--rm", "hiveacademy/mcp-workflow-manager"]
+      "args": ["run", "-i", "-v", "my-auth-app-mcp-data:/app/prisma/data", "--rm", "hiveacademy/mcp-workflow-manager"]
     }
   }
 }
@@ -125,13 +99,15 @@ When using Docker across multiple projects, ensure each project has its own isol
   "mcpServers": {
     "workflow-manager": {
       "command": "docker",
-      "args": ["run", "-i", "-v", "my-ecommerce-app-mcp-data:/app/data", "--rm", "hiveacademy/mcp-workflow-manager"]
+      "args": ["run", "-i", "-v", "my-ecommerce-app-mcp-data:/app/prisma/data", "--rm", "hiveacademy/mcp-workflow-manager"]
     }
   }
 }
 ```
 
-#### ❌ **Avoid: Shared Volume Names**
+**✅ Result**: Each project gets its own database automatically created and isolated.
+
+### ❌ **Avoid: Shared Volume Names**
 
 ```json
 // DON'T DO THIS - All projects will share the same database!
@@ -143,7 +119,7 @@ When using Docker across multiple projects, ensure each project has its own isol
         "run",
         "-i",
         "-v",
-        "mcp-workflow-data:/app/data",
+        "shared-mcp-data:/app/prisma/data",
         "--rm",
         "hiveacademy/mcp-workflow-manager"
       ]
@@ -152,39 +128,86 @@ When using Docker across multiple projects, ensure each project has its own isol
 }
 ```
 
-### **NPX vs Docker: When to Use Which**
+## 📊 Local Report Access
 
-| Use Case                                | Recommended Approach                 | Reason                             |
-| --------------------------------------- | ------------------------------------ | ---------------------------------- |
-| **Single Developer, Multiple Projects** | NPX with automatic isolation         | Simpler setup, automatic isolation |
-| **Team Development**                    | Docker with project-specific volumes | Consistent environment across team |
-| **Production Deployment**               | Docker with external database        | Scalability and reliability        |
-| **Quick Testing/Prototyping**           | NPX                                  | Fastest setup                      |
-| **CI/CD Pipelines**                     | Docker                               | Reproducible builds                |
+**Want to access generated reports directly on your file system?** Use host directory mounting for local file access.
+
+### Windows Example
+
+```json
+{
+  "mcpServers": {
+    "workflow-manager": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "--network=host",
+        "-v",
+        "D:/projects/my-project/prisma/data:/app/prisma/data",
+        "-v",
+        "D:/projects/my-project/workflow-reports:/app/data/workflow-manager-mcp-reports",
+        "hiveacademy/mcp-workflow-manager"
+      ]
+    }
+  }
+}
+```
+
+### macOS/Linux Example
+
+```json
+{
+  "mcpServers": {
+    "workflow-manager": {
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "--network=host",
+        "-v",
+        "/Users/username/projects/my-project/prisma/data:/app/prisma/data",
+        "-v",
+        "/Users/username/projects/my-project/workflow-reports:/app/data/workflow-manager-mcp-reports",
+        "hiveacademy/mcp-workflow-manager"
+      ]
+    }
+  }
+}
+```
+
+**✅ What you get automatically:**
+
+- **Database**: `my-project/prisma/data/workflow.db` (created on first run)
+- **Reports**: `my-project/workflow-reports/` (created when reports are generated)
+- **Project Isolation**: Each project gets its own database and reports
+- **Multiple Formats**: PDF, PNG, HTML, and JPEG reports available
 
 ## 🛠️ Available MCP Tools
 
-### Core Task Management
+### Core Workflow Management
 
-- `task_operations` - Task lifecycle management
-- `planning_operations` - Implementation planning and batch management
-- `workflow_operations` - Role-based delegation and transitions
-- `review_operations` - Code review and completion reports
-- `research_operations` - Research reports and communication
+- **`task_operations`** - Task lifecycle management (create, update, get, list)
+- **`planning_operations`** - Implementation planning and batch subtask management
+- **`workflow_operations`** - Role-based delegation and workflow transitions
+- **`review_operations`** - Code review and completion report management
+- **`research_operations`** - Research reports and communication management
 
 ### Query & Analytics
 
-- `query_task_context` - Comprehensive task context retrieval
-- `query_workflow_status` - Delegation and workflow status
-- `query_reports` - Report queries with evidence
-- `batch_subtask_operations` - Bulk subtask management
-- `batch_status_updates` - Cross-entity synchronization
+- **`query_task_context`** - Comprehensive task context retrieval
+- **`query_workflow_status`** - Delegation and workflow status queries
+- **`query_reports`** - Report queries with evidence relationships
+- **`batch_subtask_operations`** - Bulk subtask management by batch
+- **`batch_status_updates`** - Cross-entity status synchronization
 
 ### Reporting & Analytics
 
-- `generate_workflow_report` - Comprehensive analytics and reports
-- `get_report_status` - Report generation status
-- `cleanup_report` - Report file management
+- **`generate_workflow_report`** - Comprehensive workflow analytics and reports
+- **`get_report_status`** - Report generation status tracking
+- **`cleanup_report`** - Report file management
 
 ## 🔄 Workflow Roles
 
@@ -226,3 +249,5 @@ You should see 10+ workflow management tools available!
 ---
 
 **🎉 That's it!** No manual installation, no complex setup - just add the config and start using your workflow manager.
+
+**Built with ❤️ for the AI development community by Hive Academy**
