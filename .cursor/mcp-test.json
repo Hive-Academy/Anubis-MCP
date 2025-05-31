@@ -17,6 +17,10 @@
     "workflow-manager-test": {
       "command": "npx",
       "args": ["-y", "@hive-academy/mcp-workflow-manager@1.0.7"]
+    },
+    "workflow-manager-test-2": {
+      "command": "node",
+      "args": ["D:/projects/cursor-workflow/dist/main.js"]
     }
   }
 }

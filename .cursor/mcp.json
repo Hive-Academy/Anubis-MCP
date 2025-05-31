@@ -1,18 +1,11 @@
 {
   "mcpServers": {
     "workflow-manager": {
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-i",
-        "--network=host",
-        "-v",
-        "D:/projects/cursor-workflow/prisma/data:/app/prisma/data",
-        "-v",
-        "D:/projects/cursor-workflow/workflow-reports:/app/data/workflow-manager-mcp-reports",
-        "hiveacademy/mcp-workflow-manager"
-      ]
+      "command": "npx",
+      "args": ["--yes", "@hive-academy/mcp-workflow-manager@latest"],
+      "env": {
+        "PROJECT_ROOT": "${workspaceFolder}"
+      }
     }
   }
 }
