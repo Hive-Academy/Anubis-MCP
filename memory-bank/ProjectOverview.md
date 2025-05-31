@@ -7,6 +7,7 @@ This project implements a Model Context Protocol (MCP) server for managing AI wo
 ## Key Features
 
 - **Zero Setup Required**: Just add configuration to MCP client - no manual installation
+- **Self-Contained NPX Package**: Automatic dependency management with no external requirements
 - **Automatic Project Isolation**: Each project gets its own database automatically (NPX)
 - **Role-Based Workflow**: Structured AI coordination between specialized roles
 - **Task Management**: Complete task lifecycle with status tracking and delegation
@@ -34,16 +35,26 @@ Add to your MCP client config:
 }
 ```
 
-**Benefits:**
+**Self-Contained Package Benefits:**
 
 - ✅ Zero setup - just add config and it works
+- ✅ Automatic dependency management (Prisma client, database migrations)
+- ✅ Conditional Playwright browser installation for reports
+- ✅ Environment-aware initialization (NPX, global, local installations)
 - ✅ Automatic project isolation - each project gets its own database
 - ✅ Always latest version
 - ✅ Follows MCP ecosystem patterns (same as @modelcontextprotocol/server-memory)
+- ✅ Works on clean systems without any local dependencies
 
-### Docker (Production/Teams)
+**Automatic Dependency Management:**
 
-**Configuration Only - No Manual Setup Required**
+The NPX package automatically handles:
+
+- **Prisma Client Generation**: Generates database client on first run
+- **Database Migrations**: Runs migrations automatically when needed
+- **Playwright Browsers**: Installs browsers conditionally for report generation
+- **Environment Detection**: Adapts behavior for NPX vs local vs global installations
+  **Configuration Only - No Manual Setup Required**
 
 Add to your MCP client config:
 

@@ -10,6 +10,8 @@ A comprehensive **Model Context Protocol (MCP) server** for AI workflow automati
 - **📈 Analytics & Reporting**: Comprehensive workflow analytics and progress monitoring
 - **🔒 Project Isolation**: Automatic database separation for multi-project workflows
 - **🚀 Zero Setup**: Just add to MCP config - no manual installation required
+- **📦 Self-Contained NPX Package**: Automatic dependency management with no external requirements
+- **🔧 Environment-Aware**: Adapts behavior for NPX, global, and local installations
 
 ## 🚀 Quick Setup
 
@@ -63,6 +65,23 @@ Add to your settings or `.vscode/mcp.json`:
   }
 }
 ```
+
+**✅ Self-Contained Package Benefits:**
+
+- **🔧 Automatic Dependency Management**: Prisma client generation and database migrations
+- **🎭 Conditional Playwright Setup**: Browser installation only when report generation needed
+- **🌍 Environment Detection**: Adapts for NPX vs global vs local installations
+- **🛡️ Graceful Degradation**: Disables optional features if dependencies unavailable
+- **🚀 Works on Clean Systems**: No local dependencies required beyond Node.js
+- **📊 Automatic Project Isolation**: Each project gets its own database automatically
+
+**What happens automatically on first run:**
+
+1. **Environment Detection**: Identifies NPX vs global vs local installation
+2. **Prisma Client Generation**: Generates database client automatically
+3. **Database Setup**: Creates and migrates database schema
+4. **Playwright Browsers**: Installs browsers conditionally for report generation
+5. **Project Isolation**: Creates project-specific database based on directory
 
 ### Docker Setup (Production/Teams)
 
