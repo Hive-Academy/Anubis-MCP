@@ -1,7 +1,7 @@
 // src/task-workflow/domains/reporting/services/reporting-config.service.ts
 
 import { Injectable, Logger } from '@nestjs/common';
-import { accessSync } from 'fs';
+import { accessSync, readFileSync } from 'fs';
 import * as path from 'path';
 
 /**
@@ -18,6 +18,7 @@ export class ReportingConfigService {
 
   constructor() {
     this._templatesPath = this.resolveTemplatesPath();
+    this._reportsPath = this.resolveReportsPath();
 
     // Log configuration asynchronously without blocking constructor
     this.logConfiguration();
@@ -27,9 +28,13 @@ export class ReportingConfigService {
     return this._templatesPath;
   }
 
+  get reportsPath(): string {
+    return this._reportsPath;
+  }
+
   /**
    * Dynamically resolve templates path based on environment
-   * Supports development, production, and Docker environments
+   * Supports development, production, Docker, and NPX environments
    */
   private resolveTemplatesPath(): string {
     const templateRelativePath = path.join(
@@ -56,12 +61,23 @@ export class ReportingConfigService {
 
     // Try multiple possible locations in order of preference
     const possiblePaths = [
+      // NPX package: relative to current module location
+      path.join(__dirname, '..', '..', '..', '..', 'templates'),
+      // NPX package: relative to dist folder in package
+      path.join(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        '..',
+        '..',
+        'dist',
+        templateRelativePath,
+      ),
       // Production/Docker: dist folder (most common in containers)
       path.join(projectRoot, 'dist', templateRelativePath),
       // Development: src folder
       path.join(projectRoot, 'src', templateRelativePath),
-      // Alternative production location (relative to compiled service)
-      path.join(__dirname, '..', '..', '..', '..', 'templates'),
       // Docker volume mount location
       path.join('/app', 'templates'),
       // Alternative Docker location
@@ -69,6 +85,15 @@ export class ReportingConfigService {
       // Fallback to process.cwd() based paths
       path.join(process.cwd(), 'dist', templateRelativePath),
       path.join(process.cwd(), 'src', templateRelativePath),
+      // NPX fallback: look in node_modules
+      path.join(
+        process.cwd(),
+        'node_modules',
+        '@hive-academy',
+        'mcp-workflow-manager',
+        'dist',
+        templateRelativePath,
+      ),
     ];
 
     // Check which path exists and use the first available
@@ -93,6 +118,7 @@ export class ReportingConfigService {
 
   /**
    * Find the project root directory by looking for package.json
+   * Enhanced for NPX package detection
    */
   private findProjectRoot(): string {
     let currentDir = __dirname;
@@ -101,6 +127,21 @@ export class ReportingConfigService {
     while (currentDir !== path.dirname(currentDir)) {
       const packageJsonPath = path.join(currentDir, 'package.json');
       if (this.pathExists(packageJsonPath)) {
+        // Check if this is our NPX package by looking for our package name
+        try {
+          const packageJson = JSON.parse(
+            readFileSync(packageJsonPath, 'utf-8'),
+          );
+          if (packageJson.name === '@hive-academy/mcp-workflow-manager') {
+            this.logger.log(
+              `✅ Found NPX package root: ${currentDir}`,
+              'ReportingConfigService',
+            );
+            return currentDir;
+          }
+        } catch {
+          // If we can't read package.json, continue searching
+        }
         return currentDir;
       }
       currentDir = path.dirname(currentDir);
@@ -171,5 +212,31 @@ export class ReportingConfigService {
       customTemplatesPath: process.env.TEMPLATES_PATH,
       customReportsPath: process.env.REPORTS_PATH,
     };
+  }
+
+  /**
+   * Dynamically resolve reports path based on environment
+   * Simple approach: always use current working directory + workflow-reports
+   */
+  private resolveReportsPath(): string {
+    // Environment variable override
+    if (process.env.REPORTS_PATH) {
+      const envPath = path.resolve(process.env.REPORTS_PATH);
+      if (this.pathExists(path.dirname(envPath))) {
+        return envPath;
+      }
+      this.logger.warn(
+        `REPORTS_PATH environment variable set but parent directory doesn't exist: ${envPath}`,
+        'ReportingConfigService',
+      );
+    }
+
+    // Simple approach: always use current working directory
+    const reportsPath = path.join(process.cwd(), 'workflow-reports');
+    this.logger.log(
+      `📁 Reports directory: ${reportsPath}`,
+      'ReportingConfigService',
+    );
+    return reportsPath;
   }
 }

@@ -145,6 +145,40 @@ Implementation planning and batch subtask management.
         technicalDecisions: planData.technicalDecisions || '',
         filesToModify: planData.filesToModify || [],
         createdBy: planData.createdBy || 'system',
+
+        // Strategic Architecture Context - NEW FIELDS
+        ...(planData.strategicGuidance && {
+          strategicGuidance: planData.strategicGuidance,
+        }),
+        ...(planData.strategicContext && {
+          strategicContext: planData.strategicContext,
+        }),
+        ...(planData.verificationEvidence && {
+          verificationEvidence: planData.verificationEvidence,
+        }),
+        ...(planData.architecturalRationale && {
+          architecturalRationale: planData.architecturalRationale,
+        }),
+
+        // Redelegation and Issue Context - NEW FIELDS
+        ...(planData.redelegationContext && {
+          redelegationContext: planData.redelegationContext,
+        }),
+        ...(planData.issueAnalysis && {
+          issueAnalysis: planData.issueAnalysis,
+        }),
+        ...(planData.solutionStrategy && {
+          solutionStrategy: planData.solutionStrategy,
+        }),
+
+        // Quality and Compliance - NEW FIELDS
+        ...(planData.qualityGates && { qualityGates: planData.qualityGates }),
+        ...(planData.patternCompliance && {
+          patternCompliance: planData.patternCompliance,
+        }),
+        ...(planData.antiPatternPrevention && {
+          antiPatternPrevention: planData.antiPatternPrevention,
+        }),
       },
       include: {
         subtasks: {
@@ -177,6 +211,40 @@ Implementation planning and batch subtask management.
             filesToModify: planData.filesToModify,
           }),
           ...(planData.createdBy && { createdBy: planData.createdBy }),
+
+          // Strategic Architecture Context - NEW FIELDS
+          ...(planData.strategicGuidance && {
+            strategicGuidance: planData.strategicGuidance,
+          }),
+          ...(planData.strategicContext && {
+            strategicContext: planData.strategicContext,
+          }),
+          ...(planData.verificationEvidence && {
+            verificationEvidence: planData.verificationEvidence,
+          }),
+          ...(planData.architecturalRationale && {
+            architecturalRationale: planData.architecturalRationale,
+          }),
+
+          // Redelegation and Issue Context - NEW FIELDS
+          ...(planData.redelegationContext && {
+            redelegationContext: planData.redelegationContext,
+          }),
+          ...(planData.issueAnalysis && {
+            issueAnalysis: planData.issueAnalysis,
+          }),
+          ...(planData.solutionStrategy && {
+            solutionStrategy: planData.solutionStrategy,
+          }),
+
+          // Quality and Compliance - NEW FIELDS
+          ...(planData.qualityGates && { qualityGates: planData.qualityGates }),
+          ...(planData.patternCompliance && {
+            patternCompliance: planData.patternCompliance,
+          }),
+          ...(planData.antiPatternPrevention && {
+            antiPatternPrevention: planData.antiPatternPrevention,
+          }),
         },
         include: {
           subtasks: {
@@ -205,6 +273,40 @@ Implementation planning and batch subtask management.
             filesToModify: planData.filesToModify,
           }),
           ...(planData.createdBy && { createdBy: planData.createdBy }),
+
+          // Strategic Architecture Context - NEW FIELDS
+          ...(planData.strategicGuidance && {
+            strategicGuidance: planData.strategicGuidance,
+          }),
+          ...(planData.strategicContext && {
+            strategicContext: planData.strategicContext,
+          }),
+          ...(planData.verificationEvidence && {
+            verificationEvidence: planData.verificationEvidence,
+          }),
+          ...(planData.architecturalRationale && {
+            architecturalRationale: planData.architecturalRationale,
+          }),
+
+          // Redelegation and Issue Context - NEW FIELDS
+          ...(planData.redelegationContext && {
+            redelegationContext: planData.redelegationContext,
+          }),
+          ...(planData.issueAnalysis && {
+            issueAnalysis: planData.issueAnalysis,
+          }),
+          ...(planData.solutionStrategy && {
+            solutionStrategy: planData.solutionStrategy,
+          }),
+
+          // Quality and Compliance - NEW FIELDS
+          ...(planData.qualityGates && { qualityGates: planData.qualityGates }),
+          ...(planData.patternCompliance && {
+            patternCompliance: planData.patternCompliance,
+          }),
+          ...(planData.antiPatternPrevention && {
+            antiPatternPrevention: planData.antiPatternPrevention,
+          }),
         },
         include: {
           subtasks: {
@@ -291,6 +393,20 @@ Implementation planning and batch subtask management.
       status: subtask.status || 'not-started',
       batchId: batchData.batchId,
       batchTitle: batchData.batchTitle || 'Untitled Batch',
+
+      // Strategic Implementation Guidance - NEW FIELDS
+      ...(subtask.strategicGuidance && {
+        strategicGuidance: subtask.strategicGuidance,
+      }),
+      ...(subtask.qualityConstraints && {
+        qualityConstraints: subtask.qualityConstraints,
+      }),
+      ...(subtask.successCriteria && {
+        successCriteria: subtask.successCriteria,
+      }),
+      ...(subtask.architecturalRationale && {
+        architecturalRationale: subtask.architecturalRationale,
+      }),
     }));
 
     const result = await this.prisma.subtask.createMany({

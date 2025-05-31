@@ -24,7 +24,7 @@ export class TaskOperationsService {
 Task lifecycle management with clear, focused operations.
 
 **Operations:**
-- create: Create new task with optional description and analysis
+- create: Create new task with optional description and analysis (taskId auto-generated)
 - update: Update task details, status, or related data  
 - get: Retrieve task with description and optional analysis
 - list: List tasks with filtering options
@@ -34,6 +34,7 @@ Task lifecycle management with clear, focused operations.
 - Clear parameter requirements (no complex schema guessing)
 - Business rule validation for status transitions
 - Integrated codebase analysis management
+- Auto-generated unique taskId (no need to provide taskId for create operations)
 
 **Examples:**
 - Create task: { operation: "create", taskData: { name: "Fix auth bug", priority: "High" } }
@@ -136,15 +137,12 @@ Task lifecycle management with clear, focused operations.
       throw new Error('Task name is required for creation');
     }
 
-    // Generate taskId if not provided
-    const taskId = taskData.taskId || `TSK-${Date.now()}`;
-
     // Create task with description in transaction
     const result = await this.prisma.$transaction(async (tx) => {
-      // Create the task
+      // Create the task - let Prisma auto-generate taskId
       const task = await tx.task.create({
         data: {
-          taskId,
+          // Remove taskId - let Prisma auto-generate it
           name: taskData.name!,
           status: taskData.status || 'not-started',
           priority: taskData.priority || 'Medium',
@@ -155,6 +153,9 @@ Task lifecycle management with clear, focused operations.
           currentMode: 'boomerang',
         },
       });
+
+      // Use the auto-generated taskId for related records
+      const taskId = task.taskId;
 
       // Create task description if provided
       let taskDescription = null;

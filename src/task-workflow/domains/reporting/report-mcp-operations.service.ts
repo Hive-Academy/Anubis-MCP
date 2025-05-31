@@ -9,6 +9,7 @@ import {
   ReportRenderingService,
 } from './report-rendering.service';
 import * as path from 'path';
+import { ReportingConfigService } from './services/infrastructure/reporting-config.service';
 
 // Zod schemas for MCP tool parameters
 const GenerateReportInputSchema = z.object({
@@ -112,7 +113,7 @@ const GenerateReportInputSchema = z.object({
     .string()
     .optional()
     .describe(
-      'Base directory for report generation (defaults to current working directory)',
+      'Base directory for report generation (defaults to PROJECT_ROOT environment variable or current working directory). **IMPORTANT**: When using NPX package, always provide the project root path to ensure reports are generated in the correct location.',
     ),
 });
 
@@ -161,11 +162,14 @@ export class ReportMcpOperationsService {
   constructor(
     private readonly reportGeneratorFactory: ReportGeneratorFactoryService,
     private readonly reportRenderer: ReportRenderingService,
+    private readonly reportingConfig: ReportingConfigService,
   ) {}
 
   @Tool({
     name: 'generate_workflow_report',
     description: `Generate comprehensive workflow reports with analytics, charts, and recommendations. Supports multiple output formats including PDF, PNG, JPEG, and HTML.
+
+**IMPORTANT FOR AI AGENTS**: Always provide the 'basePath' parameter with the project root directory to ensure reports are generated in the correct location. Use the current working directory or project root path.
 
 ** REPORT TYPES AVAILABLE:**
 
@@ -228,10 +232,19 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
         ...(input.taskId && { taskId: input.taskId }),
       };
 
+      // Ensure basePath is always set to PROJECT_ROOT or current working directory if not provided
+      const effectiveBasePath =
+        input.basePath || process.env.PROJECT_ROOT || process.cwd();
+
+      this.logger.log(
+        `Using base path: ${effectiveBasePath} (${input.basePath ? 'provided' : process.env.PROJECT_ROOT ? 'from PROJECT_ROOT env' : 'auto-detected'})`,
+      );
+
       // Generate meaningful filename and folder structure
       const { filename, folderPath } = this.generateMeaningfulFilename(
         input.reportType,
         input.outputFormat,
+        effectiveBasePath,
         startDate,
         endDate,
         filters,
@@ -241,22 +254,19 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
       this.logger.debug(`Generated folderPath: ${folderPath}`);
       this.logger.debug(`Input basePath: ${input.basePath}`);
 
-      // Always use data directory for reliable storage with proper permissions
-      // This ensures reports are saved in the persistent volume and accessible
-      const customTempPath = path.join(
-        '/app/data',
-        'workflow-manager-mcp-reports',
+      // Determine base path for temp and rendered files using effective base path
+      const baseTempPath = path.join(
+        effectiveBasePath,
+        'workflow-reports',
         'temp',
       );
-      const customRenderedPath = folderPath;
+      const baseRenderedPath = folderPath;
 
       // Ensure directories exist
-      await fs.mkdir(customTempPath, { recursive: true });
-      await fs.mkdir(customRenderedPath, { recursive: true });
+      await fs.mkdir(baseTempPath, { recursive: true });
+      await fs.mkdir(baseRenderedPath, { recursive: true });
 
-      this.logger.log(
-        `Using organized report structure: ${customRenderedPath}`,
-      );
+      this.logger.log(`Using organized report structure: ${baseRenderedPath}`);
 
       // Generate complete report using our new focused generator architecture
       this.logger.log(`Generating complete report for ${input.reportType}`);
@@ -285,7 +295,7 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
 
       if (input.outputFormat === 'html') {
         // For HTML, save the content directly using organized structure
-        const filepath = path.join(customRenderedPath, filename);
+        const filepath = path.join(baseRenderedPath, filename);
         await fs.writeFile(filepath, htmlContent, 'utf-8');
 
         result = {
@@ -313,7 +323,7 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
         );
 
         // Save the rendered report with meaningful name using organized structure
-        const filepath = path.join(customRenderedPath, filename);
+        const filepath = path.join(baseRenderedPath, filename);
         await fs.writeFile(filepath, renderedReport.buffer);
 
         result = {
@@ -620,6 +630,7 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
   private generateMeaningfulFilename(
     reportType: string,
     outputFormat: string,
+    basePath: string,
     startDate?: Date,
     endDate?: Date,
     filters?: Record<string, any>,
@@ -643,28 +654,22 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
 
     // Build filters part
     let filtersStr = '';
-    if (filters && Object.keys(filters).length > 0) {
-      const filterParts = Object.entries(filters)
-        .filter(([_, value]) => value)
-        .map(([key, value]) => `${key}-${value}`)
-        .join('_');
-      if (filterParts) {
-        filtersStr = `_${filterParts}`;
+    if (filters) {
+      const filterParts = [];
+      if (filters.owner) filterParts.push(`owner-${filters.owner}`);
+      if (filters.mode) filterParts.push(`mode-${filters.mode}`);
+      if (filters.priority) filterParts.push(`priority-${filters.priority}`);
+      if (filters.taskId) filterParts.push(`task-${filters.taskId}`);
+      if (filterParts.length > 0) {
+        filtersStr = `_${filterParts.join('_')}`;
       }
     }
 
     // Generate filename
     const filename = `${reportType}${dateRange}${filtersStr}_${timestamp}.${outputFormat}`;
 
-    // Always use data directory for reliable storage with proper permissions
-    // This ensures reports are saved in the persistent volume and accessible
-    const baseReportsPath = path.join(
-      '/app/data',
-      'workflow-manager-mcp-reports',
-    );
-
-    // Organize by report type only (no date subdirectories)
-    const folderPath = path.join(baseReportsPath, reportType);
+    // Determine folder path using provided basePath
+    const folderPath = path.join(basePath, 'workflow-reports', 'rendered');
 
     return { filename, folderPath };
   }

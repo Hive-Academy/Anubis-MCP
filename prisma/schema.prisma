@@ -14,7 +14,7 @@ datasource db {
 // Model definitions based on 00-mcp-data-base-schema.md
 
 model Task {
-  taskId            String    @id // Corresponds to task_id TEXT PRIMARY KEY
+  taskId            String    @id @default(cuid()) // Auto-generate unique taskId
   name              String
   status            String // 'Not Started', 'In Progress', 'In Review', 'Completed'
   creationDate      DateTime  @default(now())
@@ -62,8 +62,25 @@ model ImplementationPlan {
   taskId              String
   overview            String
   approach            String
-  technicalDecisions  String
+  technicalDecisions  Json      // Enhanced: JSON object for structured technical decisions
   filesToModify       Json      // JSON array of files to modify
+  
+  // Strategic Architecture Context - NEW FIELDS
+  strategicGuidance   Json?     // rootCauseSolution, patternConsistency, elegantImplementation, futurePreventtion
+  strategicContext    Json?     // issueResolution, patternEnhancement, technicalDebtPrevention
+  verificationEvidence Json?    // currentStateVerified, patternsTested, evidenceBasedDesign
+  architecturalRationale String? // Detailed explanation of architectural decisions and approach
+  
+  // Redelegation and Issue Context - NEW FIELDS
+  redelegationContext Json?     // Issues found, work completed, testing results, strategic questions
+  issueAnalysis       Json?     // Root cause analysis, pattern violations, complexity assessment
+  solutionStrategy    Json?     // Implementation strategy, quality constraints, success criteria
+  
+  // Quality and Compliance - NEW FIELDS
+  qualityGates        Json?     // Specific validation requirements and checkpoints
+  patternCompliance   Json?     // Architectural patterns to follow and maintain
+  antiPatternPrevention Json?   // What to avoid and why
+  
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
   createdBy           String
@@ -88,6 +105,12 @@ model Subtask {
   completedAt         DateTime?
   batchId             String?    // Added for batch information
   batchTitle          String?    // Added for batch information
+  
+  // Strategic Implementation Guidance - NEW FIELDS
+  strategicGuidance   Json?     // architecturalContext, implementationSpecifics, codeExample
+  qualityConstraints  Json?     // patternCompliance, errorHandling, performanceTarget
+  successCriteria     Json?     // Specific validation points and completion requirements
+  architecturalRationale String? // Why this subtask is needed and how it fits the solution
 
   task                Task                @relation(fields: [taskId], references: [taskId])
   plan                ImplementationPlan  @relation(fields: [planId], references: [id])

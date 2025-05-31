@@ -2,7 +2,6 @@
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as path from 'path';
 import {
   DependencyManager,
   DependencySetupOptions,
@@ -18,11 +17,21 @@ async function bootstrap() {
   // Parse command line arguments
   const args = process.argv.slice(2);
 
+  // CRITICAL: Set PROJECT_ROOT to ensure database is created in user's project directory
+  // This prevents database sharing across different projects when using NPX
+  if (!process.env.PROJECT_ROOT) {
+    process.env.PROJECT_ROOT = process.cwd();
+    console.log(`📁 Project root set to: ${process.env.PROJECT_ROOT}`);
+  }
+
+  // Initialize dependency manager early to get environment info
+  const dependencyManager = new DependencyManager({ verbose: false });
+  const envInfo = dependencyManager.getEnvironmentInfo();
+
   // Set default environment variables if not provided
   if (!process.env.DATABASE_URL) {
-    // Use project-specific database based on current directory name
-    const projectName = path.basename(process.cwd());
-    process.env.DATABASE_URL = `file:./${projectName}-workflow.db`;
+    // Use static prisma/data location as expected by MCP server
+    process.env.DATABASE_URL = `file:${envInfo.userDataDirectory}/workflow.db`;
   }
 
   if (!process.env.MCP_TRANSPORT_TYPE) {
@@ -54,17 +63,20 @@ async function bootstrap() {
   try {
     console.log('🚀 Starting MCP Workflow Manager...');
 
-    // Initialize dependency manager with options
-    const dependencyManager = new DependencyManager({ verbose });
+    // Reinitialize dependency manager with verbose setting
+    const dependencyManagerWithVerbose = new DependencyManager({ verbose });
 
     // Get environment information for debugging
-    const envInfo = dependencyManager.getEnvironmentInfo();
+    const envInfoVerbose = dependencyManagerWithVerbose.getEnvironmentInfo();
     if (verbose) {
       console.log('🔍 Environment Info:', {
-        isNpx: envInfo.isNpx,
-        isGlobal: envInfo.isGlobal,
-        isLocal: envInfo.isLocal,
-        nodeVersion: envInfo.nodeVersion,
+        isNpx: envInfoVerbose.isNpx,
+        isGlobal: envInfoVerbose.isGlobal,
+        isLocal: envInfoVerbose.isLocal,
+        nodeVersion: envInfoVerbose.nodeVersion,
+        packageRoot: envInfoVerbose.packageRoot,
+        workingDirectory: envInfoVerbose.workingDirectory,
+        userDataDirectory: envInfoVerbose.userDataDirectory,
       });
     }
 
@@ -76,7 +88,7 @@ async function bootstrap() {
     };
 
     const dependencyStatus =
-      dependencyManager.initializeAllDependencies(setupOptions);
+      dependencyManagerWithVerbose.initializeAllDependencies(setupOptions);
 
     // Report any errors but continue if possible
     if (dependencyStatus.errors.length > 0) {
