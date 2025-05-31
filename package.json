@@ -39,12 +39,13 @@
   "files": [
     "dist/**/*",
     "prisma/**/*",
+    "generated/**/*",
     "package.json",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "prebuild": "rimraf dist",
+    "prebuild": "rimraf dist && npm run db:generate",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -54,7 +55,7 @@
     "db:migrate": "npx prisma migrate deploy",
     "db:generate": "npx prisma generate",
     "db:init": "npm run db:generate && npm run db:migrate",
-    "postinstall": "node -e \"console.log('📦 @hive-academy/mcp-workflow-manager installed successfully'); console.log('🔧 Dependencies will be initialized automatically on first run'); console.log('💡 Use --skip-playwright flag to disable report generation if needed');\"",
+    "postinstall": "npm run db:generate && echo '📦 @hive-academy/mcp-workflow-manager installed successfully' && echo '🔧 Prisma client generated automatically' && echo '💡 Use --skip-playwright flag to disable report generation if needed'",
     "setup:force": "npm run db:generate",
     "playwright:install": "playwright install chromium",
     "playwright:install-deps": "playwright install-deps chromium",
