@@ -39,29 +39,49 @@ export class DependencyManager {
 
   /**
    * Check if Prisma client is generated and available
+   * STRATEGIC ENHANCEMENT: Support both NPX (custom path) and Docker (custom path) detection
+   * ARCHITECTURAL CONTEXT: Project uses custom generated/prisma path, not standard @prisma/client
+   * PATTERN FOLLOWED: Check for generated Prisma client in custom location
+   * STRATEGIC PURPOSE: Ensure NPX package can find the custom generated Prisma client
    */
   checkPrismaClient(): boolean {
     try {
-      // Check if @prisma/client is available
-      require.resolve('@prisma/client');
+      // Check for custom generated location (both NPX and Docker use this)
+      const customPath = path.join(process.cwd(), 'generated', 'prisma');
 
-      // Check if the generated client exists in node_modules
-      const generatedPath = path.join(
-        process.cwd(),
-        'node_modules',
-        '.prisma',
-        'client',
-      );
-      const exists = fs.existsSync(generatedPath);
+      if (fs.existsSync(customPath)) {
+        // Verify it's a valid Prisma client by checking for key files
+        const indexPath = path.join(customPath, 'index.js');
+        const wasmPath = path.join(customPath, 'wasm.js');
+        const edgePath = path.join(customPath, 'edge.js');
 
-      this.log(
-        `Prisma client check: ${exists ? 'EXISTS' : 'MISSING'} at ${generatedPath}`,
-      );
-      return exists;
+        if (
+          fs.existsSync(indexPath) ||
+          fs.existsSync(wasmPath) ||
+          fs.existsSync(edgePath)
+        ) {
+          this.log(
+            `Prisma client check: EXISTS at custom location ${customPath}`,
+          );
+          return true;
+        } else {
+          this.log(
+            `Prisma client check: Custom location ${customPath} exists but missing client files`,
+          );
+        }
+      } else {
+        this.log(
+          `Prisma client check: Custom location ${customPath} not found`,
+        );
+      }
     } catch (error) {
-      this.log(`Prisma client check failed: ${error}`);
-      return false;
+      this.log(`Prisma client custom path check failed: ${error}`);
     }
+
+    this.log(
+      'Prisma client check: NOT FOUND - custom generated client missing',
+    );
+    return false;
   }
 
   /**
