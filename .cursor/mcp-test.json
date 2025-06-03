@@ -14,9 +14,12 @@
         "hiveacademy/mcp-workflow-manager"
       ]
     },
-    "workflow-manager-test": {
+    "workflow-manager": {
       "command": "npx",
-      "args": ["-y", "@hive-academy/mcp-workflow-manager@1.0.7"]
+      "args": ["--yes", "@hive-academy/mcp-workflow-manager@latest"],
+      "env": {
+        "PROJECT_ROOT": "D:/projects/cursor-workflow"
+      }
     },
     "workflow-manager-test-2": {
       "command": "node",
