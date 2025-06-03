@@ -169,118 +169,103 @@ export class DependencyManager {
 
   /**
    * Initialize database in user data directory
-   * STRATEGIC CHANGE: Safe initialization - never overwrite existing databases
-   * DATA SAFETY: Only create database if it doesn't exist to prevent data loss
+   * STRATEGIC CHANGE: Always run migrations to ensure database schema is up to date
+   * DATA SAFETY: Use Prisma migrate deploy which safely applies migrations without data loss
    */
   runDatabaseMigrations(): void {
     console.log('🗄️  Initializing workflow database...');
 
     try {
       const dbPath = this.getDatabasePath();
-
-      // CRITICAL: Never overwrite existing database to prevent data loss
-      if (fs.existsSync(dbPath)) {
-        console.log(
-          '✅ Existing workflow database found - preserving user data',
-        );
-        this.log(
-          `Database exists at ${dbPath} - skipping initialization to preserve data`,
-        );
-        return;
-      }
-
-      // Only initialize if no database exists
-      console.log(
-        '📝 No existing database found - initializing fresh database',
+      const bundledSchemaPath = path.join(
+        this.packageRoot,
+        'prisma',
+        'schema.prisma',
+      );
+      const bundledMigrationsPath = path.join(
+        this.packageRoot,
+        'prisma',
+        'migrations',
       );
 
-      // Try to copy pre-built database first (only if target doesn't exist)
-      if (this.copyBundledDatabase()) {
-        console.log('✅ Workflow database initialized from bundle');
-        return;
+      // Verify bundled resources exist
+      if (!fs.existsSync(bundledSchemaPath)) {
+        throw new Error(
+          `Bundled Prisma schema not found at ${bundledSchemaPath}`,
+        );
       }
 
-      // If no pre-built database, create fresh one using our bundled schema
-      this.createFreshDatabase();
-      console.log('✅ Fresh workflow database created');
+      if (!fs.existsSync(bundledMigrationsPath)) {
+        throw new Error(
+          `Bundled migrations not found at ${bundledMigrationsPath}`,
+        );
+      }
+
+      // Set database URL to user data directory
+      const originalDbUrl = process.env.DATABASE_URL;
+      process.env.DATABASE_URL = `file:${dbPath}`;
+
+      try {
+        if (fs.existsSync(dbPath)) {
+          console.log(
+            '✅ Existing workflow database found - applying any pending migrations',
+          );
+          this.log(
+            `Database exists at ${dbPath} - running migrate deploy to ensure schema is current`,
+          );
+        } else {
+          console.log(
+            '📝 No existing database found - creating fresh database with migrations',
+          );
+        }
+
+        // Run migrations using bundled schema - this is safe and will:
+        // 1. Create database if it doesn't exist
+        // 2. Apply only pending migrations if database exists
+        // 3. Preserve existing data
+        execSync(`npx prisma migrate deploy --schema="${bundledSchemaPath}"`, {
+          stdio: this.verbose ? 'inherit' : 'pipe',
+          cwd: this.packageRoot,
+          timeout: 120000,
+        });
+
+        console.log('✅ Workflow database migrations completed successfully');
+      } finally {
+        // Restore original DATABASE_URL
+        if (originalDbUrl) {
+          process.env.DATABASE_URL = originalDbUrl;
+        } else {
+          delete process.env.DATABASE_URL;
+        }
+      }
     } catch (error) {
-      console.error('❌ Failed to initialize workflow database:', error);
+      console.error('❌ Failed to run database migrations:', error);
       throw new Error(
-        'Database initialization failed. Please check permissions and disk space.',
+        'Database migration failed. Please check permissions and disk space.',
       );
     }
   }
 
   /**
    * Copy bundled database to user data directory
+   * @deprecated This method is no longer used - we run migrations instead
    */
   private copyBundledDatabase(): boolean {
-    try {
-      const bundledDbPath = path.join(
-        this.packageRoot,
-        'prisma',
-        'data',
-        'workflow.db',
-      );
-      const userDbPath = this.getDatabasePath();
-
-      if (fs.existsSync(bundledDbPath) && !fs.existsSync(userDbPath)) {
-        this.log(
-          `Copying bundled database from ${bundledDbPath} to ${userDbPath}`,
-        );
-        fs.copyFileSync(bundledDbPath, userDbPath);
-        return true;
-      }
-    } catch (error) {
-      this.log(`Failed to copy bundled database: ${error}`);
-    }
+    // No longer copying databases - we run migrations instead
+    this.log('Skipping database copy - using migration-based initialization');
     return false;
   }
 
   /**
    * Create fresh database using bundled schema and migrations
+   * @deprecated This method functionality is now handled by runDatabaseMigrations
    */
   private createFreshDatabase(): void {
-    const bundledSchemaPath = path.join(
-      this.packageRoot,
-      'prisma',
-      'schema.prisma',
+    // This functionality is now handled by runDatabaseMigrations
+    // which uses migrate deploy that works for both fresh and existing databases
+    this.log(
+      'Database creation handled by migrate deploy in runDatabaseMigrations',
     );
-    const bundledMigrationsPath = path.join(
-      this.packageRoot,
-      'prisma',
-      'migrations',
-    );
-
-    if (!fs.existsSync(bundledSchemaPath)) {
-      throw new Error(
-        `Bundled Prisma schema not found at ${bundledSchemaPath}`,
-      );
-    }
-
-    if (!fs.existsSync(bundledMigrationsPath)) {
-      throw new Error(
-        `Bundled migrations not found at ${bundledMigrationsPath}`,
-      );
-    }
-
-    // Set database URL to user data directory
-    const originalDbUrl = process.env.DATABASE_URL;
-    process.env.DATABASE_URL = `file:${this.getDatabasePath()}`;
-
-    try {
-      // Run migrations using bundled schema
-      execSync(`npx prisma migrate deploy --schema="${bundledSchemaPath}"`, {
-        stdio: this.verbose ? 'inherit' : 'pipe',
-        cwd: this.packageRoot,
-        timeout: 120000,
-      });
-    } finally {
-      // Restore original DATABASE_URL
-      if (originalDbUrl) {
-        process.env.DATABASE_URL = originalDbUrl;
-      }
-    }
   }
 
   /**
