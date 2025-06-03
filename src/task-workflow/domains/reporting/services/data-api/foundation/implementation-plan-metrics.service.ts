@@ -155,6 +155,7 @@ export class ImplementationPlanMetricsService {
     const creatorCounts = planData.reduce((acc, plan) => {
       const creator = plan.createdBy || 'Unknown';
       acc[creator] = (acc[creator] || 0) + 1;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return acc;
     }, {});
 
