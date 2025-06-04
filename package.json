@@ -1,6 +1,6 @@
 {
   "name": "@hive-academy/mcp-workflow-manager",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "A comprehensive Model Context Protocol server for AI workflow automation and task management in Cursor IDE and other MCP-compatible clients. Provides structured, role-based workflow coordination between different AI modes with persistent task tracking and implementation planning.",
   "author": "Hive Academy <abdallah@nghive.tech>",
   "license": "MIT",
