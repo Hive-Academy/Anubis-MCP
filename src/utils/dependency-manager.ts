@@ -8,6 +8,7 @@
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
+import { getDatabaseConfig, DatabaseConfig } from './database-config';
 
 export interface DependencyCheckResult {
   prismaClientExists: boolean;
@@ -22,10 +23,32 @@ export interface DependencySetupOptions {
   databaseUrl?: string;
 }
 
+export interface DependencySetupResult {
+  success: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+export interface EnvironmentInfo {
+  isNpx: boolean;
+  isGlobal: boolean;
+  isLocal: boolean;
+  nodeVersion: string;
+  packageRoot: string;
+  workingDirectory: string;
+  userDataDirectory: string;
+}
+
+/**
+ * ARCHITECTURAL CONTEXT: Enhanced dependency management with unified database configuration
+ * PATTERN FOLLOWED: Database configuration integration with deployment-aware setup
+ * STRATEGIC PURPOSE: Simplify dependency setup by leveraging unified database configuration
+ */
+
 export class DependencyManager {
   private verbose: boolean;
   private packageRoot: string;
-  private userDataDir: string;
+  private databaseConfig: DatabaseConfig;
 
   constructor(options: DependencySetupOptions = {}) {
     this.verbose = options.verbose || false;
@@ -33,20 +56,20 @@ export class DependencyManager {
     // Always determine package root from current module location
     this.packageRoot = this.getPackageRoot();
 
-    // Determine project root from environment variable or fallback to current working directory
-    const projectRoot = process.env.PROJECT_ROOT || process.cwd();
+    // Use unified database configuration
+    this.databaseConfig = getDatabaseConfig({
+      projectRoot: process.env.PROJECT_ROOT || process.cwd(),
+      verbose: this.verbose,
+    });
 
-    // User data directory is always in the project root at prisma/data
-    this.userDataDir = path.join(projectRoot, 'prisma', 'data');
-
-    // Log the paths for debugging
+    this.log(`Package root: ${this.packageRoot}`);
     this.log(
-      `Project root: ${projectRoot} (${process.env.PROJECT_ROOT ? 'from PROJECT_ROOT env' : 'from process.cwd()'})`,
+      `Database config: ${this.databaseConfig.deploymentMethod} deployment`,
     );
-    this.log(`User data directory: ${this.userDataDir}`);
+    this.log(`Data directory: ${this.databaseConfig.dataDirectory}`);
 
-    // Ensure user data directory exists
-    this.ensureUserDataDirectory();
+    // Ensure data directory exists
+    this.ensureDataDirectory();
   }
 
   /**
@@ -67,12 +90,14 @@ export class DependencyManager {
   }
 
   /**
-   * Ensure user data directory exists for database and logs
+   * Ensure data directory exists (uses unified configuration)
    */
-  private ensureUserDataDirectory(): void {
-    if (!fs.existsSync(this.userDataDir)) {
-      fs.mkdirSync(this.userDataDir, { recursive: true });
-      this.log(`Created user data directory: ${this.userDataDir}`);
+  private ensureDataDirectory(): void {
+    if (!fs.existsSync(this.databaseConfig.dataDirectory)) {
+      this.log(`Creating data directory: ${this.databaseConfig.dataDirectory}`);
+      fs.mkdirSync(this.databaseConfig.dataDirectory, { recursive: true });
+    } else {
+      this.log(`Data directory exists: ${this.databaseConfig.dataDirectory}`);
     }
   }
 
@@ -138,7 +163,14 @@ export class DependencyManager {
   }
 
   /**
-   * Check if our workflow database exists in user data directory
+   * Get database path (uses unified configuration)
+   */
+  getDatabasePath(): string {
+    return this.databaseConfig.databasePath;
+  }
+
+  /**
+   * Check if our workflow database exists (uses unified configuration)
    */
   checkDatabase(_databaseUrl?: string): boolean {
     const dbPath = this.getDatabasePath();
@@ -168,8 +200,8 @@ export class DependencyManager {
   }
 
   /**
-   * Initialize database in user data directory
-   * STRATEGIC CHANGE: Always run migrations to ensure database schema is up to date
+   * Initialize database with unified configuration
+   * STRATEGIC CHANGE: Uses unified database configuration for all deployment methods
    * DATA SAFETY: Use Prisma migrate deploy which safely applies migrations without data loss
    */
   runDatabaseMigrations(): void {
@@ -201,9 +233,9 @@ export class DependencyManager {
         );
       }
 
-      // Set database URL to user data directory
+      // Set database URL from unified configuration
       const originalDbUrl = process.env.DATABASE_URL;
-      process.env.DATABASE_URL = `file:${dbPath}`;
+      process.env.DATABASE_URL = this.databaseConfig.databaseUrl;
 
       try {
         if (fs.existsSync(dbPath)) {
@@ -244,35 +276,6 @@ export class DependencyManager {
         'Database migration failed. Please check permissions and disk space.',
       );
     }
-  }
-
-  /**
-   * Copy bundled database to user data directory
-   * @deprecated This method is no longer used - we run migrations instead
-   */
-  private copyBundledDatabase(): boolean {
-    // No longer copying databases - we run migrations instead
-    this.log('Skipping database copy - using migration-based initialization');
-    return false;
-  }
-
-  /**
-   * Create fresh database using bundled schema and migrations
-   * @deprecated This method functionality is now handled by runDatabaseMigrations
-   */
-  private createFreshDatabase(): void {
-    // This functionality is now handled by runDatabaseMigrations
-    // which uses migrate deploy that works for both fresh and existing databases
-    this.log(
-      'Database creation handled by migrate deploy in runDatabaseMigrations',
-    );
-  }
-
-  /**
-   * Get database path in user data directory
-   */
-  private getDatabasePath(): string {
-    return path.join(this.userDataDir, 'workflow.db');
   }
 
   /**
@@ -378,24 +381,12 @@ export class DependencyManager {
   }
 
   /**
-   * Get environment detection information
+   * Get environment information (enhanced with database config)
    */
-  getEnvironmentInfo(): {
-    isNpx: boolean;
-    isGlobal: boolean;
-    isLocal: boolean;
-    nodeVersion: string;
-    npmVersion: string;
-    packageRoot: string;
-    workingDirectory: string;
-    userDataDirectory: string;
-  } {
-    const isNpx = !!(
-      process.env.npm_config_cache &&
-      (process.env.npm_config_cache.includes('.npm/_npx') ||
-        process.env.npm_config_cache.includes('npm-cache/_npx'))
-    );
-    const isGlobal = process.env.npm_config_global === 'true';
+  getEnvironmentInfo(): EnvironmentInfo {
+    const execPath = process.argv[1] || '';
+    const isNpx = this.isNpxExecution(execPath);
+    const isGlobal = this.isGlobalInstallation();
     const isLocal = !isNpx && !isGlobal;
 
     return {
@@ -403,10 +394,24 @@ export class DependencyManager {
       isGlobal,
       isLocal,
       nodeVersion: process.version,
-      npmVersion: process.env.npm_version || 'unknown',
       packageRoot: this.packageRoot,
       workingDirectory: process.cwd(),
-      userDataDirectory: this.userDataDir,
+      userDataDirectory: this.databaseConfig.dataDirectory, // Use unified config
     };
+  }
+
+  private isNpxExecution(execPath: string): boolean {
+    return !!(
+      (process.env.npm_config_cache &&
+        (process.env.npm_config_cache.includes('.npm/_npx') ||
+          process.env.npm_config_cache.includes('npm-cache/_npx'))) ||
+      execPath.includes('.npm/_npx') ||
+      execPath.includes('npm/global') ||
+      process.env.npm_execpath?.includes('npx')
+    );
+  }
+
+  private isGlobalInstallation(): boolean {
+    return process.env.npm_config_global === 'true';
   }
 }

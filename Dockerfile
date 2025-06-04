@@ -151,8 +151,8 @@ RUN chown -R nestjs:nodejs /app/temp /app/templates
 # Verify system browser installation in production stage
 RUN chromium-browser --version && echo "✅ System Chromium browser verified in production stage"
 
-# Set default environment variables
-ENV DATABASE_URL="file:./data/workflow.db"
+# Set default environment variables with unified database configuration
+ENV RUNNING_IN_DOCKER="true"
 ENV MCP_SERVER_NAME="MCP-Workflow-Manager"
 ENV MCP_SERVER_VERSION="1.0.0"
 ENV MCP_TRANSPORT_TYPE="STDIO"

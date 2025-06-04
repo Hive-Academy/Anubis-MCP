@@ -7,6 +7,10 @@ export const TaskOperationsSchema = z
 
     // Required for get and update operations
     taskId: z.string().optional(),
+    taskSlug: z
+      .string()
+      .optional()
+      .describe('Human-readable task slug for lookup'),
 
     // For create/update operations
     taskData: z
@@ -62,17 +66,19 @@ export const TaskOperationsSchema = z
   })
   .refine(
     (data) => {
-      // Validate that get and update operations have taskId
-      if (
-        (data.operation === 'get' || data.operation === 'update') &&
-        !data.taskId
-      ) {
+      // Validate that get operations have either taskId or taskSlug
+      if (data.operation === 'get' && !data.taskId && !data.taskSlug) {
+        return false;
+      }
+      // Validate that update operations have taskId (require explicit taskId for updates)
+      if (data.operation === 'update' && !data.taskId) {
         return false;
       }
       return true;
     },
     {
-      message: "taskId is required for 'get' and 'update' operations",
+      message:
+        "Get operations require either 'taskId' or 'taskSlug'; Update operations require 'taskId'",
       path: ['taskId'],
     },
   );

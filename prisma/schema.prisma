@@ -16,6 +16,7 @@ datasource db {
 model Task {
   taskId            String    @id @default(cuid()) // Auto-generate unique taskId
   name              String
+  taskSlug          String?   // Human-readable task identifier for workflow rules
   status            String // 'Not Started', 'In Progress', 'In Review', 'Completed'
   creationDate      DateTime  @default(now())
   completionDate    DateTime?
@@ -39,6 +40,7 @@ model Task {
 
   @@index([status])
   @@index([currentMode])
+  @@index([taskSlug])
   // @@map("tasks") // If table name in DB should be 'tasks'
 }
 

@@ -13,154 +13,41 @@ A comprehensive **Model Context Protocol (MCP) server** for AI workflow automati
 - **📦 Self-Contained NPX Package**: Automatic dependency management with no external requirements
 - **🔧 Environment-Aware**: Adapts behavior for NPX, global, and local installations
 
-## 🚀 Quick Setup
+## 🚀 Quick Setup Guide
 
-**No installation needed** - just add the configuration to your MCP client and everything works automatically!
+### **Streamlined Database Configuration** ✨
 
-### NPX Environment Variables
+**Zero Configuration Required!** Each project automatically gets its own isolated database:
 
-For enhanced control over NPX package behavior, you can set environment variables:
+```
+project-a/data/workflow.db  ← Project A's data
+project-b/data/workflow.db  ← Project B's data
+project-c/data/workflow.db  ← Project C's data
+```
 
-#### Cursor IDE with Environment Variables
+### **NPX Setup (Recommended)**
+
+**One command, automatic project isolation:**
 
 ```json
 {
   "mcpServers": {
     "workflow-manager": {
       "command": "npx",
-      "args": ["-y", "@hive-academy/mcp-workflow-manager"],
-      "env": {
-        "PROJECT_ROOT": "D:/projects/your-project",
-        "DISABLE_REPORT_GENERATION": "false"
-      }
+      "args": ["-y", "@hive-academy/mcp-workflow-manager"]
     }
   }
 }
 ```
 
-#### Claude Desktop with Environment Variables
+✅ **Automatic project detection**  
+✅ **Database created in `./data/workflow.db`**  
+✅ **Migrations applied safely**  
+✅ **Zero setup required**
 
-```json
-{
-  "mcpServers": {
-    "workflow-manager": {
-      "command": "npx",
-      "args": ["-y", "@hive-academy/mcp-workflow-manager"],
-      "env": {
-        "PROJECT_ROOT": "/Users/username/projects/your-project",
-        "DISABLE_REPORT_GENERATION": "false"
-      }
-    }
-  }
-}
-```
+### **Docker Setup**
 
-**Available Environment Variables:**
-
-- **`PROJECT_ROOT`**: Explicit project root directory (defaults to current working directory)
-
-  - **Purpose**: Ensures reports and database are created in the correct project location
-  - **When to use**: When the current working directory doesn't match your project root
-  - **Example**: `"PROJECT_ROOT": "D:/projects/my-app"`
-
-- **`DISABLE_REPORT_GENERATION`**: Disable Playwright browser installation and report generation
-  - **Purpose**: Faster startup when reports aren't needed
-  - **Values**: `"true"` or `"false"` (default: `"false"`)
-  - **Example**: `"DISABLE_REPORT_GENERATION": "true"`
-
-**✅ Benefits of Setting PROJECT_ROOT:**
-
-- **📊 Correct Report Location**: Reports generated in your project directory
-- **🗄️ Proper Database Location**: Database created in project-specific location
-- **🔒 Project Isolation**: Prevents data mixing between different projects
-- **🎯 Predictable Paths**: Always know where your workflow data is stored
-
-### Docker Setup (Production/Teams)
-
-**No manual setup required!** Docker automatically creates directories and initializes the database.
-
-#### Claude Desktop
-
-```json
-{
-  "mcpServers": {
-    "workflow-manager": {
-      "command": "docker",
-      "args": [
-        "run",
-        "-i",
-        "-v",
-        "workflow-manager-data:/app/prisma/data",
-        "--rm",
-        "hiveacademy/mcp-workflow-manager"
-      ]
-    }
-  }
-}
-```
-
-#### Cursor IDE
-
-```json
-{
-  "mcpServers": {
-    "workflow-manager": {
-      "command": "docker",
-      "args": [
-        "run",
-        "-i",
-        "--network=host",
-        "-v",
-        "workflow-manager-data:/app/prisma/data",
-        "--rm",
-        "hiveacademy/mcp-workflow-manager"
-      ]
-    }
-  }
-}
-```
-
-**✅ What happens automatically:**
-
-- Database creation and initialization
-- Directory structure setup
-- Schema migrations
-- Permissions configuration
-
-## 🔒 Project Isolation
-
-### NPX (Automatic)
-
-Each project automatically gets its own database:
-
-```
-/project-a/workflow.db  ← Project A's data
-/project-b/workflow.db  ← Project B's data
-```
-
-### Docker (Automatic Directory Creation)
-
-**No manual directory creation needed!** Use project-specific volume names:
-
-```json
-// Project A
-"args": ["run", "-i", "-v", "project-a-workflow:/app/prisma/data", "--rm", "hiveacademy/mcp-workflow-manager"]
-
-// Project B
-"args": ["run", "-i", "-v", "project-b-workflow:/app/prisma/data", "--rm", "hiveacademy/mcp-workflow-manager"]
-```
-
-**Why `/app/prisma/data`?** Prisma resolves the `DATABASE_URL="file:./data/workflow.db"` relative to the schema location (`/app/prisma/schema.prisma`), resulting in `/app/prisma/data/workflow.db`. Docker automatically creates this path and ensures proper database persistence.
-
-## 📊 Local Report Access
-
-**Want to access generated reports directly on your file system?** Use host directory mounting:
-
-### Setup (Automatic Directory Creation)
-
-**No manual directory creation needed!** Docker creates all directories automatically.
-
-#### Cursor IDE (Recommended)
+**Project isolation via volume mounts:**
 
 ```json
 {
@@ -171,11 +58,8 @@ Each project automatically gets its own database:
         "run",
         "--rm",
         "-i",
-        "--network=host",
         "-v",
-        "D:/projects/your-project/prisma/data:/app/prisma/data",
-        "-v",
-        "D:/projects/your-project/workflow-reports:/app/data/workflow-manager-mcp-reports",
+        "D:/projects/your-project/data:/app/data",
         "hiveacademy/mcp-workflow-manager"
       ]
     }
@@ -183,57 +67,33 @@ Each project automatically gets its own database:
 }
 ```
 
-#### Windows Example
+**Replace `D:/projects/your-project/` with your actual project path**
 
-```json
-{
-  "mcpServers": {
-    "workflow-manager": {
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-i",
-        "--network=host",
-        "-v",
-        "D:/projects/my-project/prisma/data:/app/prisma/data",
-        "-v",
-        "D:/projects/my-project/workflow-reports:/app/data/workflow-manager-mcp-reports",
-        "hiveacademy/mcp-workflow-manager"
-      ]
-    }
-  }
-}
+✅ **Instant startup** (pre-deployed migrations)  
+✅ **Project isolation** via different volume mounts  
+✅ **Consistent across platforms**
+
+### **How Project Isolation Works**
+
+**NPX:** Automatic detection
+
+```bash
+cd /path/to/project-a && npx @hive-academy/mcp-workflow-manager
+# Database: /path/to/project-a/data/workflow.db
+
+cd /path/to/project-b && npx @hive-academy/mcp-workflow-manager
+# Database: /path/to/project-b/data/workflow.db
 ```
 
-#### macOS/Linux Example
+**Docker:** Volume mount isolation
 
-```json
-{
-  "mcpServers": {
-    "workflow-manager": {
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-i",
-        "--network=host",
-        "-v",
-        "/Users/username/projects/my-project/prisma/data:/app/prisma/data",
-        "-v",
-        "/Users/username/projects/my-project/workflow-reports:/app/data/workflow-manager-mcp-reports",
-        "hiveacademy/mcp-workflow-manager"
-      ]
-    }
-  }
-}
+```bash
+# Project A
+docker run -v "/path/to/project-a/data:/app/data" hiveacademy/mcp-workflow-manager
+
+# Project B
+docker run -v "/path/to/project-b/data:/app/data" hiveacademy/mcp-workflow-manager
 ```
-
-### What You Get
-
-- **Database**: `your-project/prisma/data/workflow.db` (automatically created)
-- **Reports**: `your-project/workflow-reports/` (automatically created)
-- **Project Isolation**: Each project gets its own database and reports
 
 ## 🛠️ Available MCP Tools
 

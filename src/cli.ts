@@ -6,34 +6,31 @@ import {
   DependencyManager,
   DependencySetupOptions,
 } from './utils/dependency-manager';
+import { setupDatabaseEnvironment } from './utils/database-config';
 
 /**
  * ARCHITECTURAL CONTEXT: NPX package self-contained dependency management
- * PATTERN FOLLOWED: NPM postinstall and conditional loading patterns with utility service
- * STRATEGIC PURPOSE: Eliminate external dependency assumptions for npx users
+ * PATTERN FOLLOWED: Unified database configuration with deployment-aware setup
+ * STRATEGIC PURPOSE: Eliminate configuration inconsistencies across Docker/NPX/Local
  */
 
 async function bootstrap() {
   // Parse command line arguments
   const args = process.argv.slice(2);
 
-  // CRITICAL: Set PROJECT_ROOT to ensure database is created in user's project directory
-  // This prevents database sharing across different projects when using NPX
-  if (!process.env.PROJECT_ROOT) {
-    process.env.PROJECT_ROOT = process.cwd();
-    console.log(`📁 Project root set to: ${process.env.PROJECT_ROOT}`);
-  }
+  // CRITICAL: Setup unified database configuration for all deployment methods
+  // This replaces manual PROJECT_ROOT and DATABASE_URL configuration
+  const dbConfig = setupDatabaseEnvironment({
+    projectRoot: process.env.PROJECT_ROOT || process.cwd(),
+    verbose: args.includes('--verbose') || args.includes('-v'),
+  });
 
-  // Initialize dependency manager early to get environment info
-  const dependencyManager = new DependencyManager({ verbose: false });
-  const envInfo = dependencyManager.getEnvironmentInfo();
+  console.log(
+    `📁 Project root: ${dbConfig.projectRoot} (${dbConfig.deploymentMethod} deployment)`,
+  );
+  console.log(`🗄️ Database: ${dbConfig.databaseUrl}`);
 
   // Set default environment variables if not provided
-  if (!process.env.DATABASE_URL) {
-    // Use static prisma/data location as expected by MCP server
-    process.env.DATABASE_URL = `file:${envInfo.userDataDirectory}/workflow.db`;
-  }
-
   if (!process.env.MCP_TRANSPORT_TYPE) {
     process.env.MCP_TRANSPORT_TYPE = 'STDIO';
   }
@@ -63,32 +60,21 @@ async function bootstrap() {
   try {
     console.log('🚀 Starting MCP Workflow Manager...');
 
-    // Reinitialize dependency manager with verbose setting
-    const dependencyManagerWithVerbose = new DependencyManager({ verbose });
+    // Initialize dependency manager with database configuration
+    const dependencyManager = new DependencyManager({
+      verbose,
+      databaseUrl: dbConfig.databaseUrl,
+    });
 
-    // Get environment information for debugging
-    const envInfoVerbose = dependencyManagerWithVerbose.getEnvironmentInfo();
-    if (verbose) {
-      console.log('🔍 Environment Info:', {
-        isNpx: envInfoVerbose.isNpx,
-        isGlobal: envInfoVerbose.isGlobal,
-        isLocal: envInfoVerbose.isLocal,
-        nodeVersion: envInfoVerbose.nodeVersion,
-        packageRoot: envInfoVerbose.packageRoot,
-        workingDirectory: envInfoVerbose.workingDirectory,
-        userDataDirectory: envInfoVerbose.userDataDirectory,
-      });
-    }
-
-    // Initialize dependencies automatically
+    // Initialize dependencies with unified configuration
     const setupOptions: DependencySetupOptions = {
       skipPlaywright,
       verbose,
-      databaseUrl: process.env.DATABASE_URL,
+      databaseUrl: dbConfig.databaseUrl,
     };
 
     const dependencyStatus =
-      dependencyManagerWithVerbose.initializeAllDependencies(setupOptions);
+      dependencyManager.initializeAllDependencies(setupOptions);
 
     // Report any errors but continue if possible
     if (dependencyStatus.errors.length > 0) {
@@ -103,7 +89,6 @@ async function bootstrap() {
       console.log('📊 Report generation: ENABLED');
     }
 
-    console.log(`🗄️  Database: ${process.env.DATABASE_URL}`);
     console.log(`🔄 Transport: ${process.env.MCP_TRANSPORT_TYPE}`);
 
     // Create NestJS application context for MCP server
@@ -150,6 +135,8 @@ async function bootstrap() {
           '💡 Tip: Check your DATABASE_URL environment variable and database permissions',
         );
         console.error('💡 Current DATABASE_URL:', process.env.DATABASE_URL);
+        console.error('💡 Database path:', dbConfig.databasePath);
+        console.error('💡 Data directory:', dbConfig.dataDirectory);
       } else if (error.message.includes('Playwright')) {
         console.error(
           '💡 Tip: Try running with --skip-playwright flag to disable report generation',
@@ -169,6 +156,9 @@ async function bootstrap() {
     console.error('   2. Check if all dependencies are installed: npm install');
     console.error('   3. Try rebuilding: npm run build');
     console.error('   4. For report issues, use: --skip-playwright flag');
+    console.error(
+      `   5. Check data directory permissions: ${dbConfig.dataDirectory}`,
+    );
 
     process.exit(1);
   }
