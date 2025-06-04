@@ -44,14 +44,9 @@ async function bootstrap() {
   }
 
   // Parse custom arguments
-  let skipPlaywright = false;
   let verbose = false;
 
   for (const arg of args) {
-    if (arg === '--skip-playwright') {
-      skipPlaywright = true;
-      process.env.DISABLE_REPORT_GENERATION = 'true';
-    }
     if (arg === '--verbose' || arg === '-v') {
       verbose = true;
     }
@@ -68,7 +63,6 @@ async function bootstrap() {
 
     // Initialize dependencies with unified configuration
     const setupOptions: DependencySetupOptions = {
-      skipPlaywright,
       verbose,
       databaseUrl: dbConfig.databaseUrl,
     };
@@ -83,12 +77,7 @@ async function bootstrap() {
     }
 
     // Report final status
-    if (skipPlaywright || process.env.DISABLE_REPORT_GENERATION === 'true') {
-      console.log('📊 Report generation: DISABLED');
-    } else {
-      console.log('📊 Report generation: ENABLED');
-    }
-
+    console.log('📊 Report generation: ENABLED (Simplified HTML)');
     console.log(`🔄 Transport: ${process.env.MCP_TRANSPORT_TYPE}`);
 
     // Create NestJS application context for MCP server
@@ -137,10 +126,6 @@ async function bootstrap() {
         console.error('💡 Current DATABASE_URL:', process.env.DATABASE_URL);
         console.error('💡 Database path:', dbConfig.databasePath);
         console.error('💡 Data directory:', dbConfig.dataDirectory);
-      } else if (error.message.includes('Playwright')) {
-        console.error(
-          '💡 Tip: Try running with --skip-playwright flag to disable report generation',
-        );
       } else if (
         error.message.includes('ENOENT') ||
         error.message.includes('command not found')
@@ -155,9 +140,8 @@ async function bootstrap() {
     console.error('   1. Verify Node.js version >= 18.0.0');
     console.error('   2. Check if all dependencies are installed: npm install');
     console.error('   3. Try rebuilding: npm run build');
-    console.error('   4. For report issues, use: --skip-playwright flag');
     console.error(
-      `   5. Check data directory permissions: ${dbConfig.dataDirectory}`,
+      `   4. Check data directory permissions: ${dbConfig.dataDirectory}`,
     );
 
     process.exit(1);
