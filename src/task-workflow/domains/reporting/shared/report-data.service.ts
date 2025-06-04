@@ -28,7 +28,7 @@ export class ReportDataService implements IReportDataService {
     try {
       const where = this.buildTaskWhereClause(filters);
 
-      return (await this.prisma.task.findMany({
+      const tasks = await this.prisma.task.findMany({
         where,
         include: {
           delegationRecords: {
@@ -54,7 +54,9 @@ export class ReportDataService implements IReportDataService {
           taskDescription: true,
         },
         orderBy: { creationDate: 'desc' },
-      })) as TaskWithRelations[];
+      });
+
+      return tasks as TaskWithRelations[];
     } catch (error) {
       this.logger.error(`Failed to fetch tasks: ${error.message}`);
       throw error;
