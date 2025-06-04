@@ -10,30 +10,12 @@ LABEL org.opencontainers.image.source="https://github.com/Hive-Academy/Workflow_
 LABEL org.opencontainers.image.documentation="https://github.com/Hive-Academy/Workflow_Manager_MCP/blob/main/README.md"
 LABEL org.opencontainers.image.licenses="MIT"
 
-# Install system dependencies for Playwright in builder stage
-RUN apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    freetype-dev \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont \
-    && rm -rf /var/cache/apk/*
-
-# Tell Playwright to use installed Chromium
-ENV PLAYWRIGHT_BROWSERS_PATH=0
-ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
-
 # Set working directory
 WORKDIR /app
 
 # Copy package files and install all dependencies (including dev) for build
 COPY package*.json ./
 RUN npm ci --ignore-scripts && npm cache clean --force
-
-# Install Playwright browsers (this will use the system chromium we installed)
-RUN npx playwright install chromium --with-deps || true
 
 # Copy source code and Prisma schema
 COPY . .
@@ -44,9 +26,6 @@ RUN npm run build
 
 # Create necessary directories for reports
 RUN mkdir -p temp/reports temp/rendered-reports templates/reports
-
-# Verify system browser installation
-RUN chromium-browser --version && echo "✅ System Chromium browser verified in builder stage"
 
 # ================================================================================================
 # BUILD-TIME MIGRATION DEPLOYMENT STAGE - Strategic UX Enhancement
@@ -84,23 +63,11 @@ LABEL org.opencontainers.image.documentation="https://github.com/Hive-Academy/Wo
 LABEL org.opencontainers.image.licenses="MIT"
 
 # Install system dependencies: dumb-init for proper signal handling, curl for health checks, bash for entrypoint script
-# Also install Playwright dependencies for production
 RUN apk add --no-cache \
     dumb-init \
     curl \
     bash \
-    chromium \
-    nss \
-    freetype \
-    freetype-dev \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont \
     && rm -rf /var/cache/apk/*
-
-# Set Playwright environment variables for production
-ENV PLAYWRIGHT_BROWSERS_PATH=0
-ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && adduser -S nestjs -u 1001
@@ -148,11 +115,8 @@ RUN mkdir -p /app/reports/rendered \
 # Ensure temp and templates directories exist with proper permissions (for other functionality)
 RUN chown -R nestjs:nodejs /app/temp /app/templates
 
-# Verify system browser installation in production stage
-RUN chromium-browser --version && echo "✅ System Chromium browser verified in production stage"
-
-# Set default environment variables
-ENV DATABASE_URL="file:./data/workflow.db"
+# Set default environment variables with unified database configuration
+ENV RUNNING_IN_DOCKER="true"
 ENV MCP_SERVER_NAME="MCP-Workflow-Manager"
 ENV MCP_SERVER_VERSION="1.0.0"
 ENV MCP_TRANSPORT_TYPE="STDIO"

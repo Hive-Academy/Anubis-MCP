@@ -21,7 +21,7 @@
         "PROJECT_ROOT": "D:/projects/cursor-workflow"
       }
     },
-    "workflow-manager-test-2": {
+    "workflow-manager": {
       "command": "node",
       "args": ["D:/projects/cursor-workflow/dist/main.js"]
     }

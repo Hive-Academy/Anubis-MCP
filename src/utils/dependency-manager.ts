@@ -8,306 +8,189 @@
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
+import { getDatabaseConfig, DatabaseConfig } from './database-config';
 
 export interface DependencyCheckResult {
   prismaClientExists: boolean;
-  playwrightBrowsersInstalled: boolean;
   databaseExists: boolean;
   errors: string[];
 }
 
 export interface DependencySetupOptions {
-  skipPlaywright?: boolean;
   verbose?: boolean;
   databaseUrl?: string;
 }
 
+export interface DependencyManagerOptions {
+  verbose?: boolean;
+  databaseUrl?: string;
+}
+
+/**
+ * ARCHITECTURAL PATTERN: Self-contained dependency management utility
+ * Ensures the NPX package can function without requiring user environment setup
+ */
 export class DependencyManager {
   private verbose: boolean;
+  private databaseUrl: string;
   private packageRoot: string;
-  private userDataDir: string;
+  private dbConfig: DatabaseConfig;
 
-  constructor(options: DependencySetupOptions = {}) {
+  constructor(options: DependencyManagerOptions = {}) {
     this.verbose = options.verbose || false;
+    this.databaseUrl = options.databaseUrl || process.env.DATABASE_URL || '';
 
-    // Always determine package root from current module location
-    this.packageRoot = this.getPackageRoot();
+    // Determine package root - where this code is running from
+    this.packageRoot = path.resolve(__dirname, '../..');
 
-    // Determine project root from environment variable or fallback to current working directory
-    const projectRoot = process.env.PROJECT_ROOT || process.cwd();
+    // Get database configuration
+    this.dbConfig = getDatabaseConfig({
+      projectRoot: process.env.PROJECT_ROOT || process.cwd(),
+      verbose: this.verbose,
+    });
 
-    // User data directory is always in the project root at prisma/data
-    this.userDataDir = path.join(projectRoot, 'prisma', 'data');
+    // Use database URL from config if not provided
+    if (!this.databaseUrl) {
+      this.databaseUrl = this.dbConfig.databaseUrl;
+    }
 
-    // Log the paths for debugging
-    this.log(
-      `Project root: ${projectRoot} (${process.env.PROJECT_ROOT ? 'from PROJECT_ROOT env' : 'from process.cwd()'})`,
-    );
-    this.log(`User data directory: ${this.userDataDir}`);
-
-    // Ensure user data directory exists
-    this.ensureUserDataDirectory();
+    this.log(`Package root: ${this.packageRoot}`);
+    this.log(`Database URL: ${this.databaseUrl}`);
   }
 
-  /**
-   * Log message if verbose mode is enabled
-   */
   private log(message: string): void {
     if (this.verbose) {
-      console.log(message);
+      console.log(`[DependencyManager] ${message}`);
     }
   }
 
   /**
-   * Get the package root directory (where our bundled resources are)
-   */
-  private getPackageRoot(): string {
-    // Navigate up from dist/utils to package root
-    return path.resolve(__dirname, '..', '..');
-  }
-
-  /**
-   * Ensure user data directory exists for database and logs
-   */
-  private ensureUserDataDirectory(): void {
-    if (!fs.existsSync(this.userDataDir)) {
-      fs.mkdirSync(this.userDataDir, { recursive: true });
-      this.log(`Created user data directory: ${this.userDataDir}`);
-    }
-  }
-
-  /**
-   * Check if our bundled Prisma client exists
-   * STRATEGIC CHANGE: Only check for our own bundled client, not user's project
+   * Check if bundled Prisma client exists and is accessible
    */
   checkPrismaClient(): boolean {
     try {
-      // Check for our bundled Prisma client in the package
-      const bundledClientPath = path.join(
-        this.packageRoot,
-        'generated',
-        'prisma',
-      );
+      // Check for bundled Prisma client (NPX packages include this)
+      const bundledPrismaPath = path.join(this.packageRoot, 'generated/prisma');
 
-      if (fs.existsSync(bundledClientPath)) {
-        // Verify it's a valid Prisma client by checking for key files
-        const indexPath = path.join(bundledClientPath, 'index.js');
-        const wasmPath = path.join(bundledClientPath, 'wasm.js');
-        const edgePath = path.join(bundledClientPath, 'edge.js');
-
-        if (
-          fs.existsSync(indexPath) ||
-          fs.existsSync(wasmPath) ||
-          fs.existsSync(edgePath)
-        ) {
-          this.log(`Bundled Prisma client: EXISTS at ${bundledClientPath}`);
-          return true;
-        } else {
-          this.log(
-            `Bundled Prisma client: Directory exists but missing client files at ${bundledClientPath}`,
-          );
-        }
-      } else {
-        this.log(`Bundled Prisma client: NOT FOUND at ${bundledClientPath}`);
+      if (fs.existsSync(bundledPrismaPath)) {
+        this.log('Bundled Prisma client: FOUND');
+        return true;
       }
-    } catch (error) {
-      this.log(`Bundled Prisma client check failed: ${error}`);
-    }
 
-    this.log('Bundled Prisma client: NOT AVAILABLE');
-    return false;
-  }
-
-  /**
-   * Check if Playwright browsers are installed
-   */
-  checkPlaywrightBrowsers(): boolean {
-    try {
-      // Check if playwright is available in our package
-      require.resolve('playwright');
-
-      // Try to access chromium to verify browsers are installed
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { _chromium } = require('playwright');
-      this.log('Playwright browsers: AVAILABLE');
+      // Fallback: check if we can require @prisma/client
+      require.resolve('@prisma/client');
+      this.log('System Prisma client: AVAILABLE');
       return true;
     } catch (error) {
-      this.log(`Playwright browsers check failed: ${error}`);
+      this.log(`Prisma client check failed: ${error}`);
       return false;
     }
   }
 
   /**
-   * Check if our workflow database exists in user data directory
+   * Check if database exists and is accessible
    */
-  checkDatabase(_databaseUrl?: string): boolean {
-    const dbPath = this.getDatabasePath();
-    const exists = fs.existsSync(dbPath);
-
-    this.log(
-      `Workflow database: ${exists ? 'EXISTS' : 'MISSING'} at ${dbPath}`,
-    );
-    return exists;
-  }
-
-  /**
-   * Generate Prisma client (not needed for NPX - should be pre-built)
-   * STRATEGIC CHANGE: Skip generation for NPX, use bundled client
-   */
-  generatePrismaClient(): void {
-    this.log('Using pre-built Prisma client from package bundle');
-
-    // For NPX distribution, we should always have a pre-built client
-    if (!this.checkPrismaClient()) {
-      throw new Error(
-        'Pre-built Prisma client not found in package. This indicates a packaging issue.',
-      );
-    }
-
-    console.log('✅ Using bundled Prisma client');
-  }
-
-  /**
-   * Initialize database in user data directory
-   * STRATEGIC CHANGE: Safe initialization - never overwrite existing databases
-   * DATA SAFETY: Only create database if it doesn't exist to prevent data loss
-   */
-  runDatabaseMigrations(): void {
-    console.log('🗄️  Initializing workflow database...');
-
+  checkDatabase(): boolean {
     try {
-      const dbPath = this.getDatabasePath();
+      if (this.databaseUrl.includes('file:')) {
+        // SQLite database
+        const dbPath = this.databaseUrl.replace('file:', '');
+        const absoluteDbPath = path.isAbsolute(dbPath)
+          ? dbPath
+          : path.resolve(process.cwd(), dbPath);
 
-      // CRITICAL: Never overwrite existing database to prevent data loss
-      if (fs.existsSync(dbPath)) {
-        console.log(
-          '✅ Existing workflow database found - preserving user data',
-        );
-        this.log(
-          `Database exists at ${dbPath} - skipping initialization to preserve data`,
-        );
-        return;
-      }
-
-      // Only initialize if no database exists
-      console.log(
-        '📝 No existing database found - initializing fresh database',
-      );
-
-      // Try to copy pre-built database first (only if target doesn't exist)
-      if (this.copyBundledDatabase()) {
-        console.log('✅ Workflow database initialized from bundle');
-        return;
-      }
-
-      // If no pre-built database, create fresh one using our bundled schema
-      this.createFreshDatabase();
-      console.log('✅ Fresh workflow database created');
-    } catch (error) {
-      console.error('❌ Failed to initialize workflow database:', error);
-      throw new Error(
-        'Database initialization failed. Please check permissions and disk space.',
-      );
-    }
-  }
-
-  /**
-   * Copy bundled database to user data directory
-   */
-  private copyBundledDatabase(): boolean {
-    try {
-      const bundledDbPath = path.join(
-        this.packageRoot,
-        'prisma',
-        'data',
-        'workflow.db',
-      );
-      const userDbPath = this.getDatabasePath();
-
-      if (fs.existsSync(bundledDbPath) && !fs.existsSync(userDbPath)) {
-        this.log(
-          `Copying bundled database from ${bundledDbPath} to ${userDbPath}`,
-        );
-        fs.copyFileSync(bundledDbPath, userDbPath);
+        if (fs.existsSync(absoluteDbPath)) {
+          this.log(`Database file exists: ${absoluteDbPath}`);
+          return true;
+        } else {
+          this.log(`Database file not found: ${absoluteDbPath}`);
+          return false;
+        }
+      } else {
+        // Remote database - assume accessible for now
+        // In production, you might want to test connection
+        this.log('Remote database URL configured');
         return true;
       }
     } catch (error) {
-      this.log(`Failed to copy bundled database: ${error}`);
+      this.log(`Database check failed: ${error}`);
+      return false;
     }
-    return false;
   }
 
   /**
-   * Create fresh database using bundled schema and migrations
+   * Generate Prisma client from schema
    */
-  private createFreshDatabase(): void {
-    const bundledSchemaPath = path.join(
-      this.packageRoot,
-      'prisma',
-      'schema.prisma',
-    );
-    const bundledMigrationsPath = path.join(
-      this.packageRoot,
-      'prisma',
-      'migrations',
-    );
-
-    if (!fs.existsSync(bundledSchemaPath)) {
-      throw new Error(
-        `Bundled Prisma schema not found at ${bundledSchemaPath}`,
-      );
-    }
-
-    if (!fs.existsSync(bundledMigrationsPath)) {
-      throw new Error(
-        `Bundled migrations not found at ${bundledMigrationsPath}`,
-      );
-    }
-
-    // Set database URL to user data directory
-    const originalDbUrl = process.env.DATABASE_URL;
-    process.env.DATABASE_URL = `file:${this.getDatabasePath()}`;
+  generatePrismaClient(): void {
+    console.log('🔧 Generating Prisma client...');
 
     try {
-      // Run migrations using bundled schema
-      execSync(`npx prisma migrate deploy --schema="${bundledSchemaPath}"`, {
+      // Set the database URL for this operation
+      const oldDatabaseUrl = process.env.DATABASE_URL;
+      process.env.DATABASE_URL = this.databaseUrl;
+
+      execSync('npx prisma generate', {
         stdio: this.verbose ? 'inherit' : 'pipe',
         cwd: this.packageRoot,
-        timeout: 120000,
+        timeout: 60000, // 1 minute timeout
       });
-    } finally {
+
       // Restore original DATABASE_URL
-      if (originalDbUrl) {
-        process.env.DATABASE_URL = originalDbUrl;
+      if (oldDatabaseUrl !== undefined) {
+        process.env.DATABASE_URL = oldDatabaseUrl;
+      } else {
+        delete process.env.DATABASE_URL;
       }
+
+      console.log('✅ Prisma client generated successfully');
+    } catch (error) {
+      console.warn('⚠️  Prisma client generation failed:', error);
+      throw error;
     }
   }
 
   /**
-   * Get database path in user data directory
+   * Run database migrations to ensure schema is up to date
    */
-  private getDatabasePath(): string {
-    return path.join(this.userDataDir, 'workflow.db');
-  }
-
-  /**
-   * Install Playwright browsers conditionally
-   */
-  installPlaywrightBrowsers(): void {
-    console.log('🎭 Installing Playwright browsers...');
+  runDatabaseMigrations(): void {
+    console.log('🗄️  Running database migrations...');
 
     try {
-      execSync('npx playwright install chromium --with-deps', {
+      // Set the database URL for this operation
+      const oldDatabaseUrl = process.env.DATABASE_URL;
+      process.env.DATABASE_URL = this.databaseUrl;
+
+      // Create data directory if it doesn't exist (for SQLite)
+      if (this.databaseUrl.includes('file:')) {
+        const dbPath = this.databaseUrl.replace('file:', '');
+        const absoluteDbPath = path.isAbsolute(dbPath)
+          ? dbPath
+          : path.resolve(process.cwd(), dbPath);
+        const dbDir = path.dirname(absoluteDbPath);
+
+        if (!fs.existsSync(dbDir)) {
+          fs.mkdirSync(dbDir, { recursive: true });
+          this.log(`Created database directory: ${dbDir}`);
+        }
+      }
+
+      execSync('npx prisma migrate deploy', {
         stdio: this.verbose ? 'inherit' : 'pipe',
         cwd: this.packageRoot,
-        timeout: 300000, // 5 minute timeout for browser installation
+        timeout: 60000, // 1 minute timeout
       });
 
-      console.log('✅ Playwright browsers installed successfully');
+      // Restore original DATABASE_URL
+      if (oldDatabaseUrl !== undefined) {
+        process.env.DATABASE_URL = oldDatabaseUrl;
+      } else {
+        delete process.env.DATABASE_URL;
+      }
+
+      console.log('✅ Database migrations completed successfully');
     } catch (error) {
-      console.warn('⚠️  Playwright browser installation failed:', error);
-      console.log('📊 Report generation will be disabled');
-      throw error; // Re-throw to let caller handle
+      console.warn('⚠️  Database migration failed:', error);
+      throw error;
     }
   }
 
@@ -319,7 +202,6 @@ export class DependencyManager {
   ): DependencyCheckResult {
     const result: DependencyCheckResult = {
       prismaClientExists: false,
-      playwrightBrowsersInstalled: false,
       databaseExists: false,
       errors: [],
     };
@@ -328,12 +210,6 @@ export class DependencyManager {
       result.prismaClientExists = this.checkPrismaClient();
     } catch (error) {
       result.errors.push(`Bundled Prisma client check failed: ${error}`);
-    }
-
-    try {
-      result.playwrightBrowsersInstalled = this.checkPlaywrightBrowsers();
-    } catch (error) {
-      result.errors.push(`Playwright check failed: ${error}`);
     }
 
     try {
@@ -375,53 +251,6 @@ export class DependencyManager {
       }
     }
 
-    // Install Playwright browsers if missing and not skipped
-    if (!status.playwrightBrowsersInstalled && !options.skipPlaywright) {
-      try {
-        this.installPlaywrightBrowsers();
-        status.playwrightBrowsersInstalled = true;
-      } catch (_error) {
-        // Don't add to errors - this is optional and handled gracefully
-        console.log(
-          '📊 Report generation will be disabled due to Playwright installation failure',
-        );
-        process.env.DISABLE_REPORT_GENERATION = 'true';
-      }
-    }
-
     return status;
-  }
-
-  /**
-   * Get environment detection information
-   */
-  getEnvironmentInfo(): {
-    isNpx: boolean;
-    isGlobal: boolean;
-    isLocal: boolean;
-    nodeVersion: string;
-    npmVersion: string;
-    packageRoot: string;
-    workingDirectory: string;
-    userDataDirectory: string;
-  } {
-    const isNpx = !!(
-      process.env.npm_config_cache &&
-      (process.env.npm_config_cache.includes('.npm/_npx') ||
-        process.env.npm_config_cache.includes('npm-cache/_npx'))
-    );
-    const isGlobal = process.env.npm_config_global === 'true';
-    const isLocal = !isNpx && !isGlobal;
-
-    return {
-      isNpx,
-      isGlobal,
-      isLocal,
-      nodeVersion: process.version,
-      npmVersion: process.env.npm_version || 'unknown',
-      packageRoot: this.packageRoot,
-      workingDirectory: process.cwd(),
-      userDataDirectory: this.userDataDir,
-    };
   }
 }

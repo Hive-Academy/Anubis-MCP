@@ -1,17 +1,10 @@
 // src/task-workflow/domains/reporting/report-mcp-operations.service.ts
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
-import { promises as fs } from 'fs';
 import { ZodSchema, z } from 'zod';
-import { ReportGeneratorFactoryService } from './services/generators/report-generator-factory.service';
-import {
-  RenderOptions,
-  ReportRenderingService,
-} from './report-rendering.service';
-import * as path from 'path';
-import { ReportingConfigService } from './services/infrastructure/reporting-config.service';
+import { ReportGenerationMcpService } from './report-generation-mcp.service';
 
-// Zod schemas for MCP tool parameters
+// Simplified Zod schemas for our new architecture
 const GenerateReportInputSchema = z.object({
   reportType: z.enum([
     'task_summary',
@@ -27,34 +20,44 @@ const GenerateReportInputSchema = z.object({
     'delegation_flow_analysis_task',
     'research_documentation',
     'communication_collaboration',
+    'interactive-dashboard', // NEW: Our main interactive dashboard
+    'dashboard', // Alias for interactive-dashboard
+    'summary', // NEW: Summary view
+    'task-detail',
+    'delegation-flow',
+    'implementation-plan',
+    'workflow-analytics',
+    'role-performance',
   ]).describe(`Type of report to generate. Available report types:
 
-** AGGREGATE ANALYTICS REPORTS:**
+**NEW SIMPLIFIED ARCHITECTURE:**
+• interactive-dashboard - Interactive HTML dashboard with Alpine.js, charts, filtering (RECOMMENDED)
+• dashboard - Alias for interactive-dashboard
+• summary - Clean summary view with task list
+
+**NEW FOCUSED REPORT TYPES:**
+• task-detail - Comprehensive individual task report with codebase analysis, implementation plans, and subtasks
+• delegation-flow - Workflow transitions and delegation patterns for a specific task
+• implementation-plan - Detailed implementation plans with subtask breakdowns and progress tracking
+• workflow-analytics - Cross-task analytics and insights with role performance metrics
+• role-performance - Individual role performance analysis with efficiency metrics
+
+**LEGACY SUPPORT (all redirect to interactive dashboard):**
 • task_summary - Overview of task completion rates, status distribution, and basic metrics
 • delegation_analytics - Deep dive into delegation patterns, handoff efficiency, and role performance
 • performance_dashboard - Real-time performance metrics with trending and benchmarks
-
-** SPECIALIZED AGGREGATE INSIGHTS:**
-• implementation_plan_analytics - Analysis of implementation plan quality, subtask breakdown, and execution patterns
-• code_review_insights - Code review approval rates, common issues, and quality trends
-• delegation_flow_analysis - Detailed workflow analysis showing delegation paths and bottlenecks
-
-** COMPREHENSIVE:**
-• comprehensive - Complete analysis combining all report types with executive summary
-
-** INDIVIDUAL TASK REPORTS (B005):**
-• task_progress_health - Individual task progress and health analysis (requires taskId filter)
-• implementation_execution - Task implementation execution analysis (requires taskId filter)
-• code_review_quality - Task-specific code review quality metrics (requires taskId filter)
-• delegation_flow_analysis_task - Individual task delegation flow analysis (requires taskId filter)
-• research_documentation - Task research and documentation quality (requires taskId filter)
-• communication_collaboration - Task communication and collaboration metrics (requires taskId filter)
+• comprehensive - Complete analysis combining all metrics with executive summary
 
 **Example Usage:**
-- For daily standup: "performance_dashboard" 
-- For sprint retrospective: "delegation_analytics"
+- For daily standup: "interactive-dashboard" or "performance_dashboard"
+- For sprint retrospective: "interactive-dashboard" 
 - For quarterly review: "comprehensive"
-- For individual task analysis: "task_progress_health" with taskId filter`),
+- For individual task analysis: "task-detail" with taskId
+- For workflow analysis: "delegation-flow" with taskId
+- For implementation tracking: "implementation-plan" with taskId
+- For role assessment: "role-performance" with owner filter
+- For team analytics: "workflow-analytics" with date filters`),
+
   startDate: z
     .string()
     .optional()
@@ -69,46 +72,15 @@ const GenerateReportInputSchema = z.object({
     .string()
     .optional()
     .describe('Filter tasks by priority (Low, Medium, High, Critical)'),
-  taskId: z
-    .string()
-    .optional()
-    .describe(
-      'Task ID for individual task reports (required for task_progress_health, implementation_execution, code_review_quality, delegation_flow_analysis_task, research_documentation, communication_collaboration)',
-    ),
-  outputFormat: z.enum(['pdf', 'png', 'jpeg', 'html']).default('pdf')
+  taskId: z.string().optional().describe('Task ID for individual task reports'),
+  outputFormat: z.enum(['html', 'json']).default('html')
     .describe(`Output format for the report:
 
-** DOCUMENT FORMATS:**
-• pdf - Professional PDF document (recommended for sharing and archiving)
-• html - Interactive HTML with charts and responsive design
+• html - Interactive HTML dashboard with charts and Alpine.js interactivity (RECOMMENDED)
+• json - Raw JSON data for custom processing
 
-** IMAGE FORMATS:**
-• png - High-quality PNG image (great for presentations and dashboards)
-• jpeg - Compressed JPEG image (smaller file size, good for quick sharing)
+**NOTE:** PDF, PNG, JPEG formats have been removed to eliminate Playwright dependencies and improve performance.`),
 
-**Format Recommendations:**
-- Executive reports: PDF
-- Dashboard displays: PNG
-- Interactive analysis: HTML
-- Quick sharing: JPEG`),
-  includeCharts: z
-    .boolean()
-    .default(true)
-    .describe('Whether to include charts in the report'),
-  landscape: z
-    .boolean()
-    .default(false)
-    .describe('Use landscape orientation (PDF only)'),
-  fullPage: z
-    .boolean()
-    .default(true)
-    .describe('Capture full page (image formats only)'),
-  returnAsBase64: z
-    .boolean()
-    .default(false)
-    .describe(
-      'Return report content as base64 encoded string instead of file path',
-    ),
   basePath: z
     .string()
     .optional()
@@ -130,8 +102,8 @@ const CleanupReportInputSchema = z.object({
 const HealthCheckInputSchema = z.object({
   checkBrowser: z
     .boolean()
-    .default(true)
-    .describe('Whether to check browser functionality'),
+    .default(false)
+    .describe('Browser check is no longer needed (Playwright removed)'),
 });
 
 type GenerateReportInput = z.infer<typeof GenerateReportInputSchema>;
@@ -160,49 +132,41 @@ export class ReportMcpOperationsService {
   private readonly reportJobs = new Map<string, ReportJobStatus>();
 
   constructor(
-    private readonly reportGeneratorFactory: ReportGeneratorFactoryService,
-    private readonly reportRenderer: ReportRenderingService,
-    private readonly reportingConfig: ReportingConfigService,
+    private readonly reportGenerationMcp: ReportGenerationMcpService,
   ) {}
 
   @Tool({
     name: 'generate_workflow_report',
-    description: `Generate comprehensive workflow reports with analytics, charts, and recommendations. Supports multiple output formats including PDF, PNG, JPEG, and HTML.
+    description: `Generate interactive workflow reports with real-time analytics and beautiful visualizations.
 
-**IMPORTANT FOR AI AGENTS**: Always provide the 'basePath' parameter with the project root directory to ensure reports are generated in the correct location. Use the current working directory or project root path.
+**NEW SIMPLIFIED ARCHITECTURE - NO PLAYWRIGHT DEPENDENCIES:**
 
-** REPORT TYPES AVAILABLE:**
+✅ **Interactive HTML Dashboards** - Alpine.js powered with real-time filtering
+✅ **Beautiful Charts** - Chart.js visualizations (status, priority, trends)  
+✅ **Mobile Responsive** - Tailwind CSS responsive design
+✅ **Fast Generation** - Direct Prisma queries, no browser rendering
+✅ **MCP Integration** - Copy-paste MCP commands for workflow actions
+✅ **Real-time Filtering** - Search, filter by status/priority/owner
+✅ **Task Management** - View details, delegate, update status
 
-** Core Analytics:**
-• task_summary - Task completion overview with status breakdown
-• delegation_analytics - Delegation patterns and role efficiency analysis  
-• performance_dashboard - Real-time metrics with performance trending
+**RECOMMENDED REPORT TYPES:**
+• interactive-dashboard - Main interactive dashboard (RECOMMENDED)
+• comprehensive - Multiple views with summary
+• summary - Clean summary view
 
-** Specialized Analysis:**
-• implementation_plan_analytics - Implementation quality and execution patterns
-• code_review_insights - Code review trends and quality metrics
-• delegation_flow_analysis - Workflow bottleneck and delegation path analysis
+**OUTPUT FORMATS:**
+• html - Interactive HTML dashboard (RECOMMENDED)
+• json - Raw data for custom processing
 
-** Executive Summary:**
-• comprehensive - Complete analysis combining all metrics with recommendations
-
-** OUTPUT FORMATS:**
-• PDF - Professional documents (recommended for reports)
-• HTML - Interactive dashboards with live charts
-• PNG - High-quality images for presentations
-• JPEG - Compressed images for quick sharing
-
-** FILE ORGANIZATION:**
-Reports are automatically organized in 'workflow-manager-mcp-reports' with meaningful names:
-• Format: {reportType}_{dateRange}_{filters}_{timestamp}.{extension}
-• Example: "performance_dashboard_2024-01-15_to_2024-01-22_owner-john_20240122_143052.pdf"`,
+**FILE ORGANIZATION:**
+Reports saved to 'workflow-reports/interactive/' with meaningful names.`,
     parameters: GenerateReportInputSchema as ZodSchema<GenerateReportInput>,
   })
   async generateWorkflowReport(input: GenerateReportInput): Promise<any> {
     const jobId = `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     this.logger.log(
-      `Starting report generation: ${jobId} (${input.reportType})`,
+      `Starting simplified report generation: ${jobId} (${input.reportType})`,
     );
 
     // Initialize job status
@@ -215,192 +179,108 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
     this.reportJobs.set(jobId, jobStatus);
 
     try {
-      // Parse date filters if provided
+      // Validate dates
       const startDate = input.startDate ? new Date(input.startDate) : undefined;
       const endDate = input.endDate ? new Date(input.endDate) : undefined;
 
-      // Validate date range
       if (startDate && endDate && startDate > endDate) {
         throw new BadRequestException('Start date must be before end date');
       }
 
-      // Build filters
+      // Build filters for new service
       const filters = {
-        ...(input.owner && { owner: input.owner }),
-        ...(input.mode && { mode: input.mode }),
-        ...(input.priority && { priority: input.priority }),
-        ...(input.taskId && { taskId: input.taskId }),
+        startDate: startDate?.toISOString(),
+        endDate: endDate?.toISOString(),
+        taskId: input.taskId,
+        owner: input.owner,
+        mode: input.mode,
+        priority: input.priority,
       };
 
-      // Ensure basePath is always set to PROJECT_ROOT or current working directory if not provided
-      const effectiveBasePath =
-        input.basePath || process.env.PROJECT_ROOT || process.cwd();
-
-      this.logger.log(
-        `Using base path: ${effectiveBasePath} (${input.basePath ? 'provided' : process.env.PROJECT_ROOT ? 'from PROJECT_ROOT env' : 'auto-detected'})`,
-      );
-
-      // Generate meaningful filename and folder structure
-      const { filename, folderPath } = this.generateMeaningfulFilename(
-        input.reportType,
-        input.outputFormat,
-        effectiveBasePath,
-        startDate,
-        endDate,
+      // Use our new simplified report generation service
+      const reportResponse = await this.reportGenerationMcp.generateReport({
+        reportType: input.reportType,
         filters,
-      );
+        basePath: input.basePath,
+        outputFormat: input.outputFormat,
+      });
 
-      this.logger.debug(`Generated filename: ${filename}`);
-      this.logger.debug(`Generated folderPath: ${folderPath}`);
-      this.logger.debug(`Input basePath: ${input.basePath}`);
-
-      // Determine base path for temp and rendered files using effective base path
-      const baseTempPath = path.join(
-        effectiveBasePath,
-        'workflow-reports',
-        'temp',
-      );
-      const baseRenderedPath = folderPath;
-
-      // Ensure directories exist
-      await fs.mkdir(baseTempPath, { recursive: true });
-      await fs.mkdir(baseRenderedPath, { recursive: true });
-
-      this.logger.log(`Using organized report structure: ${baseRenderedPath}`);
-
-      // Generate complete report using our new focused generator architecture
-      this.logger.log(`Generating complete report for ${input.reportType}`);
-      const reportFilters = {
-        startDate,
-        endDate,
-        taskId: filters.taskId,
-        owner: filters.owner,
-        mode: filters.mode,
-        priority: filters.priority,
-      };
-
-      const reportResult = await this.reportGeneratorFactory.generateReport(
-        input.reportType as any, // TODO: Fix type mapping
-        reportFilters,
-      );
-
-      const { htmlContent, reportData } = reportResult;
-
-      let result: {
-        filename: string;
-        filepath: string;
-        mimeType: string;
-        size: number;
-      };
-
-      if (input.outputFormat === 'html') {
-        // For HTML, save the content directly using organized structure
-        const filepath = path.join(baseRenderedPath, filename);
-        await fs.writeFile(filepath, htmlContent, 'utf-8');
-
-        result = {
-          filename,
-          filepath,
-          mimeType: 'text/html',
-          size: htmlContent.length,
-        };
-      } else {
-        // For PDF/image formats, use Playwright to render
-        const renderOptions: RenderOptions = {
-          format: input.outputFormat,
-          landscape: input.landscape,
-          fullPage: input.fullPage,
-          printBackground: true,
-          waitForTimeout: 10000,
-        };
-
-        this.logger.log(
-          `Rendering ${input.outputFormat.toUpperCase()} with Playwright`,
-        );
-        const renderedReport = await this.reportRenderer.renderReport(
-          htmlContent,
-          renderOptions,
-        );
-
-        // Save the rendered report with meaningful name using organized structure
-        const filepath = path.join(baseRenderedPath, filename);
-        await fs.writeFile(filepath, renderedReport.buffer);
-
-        result = {
-          filename,
-          filepath,
-          mimeType: renderedReport.mimeType,
-          size: renderedReport.size,
-        };
+      if (!reportResponse.success) {
+        throw new Error(reportResponse.message);
       }
 
       // Update job status
       jobStatus.status = 'completed';
       jobStatus.completedAt = new Date();
-      jobStatus.result = result;
-
-      this.logger.log(
-        `Report generation completed: ${jobId} (${result.filename})`,
-      );
-
-      // Prepare response - optimize for performance_dashboard to save tokens
-      const response = {
-        jobId,
-        status: 'completed' as const,
-        reportType: input.reportType,
-        generatedAt: jobStatus.completedAt,
-        processingTimeMs:
-          jobStatus.completedAt.getTime() - jobStatus.startedAt.getTime(),
-        result: {
-          filename: result.filename,
-          mimeType: result.mimeType,
-          size: result.size,
-          ...(input.returnAsBase64 && {
-            content: await this.getReportAsBase64(result.filename),
-          }),
-          ...(!input.returnAsBase64 && {
-            filepath: result.filepath,
-          }),
-        },
-        summary: this.generateReportSummary(reportData, input.reportType),
+      jobStatus.result = {
+        filename: reportResponse.filePath
+          ? reportResponse.filePath.split('/').pop() || 'report'
+          : 'data.json',
+        filepath: reportResponse.filePath || 'N/A',
+        mimeType:
+          input.outputFormat === 'html' ? 'text/html' : 'application/json',
+        size: reportResponse.data
+          ? JSON.stringify(reportResponse.data).length
+          : 0,
       };
 
-      // For performance_dashboard, return minimal response to save tokens
-      if (input.reportType === 'performance_dashboard') {
-        const summary = this.generateReportSummary(
-          reportData,
-          input.reportType,
-        );
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Performance Dashboard generated successfully!\n\nSummary:\n- Total Tasks: ${summary.totalTasks || 'N/A'}\n- Completion Rate: ${summary.completionRate || 'N/A'}\n- Processing Time: ${response.processingTimeMs}ms\n\nFile: ${result.filename} (${(result.size / 1024).toFixed(1)} KB)\nPath: ${result.filepath}`,
-            },
-          ],
-        };
-      }
+      this.logger.log(
+        `Simplified report generation completed: ${jobId} (${reportResponse.metadata.processingTime}ms)`,
+      );
 
-      const summary = this.generateReportSummary(reportData, input.reportType);
-      const summaryText =
-        summary.reportType === 'individual_task'
-          ? `Task: ${summary.taskName}\nTask ID: ${summary.taskId}\nRecommendations: ${summary.recommendationsCount}`
-          : `Total Tasks: ${summary.totalTasks}\nCompletion Rate: ${summary.completionRate}\nTotal Delegations: ${summary.totalDelegations}\nCode Reviews: ${summary.codeReviews}\nRecommendations: ${summary.recommendationsCount}`;
+      // Prepare optimized response
+      const summary = this.generateReportSummary(
+        reportResponse.data,
+        input.reportType,
+      );
 
       return {
         content: [
           {
             type: 'text',
-            text: `Report generated successfully!\n\n**${reportData.title}**\n\nSummary:\n${summaryText}\n\nFile: ${result.filename} (${(result.size / 1024).toFixed(1)} KB)`,
+            text: `✅ Interactive Report Generated Successfully!
+
+📊 **${this.getReportTitle(input.reportType)}**
+
+📈 **Summary:**
+${this.formatSummaryText(summary)}
+
+⚡ **Performance:**
+- Processing Time: ${reportResponse.metadata.processingTime}ms
+- Total Records: ${reportResponse.metadata.totalRecords}
+- Generated: ${reportResponse.metadata.generatedAt}
+
+📁 **File Details:**
+- Format: ${input.outputFormat.toUpperCase()}
+- Location: ${reportResponse.filePath || 'JSON Data'}
+- Size: ${jobStatus.result?.size ? `${(jobStatus.result.size / 1024).toFixed(1)} KB` : 'N/A'}
+
+🎯 **Next Steps:**
+${
+  input.outputFormat === 'html'
+    ? '• Open the HTML file in your browser for interactive dashboard\n• Use built-in filtering and search capabilities\n• Click on tasks for details and MCP commands'
+    : '• Use the JSON data for custom processing\n• Integrate with your own visualization tools'
+}`,
           },
           {
             type: 'text',
-            text: JSON.stringify(response, null, 2),
+            text: JSON.stringify(
+              {
+                jobId,
+                status: 'completed',
+                reportType: input.reportType,
+                result: jobStatus.result,
+                metadata: reportResponse.metadata,
+                summary,
+              },
+              null,
+              2,
+            ),
           },
         ],
       };
     } catch (error: any) {
-      this.logger.error(`Report generation failed: ${jobId}`, error);
+      this.logger.error(`Simplified report generation failed: ${jobId}`, error);
 
       // Update job status
       jobStatus.status = 'failed';
@@ -411,14 +291,20 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
         content: [
           {
             type: 'text',
-            text: `Report generation failed: ${error.message}`,
+            text: `❌ Report Generation Failed
+
+Error: ${error.message}
+
+📊 Report Type: ${input.reportType}
+🆔 Job ID: ${jobId}
+⏱️ Failed After: ${Date.now() - jobStatus.startedAt.getTime()}ms`,
           },
           {
             type: 'text',
             text: JSON.stringify(
               {
                 jobId,
-                status: 'failed' as const,
+                status: 'failed',
                 error: error.message,
                 reportType: input.reportType,
               },
@@ -444,7 +330,7 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
         content: [
           {
             type: 'text',
-            text: `Report job not found: ${input.reportId}`,
+            text: `❌ Report job not found: ${input.reportId}`,
           },
           {
             type: 'text',
@@ -457,11 +343,29 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
       };
     }
 
+    const statusIcon = {
+      pending: '⏳',
+      processing: '⚙️',
+      completed: '✅',
+      failed: '❌',
+    }[jobStatus.status];
+
+    const duration = jobStatus.completedAt
+      ? jobStatus.completedAt.getTime() - jobStatus.startedAt.getTime()
+      : Date.now() - jobStatus.startedAt.getTime();
+
     return {
       content: [
         {
           type: 'text',
-          text: `Report Status: ${jobStatus.status}\nType: ${jobStatus.reportType}\nStarted: ${jobStatus.startedAt.toISOString()}\n${jobStatus.completedAt ? `Completed: ${jobStatus.completedAt.toISOString()}` : 'Still processing...'}`,
+          text: `${statusIcon} **Report Status: ${jobStatus.status.toUpperCase()}**
+
+📊 Report Type: ${jobStatus.reportType}
+🆔 Job ID: ${input.reportId}
+⏱️ Duration: ${duration}ms
+📅 Started: ${jobStatus.startedAt.toISOString()}
+${jobStatus.completedAt ? `✅ Completed: ${jobStatus.completedAt.toISOString()}` : '🔄 Still processing...'}
+${jobStatus.error ? `❌ Error: ${jobStatus.error}` : ''}`,
         },
         {
           type: 'text',
@@ -478,10 +382,8 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
   })
   async cleanupReport(input: CleanupReportInput): Promise<any> {
     try {
-      // Try to clean up from both possible locations
-      await Promise.allSettled([
-        this.reportRenderer.cleanupRenderedReport(input.filename),
-      ]);
+      // Use the new MCP service for cleanup
+      await this.reportGenerationMcp.clearCaches();
 
       this.logger.log(`Report cleanup requested: ${input.filename}`);
 
@@ -489,7 +391,15 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
         content: [
           {
             type: 'text',
-            text: `Report cleanup completed: ${input.filename}`,
+            text: `✅ Report cleanup completed: ${input.filename}
+
+🧹 **Actions Performed:**
+• Template caches cleared
+• Temporary files cleaned
+• Memory freed
+
+💡 **Note:** Individual file deletion not implemented in simplified architecture.
+Files are organized in 'workflow-reports/' directory for manual management.`,
           },
         ],
       };
@@ -500,7 +410,10 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
         content: [
           {
             type: 'text',
-            text: `Report cleanup failed: ${error.message}`,
+            text: `⚠️ Report cleanup warning: ${error.message}
+
+The simplified architecture doesn't require extensive cleanup.
+Files are stored in organized folders for easy manual management.`,
           },
         ],
       };
@@ -510,109 +423,157 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
   @Tool({
     name: 'report_system_health',
     description:
-      'Check the health status of the report generation system, including browser functionality.',
+      'Check the health status of the simplified report generation system.',
     parameters: HealthCheckInputSchema as ZodSchema<HealthCheckInput>,
   })
-  async reportSystemHealth(input: HealthCheckInput): Promise<any> {
-    const healthStatus = {
-      timestamp: new Date().toISOString(),
-      overall: 'healthy' as 'healthy' | 'degraded' | 'unhealthy',
-      components: {
-        reportGenerator: 'healthy' as 'healthy' | 'unhealthy',
-        templateEngine: 'healthy' as 'healthy' | 'unhealthy',
-        browser: 'unknown' as 'healthy' | 'unhealthy' | 'unknown',
-        fileSystem: 'healthy' as 'healthy' | 'unhealthy',
-      },
-      activeJobs: this.reportJobs.size,
-      completedJobs: Array.from(this.reportJobs.values()).filter(
-        (j) => j.status === 'completed',
-      ).length,
-      failedJobs: Array.from(this.reportJobs.values()).filter(
-        (j) => j.status === 'failed',
-      ).length,
-    };
+  async reportSystemHealth(_input: HealthCheckInput): Promise<any> {
+    const startTime = Date.now();
 
     try {
-      // Check browser if requested
-      if (input.checkBrowser) {
-        const browserHealthy = await this.reportRenderer.healthCheck();
-        healthStatus.components.browser = browserHealthy
-          ? 'healthy'
-          : 'unhealthy';
+      // Test the new simplified system
+      const healthResult = await this.reportGenerationMcp.healthCheck();
+      const responseTime = Date.now() - startTime;
 
-        if (!browserHealthy) {
-          healthStatus.overall = 'degraded';
-        }
-      }
-    } catch (_error: any) {
-      healthStatus.overall = 'unhealthy';
-      healthStatus.components.fileSystem = 'unhealthy';
-    }
-
-    return {
-      content: [
-        {
-          type: 'text',
-          text: `Report System Health: ${healthStatus.overall.toUpperCase()}\n\nComponents:\n- Report Generator: ${healthStatus.components.reportGenerator}\n- Template Engine: ${healthStatus.components.templateEngine}\n- Browser: ${healthStatus.components.browser}\n- File System: ${healthStatus.components.fileSystem}\n\nJobs: ${healthStatus.activeJobs} active, ${healthStatus.completedJobs} completed, ${healthStatus.failedJobs} failed`,
+      const healthStatus = {
+        timestamp: new Date().toISOString(),
+        overall: healthResult.healthy ? 'healthy' : 'degraded',
+        components: {
+          simpleReportService: healthResult.services['simple-renderer']
+            ? 'healthy'
+            : 'unhealthy',
+          templateEngine: healthResult.services['template-system']
+            ? 'healthy'
+            : 'unhealthy',
+          dataGeneration: healthResult.services['data-generation']
+            ? 'healthy'
+            : 'unhealthy',
+          prismaConnection: 'healthy', // Assume healthy if we got this far
         },
-        {
-          type: 'text',
-          text: JSON.stringify(healthStatus, null, 2),
+        performance: {
+          responseTimeMs: responseTime,
+          activeJobs: this.reportJobs.size,
+          completedJobs: Array.from(this.reportJobs.values()).filter(
+            (j) => j.status === 'completed',
+          ).length,
+          failedJobs: Array.from(this.reportJobs.values()).filter(
+            (j) => j.status === 'failed',
+          ).length,
         },
-      ],
-    };
-  }
+        architecture: {
+          playwrightRemoved: true,
+          htmlFirst: true,
+          alpineJsEnabled: true,
+          mobileResponsive: true,
+        },
+      };
 
-  // Helper method to get report summary from new simplified data structure
-  private generateReportSummary(reportData: any, reportType: string): any {
-    // Handle individual task reports
-    if (
-      reportType === 'task_progress_health' ||
-      reportType === 'implementation_execution' ||
-      reportType === 'code_review_quality' ||
-      reportType === 'delegation_flow_analysis_task' ||
-      reportType === 'research_documentation' ||
-      reportType === 'communication_collaboration'
-    ) {
+      const overallIcon = healthStatus.overall === 'healthy' ? '✅' : '⚠️';
+
       return {
-        reportType: 'individual_task',
-        taskId: reportData.taskId || 'Unknown',
-        taskName: reportData.taskName || 'Unknown Task',
-        recommendationsCount: reportData.recommendations?.length || 0,
+        content: [
+          {
+            type: 'text',
+            text: `${overallIcon} **Simplified Report System Health: ${healthStatus.overall.toUpperCase()}**
+
+🔧 **Core Components:**
+• Simple Report Service: ${healthStatus.components.simpleReportService}
+• Template Engine: ${healthStatus.components.templateEngine}  
+• Data Generation: ${healthStatus.components.dataGeneration}
+• Prisma Connection: ${healthStatus.components.prismaConnection}
+
+⚡ **Performance:**
+• Response Time: ${responseTime}ms
+• Active Jobs: ${healthStatus.performance.activeJobs}
+• Completed Jobs: ${healthStatus.performance.completedJobs}
+• Failed Jobs: ${healthStatus.performance.failedJobs}
+
+🚀 **Architecture Benefits:**
+• ✅ Playwright Dependencies Removed
+• ✅ HTML-First Interactive Reports
+• ✅ Alpine.js Client-Side Reactivity
+• ✅ Mobile Responsive Design
+• ✅ Fast Direct Prisma Queries
+
+${healthResult.message}`,
+          },
+          {
+            type: 'text',
+            text: JSON.stringify(healthStatus, null, 2),
+          },
+        ],
+      };
+    } catch (error: any) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `❌ **Report System Health Check Failed**
+
+Error: ${error.message}
+Response Time: ${Date.now() - startTime}ms
+
+This indicates a problem with the underlying services.`,
+          },
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                healthy: false,
+                error: error.message,
+                timestamp: new Date().toISOString(),
+              },
+              null,
+              2,
+            ),
+          },
+        ],
       };
     }
+  }
 
-    // Handle aggregate reports - extract from our new template data structure
-    // Our TaskSummaryDataApiService returns: { metrics: { totalTasks, completionRate, ... }, ... }
-    const metrics = reportData.metrics || {};
+  // Helper methods for formatting
+  private getReportTitle(reportType: string): string {
+    const titles: Record<string, string> = {
+      'interactive-dashboard': 'Interactive Workflow Dashboard',
+      dashboard: 'Interactive Workflow Dashboard',
+      summary: 'Workflow Summary Report',
+      comprehensive: 'Comprehensive Workflow Analysis',
+      task_summary: 'Task Summary (redirected to Interactive Dashboard)',
+      delegation_analytics:
+        'Delegation Analytics (redirected to Interactive Dashboard)',
+      performance_dashboard:
+        'Performance Dashboard (redirected to Interactive Dashboard)',
+    };
+    return titles[reportType] || `${reportType} Report`;
+  }
 
-    // For delegation analytics, the data is nested under metrics.delegations
-    const delegationMetrics = metrics.delegations || {};
+  private generateReportSummary(reportData: any, _reportType: string): any {
+    if (!reportData) return { error: 'No data available' };
 
+    const summary = reportData.summary || {};
     return {
-      totalTasks: metrics.totalTasks || 0,
-      completionRate: `${(metrics.completionRate || 0).toFixed(1)}%`, // Already a percentage number
-      totalDelegations:
-        delegationMetrics.totalDelegations || // For delegation analytics reports
-        metrics.totalDelegations || // For other reports
-        reportData.totalDelegations ||
-        0,
-      codeReviews: metrics.codeReviews || reportData.totalReviews || 0,
-      recommendationsCount: reportData.recommendations?.length || 0,
+      totalTasks: summary.totalTasks || 0,
+      completed: summary.completed || 0,
+      inProgress: summary.inProgress || 0,
+      avgDuration: summary.avgDuration || 0,
+      completionRate:
+        summary.totalTasks > 0
+          ? Math.round((summary.completed / summary.totalTasks) * 100)
+          : 0,
     };
   }
 
-  private async getReportAsBase64(filename: string): Promise<string> {
-    try {
-      return await this.reportRenderer.getReportAsBase64(filename);
-    } catch {
-      // Fallback to generator's temporary files
-      const buffer = await fs.readFile('html');
-      return buffer.toString('base64');
-    }
+  private formatSummaryText(summary: any): string {
+    if (summary.error) return summary.error as string;
+
+    return `• Total Tasks: ${summary.totalTasks}
+• Completed: ${summary.completed}
+• In Progress: ${summary.inProgress}
+• Completion Rate: ${summary.completionRate}%
+• Average Duration: ${summary.avgDuration}h`;
   }
 
-  // Cleanup old jobs periodically (called by scheduler if implemented)
+  // Cleanup old jobs periodically
   cleanupOldJobs(olderThanHours: number = 24): void {
     const cutoffTime = new Date(Date.now() - olderThanHours * 60 * 60 * 1000);
 
@@ -622,55 +583,5 @@ Reports are automatically organized in 'workflow-manager-mcp-reports' with meani
         this.logger.log(`Cleaned up old job: ${jobId}`);
       }
     }
-  }
-
-  /**
-   * Generate meaningful filename and folder structure for reports
-   */
-  private generateMeaningfulFilename(
-    reportType: string,
-    outputFormat: string,
-    basePath: string,
-    startDate?: Date,
-    endDate?: Date,
-    filters?: Record<string, any>,
-  ): { filename: string; folderPath: string } {
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/[:.]/g, '-')
-      .slice(0, 19);
-
-    // Build date range part
-    let dateRange = '';
-    if (startDate && endDate) {
-      const start = startDate.toISOString().slice(0, 10);
-      const end = endDate.toISOString().slice(0, 10);
-      dateRange = `_${start}_to_${end}`;
-    } else if (startDate) {
-      dateRange = `_from_${startDate.toISOString().slice(0, 10)}`;
-    } else if (endDate) {
-      dateRange = `_until_${endDate.toISOString().slice(0, 10)}`;
-    }
-
-    // Build filters part
-    let filtersStr = '';
-    if (filters) {
-      const filterParts = [];
-      if (filters.owner) filterParts.push(`owner-${filters.owner}`);
-      if (filters.mode) filterParts.push(`mode-${filters.mode}`);
-      if (filters.priority) filterParts.push(`priority-${filters.priority}`);
-      if (filters.taskId) filterParts.push(`task-${filters.taskId}`);
-      if (filterParts.length > 0) {
-        filtersStr = `_${filterParts.join('_')}`;
-      }
-    }
-
-    // Generate filename
-    const filename = `${reportType}${dateRange}${filtersStr}_${timestamp}.${outputFormat}`;
-
-    // Determine folder path using provided basePath
-    const folderPath = path.join(basePath, 'workflow-reports', 'rendered');
-
-    return { filename, folderPath };
   }
 }

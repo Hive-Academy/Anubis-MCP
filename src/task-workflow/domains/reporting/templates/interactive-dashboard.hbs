@@ -1,0 +1,908 @@
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Workflow Manager - Interactive Dashboard</title>
+
+    <!-- Alpine.js -->
+    <script
+      defer
+      src='https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js'
+    ></script>
+
+    <!-- Chart.js for beautiful visualizations -->
+    <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
+
+    <!-- Tailwind CSS for modern styling -->
+    <script src='https://cdn.tailwindcss.com'></script>
+
+    <!-- Font Awesome for icons -->
+    <link
+      rel='stylesheet'
+      href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'
+    />
+
+    <style>
+      /* Custom animations and styles */
+      .fade-in {
+        animation: fadeIn 0.5s ease-in;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .task-card {
+        transition: all 0.3s ease;
+      }
+
+      .task-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      .status-badge {
+        @apply px-3 py-1 rounded-full text-sm font-medium;
+      }
+
+      .priority-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+      }
+    </style>
+  </head>
+  <body class='bg-gray-50 min-h-screen'>
+    <!-- Main Dashboard Container -->
+    <div
+      x-data='dashboardApp()'
+      x-init='loadData()'
+      class='container mx-auto px-4 py-8'
+    >
+
+      <!-- Header -->
+      <div class='mb-8'>
+        <h1 class='text-4xl font-bold text-gray-900 mb-2'>
+          <i class='fas fa-chart-line text-blue-600 mr-3'></i>
+          Workflow Manager Dashboard
+        </h1>
+        <p class='text-gray-600'>Interactive task management and analytics
+          powered by Alpine.js</p>
+        <div class='text-sm text-gray-500 mt-2'>
+          <i class='fas fa-clock mr-1'></i>
+          Generated:
+          <span x-text='reportData.metadata?.generatedAt'></span>
+          <span class='mx-2'>•</span>
+          <i class='fas fa-database mr-1'></i>
+          <span x-text='reportData.metadata?.totalRecords'></span>
+          tasks
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div x-show='loading' class='text-center py-12'>
+        <div
+          class='inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'
+        ></div>
+        <p class='mt-4 text-gray-600'>Loading dashboard data...</p>
+      </div>
+
+      <!-- Dashboard Content -->
+      <div x-show='!loading' class='fade-in space-y-8'>
+
+        <!-- Summary Cards -->
+        <div class='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
+          <div
+            class='bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500'
+          >
+            <div class='flex items-center'>
+              <div class='flex-shrink-0'>
+                <i class='fas fa-tasks text-2xl text-blue-600'></i>
+              </div>
+              <div class='ml-5 w-0 flex-1'>
+                <dl>
+                  <dt class='text-sm font-medium text-gray-500 truncate'>Total
+                    Tasks</dt>
+                  <dd
+                    class='text-3xl font-bold text-gray-900'
+                    x-text='reportData.summary?.totalTasks || 0'
+                  ></dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class='bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500'
+          >
+            <div class='flex items-center'>
+              <div class='flex-shrink-0'>
+                <i class='fas fa-check-circle text-2xl text-green-600'></i>
+              </div>
+              <div class='ml-5 w-0 flex-1'>
+                <dl>
+                  <dt
+                    class='text-sm font-medium text-gray-500 truncate'
+                  >Completed</dt>
+                  <dd
+                    class='text-3xl font-bold text-gray-900'
+                    x-text='reportData.summary?.completed || 0'
+                  ></dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class='bg-white rounded-xl shadow-lg p-6 border-l-4 border-orange-500'
+          >
+            <div class='flex items-center'>
+              <div class='flex-shrink-0'>
+                <i class='fas fa-clock text-2xl text-orange-600'></i>
+              </div>
+              <div class='ml-5 w-0 flex-1'>
+                <dl>
+                  <dt class='text-sm font-medium text-gray-500 truncate'>In
+                    Progress</dt>
+                  <dd
+                    class='text-3xl font-bold text-gray-900'
+                    x-text='reportData.summary?.inProgress || 0'
+                  ></dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class='bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500'
+          >
+            <div class='flex items-center'>
+              <div class='flex-shrink-0'>
+                <i class='fas fa-stopwatch text-2xl text-purple-600'></i>
+              </div>
+              <div class='ml-5 w-0 flex-1'>
+                <dl>
+                  <dt class='text-sm font-medium text-gray-500 truncate'>Avg
+                    Duration</dt>
+                  <dd
+                    class='text-3xl font-bold text-gray-900'
+                    x-text="(reportData.summary?.avgDuration || 0).toFixed(1) + 'h'"
+                  ></dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class='grid grid-cols-1 lg:grid-cols-3 gap-6'>
+          <!-- Status Chart -->
+          <div class='bg-white rounded-xl shadow-lg p-6'>
+            <h3 class='text-lg font-semibold text-gray-900 mb-4'>
+              <i class='fas fa-chart-pie text-blue-600 mr-2'></i>
+              Task Status Distribution
+            </h3>
+            <canvas x-ref='statusChart' width='300' height='300'></canvas>
+          </div>
+
+          <!-- Priority Chart -->
+          <div class='bg-white rounded-xl shadow-lg p-6'>
+            <h3 class='text-lg font-semibold text-gray-900 mb-4'>
+              <i class='fas fa-chart-donut text-green-600 mr-2'></i>
+              Priority Breakdown
+            </h3>
+            <canvas x-ref='priorityChart' width='300' height='300'></canvas>
+          </div>
+
+          <!-- Completion Trend -->
+          <div class='bg-white rounded-xl shadow-lg p-6'>
+            <h3 class='text-lg font-semibold text-gray-900 mb-4'>
+              <i class='fas fa-chart-line text-purple-600 mr-2'></i>
+              Completion Trend (7 Days)
+            </h3>
+            <canvas x-ref='trendChart' width='300' height='300'></canvas>
+          </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class='bg-white rounded-xl shadow-lg p-6'>
+          <h3 class='text-lg font-semibold text-gray-900 mb-4'>
+            <i class='fas fa-filter text-indigo-600 mr-2'></i>
+            Filter & Search Tasks
+          </h3>
+
+          <div class='grid grid-cols-1 md:grid-cols-4 gap-4 mb-4'>
+            <!-- Search -->
+            <div>
+              <label
+                class='block text-sm font-medium text-gray-700 mb-2'
+              >Search</label>
+              <input
+                type='text'
+                x-model='searchTerm'
+                @input='updateFilters()'
+                placeholder='Search tasks...'
+                class='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+              />
+            </div>
+
+            <!-- Status Filter -->
+            <div>
+              <label
+                class='block text-sm font-medium text-gray-700 mb-2'
+              >Status</label>
+              <select
+                x-model='statusFilter'
+                @change='updateFilters()'
+                class='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+              >
+                <option value=''>All Statuses</option>
+                <template x-for='status in getUniqueStatuses()'>
+                  <option :value='status' x-text='status'></option>
+                </template>
+              </select>
+            </div>
+
+            <!-- Priority Filter -->
+            <div>
+              <label
+                class='block text-sm font-medium text-gray-700 mb-2'
+              >Priority</label>
+              <select
+                x-model='priorityFilter'
+                @change='updateFilters()'
+                class='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+              >
+                <option value=''>All Priorities</option>
+                <option value='Critical'>Critical</option>
+                <option value='High'>High</option>
+                <option value='Medium'>Medium</option>
+                <option value='Low'>Low</option>
+              </select>
+            </div>
+
+            <!-- Owner Filter -->
+            <div>
+              <label
+                class='block text-sm font-medium text-gray-700 mb-2'
+              >Owner</label>
+              <select
+                x-model='ownerFilter'
+                @change='updateFilters()'
+                class='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+              >
+                <option value=''>All Owners</option>
+                <template x-for='owner in getUniqueOwners()'>
+                  <option :value='owner' x-text='owner'></option>
+                </template>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tasks Grid -->
+        <div class='bg-white rounded-xl shadow-lg p-6'>
+          <div class='flex justify-between items-center mb-6'>
+            <h3 class='text-lg font-semibold text-gray-900'>
+              <i class='fas fa-list text-blue-600 mr-2'></i>
+              Tasks (<span x-text='filteredTasks.length'></span>)
+            </h3>
+
+            <!-- View Toggle -->
+            <div class='flex bg-gray-100 rounded-lg p-1'>
+              <button
+                @click="viewMode = 'grid'"
+                :class="viewMode === 'grid' ? 'bg-white shadow-sm' : ''"
+                class='px-3 py-1 rounded-md text-sm font-medium'
+              >
+                <i class='fas fa-th-large mr-1'></i>
+                Grid
+              </button>
+              <button
+                @click="viewMode = 'list'"
+                :class="viewMode === 'list' ? 'bg-white shadow-sm' : ''"
+                class='px-3 py-1 rounded-md text-sm font-medium'
+              >
+                <i class='fas fa-list mr-1'></i>
+                List
+              </button>
+            </div>
+          </div>
+
+          <!-- Grid View -->
+          <div
+            x-show="viewMode === 'grid'"
+            class='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+          >
+            <template x-for='task in filteredTasks' :key='task.taskId'>
+              <div
+                class='task-card bg-gray-50 rounded-lg p-4 border border-gray-200'
+              >
+                <!-- Task Header -->
+                <div class='flex justify-between items-start mb-3'>
+                  <h4
+                    class='font-semibold text-gray-900 text-sm'
+                    x-text='task.name'
+                  ></h4>
+                  <div class='flex space-x-1'>
+                    <div
+                      class='priority-indicator'
+                      :style='`background-color: ${getPriorityColor(task.priority)}`'
+                      :title="task.priority + ' Priority'"
+                    ></div>
+                  </div>
+                </div>
+
+                <!-- Task Info -->
+                <div class='space-y-2 mb-4'>
+                  <div class='flex justify-between text-xs text-gray-600'>
+                    <span>Status:</span>
+                    <span
+                      class='status-badge'
+                      :class='getStatusClasses(task.status)'
+                      x-text='task.status'
+                    ></span>
+                  </div>
+
+                  <div class='flex justify-between text-xs text-gray-600'>
+                    <span>Owner:</span>
+                    <span x-text='task.owner'></span>
+                  </div>
+
+                  <div class='flex justify-between text-xs text-gray-600'>
+                    <span>Duration:</span>
+                    <span x-text="task.duration + 'h'"></span>
+                  </div>
+
+                  <!-- Progress Bar -->
+                  <div class='mt-3'>
+                    <div
+                      class='flex justify-between text-xs text-gray-600 mb-1'
+                    >
+                      <span>Progress</span>
+                      <span x-text="task.progress + '%'"></span>
+                    </div>
+                    <div class='w-full bg-gray-200 rounded-full h-2'>
+                      <div
+                        class='h-2 rounded-full bg-blue-600'
+                        :style='`width: ${task.progress}%`'
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Task Actions -->
+                <div class='flex space-x-2'>
+                  <button
+                    @click='viewTaskDetails(task)'
+                    class='flex-1 px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700'
+                  >
+                    <i class='fas fa-eye mr-1'></i>
+                    View
+                  </button>
+
+                  <button
+                    @click="copyMcpCommand('delegate', task)"
+                    class='flex-1 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700'
+                    x-show="task.status !== 'completed'"
+                  >
+                    <i class='fas fa-arrow-right mr-1'></i>
+                    Delegate
+                  </button>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <!-- List View -->
+          <div x-show="viewMode === 'list'" class='overflow-x-auto'>
+            <table class='min-w-full divide-y divide-gray-200'>
+              <thead class='bg-gray-50'>
+                <tr>
+                  <th
+                    class='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >Task</th>
+                  <th
+                    class='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >Status</th>
+                  <th
+                    class='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >Priority</th>
+                  <th
+                    class='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >Owner</th>
+                  <th
+                    class='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >Progress</th>
+                  <th
+                    class='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >Duration</th>
+                  <th
+                    class='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >Actions</th>
+                </tr>
+              </thead>
+              <tbody class='bg-white divide-y divide-gray-200'>
+                <template x-for='task in filteredTasks' :key='task.taskId'>
+                  <tr class='hover:bg-gray-50'>
+                    <td class='px-6 py-4 whitespace-nowrap'>
+                      <div>
+                        <div
+                          class='text-sm font-medium text-gray-900'
+                          x-text='task.name'
+                        ></div>
+                        <div
+                          class='text-xs text-gray-500'
+                          x-text='task.taskId'
+                        ></div>
+                      </div>
+                    </td>
+                    <td class='px-6 py-4 whitespace-nowrap'>
+                      <span
+                        class='status-badge'
+                        :class='getStatusClasses(task.status)'
+                        x-text='task.status'
+                      ></span>
+                    </td>
+                    <td class='px-6 py-4 whitespace-nowrap'>
+                      <div class='flex items-center'>
+                        <div
+                          class='priority-indicator'
+                          :style='`background-color: ${getPriorityColor(task.priority)}`'
+                        ></div>
+                        <span
+                          class='text-sm text-gray-900'
+                          x-text='task.priority'
+                        ></span>
+                      </div>
+                    </td>
+                    <td
+                      class='px-6 py-4 whitespace-nowrap text-sm text-gray-900'
+                      x-text='task.owner'
+                    ></td>
+                    <td class='px-6 py-4 whitespace-nowrap'>
+                      <div class='flex items-center'>
+                        <div class='w-16 bg-gray-200 rounded-full h-2 mr-2'>
+                          <div
+                            class='h-2 rounded-full bg-blue-600'
+                            :style='`width: ${task.progress}%`'
+                          ></div>
+                        </div>
+                        <span
+                          class='text-sm text-gray-600'
+                          x-text="task.progress + '%'"
+                        ></span>
+                      </div>
+                    </td>
+                    <td
+                      class='px-6 py-4 whitespace-nowrap text-sm text-gray-900'
+                      x-text="task.duration + 'h'"
+                    ></td>
+                    <td
+                      class='px-6 py-4 whitespace-nowrap text-sm text-gray-500'
+                    >
+                      <div class='flex space-x-2'>
+                        <button
+                          @click='viewTaskDetails(task)'
+                          class='text-blue-600 hover:text-blue-900'
+                        >
+                          <i class='fas fa-eye'></i>
+                        </button>
+                        <button
+                          @click="copyMcpCommand('delegate', task)"
+                          class='text-green-600 hover:text-green-900'
+                          x-show="task.status !== 'completed'"
+                        >
+                          <i class='fas fa-arrow-right'></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Task Details Modal -->
+      <div
+        x-show='showModal'
+        class='fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50'
+        x-cloak
+      >
+        <div
+          class='relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white'
+        >
+          <div class='flex justify-between items-center mb-4'>
+            <h3 class='text-lg font-semibold text-gray-900'>Task Details</h3>
+            <button
+              @click='showModal = false'
+              class='text-gray-400 hover:text-gray-600'
+            >
+              <i class='fas fa-times'></i>
+            </button>
+          </div>
+
+          <div x-show='selectedTask'>
+            <div class='space-y-4'>
+              <div>
+                <label class='block text-sm font-medium text-gray-700'>Task Name</label>
+                <p
+                  class='text-sm text-gray-900'
+                  x-text='selectedTask?.name'
+                ></p>
+              </div>
+
+              <div class='grid grid-cols-2 gap-4'>
+                <div>
+                  <label
+                    class='block text-sm font-medium text-gray-700'
+                  >Status</label>
+                  <p
+                    class='text-sm text-gray-900'
+                    x-text='selectedTask?.status'
+                  ></p>
+                </div>
+                <div>
+                  <label
+                    class='block text-sm font-medium text-gray-700'
+                  >Priority</label>
+                  <p
+                    class='text-sm text-gray-900'
+                    x-text='selectedTask?.priority'
+                  ></p>
+                </div>
+              </div>
+
+              <div class='grid grid-cols-2 gap-4'>
+                <div>
+                  <label
+                    class='block text-sm font-medium text-gray-700'
+                  >Owner</label>
+                  <p
+                    class='text-sm text-gray-900'
+                    x-text='selectedTask?.owner'
+                  ></p>
+                </div>
+                <div>
+                  <label
+                    class='block text-sm font-medium text-gray-700'
+                  >Duration</label>
+                  <p
+                    class='text-sm text-gray-900'
+                    x-text="(selectedTask?.duration || 0) + ' hours'"
+                  ></p>
+                </div>
+              </div>
+
+              <div>
+                <label
+                  class='block text-sm font-medium text-gray-700'
+                >Progress</label>
+                <div class='mt-1'>
+                  <div class='w-full bg-gray-200 rounded-full h-3'>
+                    <div
+                      class='h-3 rounded-full bg-blue-600'
+                      :style='`width: ${selectedTask?.progress || 0}%`'
+                    ></div>
+                  </div>
+                  <p class='text-xs text-gray-600 mt-1'>
+                    <span x-text='selectedTask?.completedSubtasks || 0'></span>
+                    of
+                    <span x-text='selectedTask?.subtaskCount || 0'></span>
+                    subtasks completed
+                  </p>
+                </div>
+              </div>
+
+              <div class='grid grid-cols-3 gap-4'>
+                <div class='text-center'>
+                  <div
+                    class='text-2xl font-bold text-blue-600'
+                    x-text='selectedTask?.delegationCount || 0'
+                  ></div>
+                  <div class='text-xs text-gray-600'>Delegations</div>
+                </div>
+                <div class='text-center'>
+                  <div
+                    class='text-2xl font-bold text-green-600'
+                    x-text="selectedTask?.hasCodeReview ? 'Yes' : 'No'"
+                  ></div>
+                  <div class='text-xs text-gray-600'>Code Review</div>
+                </div>
+                <div class='text-center'>
+                  <div
+                    class='text-2xl font-bold text-purple-600'
+                    x-text="selectedTask?.hasResearch ? 'Yes' : 'No'"
+                  ></div>
+                  <div class='text-xs text-gray-600'>Research</div>
+                </div>
+              </div>
+
+              <!-- MCP Commands -->
+              <div class='mt-6 p-4 bg-gray-50 rounded-lg'>
+                <h4 class='text-sm font-medium text-gray-900 mb-2'>Quick Actions</h4>
+                <div class='space-y-2'>
+                  <button
+                    @click="copyMcpCommand('delegate', selectedTask)"
+                    class='w-full px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700'
+                    x-show="selectedTask?.status !== 'completed'"
+                  >
+                    <i class='fas fa-arrow-right mr-2'></i>
+                    Copy Delegation Command
+                  </button>
+
+                  <button
+                    @click="copyMcpCommand('update_status', selectedTask)"
+                    class='w-full px-4 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700'
+                  >
+                    <i class='fas fa-edit mr-2'></i>
+                    Copy Status Update Command
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div
+      x-show='showToast'
+      x-transition:enter='transform ease-out duration-300 transition'
+      x-transition:enter-start='translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2'
+      x-transition:enter-end='translate-y-0 opacity-100 sm:translate-x-0'
+      x-transition:leave='transition ease-in duration-100'
+      x-transition:leave-start='opacity-100'
+      x-transition:leave-end='opacity-0'
+      class='fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50'
+      x-cloak
+    >
+      <div class='flex items-center'>
+        <i class='fas fa-check-circle mr-2'></i>
+        <span x-text='toastMessage'></span>
+      </div>
+    </div>
+
+    <!-- Safely embed JSON data in a script tag -->
+    <script type='application/json' id='dashboard-data'>
+      {{{jsonData}}}
+    </script>
+
+    <script>
+function dashboardApp() {
+  return {
+    reportData: {},
+    loading: true,
+
+    searchTerm: '',
+    statusFilter: '',
+    priorityFilter: '',
+    ownerFilter: '',
+    viewMode: 'grid',
+    filteredTasks: [],
+    showModal: false,
+    selectedTask: null,
+    showToast: false,
+    toastMessage: '',
+
+    
+    async loadData() {
+      try {
+        
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const dataScript = document.getElementById('dashboard-data');
+        if (dataScript) {
+          this.reportData = JSON.parse(dataScript.textContent);
+        } else {
+          throw new Error('Dashboard data not found');
+        }
+
+        this.filteredTasks = this.reportData.tasks || [];
+        this.loading = false;
+
+        this.$nextTick(() => {
+          this.initCharts();
+        });
+      } catch (error) {
+        console.error('Failed to load data:', error);
+        this.loading = false;
+
+        // Show error state
+        this.reportData = {
+          tasks: [],
+          summary: {
+            totalTasks: 0,
+            completed: 0,
+            inProgress: 0,
+            avgDuration: 0,
+          },
+          chartData: null,
+          metadata: { generatedAt: new Date().toISOString(), totalRecords: 0 },
+        };
+        this.filteredTasks = [];
+      }
+    },
+
+    initCharts() {
+      if (!this.reportData.chartData) return;
+
+      const statusCtx = this.$refs.statusChart.getContext('2d');
+      new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+          labels: this.reportData.chartData.statusChart.labels,
+          datasets: [
+            {
+              data: this.reportData.chartData.statusChart.data,
+              backgroundColor: this.reportData.chartData.statusChart.colors,
+              borderWidth: 2,
+              borderColor: '#ffffff',
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'bottom' },
+          },
+        },
+      });
+
+      const priorityCtx = this.$refs.priorityChart.getContext('2d');
+      new Chart(priorityCtx, {
+        type: 'doughnut',
+        data: {
+          labels: this.reportData.chartData.priorityChart.labels,
+          datasets: [
+            {
+              data: this.reportData.chartData.priorityChart.data,
+              backgroundColor: this.reportData.chartData.priorityChart.colors,
+              borderWidth: 2,
+              borderColor: '#ffffff',
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'bottom' },
+          },
+        },
+      });
+
+      const trendCtx = this.$refs.trendChart.getContext('2d');
+      new Chart(trendCtx, {
+        type: 'line',
+        data: {
+          labels: this.reportData.chartData.completionTrend.labels,
+          datasets: [
+            {
+              label: 'Completed Tasks',
+              data: this.reportData.chartData.completionTrend.data,
+              borderColor: '#8B5CF6',
+              backgroundColor: 'rgba(139, 92, 246, 0.1)',
+              tension: 0.4,
+              fill: true,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+          },
+          scales: {
+            y: { beginAtZero: true },
+          },
+        },
+      });
+    },
+
+    updateFilters() {
+      let tasks = this.reportData.tasks || [];
+
+      if (this.searchTerm) {
+        tasks = tasks.filter(
+          (task) =>
+            task.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+            task.taskId.toLowerCase().includes(this.searchTerm.toLowerCase()),
+        );
+      }
+
+      if (this.statusFilter) {
+        tasks = tasks.filter((task) => task.status === this.statusFilter);
+      }
+
+      if (this.priorityFilter) {
+        tasks = tasks.filter((task) => task.priority === this.priorityFilter);
+      }
+
+      if (this.ownerFilter) {
+        tasks = tasks.filter((task) => task.owner === this.ownerFilter);
+      }
+
+      this.filteredTasks = tasks;
+    },
+
+    getUniqueStatuses() {
+      return [
+        ...new Set((this.reportData.tasks || []).map((task) => task.status)),
+      ];
+    },
+
+    getUniqueOwners() {
+      return [
+        ...new Set((this.reportData.tasks || []).map((task) => task.owner)),
+      ];
+    },
+
+    getStatusClasses(status) {
+      const classes = {
+        completed: 'bg-green-100 text-green-800',
+        'in-progress': 'bg-blue-100 text-blue-800',
+        'not-started': 'bg-gray-100 text-gray-800',
+        'needs-review': 'bg-yellow-100 text-yellow-800',
+        'needs-changes': 'bg-red-100 text-red-800',
+      };
+      return classes[status] || 'bg-gray-100 text-gray-800';
+    },
+
+    getPriorityColor(priority) {
+      const colors = {
+        Critical: '#dc3545',
+        High: '#fd7e14',
+        Medium: '#ffc107',
+        Low: '#28a745',
+      };
+      return colors[priority] || '#6c757d';
+    },
+
+    viewTaskDetails(task) {
+      this.selectedTask = task;
+      this.showModal = true;
+    },
+
+    copyMcpCommand(action, task) {
+      let command = '';
+      switch (action) {
+        case 'delegate':
+          command = `workflow_operations({
+operation: 'delegate',
+taskId: '${task.taskId}',
+fromRole: 'current-role',
+toRole: 'target-role',
+message: 'Delegated from interactive dashboard'
+})`;
+          break;
+        case 'update_status':
+          command = `task_operations({
+operation: 'update',
+taskId: '${task.taskId}',
+taskData: { status: 'new-status' }
+})`;
+          break;
+      }
+
+      navigator.clipboard.writeText(command).then(() => {
+        this.showToast = true;
+        this.toastMessage = 'MCP command copied to clipboard!';
+          setTimeout(() => (this.showToast = false), 3000);
+        });
+      },
+    };
+  }
+    </script>
+  </body>
+</html>

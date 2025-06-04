@@ -27,6 +27,16 @@ The MCP Workflow Manager provides a structured, role-based workflow system for A
 
 **No manual setup required!** Docker automatically creates directories, initializes the database, and handles all configuration.
 
+### 🌟 **NEW: Streamlined Database Configuration**
+
+**Unified Path Pattern**: Each project gets automatic database isolation with consistent paths:
+
+```
+project-a/data/workflow.db  ← Project A's database
+project-b/data/workflow.db  ← Project B's database
+project-c/data/workflow.db  ← Project C's database
+```
+
 ### Simple Setup (Recommended)
 
 #### Claude Desktop
@@ -40,7 +50,7 @@ The MCP Workflow Manager provides a structured, role-based workflow system for A
         "run",
         "-i",
         "-v",
-        "workflow-manager-data:/app/prisma/data",
+        "workflow-manager-data:/app/data",
         "--rm",
         "hiveacademy/mcp-workflow-manager"
       ]
@@ -61,7 +71,7 @@ The MCP Workflow Manager provides a structured, role-based workflow system for A
         "-i",
         "--network=host",
         "-v",
-        "workflow-manager-data:/app/prisma/data",
+        "workflow-manager-data:/app/data",
         "--rm",
         "hiveacademy/mcp-workflow-manager"
       ]
@@ -154,7 +164,7 @@ For enhanced control over project paths and report generation:
   "mcpServers": {
     "workflow-manager": {
       "command": "docker",
-      "args": ["run", "-i", "-v", "my-auth-app-mcp-data:/app/prisma/data", "--rm", "hiveacademy/mcp-workflow-manager"]
+      "args": ["run", "-i", "-v", "my-auth-app-mcp-data:/app/data", "--rm", "hiveacademy/mcp-workflow-manager"]
     }
   }
 }
@@ -164,7 +174,7 @@ For enhanced control over project paths and report generation:
   "mcpServers": {
     "workflow-manager": {
       "command": "docker",
-      "args": ["run", "-i", "-v", "my-ecommerce-app-mcp-data:/app/prisma/data", "--rm", "hiveacademy/mcp-workflow-manager"]
+      "args": ["run", "-i", "-v", "my-ecommerce-app-mcp-data:/app/data", "--rm", "hiveacademy/mcp-workflow-manager"]
     }
   }
 }
@@ -184,7 +194,7 @@ For enhanced control over project paths and report generation:
         "run",
         "-i",
         "-v",
-        "shared-mcp-data:/app/prisma/data",
+        "shared-mcp-data:/app/data",
         "--rm",
         "hiveacademy/mcp-workflow-manager"
       ]
@@ -210,9 +220,9 @@ For enhanced control over project paths and report generation:
         "-i",
         "--network=host",
         "-v",
-        "D:/projects/my-project/prisma/data:/app/prisma/data",
+        "D:/projects/my-project/data:/app/data",
         "-v",
-        "D:/projects/my-project/workflow-reports:/app/data/workflow-manager-mcp-reports",
+        "D:/projects/my-project/workflow-reports:/app/reports",
         "hiveacademy/mcp-workflow-manager"
       ]
     }
@@ -233,9 +243,9 @@ For enhanced control over project paths and report generation:
         "-i",
         "--network=host",
         "-v",
-        "/Users/username/projects/my-project/prisma/data:/app/prisma/data",
+        "/Users/username/projects/my-project/data:/app/data",
         "-v",
-        "/Users/username/projects/my-project/workflow-reports:/app/data/workflow-manager-mcp-reports",
+        "/Users/username/projects/my-project/workflow-reports:/app/reports",
         "hiveacademy/mcp-workflow-manager"
       ]
     }
@@ -245,7 +255,7 @@ For enhanced control over project paths and report generation:
 
 **✅ What you get automatically:**
 
-- **Database**: `my-project/prisma/data/workflow.db` (created on first run)
+- **Database**: `my-project/data/workflow.db` (created on first run)
 - **Reports**: `my-project/workflow-reports/` (created when reports are generated)
 - **Project Isolation**: Each project gets its own database and reports
 - **Multiple Formats**: PDF, PNG, HTML, and JPEG reports available

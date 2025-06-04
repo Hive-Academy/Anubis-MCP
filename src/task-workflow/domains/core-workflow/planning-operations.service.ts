@@ -142,7 +142,7 @@ Implementation planning and batch subtask management.
         taskId,
         overview: planData.overview || '',
         approach: planData.approach || '',
-        technicalDecisions: planData.technicalDecisions || '',
+        technicalDecisions: planData.technicalDecisions || {},
         filesToModify: planData.filesToModify || [],
         createdBy: planData.createdBy || 'system',
 

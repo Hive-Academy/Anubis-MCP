@@ -19,4 +19,5 @@ prisma/workflow-manager.db
 /prisma/data/*
 /prisma/data/workflow.db
 /working-demo
+data
 /workflow-reports

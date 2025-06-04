@@ -139,11 +139,17 @@ Task lifecycle management with clear, focused operations.
 
     // Create task with description in transaction
     const result = await this.prisma.$transaction(async (tx) => {
+      // Generate unique slug from task name
+      const taskSlug = await this.ensureUniqueSlug(
+        this.generateSlugFromName(taskData.name!),
+      );
+
       // Create the task - let Prisma auto-generate taskId
       const task = await tx.task.create({
         data: {
           // Remove taskId - let Prisma auto-generate it
           name: taskData.name!,
+          taskSlug,
           status: taskData.status || 'not-started',
           priority: taskData.priority || 'Medium',
           dependencies: taskData.dependencies || [],
@@ -302,10 +308,10 @@ Task lifecycle management with clear, focused operations.
   }
 
   private async getTask(input: TaskOperationsInput): Promise<any> {
-    const { taskId, includeDescription, includeAnalysis } = input;
+    const { taskId, taskSlug, includeDescription, includeAnalysis } = input;
 
-    if (!taskId) {
-      throw new Error('Task ID is required for retrieval');
+    if (!taskId && !taskSlug) {
+      throw new Error('Either Task ID or Task Slug is required for retrieval');
     }
 
     const include: any = {};
@@ -316,24 +322,32 @@ Task lifecycle management with clear, focused operations.
       include.codebaseAnalysis = true;
     }
 
-    const task = await this.prisma.task.findUnique({
-      where: { taskId },
+    // Use taskSlug first, fallback to taskId
+    const whereClause = taskSlug ? { taskSlug } : { taskId };
+
+    const task = await this.prisma.task.findFirst({
+      where: whereClause,
       include,
     });
 
     if (!task) {
-      throw new Error(`Task ${taskId} not found`);
+      throw new Error(`Task not found: ${taskSlug || taskId}`);
     }
 
     return task;
   }
 
   private async listTasks(input: TaskOperationsInput): Promise<any> {
-    const { status, priority, includeDescription, includeAnalysis } = input;
+    const { status, priority, taskSlug, includeDescription, includeAnalysis } =
+      input;
 
     const where: any = {};
     if (status) where.status = status;
     if (priority) where.priority = priority;
+    if (taskSlug) {
+      // Support partial slug matching (contains the slug pattern)
+      where.taskSlug = { contains: taskSlug };
+    }
 
     const include: any = {};
     if (includeDescription) {
@@ -352,7 +366,55 @@ Task lifecycle management with clear, focused operations.
     return {
       tasks,
       count: tasks.length,
-      filters: { status, priority },
+      filters: { status, priority, taskSlug },
     };
+  }
+
+  /**
+   * Generate a kebab-case slug from a task name
+   * Converts to lowercase, removes special characters, replaces spaces with hyphens
+   */
+  private generateSlugFromName(name: string): string {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+      .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+  }
+
+  /**
+   * Ensure the generated slug is unique by checking database and appending counter if needed
+   */
+  private async ensureUniqueSlug(
+    baseSlug: string,
+    excludeTaskId?: string,
+  ): Promise<string> {
+    let slug = baseSlug;
+    let counter = 1;
+
+    while (await this.isSlugTaken(slug, excludeTaskId)) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    return slug;
+  }
+
+  /**
+   * Check if a slug is already taken by another task
+   */
+  private async isSlugTaken(
+    slug: string,
+    excludeTaskId?: string,
+  ): Promise<boolean> {
+    const existingTask = await this.prisma.task.findFirst({
+      where: {
+        taskSlug: slug,
+        ...(excludeTaskId && { taskId: { not: excludeTaskId } }),
+      },
+    });
+
+    return !!existingTask;
   }
 }
