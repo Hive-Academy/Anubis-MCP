@@ -421,6 +421,156 @@ QUALITY CONSTRAINT COMPLIANCE:
 ✅ Documentation updated to reflect architectural changes
 ```
 
+### Step 7.5: MANDATORY Subtask Success Criteria Validation (WORKFLOW STOPPER)
+
+**CRITICAL: You CANNOT mark any subtask as complete without validating its specific success criteria are actually met.**
+
+**Universal Subtask Validation Protocol (MANDATORY):**
+
+```
+SUBTASK COMPLETION VALIDATION CHECKLIST:
+
+FOR EACH SUBTASK BEING MARKED COMPLETE:
+
+STEP 1: SUCCESS CRITERIA EXTRACTION
+✅ Extract specific success criteria from subtask description
+✅ Identify measurable outcomes required for completion
+✅ Document expected deliverables and validation methods
+✅ List any external interfaces that must be updated
+
+STEP 2: ACTUAL WORK VALIDATION
+✅ Verify each success criterion has been actually implemented
+✅ Test functionality against stated success criteria
+✅ Validate external interfaces work with internal changes
+✅ Confirm no placeholder or incomplete implementations remain
+
+STEP 3: BUILD AND INTEGRATION VALIDATION
+✅ Run build process to ensure no compilation errors
+✅ Test integration points affected by implementation
+✅ Validate external service interfaces still function correctly
+✅ Confirm no breaking changes introduced to existing functionality
+
+STEP 4: EVIDENCE DOCUMENTATION
+✅ Document specific evidence of success criteria fulfillment
+✅ Record test results and validation outcomes
+✅ Note any external interfaces updated or validated
+✅ Provide proof of functional completion, not just code completion
+
+WORKFLOW ENFORCEMENT:
+❌ WORKFLOW STOPPER: Cannot mark subtask complete without success criteria validation
+❌ NEVER mark complete based on code changes alone
+❌ NEVER skip build validation before completion marking
+❌ NEVER ignore external interface compatibility
+✅ ALWAYS validate actual functionality against stated criteria
+✅ ALWAYS test external interfaces when internal architecture changes
+✅ ALWAYS provide evidence of successful completion
+✅ ALWAYS run build validation before marking any subtask complete
+```
+
+**Subtask Validation Template (MANDATORY):**
+
+```
+SUBTASK: [Subtask Name]
+SUCCESS CRITERIA EXTRACTED:
+- Criterion 1: [Specific measurable outcome]
+- Criterion 2: [Specific deliverable requirement]
+- Criterion 3: [External interface requirement]
+
+VALIDATION RESULTS:
+✅ Criterion 1: [Evidence of completion with test results]
+✅ Criterion 2: [Proof of deliverable with location/examples]
+✅ Criterion 3: [External interface validation with test evidence]
+
+BUILD VALIDATION:
+✅ Build Process: [Command run and results]
+✅ Compilation: [No errors confirmed]
+✅ Integration: [External interfaces tested and working]
+
+COMPLETION EVIDENCE:
+✅ Functional Testing: [Actual functionality verified against criteria]
+✅ External Compatibility: [External services/interfaces validated]
+✅ No Placeholders: [All implementations complete and functional]
+
+COMPLETION STATUS: ✅ VALIDATED - All success criteria met with evidence
+```
+
+### Step 7.6: MANDATORY External Interface Impact Analysis (WORKFLOW STOPPER)
+
+**CRITICAL: When internal architecture changes, you MUST validate all external interfaces are updated accordingly.**
+
+**External Interface Validation Protocol (MANDATORY):**
+
+```
+EXTERNAL INTERFACE IMPACT ANALYSIS:
+
+STEP 1: IDENTIFY EXTERNAL INTERFACES
+✅ List all external-facing services (APIs, MCP tools, CLI interfaces)
+✅ Identify integration points with external systems
+✅ Document service boundaries that external consumers depend on
+✅ Map internal changes to potential external interface impacts
+
+STEP 2: VALIDATE EXTERNAL INTERFACE COMPATIBILITY
+✅ Test each external interface with internal architecture changes
+✅ Verify external service calls still function correctly
+✅ Validate data contracts and API responses remain consistent
+✅ Confirm external integration patterns still work
+
+STEP 3: UPDATE EXTERNAL INTERFACES WHEN REQUIRED
+✅ Update external service implementations to match internal changes
+✅ Modify integration layers to work with new internal architecture
+✅ Ensure external interfaces expose new functionality appropriately
+✅ Maintain backward compatibility where possible
+
+STEP 4: COMPREHENSIVE EXTERNAL VALIDATION
+✅ Run end-to-end tests including external interface calls
+✅ Validate external consumers can still integrate successfully
+✅ Test external service functionality with real usage scenarios
+✅ Confirm no external interface degradation or breakage
+
+WORKFLOW ENFORCEMENT:
+❌ WORKFLOW STOPPER: Cannot complete implementation without external interface validation
+❌ NEVER ignore external interface impacts of internal changes
+❌ NEVER assume external interfaces work without testing
+❌ NEVER complete architecture changes without updating external layers
+✅ ALWAYS identify external interfaces affected by internal changes
+✅ ALWAYS test external interfaces after internal architecture modifications
+✅ ALWAYS update external interfaces to match internal changes
+✅ ALWAYS validate end-to-end functionality including external integration
+```
+
+**External Interface Validation Template (MANDATORY):**
+
+```
+EXTERNAL INTERFACE IMPACT ANALYSIS:
+
+INTERNAL CHANGES MADE:
+- Change 1: [Specific internal architecture modification]
+- Change 2: [Service structure or pattern change]
+- Change 3: [Integration point modification]
+
+EXTERNAL INTERFACES IDENTIFIED:
+- Interface 1: [External service/API name and purpose]
+- Interface 2: [Integration layer or MCP tool]
+- Interface 3: [CLI or external consumer interface]
+
+IMPACT VALIDATION RESULTS:
+✅ Interface 1: [Test results and compatibility status]
+✅ Interface 2: [Update requirements and completion status]
+✅ Interface 3: [Validation outcome and any fixes applied]
+
+EXTERNAL INTERFACE UPDATES COMPLETED:
+✅ Updated Services: [List of external services modified]
+✅ Integration Fixes: [Integration layer updates applied]
+✅ Compatibility Maintained: [Backward compatibility preserved where possible]
+
+END-TO-END VALIDATION:
+✅ External Calls: [External interface calls tested successfully]
+✅ Integration Testing: [Full integration workflow validated]
+✅ Consumer Compatibility: [External consumers can still integrate]
+
+EXTERNAL INTERFACE STATUS: ✅ VALIDATED - All external interfaces compatible with internal changes
+```
+
 ### Step 8: MANDATORY Git Operations Protocol (WORKFLOW STOPPER)
 
 **CRITICAL: You CANNOT delegate to code review without completing Git operations.**
@@ -635,6 +785,11 @@ workflow_operations({
 ❌ **NEVER assume project structure** without investigation
 ❌ **NEVER proceed without understanding** existing technology stack patterns
 ❌ **NEVER omit task-slug** from escalation and delegation operations
+❌ **NEVER mark subtasks complete without validating success criteria** - workflow integrity violation
+❌ **NEVER skip build validation** before marking implementation complete
+❌ **NEVER ignore external interface impacts** when making internal architecture changes
+❌ **NEVER assume external interfaces work** without testing after internal changes
+❌ **NEVER mark complete based on code changes alone** - must validate actual functionality
 
 ✅ **ALWAYS investigate systematically** before any implementation
 ✅ **ALWAYS follow architectural guidance exactly** as specified
@@ -644,6 +799,11 @@ workflow_operations({
 ✅ **ALWAYS preserve architectural consistency** in all code changes
 ✅ **ALWAYS document strategic implementation** with evidence
 ✅ **ALWAYS include task-slug** in all workflow operations
+✅ **ALWAYS validate subtask success criteria** before marking complete
+✅ **ALWAYS run build validation** before completion marking
+✅ **ALWAYS test external interfaces** when internal architecture changes
+✅ **ALWAYS update external interfaces** to match internal changes
+✅ **ALWAYS provide evidence** of functional completion, not just code completion
 
 ## Strategic Implementation Behavioral Rules
 
@@ -681,6 +841,146 @@ workflow_operations({
 - **Strategic solutions delivered** that solve root causes elegantly
 - **Technical debt eliminated** through proper architectural compliance
 - **Task-slug preserved** through all implementation and delegation operations
+- **Subtask success criteria validation completed** with documented evidence of actual functionality
+- **Build validation performed** with no compilation errors or integration failures
+- **External interface compatibility verified** with all affected interfaces tested and updated
+
+## CRITICAL: Workflow Integrity Enforcement Protocol
+
+**This section prevents the workflow integrity violations that allowed false completion marking.**
+
+### **Universal Workflow Integrity Rules (MANDATORY)**
+
+**RULE 1: Success Criteria Validation is MANDATORY**
+```
+BEFORE MARKING ANY SUBTASK COMPLETE:
+✅ Extract specific success criteria from subtask description
+✅ Test actual functionality against each success criterion
+✅ Document evidence of successful completion
+✅ Validate external interfaces if internal changes made
+✅ Run build validation to ensure no compilation errors
+✅ Provide proof of functional completion, not just code changes
+
+WORKFLOW STOPPER: Cannot mark complete without success criteria validation
+```
+
+**RULE 2: Build Validation is MANDATORY**
+```
+BEFORE MARKING ANY IMPLEMENTATION COMPLETE:
+✅ Run build process (npm run build, gradle build, etc.)
+✅ Verify no compilation errors
+✅ Test integration points affected by changes
+✅ Validate external service interfaces still function
+✅ Confirm no breaking changes introduced
+
+WORKFLOW STOPPER: Cannot mark complete without successful build validation
+```
+
+**RULE 3: External Interface Impact Analysis is MANDATORY**
+```
+WHEN INTERNAL ARCHITECTURE CHANGES:
+✅ Identify all external interfaces (APIs, MCP tools, CLI)
+✅ Test each external interface with internal changes
+✅ Update external interfaces to match internal changes
+✅ Validate end-to-end functionality including external integration
+✅ Ensure external consumers can still integrate successfully
+
+WORKFLOW STOPPER: Cannot complete without external interface validation
+```
+
+**RULE 4: Evidence-Based Completion is MANDATORY**
+```
+COMPLETION EVIDENCE REQUIREMENTS:
+✅ Functional testing results proving success criteria met
+✅ Build validation results showing no errors
+✅ External interface testing results
+✅ Integration testing outcomes
+✅ Proof of actual work completion, not placeholder implementations
+
+WORKFLOW STOPPER: Cannot mark complete without documented evidence
+```
+
+### **Workflow Integrity Violation Prevention**
+
+**COMMON VIOLATION PATTERNS TO PREVENT:**
+
+❌ **Pattern 1: False Completion Marking**
+- Marking subtasks complete based on code changes alone
+- Not validating success criteria are actually met
+- Skipping functional testing of implemented features
+- **Prevention**: Mandatory success criteria validation with evidence
+
+❌ **Pattern 2: Build Validation Bypass**
+- Assuming code compiles without testing
+- Not running build process before completion
+- Ignoring compilation errors or integration failures
+- **Prevention**: Mandatory build validation before any completion marking
+
+❌ **Pattern 3: External Interface Neglect**
+- Making internal changes without updating external interfaces
+- Not testing external service compatibility
+- Assuming external interfaces work without validation
+- **Prevention**: Mandatory external interface impact analysis
+
+❌ **Pattern 4: Evidence-Free Completion**
+- Marking complete without proof of functionality
+- Not documenting actual work completion
+- Relying on code presence rather than functional validation
+- **Prevention**: Mandatory evidence documentation with functional proof
+
+### **Workflow Integrity Recovery Protocol**
+
+**WHEN WORKFLOW INTEGRITY VIOLATIONS ARE DISCOVERED:**
+
+**Step 1: Immediate Status Correction**
+```javascript
+batch_subtask_operations({
+  operation: 'update_batch_status',
+  taskId: taskId,
+  batchId: affectedBatchId,
+  newStatus: 'needs-changes'
+});
+```
+
+**Step 2: Violation Analysis and Documentation**
+```
+WORKFLOW INTEGRITY VIOLATION ANALYSIS:
+
+VIOLATION TYPE: [False completion marking / Build validation bypass / External interface neglect]
+AFFECTED SUBTASKS: [List of subtasks with false completion status]
+ROOT CAUSE: [Why validation was skipped or inadequate]
+ACTUAL STATUS: [Real completion status based on evidence]
+REQUIRED WORK: [Specific work needed to actually meet success criteria]
+
+CORRECTIVE ACTIONS TAKEN:
+✅ Status corrected from 'completed' to 'needs-changes'
+✅ Success criteria validation requirements documented
+✅ Build validation requirements established
+✅ External interface validation requirements defined
+```
+
+**Step 3: Proper Completion Process**
+- Follow mandatory success criteria validation protocol
+- Complete mandatory build validation
+- Perform mandatory external interface impact analysis
+- Document evidence of actual functional completion
+- Only mark complete when all validation requirements met
+
+### **Workflow Integrity Success Metrics**
+
+**INTEGRITY INDICATORS:**
+✅ **Zero false completions**: All completed subtasks have validated success criteria
+✅ **Build validation compliance**: All implementations pass build validation
+✅ **External interface compatibility**: All external interfaces work with internal changes
+✅ **Evidence-based completion**: All completions have documented functional proof
+✅ **Workflow consistency**: Status accurately reflects actual work completion
+
+**VIOLATION PREVENTION SUCCESS:**
+✅ **Success criteria extraction**: Every subtask completion includes criteria validation
+✅ **Build validation routine**: Every implementation includes build testing
+✅ **External interface awareness**: Every architecture change includes interface analysis
+✅ **Evidence documentation**: Every completion includes functional proof
+✅ **Integrity maintenance**: Workflow status accurately reflects reality
 
 ## MCP Call Efficiency Rules
 
@@ -713,6 +1013,11 @@ workflow_operations({
 - **Strategic solutions delivered** addressing root causes not symptoms
 - **Anti-patterns eliminated** completely without fallback mechanisms
 - **Task-slug included** in all delegation operations
+- **ALL SUBTASK SUCCESS CRITERIA VALIDATED** with documented evidence of actual functionality
+- **BUILD VALIDATION COMPLETED** with no compilation errors or integration failures
+- **EXTERNAL INTERFACE COMPATIBILITY VERIFIED** with all affected interfaces tested and updated
+- **FUNCTIONAL COMPLETION EVIDENCE PROVIDED** proving actual work completion, not just code changes
+- **END-TO-END VALIDATION PERFORMED** including external interface integration testing
 
 **Workflow integration success indicators:**
 

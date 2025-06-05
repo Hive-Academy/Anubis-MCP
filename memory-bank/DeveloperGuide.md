@@ -87,6 +87,42 @@ if (!status.playwrightBrowsersInstalled && !options.skipPlaywright) {
     - **Schemas** (e.g., in a `schemas/` subdirectory like `task-crud.schema.ts`): Zod schemas define the input parameters for MCP tools and may also define shapes for internal data structures.
 - The old facade (`task-workflow.service.ts`) and utility directories (`mcp-operations/`, `services/`, `schemas/` directly under `src/task-workflow/`) have been removed and their responsibilities redistributed into the new domain structure.
 
+### 2.1. Advanced Reporting Domain Structure
+
+**Status**: ✅ **FULLY RE-ARCHITECTED** (Completed 2025-06-05)
+
+The reporting domain (`src/task-workflow/domains/reporting/`) follows a sophisticated feature-based architecture:
+
+#### **Shared Services Layer** (KISS Principle Applied)
+- **`shared/report-data.service.ts`**: Centralized Prisma queries with optimized includes (200 lines max)
+- **`shared/report-transform.service.ts`**: Data formatting, Chart.js preparation, aggregation logic
+- **`shared/report-render.service.ts`**: Handlebars template compilation, caching, rendering
+- **`shared/report-metadata.service.ts`**: Common metadata generation and complexity assessment
+- **`shared/partials/`**: Reusable template components (base-layout, data-table, metric-cards, etc.)
+
+#### **Business Domain Organization**
+1. **`workflow-analytics/`**: Delegation flow, role performance, workflow analytics reports
+2. **`task-management/`**: Task detail and implementation plan reports
+3. **`dashboard/`**: Interactive dashboard and simple report features
+
+#### **Feature-Based Structure Pattern**
+Each report feature follows this pattern:
+```
+/[report-name]/
+  - [report-name].service.ts        # Main service (150 lines max)
+  - [specific-analyzer].service.ts  # Analytics calculations
+  - [specific-builder].service.ts   # Data building logic
+  /templates/
+    - [report-name]-report.hbs      # Enhanced with Alpine.js + Chart.js
+```
+
+#### **Template Enhancement Standards**
+- **Alpine.js**: Reactive data binding and client-side interactivity
+- **Chart.js**: Rich data visualization with responsive charts
+- **Tailwind CSS**: Utility-first styling for stunning visual design
+- **Handlebars**: Server-side template compilation with caching
+- **Component-Based**: Reusable partials for consistent UI patterns
+
 ## 3. Coding Standards & Best Practices
 
 - Follow NestJS modularity and DI patterns.
@@ -120,6 +156,7 @@ if (!status.playwrightBrowsersInstalled && !options.skipPlaywright) {
 
 **Status**: ✅ **All schemas aligned** with database models (Completed TSK-004 on 2025-05-23)
 **Documentation Status**: ✅ **Comprehensive schema documentation** completed (TSK-005 on 2025-05-25)
+**Reports Architecture Status**: ✅ **Feature-based reports system** completed (TSK-cmbikegx30000mtpo6etx0885 on 2025-06-05)
 
 **Key Principles**:
 

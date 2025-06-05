@@ -91,6 +91,92 @@ Each domain typically contains:
 
 This structure replaces a flatter organization where services, MCP operations, and schemas might have been grouped by technical type (e.g., all services in one folder, all schemas in another).
 
+### Advanced Reporting Architecture (Feature-Based Organization)
+
+**Status**: ✅ **FULLY RE-ARCHITECTED** (Completed 2025-06-05)
+
+The reporting system has been completely re-architected using feature-based organization principles:
+
+#### **Feature-Based Structure**
+```
+/src/task-workflow/domains/reporting/
+  /shared/                           # 4 Core Shared Services (KISS Principle)
+    - report-data.service.ts         # Centralized Prisma queries (200 lines max)
+    - report-transform.service.ts    # Data formatting and Chart.js preparation
+    - report-render.service.ts       # Handlebars template compilation and rendering
+    - report-metadata.service.ts     # Common metadata generation
+    /partials/                       # Reusable template components
+      - base-layout.hbs, data-table.hbs, metric-cards.hbs, etc.
+  
+  /workflow-analytics/               # Business Domain: Workflow Analysis
+    /delegation-flow/
+      - delegation-flow.service.ts   # Main service (150 lines)
+      - delegation-analytics.service.ts  # Analytics calculations
+      - delegation-summary.service.ts    # Summary generation
+      /templates/
+        - delegation-flow-report.hbs
+    /role-performance/
+      - role-performance.service.ts
+      - role-analytics.service.ts
+      - role-metrics-calculator.service.ts
+      /templates/
+        - role-performance-report.hbs
+    /workflow-analytics/
+      - workflow-analytics.service.ts
+      - workflow-analytics-calculator.service.ts
+      - workflow-summary.service.ts
+      /templates/
+        - workflow-analytics-report.hbs
+  
+  /task-management/                  # Business Domain: Task Management
+    /task-detail/
+      - task-detail.service.ts
+      - task-detail-builder.service.ts
+      - task-progress-analyzer.service.ts
+      - task-quality-analyzer.service.ts
+      /templates/
+        - task-detail-report.hbs
+    /implementation-plan/
+      - implementation-plan.service.ts
+      - implementation-plan-builder.service.ts
+      - implementation-plan-analyzer.service.ts
+      /templates/
+        - implementation-plan-report.hbs
+  
+  /dashboard/                        # Business Domain: Dashboard Reports
+    /interactive-dashboard/
+      - interactive-dashboard.service.ts
+      - dashboard-data-aggregator.service.ts
+      - dashboard-chart-builder.service.ts
+      /templates/
+        - interactive-dashboard.hbs   # Enhanced with Alpine.js + Chart.js
+    /simple-report/
+      # Future simple report implementation
+```
+
+#### **Key Architectural Improvements**
+
+1. **Vertical Slice Architecture**: Each report feature contains all related components (service, templates, analytics)
+2. **Service Complexity Reduction**: All services now under 200 lines following KISS principle
+3. **Shared Services Abstraction**: 4 core shared services handle common patterns
+4. **Business Domain Grouping**: Related reports grouped by business functionality
+5. **Template Enhancement**: Data-intensive templates with Alpine.js, Chart.js, and Tailwind CSS
+
+#### **Shared Services Architecture**
+
+- **ReportDataService**: Centralized Prisma queries with optimized includes and filtering
+- **ReportTransformService**: Data formatting, Chart.js preparation, and aggregation logic
+- **ReportRenderService**: Handlebars template compilation, caching, and rendering
+- **ReportMetadataService**: Common metadata generation and complexity assessment
+
+#### **Template Enhancement Features**
+
+- **Alpine.js Integration**: Reactive data binding and client-side interactivity
+- **Chart.js Visualizations**: Rich data visualization with responsive charts
+- **Tailwind CSS**: Utility-first styling for stunning visual design
+- **Component-Based**: Reusable template partials for consistent UI
+- **Performance Optimization**: Template caching and lazy loading for large datasets
+
 ### Workflow & Data Flow
 
 - MCP client (Cursor IDE) sends requests via stdio or HTTP+SSE
@@ -102,6 +188,10 @@ This structure replaces a flatter organization where services, MCP operations, a
 ### MCP Schema-Database Alignment
 
 **Status**: ✅ **FULLY ALIGNED** (Completed 2025-05-23)
+
+### Reports System Re-Architecture
+
+**Status**: ✅ **FULLY RE-ARCHITECTED** (Completed 2025-06-05)
 
 - **42 schema files** across 5 domains fully aligned with Prisma database models
 - **10 core models** properly mapped: Task, TaskDescription, ImplementationPlan, Subtask, DelegationRecord, ResearchReport, CodeReview, CompletionReport, Comment, WorkflowTransition
