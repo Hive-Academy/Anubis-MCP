@@ -2,7 +2,7 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
-import { ReportGenerationMcpService } from './report-generation-mcp.service';
+import { McpOrchestratorService } from './mcp-orchestrator.service';
 
 // Simplified Zod schemas for our new architecture
 const GenerateReportInputSchema = z.object({
@@ -131,9 +131,7 @@ export class ReportMcpOperationsService {
   private readonly logger = new Logger(ReportMcpOperationsService.name);
   private readonly reportJobs = new Map<string, ReportJobStatus>();
 
-  constructor(
-    private readonly reportGenerationMcp: ReportGenerationMcpService,
-  ) {}
+  constructor(private readonly mcpOrchestrator: McpOrchestratorService) {}
 
   @Tool({
     name: 'generate_workflow_report',
@@ -198,7 +196,7 @@ Reports saved to 'workflow-reports/interactive/' with meaningful names.`,
       };
 
       // Use our new simplified report generation service
-      const reportResponse = await this.reportGenerationMcp.generateReport({
+      const reportResponse = await this.mcpOrchestrator.generateReport({
         reportType: input.reportType,
         filters,
         basePath: input.basePath,
@@ -383,7 +381,7 @@ ${jobStatus.error ? `❌ Error: ${jobStatus.error}` : ''}`,
   async cleanupReport(input: CleanupReportInput): Promise<any> {
     try {
       // Use the new MCP service for cleanup
-      await this.reportGenerationMcp.clearCaches();
+      await this.mcpOrchestrator.clearCaches();
 
       this.logger.log(`Report cleanup requested: ${input.filename}`);
 
@@ -431,7 +429,7 @@ Files are stored in organized folders for easy manual management.`,
 
     try {
       // Test the new simplified system
-      const healthResult = await this.reportGenerationMcp.healthCheck();
+      const healthResult = await this.mcpOrchestrator.healthCheck();
       const responseTime = Date.now() - startTime;
 
       const healthStatus = {

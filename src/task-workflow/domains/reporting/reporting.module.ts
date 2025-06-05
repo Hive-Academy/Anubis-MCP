@@ -2,8 +2,13 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../../prisma/prisma.module';
 
 // === NEW DOMAIN-BASED REPORTING ARCHITECTURE ===
-import { ReportGenerationMcpService } from './report-generation-mcp.service';
+import { McpOrchestratorService } from './mcp-orchestrator.service';
 import { ReportMcpOperationsService } from './report-mcp-operations.service';
+
+// MCP Focused Services
+import { McpReportRouterService } from './shared/mcp-report-router.service';
+import { McpFileManagerService } from './shared/mcp-file-manager.service';
+import { McpResponseBuilderService } from './shared/mcp-response-builder.service';
 
 // Shared Services
 import { ReportDataService } from './shared/report-data.service';
@@ -138,13 +143,16 @@ import { DashboardChartBuilderService } from './dashboard/interactive-dashboard/
     DashboardChartBuilderService,
 
     // === MCP INTERFACE SERVICES ===
-    ReportGenerationMcpService,
+    McpOrchestratorService,
+    McpReportRouterService,
+    McpFileManagerService,
+    McpResponseBuilderService,
     ReportMcpOperationsService,
   ],
   exports: [
     // Primary MCP interface for external consumption
     ReportMcpOperationsService,
-    ReportGenerationMcpService,
+    McpOrchestratorService,
 
     // Domain services for direct access
     TaskDetailService,

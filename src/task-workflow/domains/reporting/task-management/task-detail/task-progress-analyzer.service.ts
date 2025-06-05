@@ -103,7 +103,8 @@ export class TaskProgressAnalyzerService {
     const stuckSubtasks = subtasks.filter(
       (s) =>
         s.status === 'in-progress' &&
-        Date.now() - new Date(s.createdAt).getTime() > 48 * 60 * 60 * 1000, // 48 hours
+        s.startedAt &&
+        Date.now() - new Date(s.startedAt).getTime() > 48 * 60 * 60 * 1000, // 48 hours
     );
 
     stuckSubtasks.forEach((s) => {
@@ -111,7 +112,7 @@ export class TaskProgressAnalyzerService {
         type: 'stuck-subtask',
         description: `Subtask "${s.name}" has been in progress for over 48 hours`,
         severity: 'medium',
-        identifiedAt: s.createdAt.toISOString(),
+        identifiedAt: s.startedAt?.toISOString() || new Date().toISOString(),
       });
     });
 
