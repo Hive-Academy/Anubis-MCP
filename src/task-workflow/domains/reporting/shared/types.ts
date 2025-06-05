@@ -12,16 +12,16 @@ export interface ReportMetadata {
 }
 
 // Common report data structure
-export interface BaseReportData<T = any> {
+export interface BaseReportData<T = unknown> {
   data: T;
   metadata: ReportMetadata;
 }
 
 // Template rendering context
-export interface TemplateContext {
-  data: any;
+export interface TemplateContext<T = unknown> {
+  data: T;
   metadata: ReportMetadata;
-  helpers?: Record<string, any>;
+  helpers?: Record<string, HandlebarsHelper>;
 }
 
 // Data transformation options
@@ -29,17 +29,25 @@ export interface TransformOptions {
   includeMetadata?: boolean;
   dateFormat?: string;
   numberFormat?: string;
-  filters?: Record<string, any>;
+  filters?: ReportFilters;
 }
 
 // Common query filters
 export interface ReportFilters {
   startDate?: string;
   endDate?: string;
-  status?: string;
+  status?:
+    | 'not-started'
+    | 'in-progress'
+    | 'needs-review'
+    | 'completed'
+    | 'needs-changes'
+    | 'paused'
+    | 'cancelled';
   owner?: string;
-  priority?: string;
+  priority?: 'Low' | 'Medium' | 'High' | 'Critical';
   taskId?: string;
+  basePath?: string;
 }
 
 // Prisma query result types with proper relations
@@ -260,3 +268,150 @@ export interface ReactiveData {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }
+
+// Delegation Flow specific template data
+export interface DelegationFlowTemplateData {
+  task: {
+    taskId: string;
+    name: string;
+    taskSlug?: string | null;
+    status: string;
+    currentOwner: string | null;
+    totalDelegations: number;
+    redelegationCount: number;
+  };
+  delegations: Array<{
+    id: number;
+    fromRole: string;
+    toRole: string;
+    delegatedAt: string;
+    duration: number;
+    success?: boolean | null;
+  }>;
+  uniqueRoles: string[];
+  averageDelegationTime: number;
+  flowEfficiency: number;
+  roleAnalysis: Array<{
+    role: string;
+    involvement: number;
+    delegationsReceived: number;
+    delegationsMade: number;
+    averageHoldTime: number;
+    efficiency: number;
+  }>;
+  commonPaths: Array<{
+    fromRole: string;
+    toRole: string;
+    count: number;
+    percentage: number;
+  }>;
+  escalationPatterns: Array<{
+    fromRole: string;
+    toRole: string;
+    count: number;
+    reason: string;
+  }>;
+  taskStartDate: string | Date;
+  firstDelegation: string | Date;
+  lastDelegation: string | Date;
+  totalFlowTime: number;
+  bottlenecks: Array<{
+    role: string;
+    averageHoldTime: number;
+    delayCount: number;
+  }>;
+  fastTransitions: Array<{
+    fromRole: string;
+    toRole: string;
+    averageTime: number;
+  }>;
+  optimizationTips: Array<{
+    title: string;
+    description: string;
+    impact: string;
+  }>;
+  title: string;
+  chartData: ChartData;
+}
+
+// Task Detail specific template data
+export interface TaskDetailTemplateData {
+  task: FormattedTaskData;
+  description: TaskDescriptionData;
+  implementationPlans: ImplementationPlanWithRelations[];
+  delegationHistory: FormattedDelegationData[];
+  workflowProgress: {
+    completionPercentage: number;
+    currentStage: string;
+    stagesCompleted: number;
+    totalStages: number;
+  };
+  qualityMetrics: {
+    codeQuality: number;
+    testCoverage: number;
+    documentation: number;
+  };
+  title: string;
+  chartData: {
+    workflowProgress: {
+      completion: number;
+      stages: Array<{
+        stage: string;
+        duration: number;
+        success?: boolean | null;
+      }>;
+    };
+    qualityTrends: {
+      codeQuality: number;
+      testCoverage: number;
+      documentation: number;
+    };
+  };
+}
+
+// Interactive Dashboard specific template data
+export interface InteractiveDashboardTemplateData {
+  summary: {
+    totalTasks: number;
+    completedTasks: number;
+    inProgressTasks: number;
+    averageCompletionTime: number;
+  };
+  taskTable: {
+    columns: Array<{
+      key: string;
+      label: string;
+      sortable: boolean;
+    }>;
+    data: FormattedTaskData[];
+  };
+  delegationTable: {
+    columns: Array<{
+      key: string;
+      label: string;
+      sortable: boolean;
+    }>;
+    data: FormattedDelegationData[];
+  };
+  charts: {
+    statusDistribution: ChartData;
+    priorityDistribution: ChartData;
+    delegationFlow: ChartData;
+    timeline: ChartData;
+  };
+  title: string;
+  filters: ReportFilters;
+  hasFilters: boolean;
+}
+
+// Union type for all possible template data
+export type TemplateData =
+  | DelegationFlowTemplateData
+  | TaskDetailTemplateData
+  | InteractiveDashboardTemplateData
+  | Record<string, unknown>; // Fallback for custom templates
+
+// Handlebars helper function type
+export type HandlebarsHelper = (
+  ...args: unknown[]
+) => string | number | boolean | undefined;

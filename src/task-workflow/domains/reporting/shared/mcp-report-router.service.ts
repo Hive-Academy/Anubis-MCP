@@ -3,6 +3,7 @@ import { TaskDetailService } from '../task-management/task-detail/task-detail.se
 import { DelegationFlowService } from '../workflow-analytics/delegation-flow/delegation-flow.service';
 import { ImplementationPlanService } from '../task-management/implementation-plan/implementation-plan.service';
 import { WorkflowAnalyticsService } from '../workflow-analytics/workflow-analytics/workflow-analytics.service';
+import { RolePerformanceService } from '../workflow-analytics/role-performance/role-performance.service';
 import { InteractiveDashboardService } from '../dashboard/interactive-dashboard/interactive-dashboard.service';
 import { McpReportRequest } from './mcp-types';
 
@@ -20,6 +21,7 @@ export class McpReportRouterService {
     private readonly delegationFlowService: DelegationFlowService,
     private readonly implementationPlanService: ImplementationPlanService,
     private readonly workflowAnalyticsService: WorkflowAnalyticsService,
+    private readonly rolePerformanceService: RolePerformanceService,
     private readonly interactiveDashboardService: InteractiveDashboardService,
   ) {}
 
@@ -29,9 +31,19 @@ export class McpReportRouterService {
   async routeRequest(request: McpReportRequest): Promise<any> {
     this.logger.log(`Routing MCP request: ${request.reportType}`);
 
-    const filters = this.processFilters(request.filters || {});
+    const filters = this.processFilters(
+      request.filters || {},
+      request.basePath,
+    );
 
     switch (request.reportType) {
+      case 'interactive-dashboard':
+      case 'dashboard':
+        return this.handleDashboardRequest(request, filters);
+
+      case 'summary':
+        return this.handleSummaryRequest(request, filters);
+
       case 'task-detail':
         return this.handleTaskDetailRequest(request, filters);
 
@@ -47,10 +59,6 @@ export class McpReportRouterService {
       case 'role-performance':
         return this.handleRolePerformanceRequest(request, filters);
 
-      case 'interactive-dashboard':
-      case 'dashboard':
-        return this.handleDashboardRequest(request, filters);
-
       default:
         throw new Error(`Unsupported report type: ${request.reportType}`);
     }
@@ -61,7 +69,7 @@ export class McpReportRouterService {
    */
   private async handleTaskDetailRequest(
     request: McpReportRequest,
-    _filters: any,
+    filters: any,
   ): Promise<any> {
     if (!request.filters?.taskId) {
       throw new Error('Task ID is required for task detail reports');
@@ -70,7 +78,10 @@ export class McpReportRouterService {
     if (request.outputFormat === 'json') {
       return this.taskDetailService.generateReport(request.filters.taskId);
     } else {
-      return this.taskDetailService.generateHtmlReport(request.filters.taskId);
+      return this.taskDetailService.generateHtmlReport(
+        request.filters.taskId,
+        filters.basePath,
+      );
     }
   }
 
@@ -79,7 +90,7 @@ export class McpReportRouterService {
    */
   private async handleDelegationFlowRequest(
     request: McpReportRequest,
-    _filters: any,
+    filters: any,
   ): Promise<any> {
     if (!request.filters?.taskId) {
       throw new Error('Task ID is required for delegation flow reports');
@@ -90,6 +101,7 @@ export class McpReportRouterService {
     } else {
       return this.delegationFlowService.generateHtmlReport(
         request.filters.taskId,
+        filters.basePath,
       );
     }
   }
@@ -99,7 +111,7 @@ export class McpReportRouterService {
    */
   private async handleImplementationPlanRequest(
     request: McpReportRequest,
-    _filters: any,
+    filters: any,
   ): Promise<any> {
     if (!request.filters?.taskId) {
       throw new Error('Task ID is required for implementation plan reports');
@@ -112,6 +124,7 @@ export class McpReportRouterService {
     } else {
       return this.implementationPlanService.generateHtmlReport(
         request.filters.taskId,
+        filters.basePath,
       );
     }
   }
@@ -126,7 +139,10 @@ export class McpReportRouterService {
     if (request.outputFormat === 'json') {
       return this.workflowAnalyticsService.generateReport(filters);
     } else {
-      return this.workflowAnalyticsService.generateHtmlReport(filters);
+      return this.workflowAnalyticsService.generateHtmlReport(
+        filters,
+        filters.basePath,
+      );
     }
   }
 
@@ -137,18 +153,16 @@ export class McpReportRouterService {
     request: McpReportRequest,
     filters: any,
   ): Promise<any> {
-    if (!request.filters?.owner) {
-      throw new Error('Role/Owner is required for role performance reports');
+    // Role performance reports can work with or without owner filter
+    const roleFilters = { ...filters };
+    if (request.filters?.owner) {
+      roleFilters.owner = request.filters.owner;
     }
 
-    // Route to workflow analytics service for role-specific analysis
-    // Add owner filter for role-specific analysis
-    const roleFilters = { ...filters, owner: request.filters.owner };
-
     if (request.outputFormat === 'json') {
-      return this.workflowAnalyticsService.generateReport(roleFilters);
+      return this.rolePerformanceService.generateReport(roleFilters);
     } else {
-      return this.workflowAnalyticsService.generateHtmlReport(roleFilters);
+      return this.rolePerformanceService.generateHtmlReport(roleFilters);
     }
   }
 
@@ -167,10 +181,30 @@ export class McpReportRouterService {
   }
 
   /**
+   * Handle summary report request
+   */
+  private async handleSummaryRequest(
+    request: McpReportRequest,
+    filters: any,
+  ): Promise<any> {
+    // Use the interactive dashboard service for summary reports
+    if (request.outputFormat === 'json') {
+      return this.interactiveDashboardService.generateDashboard(filters);
+    } else {
+      return this.interactiveDashboardService.generateHtmlDashboard(filters);
+    }
+  }
+
+  /**
    * Process and convert filter values
    */
-  private processFilters(filters: any): any {
+  private processFilters(filters: any, basePath?: string): any {
     const processed = { ...filters };
+
+    // Add basePath to filters if provided
+    if (basePath) {
+      processed.basePath = basePath;
+    }
 
     // Convert string dates to Date objects if provided
     if (processed.startDate) {

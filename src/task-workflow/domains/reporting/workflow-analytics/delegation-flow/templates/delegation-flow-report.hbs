@@ -1,410 +1,470 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delegation Flow Report - {{task.name}}</title>
+{{#> base-layout title="Delegation Flow Report" reportType="Delegation Flow"}}
+
+<!-- Delegation Flow Content -->
+<div class="space-y-8">
     
-    <!-- Alpine.js -->
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <style>
-        .fade-in { animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .section-card { @apply bg-white rounded-xl shadow-lg p-6 mb-6; }
-        .role-badge { @apply px-3 py-1 rounded-full text-sm font-medium; }
-        .delegation-arrow { @apply mx-4 text-gray-400; }
-        .timeline-item { @apply border-l-4 pl-4 pb-6 relative; }
-        .timeline-item::before { 
-            content: '';
-            @apply absolute w-3 h-3 bg-white border-2 rounded-full -left-2 top-1;
-        }
-    </style>
-</head>
-<body class="bg-gray-50 min-h-screen">
-    <div x-data="delegationFlowApp()" x-init="loadData()" class="container mx-auto px-4 py-8">
+    <!-- Flow Overview Card -->
+    <div class="card animate-on-scroll">
+        <div class="card-header">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                        <i class="fas fa-exchange-alt text-primary-600 mr-3"></i>
+                        Delegation Flow Analysis
+                    </h2>
+                    <p class="text-gray-600 mt-1">{{task.name}} • Task ID: {{task.taskId}}</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="status-badge status-{{task.status}}">{{task.status}}</span>
+                    <span class="text-sm text-gray-500">{{delegations.length}} delegations</span>
+                </div>
+            </div>
+        </div>
         
-        <!-- Header -->
-        <div class="section-card">
-            <div class="flex items-center justify-between mb-4">
-                <h1 class="text-3xl font-bold text-gray-900">
-                    <i class="fas fa-exchange-alt text-blue-600 mr-3"></i>
-                    Delegation Flow Report
-                </h1>
-                <div class="text-sm text-gray-500">
-                    Generated: {{metadata.generatedAt}}
-                </div>
-            </div>
-            
-            <!-- Task Overview -->
-            <div class="border-l-4 border-blue-500 pl-4">
-                <h2 class="text-2xl font-semibold text-gray-900 mb-2">{{task.name}}</h2>
-                <div x-show="data.task.taskSlug" class="mb-2">
-                    <p class="text-gray-600">Slug: <code class="bg-gray-100 px-2 py-1 rounded" x-text="data.task.taskSlug"></code></p>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                    <div>
-                        <span class="text-sm font-medium text-gray-500">Current Status:</span>
-                        <span class="ml-2 px-3 py-1 rounded-full text-sm font-medium"
-                              :class="{
-                                'bg-green-100 text-green-800': data.task.status === 'completed',
-                                'bg-blue-100 text-blue-800': data.task.status === 'in-progress',
-                                'bg-gray-100 text-gray-800': data.task.status === 'not-started',
-                                'bg-yellow-100 text-yellow-800': data.task.status === 'needs-review'
-                              }"
-                              x-text="data.task.status">
-                        </span>
-                    </div>
-                    <div>
-                        <span class="text-sm font-medium text-gray-500">Current Owner:</span>
-                        <span class="ml-2 role-badge bg-purple-100 text-purple-800" x-text="data.task.currentOwner"></span>
-                    </div>
-                    <div>
-                        <span class="text-sm font-medium text-gray-500">Total Delegations:</span>
-                        <span class="ml-2 text-lg font-bold text-blue-600" x-text="data.task.totalDelegations"></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Summary Statistics -->
-        <div class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-chart-pie text-green-600 mr-2"></i>
-                Delegation Summary
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div class="text-center">
-                    <div class="text-3xl font-bold text-blue-600" x-text="data.summary.totalDelegations"></div>
-                    <div class="text-sm text-gray-600">Total Delegations</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-3xl font-bold text-green-600" x-text="data.summary.successfulDelegations"></div>
-                    <div class="text-sm text-gray-600">Successful</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-3xl font-bold text-red-600" x-text="data.summary.redelegations"></div>
-                    <div class="text-sm text-gray-600">Redelegations</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-3xl font-bold text-purple-600" x-text="data.summary.averageDuration + 'h'"></div>
-                    <div class="text-sm text-gray-600">Avg Duration</div>
-                </div>
-            </div>
-            <div class="mt-6">
-                <div class="flex justify-between text-sm text-gray-600 mb-2">
-                    <span>Success Rate</span>
-                    <span x-text="data.summary.successRate + '%'"></span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                    <div class="h-2 rounded-full bg-green-500" :style="'width: ' + data.summary.successRate + '%'"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Delegation Chain Visualization -->
-        <div class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-sitemap text-indigo-600 mr-2"></i>
-                Delegation Chain
-            </h3>
-            <div class="bg-gray-50 p-6 rounded-lg overflow-x-auto">
-                <div class="flex items-center space-x-4 min-w-max">
-                    <template x-for="delegation in data.delegationChain || []" :key="delegation.id">
-                        <div class="flex items-center">
-                            <!-- From Role -->
-                            <div class="text-center">
-                                <div class="role-badge"
-                                     :class="{
-                                       'bg-blue-100 text-blue-800': delegation.fromMode === 'boomerang',
-                                       'bg-green-100 text-green-800': delegation.fromMode === 'researcher',
-                                       'bg-purple-100 text-purple-800': delegation.fromMode === 'architect',
-                                       'bg-orange-100 text-orange-800': delegation.fromMode === 'senior-developer',
-                                       'bg-red-100 text-red-800': delegation.fromMode === 'code-review'
-                                     }"
-                                     x-text="delegation.fromMode">
-                                </div>
-                                <div class="text-xs text-gray-500 mt-1" x-text="formatDate(delegation.delegationTimestamp)">
-                                </div>
-                            </div>
-                            
-                            <!-- Arrow with duration -->
-                            <div class="delegation-arrow text-center">
-                                <i class="fas fa-arrow-right text-lg"></i>
-                                <div x-show="delegation.duration" class="text-xs text-gray-500" x-text="delegation.duration + 'h'"></div>
-                            </div>
-                            
-                            <!-- To Role -->
-                            <div class="text-center">
-                                <div class="role-badge"
-                                     :class="{
-                                       'bg-blue-100 text-blue-800': delegation.toMode === 'boomerang',
-                                       'bg-green-100 text-green-800': delegation.toMode === 'researcher',
-                                       'bg-purple-100 text-purple-800': delegation.toMode === 'architect',
-                                       'bg-orange-100 text-orange-800': delegation.toMode === 'senior-developer',
-                                       'bg-red-100 text-red-800': delegation.toMode === 'code-review'
-                                     }"
-                                     x-text="delegation.toMode">
-                                </div>
-                                <div x-show="delegation.success" class="text-xs text-green-600 mt-1">
-                                    <i class="fas fa-check"></i> Success
-                                </div>
-                                <div x-show="!delegation.success" class="text-xs text-red-600 mt-1">
-                                    <i class="fas fa-times"></i> Redelegated
-                                </div>
-                            </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <!-- Flow Metrics -->
+                <div class="lg:col-span-1">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Flow Metrics</h3>
+                    <div class="space-y-4">
+                        <div class="text-center p-4 bg-blue-50 rounded-lg">
+                            <div class="text-2xl font-bold text-blue-600">{{delegations.length}}</div>
+                            <div class="text-sm text-blue-700">Total Delegations</div>
                         </div>
-                    </template>
-                </div>
-            </div>
-        </div>
-
-        <!-- Detailed Delegation Timeline -->
-        <div class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-history text-purple-600 mr-2"></i>
-                Delegation Timeline
-            </h3>
-            <div class="space-y-6">
-                <template x-for="delegation in data.delegationChain || []" :key="delegation.id">
-                    <div class="timeline-item border-blue-400">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <h4 class="font-semibold text-gray-800" x-text="delegation.fromMode + ' → ' + delegation.toMode">
-                                </h4>
-                                <p class="text-sm text-gray-600 mt-1" x-text="delegation.message"></p>
-                                <div x-show="delegation.context" class="mt-2 text-xs text-gray-500">
-                                    <span>Context: </span><span x-text="delegation.context"></span>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-sm text-gray-500" x-text="formatDate(delegation.delegationTimestamp)">
-                                </div>
-                                <div x-show="delegation.duration" class="text-sm font-medium text-blue-600">
-                                    <span x-text="'Duration: ' + delegation.duration + ' hours'"></span>
-                                </div>
-                                <span x-show="delegation.success" class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">
-                                    <i class="fas fa-check"></i> Completed
-                                </span>
-                                <span x-show="!delegation.success" class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded">
-                                    <i class="fas fa-redo"></i> Redelegated
-                                </span>
-                            </div>
+                        <div class="text-center p-4 bg-green-50 rounded-lg">
+                            <div class="text-2xl font-bold text-green-600">{{uniqueRoles.length}}</div>
+                            <div class="text-sm text-green-700">Roles Involved</div>
                         </div>
-                        <div x-show="delegation.redelegationReason" class="mt-3 p-3 bg-red-50 rounded border-l-4 border-red-400">
-                            <div class="text-sm font-medium text-red-800">Redelegation Reason:</div>
-                            <div class="text-sm text-red-700" x-text="delegation.redelegationReason"></div>
+                        <div class="text-center p-4 bg-purple-50 rounded-lg">
+                            <div class="text-2xl font-bold text-purple-600">{{averageDelegationTime}}</div>
+                            <div class="text-sm text-purple-700">Avg Time (hours)</div>
+                        </div>
+                        <div class="text-center p-4 bg-orange-50 rounded-lg">
+                            <div class="text-2xl font-bold text-orange-600">{{flowEfficiency}}%</div>
+                            <div class="text-sm text-orange-700">Flow Efficiency</div>
                         </div>
                     </div>
-                </template>
-            </div>
-        </div>
-
-        <!-- Workflow Transitions -->
-        <div class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-project-diagram text-orange-600 mr-2"></i>
-                Workflow Transitions
-            </h3>
-            <div class="overflow-x-auto">
-                <table class="min-w-full">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transition</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <template x-for="transition in data.workflowTransitions || []" :key="transition.id">
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" x-text="transition.transitionType">
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 text-xs rounded bg-gray-100 text-gray-800" x-text="transition.fromStatus">
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 text-xs rounded"
-                                          :class="{
-                                            'bg-green-100 text-green-800': transition.toStatus === 'completed',
-                                            'bg-blue-100 text-blue-800': transition.toStatus === 'in-progress',
-                                            'bg-yellow-100 text-yellow-800': transition.toStatus === 'needs-review'
-                                          }"
-                                          x-text="transition.toStatus">
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" x-text="formatDate(transition.timestamp)">
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="role-badge bg-purple-100 text-purple-800" x-text="transition.role"></span>
-                                </td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Performance Insights -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
-            <!-- Role Performance -->
-            <div class="section-card">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                    <i class="fas fa-user-clock text-green-600 mr-2"></i>
-                    Role Performance
-                </h3>
-                <div class="space-y-4">
-                    <template x-for="role in data.summary.rolePerformance || []" :key="role.role">
-                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
-                            <div>
-                                <div class="role-badge"
-                                     :class="{
-                                       'bg-blue-100 text-blue-800': role.role === 'boomerang',
-                                       'bg-green-100 text-green-800': role.role === 'researcher',
-                                       'bg-purple-100 text-purple-800': role.role === 'architect',
-                                       'bg-orange-100 text-orange-800': role.role === 'senior-developer',
-                                       'bg-red-100 text-red-800': role.role === 'code-review'
-                                     }"
-                                     x-text="role.role">
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-sm font-medium text-gray-900" x-text="role.averageDuration + 'h avg'"></div>
-                                <div class="text-xs text-gray-500" x-text="role.taskCount + ' tasks'"></div>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-            </div>
-
-            <!-- Common Patterns -->
-            <div class="section-card">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                    <i class="fas fa-route text-indigo-600 mr-2"></i>
-                    Common Delegation Patterns
-                </h3>
-                <div class="space-y-3">
-                    <template x-for="pattern in data.summary.commonPatterns || []" :key="pattern.id">
-                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
-                            <div class="flex items-center space-x-2">
-                                <span class="role-badge bg-gray-100 text-gray-800 text-xs" x-text="pattern.fromRole"></span>
-                                <i class="fas fa-arrow-right text-gray-400"></i>
-                                <span class="role-badge bg-gray-100 text-gray-800 text-xs" x-text="pattern.toRole"></span>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-sm font-medium text-gray-900" x-text="pattern.count + ' times'"></div>
-                                <div class="text-xs text-gray-500" x-text="pattern.successRate + '% success'"></div>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-            </div>
-        </div>
-
-        <!-- Key Insights -->
-        <div class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-lightbulb text-yellow-600 mr-2"></i>
-                Key Insights & Recommendations
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                <!-- Positive Insights -->
-                <div>
-                    <h4 class="font-medium text-gray-700 mb-3">
-                        <i class="fas fa-lightbulb text-green-500 mr-2"></i>
-                        Positive Indicators
-                    </h4>
-                    <ul class="space-y-2">
-                        <template x-if="data.summary.successRate && data.summary.successRate > 80">
-                            <li class="text-sm text-gray-600">
-                                <i class="fas fa-star text-yellow-500 mr-2"></i>
-                                <span x-text="'High success rate (' + data.summary.successRate + '%) indicates efficient delegation patterns'"></span>
-                            </li>
-                        </template>
-                        <template x-if="data.summary.averageDuration && data.summary.averageDuration < 24">
-                            <li class="text-sm text-gray-600">
-                                <i class="fas fa-clock text-green-500 mr-2"></i>
-                                <span x-text="'Quick turnaround time (' + data.summary.averageDuration + 'h average)'"></span>
-                            </li>
-                        </template>
-                        <template x-if="data.summary.redelegations && data.summary.redelegations < 2">
-                            <li class="text-sm text-gray-600">
-                                <i class="fas fa-thumbs-up text-green-500 mr-2"></i>
-                                Minimal redelegations indicate clear requirements
-                            </li>
-                        </template>
-                    </ul>
                 </div>
                 
-                <!-- Areas for Improvement -->
-                <div>
-                    <h4 class="font-medium text-gray-700 mb-3">
-                        <i class="fas fa-exclamation-triangle text-orange-500 mr-2"></i>
-                        Areas for Improvement
-                    </h4>
-                    <ul class="space-y-2">
-                        <template x-if="data.summary.redelegations && data.summary.redelegations > 2">
-                            <li class="text-sm text-gray-600">
-                                <i class="fas fa-redo text-orange-500 mr-2"></i>
-                                <span x-text="'High redelegation count (' + data.summary.redelegations + ') suggests unclear requirements'"></span>
-                            </li>
-                        </template>
-                        <template x-if="data.summary.averageDuration && data.summary.averageDuration > 48">
-                            <li class="text-sm text-gray-600">
-                                <i class="fas fa-hourglass-half text-orange-500 mr-2"></i>
-                                <span x-text="'Long delegation cycles (' + data.summary.averageDuration + 'h) may indicate complexity'"></span>
-                            </li>
-                        </template>
-                        <template x-if="data.summary.successRate && data.summary.successRate < 70">
-                            <li class="text-sm text-gray-600">
-                                <i class="fas fa-chart-line text-red-500 mr-2"></i>
-                                <span x-text="'Low success rate (' + data.summary.successRate + '%) needs workflow review'"></span>
-                            </li>
-                        </template>
-                    </ul>
+                <!-- Flow Visualization -->
+                <div class="lg:col-span-3">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Delegation Timeline</h3>
+                    <div class="relative">
+                        <!-- Timeline Line -->
+                        <div class="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-300"></div>
+                        
+                        <!-- Delegation Events -->
+                        <div class="space-y-6">
+                            {{#each delegations}}
+                                <div class="relative flex items-start space-x-4">
+                                    <!-- Timeline Dot -->
+                                    <div class="relative z-10 flex items-center justify-center w-16 h-16 bg-white border-4 border-primary-500 rounded-full">
+                                        <i class="fas fa-arrow-right text-primary-600"></i>
+                                    </div>
+                                    
+                                    <!-- Delegation Content -->
+                                    <div class="flex-1 min-w-0 bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <div class="flex items-center space-x-3">
+                                                <span class="role-badge">{{fromRole}}</span>
+                                                <i class="fas fa-arrow-right text-gray-400"></i>
+                                                <span class="role-badge">{{toRole}}</span>
+                                            </div>
+                                            <div class="text-sm text-gray-500">
+                                                {{formatDate delegatedAt}}
+                                            </div>
+                                        </div>
+                                        
+                                        {{#if message}}
+                                            <p class="text-sm text-gray-700 mb-2">{{message}}</p>
+                                        {{/if}}
+                                        
+                                        <div class="flex items-center justify-between text-xs text-gray-500">
+                                            <span>Delegation #{{add @index 1}}</span>
+                                            {{#if duration}}
+                                                <span>Duration: {{duration}} hours</span>
+                                            {{/if}}
+                                        </div>
+                                    </div>
+                                </div>
+                            {{/each}}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Safely embed JSON data -->
-    <script type="application/json" id="delegation-data">
-        {{{jsonData}}}
-    </script>
-
-    <script>
-        function delegationFlowApp() {
-            return {
-                delegationData: {},
+    
+    <!-- Role Analysis -->
+    <div class="card animate-on-scroll">
+        <div class="card-header">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-users text-indigo-600 mr-2"></i>
+                Role Analysis
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">Performance and involvement of each role in the delegation flow</p>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {{#each roleAnalysis}}
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-md font-medium text-gray-900">
+                                <span class="role-badge">{{role}}</span>
+                            </h4>
+                            <div class="text-sm text-gray-500">
+                                {{involvement}}% involvement
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Delegations Received:</span>
+                                <span class="font-medium">{{delegationsReceived}}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Delegations Made:</span>
+                                <span class="font-medium">{{delegationsMade}}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Avg Hold Time:</span>
+                                <span class="font-medium">{{averageHoldTime}}h</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Efficiency:</span>
+                                <span class="font-medium {{#if (gt efficiency 80)}}text-green-600{{else if (gt efficiency 60)}}text-yellow-600{{else}}text-red-600{{/if}}">
+                                    {{efficiency}}%
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Role Performance Bar -->
+                        <div class="mt-3">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div 
+                                    class="h-2 rounded-full transition-all duration-1000 {{#if (gt efficiency 80)}}bg-green-500{{else if (gt efficiency 60)}}bg-yellow-500{{else}}bg-red-500{{/if}}" 
+                                    style="width: {{efficiency}}%"
+                                ></div>
+                            </div>
+                        </div>
+                    </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delegation Patterns -->
+    <div class="card animate-on-scroll">
+        <div class="card-header">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-route text-blue-600 mr-2"></i>
+                Delegation Patterns
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">Common delegation paths and workflow patterns</p>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Most Common Paths -->
+                <div>
+                    <h4 class="text-md font-medium text-gray-900 mb-4">Most Common Delegation Paths</h4>
+                    <div class="space-y-3">
+                        {{#each commonPaths}}
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-2">
+                                    <span class="role-badge text-xs">{{fromRole}}</span>
+                                    <i class="fas fa-arrow-right text-gray-400"></i>
+                                    <span class="role-badge text-xs">{{toRole}}</span>
+                                </div>
+                                <div class="text-sm text-gray-600">
+                                    {{count}} times ({{percentage}}%)
+                                </div>
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
                 
-                loadData() {
-                    try {
-                        const dataScript = document.getElementById('delegation-data');
-                        if (dataScript) {
-                            this.delegationData = JSON.parse(dataScript.textContent);
-                        }
-                    } catch (error) {
-                        console.error('Failed to load delegation data:', error);
-                    }
-                },
+                <!-- Escalation Patterns -->
+                <div>
+                    <h4 class="text-md font-medium text-gray-900 mb-4">Escalation Patterns</h4>
+                    <div class="space-y-3">
+                        {{#each escalationPatterns}}
+                            <div class="border border-orange-200 rounded-lg p-3 bg-orange-50">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas fa-exclamation-triangle text-orange-600"></i>
+                                        <span class="text-sm font-medium text-orange-900">{{reason}}</span>
+                                    </div>
+                                    <span class="text-xs text-orange-700">{{count}} times</span>
+                                </div>
+                                <div class="text-xs text-orange-700">
+                                    Most common: {{fromRole}} → {{toRole}}
+                                </div>
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Flow Efficiency Analysis -->
+    <div class="card animate-on-scroll">
+        <div class="card-header">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-tachometer-alt text-green-600 mr-2"></i>
+                Flow Efficiency Analysis
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">Bottlenecks, delays, and optimization opportunities</p>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Bottlenecks -->
+                <div>
+                    <h4 class="text-md font-medium text-gray-900 mb-3 flex items-center">
+                        <i class="fas fa-hourglass-half text-red-600 mr-2"></i>
+                        Bottlenecks
+                    </h4>
+                    {{#if bottlenecks.length}}
+                        <div class="space-y-2">
+                            {{#each bottlenecks}}
+                                <div class="p-3 bg-red-50 border border-red-200 rounded-lg">
+                                    <div class="text-sm font-medium text-red-900">{{role}}</div>
+                                    <div class="text-xs text-red-700 mt-1">
+                                        Avg hold: {{averageHoldTime}}h
+                                    </div>
+                                    <div class="text-xs text-red-600">
+                                        {{delayCount}} delays detected
+                                    </div>
+                                </div>
+                            {{/each}}
+                        </div>
+                    {{else}}
+                        <div class="text-sm text-gray-500 italic">No significant bottlenecks detected</div>
+                    {{/if}}
+                </div>
+                
+                <!-- Fast Transitions -->
+                <div>
+                    <h4 class="text-md font-medium text-gray-900 mb-3 flex items-center">
+                        <i class="fas fa-bolt text-green-600 mr-2"></i>
+                        Fast Transitions
+                    </h4>
+                    {{#if fastTransitions.length}}
+                        <div class="space-y-2">
+                            {{#each fastTransitions}}
+                                <div class="p-3 bg-green-50 border border-green-200 rounded-lg">
+                                    <div class="flex items-center space-x-2 text-sm">
+                                        <span class="role-badge text-xs">{{fromRole}}</span>
+                                        <i class="fas fa-arrow-right text-gray-400"></i>
+                                        <span class="role-badge text-xs">{{toRole}}</span>
+                                    </div>
+                                    <div class="text-xs text-green-700 mt-1">
+                                        Avg: {{averageTime}}h
+                                    </div>
+                                </div>
+                            {{/each}}
+                        </div>
+                    {{else}}
+                        <div class="text-sm text-gray-500 italic">No fast transitions identified</div>
+                    {{/if}}
+                </div>
+                
+                <!-- Optimization Opportunities -->
+                <div>
+                    <h4 class="text-md font-medium text-gray-900 mb-3 flex items-center">
+                        <i class="fas fa-lightbulb text-yellow-600 mr-2"></i>
+                        Optimization Tips
+                    </h4>
+                    <div class="space-y-2">
+                        {{#each optimizationTips}}
+                            <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                <div class="text-sm font-medium text-yellow-900">{{title}}</div>
+                                <div class="text-xs text-yellow-700 mt-1">{{description}}</div>
+                                {{#if impact}}
+                                    <div class="text-xs text-yellow-600 mt-1">
+                                        Potential impact: {{impact}}
+                                    </div>
+                                {{/if}}
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delegation Timeline Summary -->
+    <div class="card animate-on-scroll">
+        <div class="card-header">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-clock text-purple-600 mr-2"></i>
+                Timeline Summary
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">Key milestones and timing analysis</p>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="text-center">
+                    <div class="w-16 h-16 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-3">
+                        <i class="fas fa-play text-blue-600 text-xl"></i>
+                    </div>
+                    <div class="text-lg font-bold text-gray-900">{{formatDate taskStartDate}}</div>
+                    <div class="text-sm text-gray-600">Task Started</div>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-3">
+                        <i class="fas fa-exchange-alt text-green-600 text-xl"></i>
+                    </div>
+                    <div class="text-lg font-bold text-gray-900">{{formatDate firstDelegation}}</div>
+                    <div class="text-sm text-gray-600">First Delegation</div>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-16 h-16 mx-auto bg-orange-100 rounded-full flex items-center justify-center mb-3">
+                        <i class="fas fa-arrow-right text-orange-600 text-xl"></i>
+                    </div>
+                    <div class="text-lg font-bold text-gray-900">{{formatDate lastDelegation}}</div>
+                    <div class="text-sm text-gray-600">Last Delegation</div>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-16 h-16 mx-auto bg-purple-100 rounded-full flex items-center justify-center mb-3">
+                        <i class="fas fa-hourglass text-purple-600 text-xl"></i>
+                    </div>
+                    <div class="text-lg font-bold text-gray-900">{{totalFlowTime}}h</div>
+                    <div class="text-sm text-gray-600">Total Flow Time</div>
+                </div>
+            </div>
+            
+            <!-- Flow Timeline Bar -->
+            <div class="mt-8">
+                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>Delegation Flow Progress</span>
+                    <span>{{delegations.length}} total delegations</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-4 relative">
+                    <div 
+                        class="bg-gradient-to-r from-blue-500 to-purple-500 h-4 rounded-full transition-all duration-1000" 
+                        style="width: 100%"
+                    ></div>
+                    <!-- Delegation markers -->
+                    {{#each delegations}}
+                        <div 
+                            class="absolute top-0 w-1 h-4 bg-white border border-gray-400 rounded-sm" 
+                            style="left: {{multiply (divide @index ../delegations.length) 100}}%"
+                            title="Delegation {{add @index 1}}: {{fromRole}} → {{toRole}}"
+                        ></div>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="card animate-on-scroll">
+        <div class="card-header">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-bolt text-yellow-600 mr-2"></i>
+                Quick Actions
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">MCP commands for delegation analysis</p>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <button onclick="copyDelegationMcpCommand('get-history')" class="btn-secondary text-left p-4 h-auto">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-history text-blue-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900">Get Delegation History</div>
+                            <div class="text-sm text-gray-500">Retrieve complete delegation chain</div>
+                        </div>
+                    </div>
+                </button>
+                
+                <button onclick="copyDelegationMcpCommand('workflow-status')" class="btn-secondary text-left p-4 h-auto">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chart-line text-green-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900">Workflow Status</div>
+                            <div class="text-sm text-gray-500">Check current workflow state</div>
+                        </div>
+                    </div>
+                </button>
+                
+                <button onclick="copyDelegationMcpCommand('delegate-task')" class="btn-secondary text-left p-4 h-auto">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-share text-purple-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900">Delegate Task</div>
+                            <div class="text-sm text-gray-500">Create new delegation</div>
+                        </div>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+</div>
 
-                formatDate(dateStr) {
-                    if (!dateStr) return 'N/A';
-                    return new Date(dateStr).toLocaleDateString();
-                }
-            };
+<!-- Delegation-specific JavaScript -->
+<script>
+    // Delegation-specific MCP commands
+    const delegationMcpCommands = {
+        'get-history': `query_workflow_status({
+  taskId: "{{task.taskId}}",
+  queryType: "delegation_history",
+  includeDelegations: true,
+  includeTransitions: true
+})`,
+        'workflow-status': `query_workflow_status({
+  taskId: "{{task.taskId}}",
+  queryType: "task_status"
+})`,
+        'delegate-task': `workflow_operations({
+  operation: "delegate",
+  taskId: "{{task.taskId}}",
+  fromRole: "current-role", // Specify current role
+  toRole: "target-role", // Specify target role
+  message: "Delegation message"
+})`
+    };
+    
+    window.copyDelegationMcpCommand = function(commandType) {
+        const command = delegationMcpCommands[commandType];
+        if (command) {
+            navigator.clipboard.writeText(command).then(() => {
+                showToast(`${commandType.replace('-', ' ')} command copied!`, 'success');
+            }).catch(() => {
+                showToast('Failed to copy command', 'error');
+            });
         }
-    </script>
-</body>
-</html> 
+    };
+    
+    // Helper for Handlebars
+    if (typeof Handlebars !== 'undefined') {
+        Handlebars.registerHelper('add', function(a, b) {
+            return a + b;
+        });
+        
+        Handlebars.registerHelper('gt', function(a, b) {
+            return a > b;
+        });
+        
+        Handlebars.registerHelper('divide', function(a, b) {
+            return a / b;
+        });
+        
+        Handlebars.registerHelper('multiply', function(a, b) {
+            return a * b;
+        });
+    }
+</script>
+
+{{/base-layout}} 

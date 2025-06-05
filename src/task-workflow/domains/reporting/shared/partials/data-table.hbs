@@ -1,190 +1,479 @@
 {{!-- Data Table Partial --}}
 {{!-- Usage: {{> data-table tableId="tasks-table" columns=columns data=tasks}} --}}
 
-<div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
-    {{#if title}}
-    <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg font-medium text-gray-900">{{title}}</h3>
-        {{#if description}}
-        <p class="mt-1 text-sm text-gray-600">{{description}}</p>
+<!-- Enhanced Data Table Component -->
+<div class="card animate-on-scroll">
+    <!-- Table Header -->
+    <div class="table-header">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900">{{title}}</h3>
+                {{#if description}}
+                    <p class="text-sm text-gray-600 mt-1">{{description}}</p>
+                {{/if}}
+            </div>
+            
+            {{#if searchable}}
+                <div class="flex items-center space-x-4">
+                    <!-- Search Input -->
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                        <input 
+                            type="text" 
+                            id="search-{{tableId}}"
+                            class="input-field pl-10 w-64" 
+                            placeholder="Search {{searchPlaceholder}}..."
+                            onkeyup="WorkflowReports.searchTable('{{tableId}}', this.value)"
+                        >
+                    </div>
+                    
+                    <!-- Filter Button -->
+                    <button 
+                        onclick="toggleFilters('{{tableId}}')" 
+                        class="btn-secondary"
+                        title="Toggle Filters"
+                    >
+                        <i class="fas fa-filter"></i>
+                    </button>
+                </div>
+            {{/if}}
+        </div>
+        
+        {{#if searchable}}
+            <!-- Advanced Filters (Hidden by default) -->
+            <div id="filters-{{tableId}}" class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hidden">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select 
+                            id="status-filter-{{tableId}}" 
+                            class="input-field"
+                            onchange="applyFilters('{{tableId}}')"
+                        >
+                            <option value="">All Statuses</option>
+                            <option value="completed">Completed</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="needs-review">Needs Review</option>
+                            <option value="needs-changes">Needs Changes</option>
+                            <option value="not-started">Not Started</option>
+                            <option value="paused">Paused</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                        <select 
+                            id="priority-filter-{{tableId}}" 
+                            class="input-field"
+                            onchange="applyFilters('{{tableId}}')"
+                        >
+                            <option value="">All Priorities</option>
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                        <select 
+                            id="date-filter-{{tableId}}" 
+                            class="input-field"
+                            onchange="applyFilters('{{tableId}}')"
+                        >
+                            <option value="">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                            <option value="quarter">This Quarter</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-4 flex justify-end space-x-2">
+                    <button onclick="clearFilters('{{tableId}}')" class="btn-secondary text-sm">
+                        <i class="fas fa-times mr-1"></i>
+                        Clear Filters
+                    </button>
+                    <button onclick="exportTableData('{{tableId}}')" class="btn-primary text-sm">
+                        <i class="fas fa-download mr-1"></i>
+                        Export CSV
+                    </button>
+                </div>
+            </div>
         {{/if}}
     </div>
-    {{/if}}
     
-    {{#if searchable}}
-    <!-- Search Bar -->
-    <div class="px-6 py-3 border-b border-gray-200 bg-gray-50">
-        <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+    <!-- Table Container -->
+    <div class="table-container">
+        {{#if data}}{{#each data}}{{#if @first}}
+            <div class="overflow-x-auto custom-scrollbar">
+                <table id="{{tableId}}" class="min-w-full divide-y divide-gray-200">
+                    <!-- Table Header -->
+                    <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+                        <tr>
+                            {{#each columns}}
+                                <th 
+                                    scope="col" 
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors duration-200 {{#if sortable}}sortable{{/if}}"
+                                    {{#if sortable}}
+                                        onclick="sortColumn('{{../tableId}}', {{@index}}, '{{key}}')"
+                                        title="Click to sort by {{label}}"
+                                    {{/if}}
+                                >
+                                    <div class="flex items-center space-x-1">
+                                        <span>{{label}}</span>
+                                        {{#if sortable}}
+                                            <i class="fas fa-sort text-gray-400 text-xs"></i>
+                                        {{/if}}
+                                    </div>
+                                </th>
+                            {{/each}}
+                        </tr>
+                    </thead>
+                    
+                    <!-- Table Body -->
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {{#each data}}
+                            <tr class="hover:bg-gray-50 transition-colors duration-150 cursor-pointer" onclick="selectRow(this)">
+                                {{#each ../columns}}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        {{#if (eq type 'badge')}}
+                                            {{#if (eq key 'status')}}
+                                                <span class="status-badge status-{{lookup ../../this key}}">
+                                                    {{lookup ../../this key}}
+                                                </span>
+                                            {{else if (eq key 'priority')}}
+                                                <span class="priority-badge priority-{{lookup ../../this key}}">
+                                                    {{lookup ../../this key}}
+                                                </span>
+                                            {{else}}
+                                                <span class="role-badge">
+                                                    {{lookup ../../this key}}
+                                                </span>
+                                            {{/if}}
+                                        {{else if (eq type 'date')}}
+                                            <span class="text-gray-900" title="{{lookup ../../this key}}">
+                                                {{formatDate (lookup ../../this key)}}
+                                            </span>
+                                        {{else if (eq type 'duration')}}
+                                            <span class="text-gray-900">
+                                                {{formatDuration (lookup ../../this key)}}
+                                            </span>
+                                        {{else if (eq type 'number')}}
+                                            <span class="text-gray-900 font-medium">
+                                                {{formatNumber (lookup ../../this key)}}
+                                            </span>
+                                        {{else if (eq type 'percentage')}}
+                                            <div class="flex items-center">
+                                                <div class="flex-1 bg-gray-200 rounded-full h-2 mr-2">
+                                                    <div 
+                                                        class="bg-primary-600 h-2 rounded-full transition-all duration-300" 
+                                                        style="width: {{lookup ../../this key}}%"
+                                                    ></div>
+                                                </div>
+                                                <span class="text-sm font-medium text-gray-900">
+                                                    {{lookup ../../this key}}%
+                                                </span>
+                                            </div>
+                                        {{else if (eq type 'actions')}}
+                                            <div class="flex items-center space-x-2">
+                                                <button 
+                                                    onclick="viewDetails('{{lookup ../../this 'id'}}')" 
+                                                    class="text-primary-600 hover:text-primary-900 transition-colors duration-200"
+                                                    title="View Details"
+                                                >
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button 
+                                                    onclick="editItem('{{lookup ../../this 'id'}}')" 
+                                                    class="text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                                                    title="Edit"
+                                                >
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button 
+                                                    onclick="copyMcpCommand('{{lookup ../../this 'id'}}')" 
+                                                    class="text-green-600 hover:text-green-900 transition-colors duration-200"
+                                                    title="Copy MCP Command"
+                                                >
+                                                    <i class="fas fa-copy"></i>
+                                                </button>
+                                            </div>
+                                        {{else}}
+                                            <span class="text-gray-900">
+                                                {{lookup ../../this key}}
+                                            </span>
+                                        {{/if}}
+                                    </td>
+                                {{/each}}
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
             </div>
-            <input 
-                type="text" 
-                placeholder="Search {{searchPlaceholder}}..."
-                x-model="searchTerm"
-                @input="filterData()"
-                class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-            >
-        </div>
-    </div>
-    {{/if}}
-    
-    <!-- Table -->
-    <div class="overflow-x-auto">
-        <table class="data-table">
-            <thead class="bg-gray-50">
-                <tr>
-                    {{#each columns}}
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider
-                        {{#if sortable}}cursor-pointer hover:bg-gray-100{{/if}}">
-                        <div class="flex items-center space-x-1">
-                            <span>{{label}}</span>
-                            {{#if sortable}}
-                            <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                            </svg>
-                            {{/if}}
-                        </div>
-                    </th>
-                    {{/each}}
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                {{#each data}}
-                <tr class="hover:bg-gray-50 transition-colors duration-150">
-                    {{#each ../columns}}
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {{#if (eq type 'status')}}
-                            {{> status-badge status=(lookup ../this field) showIcon=true}}
-                        {{else if (eq type 'priority')}}
-                            {{> priority-badge priority=(lookup ../this field) showIcon=true}}
-                        {{else if (eq type 'date')}}
-                            {{#if (lookup ../this field)}}
-                            <time datetime="{{lookup ../this field}}">
-                                {{formatDate (lookup ../this field)}}
-                            </time>
-                            {{else}}
-                            <span class="text-gray-400">-</span>
-                            {{/if}}
-                        {{else if (eq type 'duration')}}
-                            {{#if (lookup ../this field)}}
-                            {{formatDuration (lookup ../this field)}}
-                            {{else}}
-                            <span class="text-gray-400">-</span>
-                            {{/if}}
-                        {{else if (eq type 'progress')}}
-                            <div class="flex items-center">
-                                <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
-                                    <div class="bg-primary-600 h-2 rounded-full" style="width: {{lookup ../this field}}%"></div>
-                                </div>
-                                <span class="text-xs text-gray-500">{{lookup ../this field}}%</span>
-                            </div>
-                        {{else if (eq type 'link')}}
-                            {{#if (lookup ../this field)}}
-                            <a href="{{lookup ../this field}}" class="text-primary-600 hover:text-primary-900 font-medium">
-                                {{#if linkText}}{{linkText}}{{else}}View{{/if}}
-                            </a>
-                            {{else}}
-                            <span class="text-gray-400">-</span>
-                            {{/if}}
-                        {{else if (eq type 'badge')}}
-                            {{#if (lookup ../this field)}}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                {{lookup ../this field}}
-                            </span>
-                            {{else}}
-                            <span class="text-gray-400">-</span>
-                            {{/if}}
-                        {{else if (eq type 'number')}}
-                            {{#if (lookup ../this field)}}
-                            <span class="font-mono">{{lookup ../this field}}</span>
-                            {{else}}
-                            <span class="text-gray-400">0</span>
-                            {{/if}}
+            
+            <!-- Table Footer with Pagination Info -->
+            <div class="bg-white px-6 py-3 border-t border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-gray-700">
+                        Showing <span class="font-medium" id="showing-count-{{tableId}}">{{data.length}}</span> 
+                        of <span class="font-medium" id="total-count-{{tableId}}">{{data.length}}</span> results
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-500">Rows per page:</span>
+                        <select 
+                            id="page-size-{{tableId}}" 
+                            class="input-field text-sm py-1"
+                            onchange="changePageSize('{{tableId}}', this.value)"
+                        >
+                            <option value="10">10</option>
+                            <option value="25" selected>25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        {{else}}
+            <!-- Empty State -->
+            <div class="text-center py-12">
+                <div class="flex flex-col items-center">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-table text-gray-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No data available</h3>
+                    <p class="text-gray-500 max-w-sm">
+                        {{#if emptyMessage}}
+                            {{emptyMessage}}
                         {{else}}
-                            {{#if (lookup ../this field)}}
-                            <span class="{{#if truncate}}truncate max-w-xs{{/if}}">
-                                {{lookup ../this field}}
-                            </span>
-                            {{else}}
-                            <span class="text-gray-400">-</span>
-                            {{/if}}
+                            There are no records to display at this time.
                         {{/if}}
-                    </td>
-                    {{/each}}
-                </tr>
-                {{else}}
-                <tr>
-                    <td colspan="{{columns.length}}" class="px-6 py-12 text-center text-sm text-gray-500">
-                        <div class="flex flex-col items-center">
-                            <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            <p class="text-lg font-medium text-gray-900 mb-1">No data available</p>
-                            <p class="text-gray-500">{{emptyMessage}}</p>
-                        </div>
-                    </td>
-                </tr>
-                {{/each}}
-            </tbody>
-        </table>
-    </div>
-    
-    {{#if pagination}}
-    <!-- Pagination -->
-    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-        <div class="flex-1 flex justify-between sm:hidden">
-            <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                Previous
-            </button>
-            <button class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                Next
-            </button>
-        </div>
-        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-            <div>
-                <p class="text-sm text-gray-700">
-                    Showing <span class="font-medium">{{pagination.start}}</span> to <span class="font-medium">{{pagination.end}}</span> of <span class="font-medium">{{pagination.total}}</span> results
-                </p>
+                    </p>
+                    <div class="mt-6">
+                        <button onclick="refreshData('{{tableId}}')" class="btn-primary">
+                            <i class="fas fa-refresh mr-2"></i>
+                            Refresh Data
+                        </button>
+                    </div>
+                </div>
             </div>
-            <div>
-                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                    <!-- Pagination buttons would be generated here -->
-                </nav>
-            </div>
-        </div>
+        {{/if}}
     </div>
-    {{/if}}
 </div>
 
-{{#if searchable}}
+<!-- Table-specific JavaScript -->
 <script>
-    // Table search and filter functionality
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('dataTable{{tableId}}', () => ({
-            searchTerm: '',
-            sortColumn: '',
-            sortDirection: 'asc',
-            
-            filterData() {
-                // Implement client-side filtering logic
-                const rows = document.querySelectorAll('#{{tableId}} tbody tr');
-                const searchTerm = this.searchTerm.toLowerCase();
-                
-                rows.forEach(row => {
-                    const text = row.textContent.toLowerCase();
-                    row.style.display = text.includes(searchTerm) ? '' : 'none';
-                });
-            },
-            
-            sortTable(column) {
-                this.sortDirection = this.sortColumn === column && this.sortDirection === 'asc' ? 'desc' : 'asc';
-                this.sortColumn = column;
-                // Implement sorting logic
+    // Table-specific functions for {{tableId}}
+    (function() {
+        let currentSort = { column: null, direction: 'asc' };
+        let currentFilters = { status: '', priority: '', date: '' };
+        
+        // Toggle filters visibility
+        window.toggleFilters = function(tableId) {
+            const filtersDiv = document.getElementById(`filters-${tableId}`);
+            if (filtersDiv) {
+                filtersDiv.classList.toggle('hidden');
             }
-        }));
-    });
-</script>
-{{/if}} 
+        };
+        
+        // Sort column functionality
+        window.sortColumn = function(tableId, columnIndex, columnKey) {
+            const direction = currentSort.column === columnKey && currentSort.direction === 'asc' ? 'desc' : 'asc';
+            currentSort = { column: columnKey, direction };
+            
+            // Update sort icons
+            const headers = document.querySelectorAll(`#${tableId} th.sortable`);
+            headers.forEach((header, index) => {
+                const icon = header.querySelector('i');
+                if (index === columnIndex) {
+                    icon.className = `fas fa-sort-${direction === 'asc' ? 'up' : 'down'} text-primary-600 text-xs`;
+                } else {
+                    icon.className = 'fas fa-sort text-gray-400 text-xs';
+                }
+            });
+            
+            // Perform sort
+            WorkflowReports.sortTable(tableId, columnIndex, direction);
+        };
+        
+        // Apply filters
+        window.applyFilters = function(tableId) {
+            const statusFilter = document.getElementById(`status-filter-${tableId}`)?.value || '';
+            const priorityFilter = document.getElementById(`priority-filter-${tableId}`)?.value || '';
+            const dateFilter = document.getElementById(`date-filter-${tableId}`)?.value || '';
+            
+            currentFilters = { status: statusFilter, priority: priorityFilter, date: dateFilter };
+            
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            
+            const rows = table.querySelectorAll('tbody tr');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                let visible = true;
+                
+                // Status filter
+                if (statusFilter) {
+                    const statusCell = row.querySelector('.status-badge');
+                    if (!statusCell || !statusCell.textContent.toLowerCase().includes(statusFilter)) {
+                        visible = false;
+                    }
+                }
+                
+                // Priority filter
+                if (priorityFilter && visible) {
+                    const priorityCell = row.querySelector('.priority-badge');
+                    if (!priorityCell || !priorityCell.textContent.toLowerCase().includes(priorityFilter)) {
+                        visible = false;
+                    }
+                }
+                
+                // Date filter (simplified - would need more complex logic for real implementation)
+                if (dateFilter && visible) {
+                    // This would need to be implemented based on actual date columns
+                    // For now, just show all rows
+                }
+                
+                row.style.display = visible ? '' : 'none';
+                if (visible) visibleCount++;
+            });
+            
+            // Update showing count
+            const showingCount = document.getElementById(`showing-count-${tableId}`);
+            if (showingCount) {
+                showingCount.textContent = visibleCount;
+            }
+        };
+        
+        // Clear filters
+        window.clearFilters = function(tableId) {
+            document.getElementById(`status-filter-${tableId}`).value = '';
+            document.getElementById(`priority-filter-${tableId}`).value = '';
+            document.getElementById(`date-filter-${tableId}`).value = '';
+            document.getElementById(`search-${tableId}`).value = '';
+            
+            currentFilters = { status: '', priority: '', date: '' };
+            
+            // Show all rows
+            const table = document.getElementById(tableId);
+            if (table) {
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => row.style.display = '');
+                
+                // Update showing count
+                const showingCount = document.getElementById(`showing-count-${tableId}`);
+                if (showingCount) {
+                    showingCount.textContent = rows.length;
+                }
+            }
+        };
+        
+        // Row selection
+        window.selectRow = function(row) {
+            // Remove previous selection
+            const table = row.closest('table');
+            table.querySelectorAll('tr.selected').forEach(r => r.classList.remove('selected', 'bg-primary-50'));
+            
+            // Add selection to current row
+            row.classList.add('selected', 'bg-primary-50');
+        };
+        
+        // Action handlers
+        window.viewDetails = function(id) {
+            console.log('View details for:', id);
+            // Implementation would depend on the specific use case
+        };
+        
+        window.editItem = function(id) {
+            console.log('Edit item:', id);
+            // Implementation would depend on the specific use case
+        };
+        
+        window.copyMcpCommand = function(id) {
+            const command = `query_task_context({ taskId: "${id}", includeLevel: "comprehensive" })`;
+            navigator.clipboard.writeText(command).then(() => {
+                // Show success message
+                showToast('MCP command copied to clipboard!', 'success');
+            });
+        };
+        
+        // Export table data
+        window.exportTableData = function(tableId) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            
+            const rows = Array.from(table.querySelectorAll('tr:not([style*="display: none"])'));
+            const csv = rows.map(row => {
+                const cells = Array.from(row.querySelectorAll('th, td'));
+                return cells.map(cell => {
+                    // Clean up cell content (remove HTML, badges, etc.)
+                    const text = cell.textContent.trim();
+                    return `"${text.replace(/"/g, '""')}"`;
+                }).join(',');
+            }).join('\n');
+            
+            // Download CSV
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${tableId}-export.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        };
+        
+        // Change page size
+        window.changePageSize = function(tableId, size) {
+            // This would implement pagination logic
+            console.log(`Change page size for ${tableId} to ${size}`);
+        };
+        
+        // Refresh data
+        window.refreshData = function(tableId) {
+            // This would refresh the table data
+            console.log(`Refresh data for ${tableId}`);
+            showToast('Data refreshed successfully!', 'success');
+        };
+        
+        // Toast notification helper
+        window.showToast = function(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white z-50 transition-all duration-300 transform translate-x-full`;
+            
+            switch(type) {
+                case 'success':
+                    toast.classList.add('bg-success-600');
+                    break;
+                case 'error':
+                    toast.classList.add('bg-danger-600');
+                    break;
+                case 'warning':
+                    toast.classList.add('bg-warning-600');
+                    break;
+                default:
+                    toast.classList.add('bg-primary-600');
+            }
+            
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : type === 'warning' ? 'exclamation' : 'info'} mr-2"></i>
+                    ${message}
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => toast.classList.remove('translate-x-full'), 100);
+            
+            // Animate out and remove
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        };
+    })();
+</script> 

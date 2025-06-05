@@ -1,440 +1,678 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workflow Analytics Report</title>
+{{#> base-layout title="Workflow Analytics Report" reportType="Workflow Analytics"}}
+
+<!-- Workflow Analytics Content -->
+<div class="space-y-8">
     
-    <!-- Alpine.js -->
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    
-    <style>
-        .fade-in { animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .section-card { @apply bg-white rounded-xl shadow-lg p-6 mb-6; }
-        .metric-card { @apply bg-gradient-to-br from-white to-gray-50 rounded-lg p-4 border border-gray-200; }
-        .chart-container { @apply bg-white rounded-lg p-4 border border-gray-200; }
-    </style>
-</head>
-<body class="bg-gray-50 min-h-screen">
-    <div x-data="workflowAnalyticsApp()" x-init="loadData()" class="container mx-auto px-4 py-8">
+    <!-- Analytics Overview Card -->
+    <div class="card animate-on-scroll">
+        <div class="card-header">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                        <i class="fas fa-analytics text-primary-600 mr-3"></i>
+                        Workflow Analytics Dashboard
+                    </h2>
+                    <p class="text-gray-600 mt-1">Comprehensive workflow performance analysis • {{dateRange}}</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm text-gray-500">{{totalTasks}} tasks analyzed</span>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                        <span class="text-sm text-gray-600">{{workflowEfficiency}}% efficiency</span>
+                    </div>
+                </div>
+            </div>
+        </div>
         
-        <!-- Header -->
-        <div class="section-card">
-            <div class="flex items-center justify-between mb-4">
-                <h1 class="text-3xl font-bold text-gray-900">
-                    <i class="fas fa-chart-line text-blue-600 mr-3"></i>
-                    Workflow Analytics Report
-                </h1>
-                <div class="text-sm text-gray-500">
-                    Generated: {{metadata.generatedAt}}
+        <div class="card-body">
+            <!-- Key Workflow Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+                <div class="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
+                    <div class="w-16 h-16 mx-auto bg-blue-500 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-tasks text-white text-xl"></i>
+                    </div>
+                    <div class="text-3xl font-bold text-blue-600">{{totalTasks}}</div>
+                    <div class="text-sm text-blue-700">Total Tasks</div>
+                    <div class="text-xs text-blue-600 mt-1">{{activeTasks}} active</div>
+                </div>
+                
+                <div class="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl">
+                    <div class="w-16 h-16 mx-auto bg-green-500 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-check-circle text-white text-xl"></i>
+                    </div>
+                    <div class="text-3xl font-bold text-green-600">{{completionRate}}%</div>
+                    <div class="text-sm text-green-700">Completion Rate</div>
+                    <div class="text-xs text-green-600 mt-1">{{completedTasks}} completed</div>
+                </div>
+                
+                <div class="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl">
+                    <div class="w-16 h-16 mx-auto bg-purple-500 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-clock text-white text-xl"></i>
+                    </div>
+                    <div class="text-3xl font-bold text-purple-600">{{averageCycleTime}}h</div>
+                    <div class="text-sm text-purple-700">Avg Cycle Time</div>
+                    <div class="text-xs text-purple-600 mt-1">{{fastestCycle}}h fastest</div>
+                </div>
+                
+                <div class="text-center p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl">
+                    <div class="w-16 h-16 mx-auto bg-orange-500 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-exchange-alt text-white text-xl"></i>
+                    </div>
+                    <div class="text-3xl font-bold text-orange-600">{{totalDelegations}}</div>
+                    <div class="text-sm text-orange-700">Total Delegations</div>
+                    <div class="text-xs text-orange-600 mt-1">{{avgDelegationsPerTask}} per task</div>
+                </div>
+                
+                <div class="text-center p-6 bg-gradient-to-br from-red-50 to-red-100 rounded-xl">
+                    <div class="w-16 h-16 mx-auto bg-red-500 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-exclamation-triangle text-white text-xl"></i>
+                    </div>
+                    <div class="text-3xl font-bold text-red-600">{{blockerCount}}</div>
+                    <div class="text-sm text-red-700">Active Blockers</div>
+                    <div class="text-xs text-red-600 mt-1">{{resolvedBlockers}} resolved</div>
                 </div>
             </div>
             
-            <!-- Summary Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="metric-card text-center">
-                    <div class="text-3xl font-bold text-blue-600" x-text="data.summary.totalTasks"></div>
-                    <div class="text-sm text-gray-600">Total Tasks</div>
-                </div>
-                <div class="metric-card text-center">
-                    <div class="text-3xl font-bold text-green-600" x-text="data.summary.completedTasks"></div>
-                    <div class="text-sm text-gray-600">Completed Tasks</div>
-                </div>
-                <div class="metric-card text-center">
-                    <div class="text-3xl font-bold text-purple-600" x-text="data.summary.totalDelegations"></div>
-                    <div class="text-sm text-gray-600">Total Delegations</div>
-                </div>
-                <div class="metric-card text-center">
-                    <div class="text-3xl font-bold text-orange-600" x-text="data.summary.averageCompletionTime + 'h'"></div>
-                    <div class="text-sm text-gray-600">Avg Completion Time</div>
-                </div>
+            <!-- Workflow Efficiency Chart -->
+            <div class="bg-gray-50 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-chart-area text-blue-600 mr-2"></i>
+                    Workflow Efficiency Trend (Last 30 Days)
+                </h3>
+                <canvas id="workflowEfficiencyChart" width="400" height="200"></canvas>
             </div>
         </div>
-
-        <!-- Task Status Distribution -->
-        <div class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-chart-pie text-indigo-600 mr-2"></i>
-                Task Status Distribution
-            </h3>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="chart-container">
-                    <canvas id="statusChart" width="400" height="200"></canvas>
-                </div>
-                <div class="space-y-3">
-                    <template x-for="statusItem in data.statusDistribution || []" :key="statusItem.status">
-                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-4 h-4 rounded-full" :style="'background-color: ' + statusItem.color"></div>
-                                <span class="font-medium" x-text="statusItem.status"></span>
-                            </div>
-                            <div class="text-right">
-                                <div class="font-bold" x-text="statusItem.count"></div>
-                                <div class="text-sm text-gray-600" x-text="statusItem.percentage + '%'"></div>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-            </div>
-        </div>
-
-        <!-- Priority Distribution -->
-        <div class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-exclamation-circle text-red-600 mr-2"></i>
-                Priority Distribution
-            </h3>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="chart-container">
-                    <canvas id="priorityChart" width="400" height="200"></canvas>
-                </div>
-                <div class="space-y-3">
-                    <template x-for="priorityItem in data.priorityDistribution || []" :key="priorityItem.priority">
-                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-4 h-4 rounded-full" :style="'background-color: ' + priorityItem.color"></div>
-                                <span class="font-medium" x-text="priorityItem.priority"></span>
-                            </div>
-                            <div class="text-right">
-                                <div class="font-bold" x-text="priorityItem.count"></div>
-                                <div class="text-sm text-gray-600" x-text="priorityItem.percentage + '%'"></div>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-            </div>
-        </div>
-
-        <!-- Role Performance -->
-        <div class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-users text-green-600 mr-2"></i>
-                Role Performance
-            </h3>
-            <div class="chart-container mb-6">
-                <canvas id="rolePerformanceChart" width="400" height="200"></canvas>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <template x-for="role in data.roleMetrics || []" :key="role.role">
-                    <div class="metric-card">
-                        <div class="flex items-center justify-between mb-3">
-                            <h4 class="font-semibold text-gray-800" x-text="role.role"></h4>
-                            <i class="fas fa-user-tie text-gray-500"></i>
-                        </div>
-                        <div class="space-y-2">
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Tasks Handled:</span>
-                                <span class="font-medium" x-text="role.tasksHandled"></span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Avg Duration:</span>
-                                <span class="font-medium" x-text="role.averageDuration + 'h'"></span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Success Rate:</span>
-                                <span class="font-medium"
-                                      :class="role.successRate > 80 ? 'text-green-600' : 'text-yellow-600'"
-                                      x-text="role.successRate + '%'"></span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Efficiency:</span>
-                                <span class="font-medium"
-                                      :class="role.efficiency > 90 ? 'text-green-600' : 'text-orange-600'"
-                                      x-text="role.efficiency + '%'"></span>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-            </div>
-        </div>
-
-        <!-- Delegation Flow Analysis -->
-        <div x-show="data.delegationFlow" class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-exchange-alt text-purple-600 mr-2"></i>
-                Delegation Flow Analysis
-            </h3>
-            <div class="chart-container mb-6">
-                <canvas id="delegationFlowChart" width="400" height="300"></canvas>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <h4 class="font-medium text-gray-700 mb-3">Most Common Flows</h4>
-                    <div class="space-y-2">
-                        <template x-for="flowItem in data.delegationFlow?.commonFlows || []" :key="flowItem.flow">
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <span class="text-sm font-medium" x-text="flowItem.flow"></span>
-                                <span class="text-sm text-gray-600" x-text="flowItem.count + ' times'"></span>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-                <div>
-                    <h4 class="font-medium text-gray-700 mb-3">Delegation Metrics</h4>
-                    <div class="space-y-3">
-                        <div class="flex justify-between p-3 bg-blue-50 rounded-lg">
-                            <span class="text-sm font-medium">Average Handoffs:</span>
-                            <span class="text-sm font-bold text-blue-600" x-text="data.delegationFlow?.averageHandoffs"></span>
-                        </div>
-                        <div class="flex justify-between p-3 bg-green-50 rounded-lg">
-                            <span class="text-sm font-medium">Direct Completions:</span>
-                            <span class="text-sm font-bold text-green-600" x-text="data.delegationFlow?.directCompletions + '%'"></span>
-                        </div>
-                        <div class="flex justify-between p-3 bg-yellow-50 rounded-lg">
-                            <span class="text-sm font-medium">Escalations:</span>
-                            <span class="text-sm font-bold text-yellow-600" x-text="data.delegationFlow?.escalationRate + '%'"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Performance Trends -->
-        <div x-show="data.performanceTrends" class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-trending-up text-blue-600 mr-2"></i>
-                Performance Trends
-            </h3>
-            <div class="chart-container">
-                <canvas id="trendsChart" width="400" height="200"></canvas>
-            </div>
-        </div>
-
-        <!-- Task Analysis -->
-        <div x-show="data.tasks?.length > 0" class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-list text-gray-600 mr-2"></i>
-                Recent Tasks Analysis
-            </h3>
-            <div class="overflow-x-auto">
-                <table class="min-w-full">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delegations</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <template x-for="task in data.tasks || []" :key="task.id">
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900" x-text="task.name"></div>
-                                    <div x-show="task.taskSlug" class="text-xs text-gray-500" x-text="task.taskSlug"></div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 rounded-full text-xs font-medium"
-                                          :class="{
-                                            'bg-green-100 text-green-800': task.status === 'completed',
-                                            'bg-blue-100 text-blue-800': task.status === 'in-progress',
-                                            'bg-gray-100 text-gray-800': task.status === 'not-started',
-                                            'bg-yellow-100 text-yellow-800': task.status === 'needs-review'
-                                          }"
-                                          x-text="task.status">
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" x-text="task.priority"></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" x-text="task.owner"></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" x-text="task.duration + 'h'"></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" x-text="task.delegationCount"></td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
     </div>
+    
+    <!-- Role Performance Matrix -->
+    <div class="card animate-on-scroll">
+        <div class="card-header">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-users text-indigo-600 mr-2"></i>
+                Role Performance Matrix
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">Performance comparison across all workflow roles</p>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                {{#each rolePerformance}}
+                    <div class="border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-{{color}}-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-{{icon}} text-{{color}}-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-medium text-gray-900">{{role}}</h4>
+                                    <p class="text-sm text-gray-600">{{taskCount}} tasks</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-{{color}}-600">{{efficiency}}%</div>
+                                <div class="text-xs text-gray-500">efficiency</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Performance Metrics -->
+                        <div class="space-y-3">
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-600">Completion Rate</span>
+                                    <span class="font-medium">{{completionRate}}%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-{{color}}-500 h-2 rounded-full transition-all duration-1000" style="width: {{completionRate}}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-600">Quality Score</span>
+                                    <span class="font-medium">{{qualityScore}}/10</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-{{color}}-500 h-2 rounded-full transition-all duration-1000" style="width: {{multiply qualityScore 10}}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-600">Speed Index</span>
+                                    <span class="font-medium">{{speedIndex}}%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-{{color}}-500 h-2 rounded-full transition-all duration-1000" style="width: {{speedIndex}}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Key Stats -->
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <div class="grid grid-cols-2 gap-4 text-center">
+                                <div>
+                                    <div class="text-lg font-bold text-gray-900">{{averageTime}}h</div>
+                                    <div class="text-xs text-gray-600">Avg Time</div>
+                                </div>
+                                <div>
+                                    <div class="text-lg font-bold text-gray-900">{{delegationCount}}</div>
+                                    <div class="text-xs text-gray-600">Delegations</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Performance Trend -->
+                        <div class="mt-4">
+                            <div class="flex items-center justify-between text-xs text-gray-600 mb-1">
+                                <span>Recent Trend</span>
+                                <span class="{{#if (eq trend 'up')}}text-green-600{{else if (eq trend 'down')}}text-red-600{{else}}text-gray-600{{/if}}">
+                                    <i class="fas fa-arrow-{{#if (eq trend 'up')}}up{{else if (eq trend 'down')}}down{{else}}right{{/if}}"></i>
+                                    {{trendPercentage}}%
+                                </span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-1">
+                                <div class="bg-gradient-to-r from-{{color}}-400 to-{{color}}-600 h-1 rounded-full transition-all duration-1000" style="width: {{efficiency}}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Workflow Flow Analysis -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Delegation Patterns -->
+        <div class="card animate-on-scroll">
+            <div class="card-header">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-route text-blue-600 mr-2"></i>
+                    Delegation Patterns
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">Most common workflow paths</p>
+            </div>
+            <div class="card-body">
+                <div class="space-y-4">
+                    {{#each delegationPatterns}}
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="flex items-center space-x-2">
+                                    <span class="role-badge text-xs">{{fromRole}}</span>
+                                    <i class="fas fa-arrow-right text-gray-400"></i>
+                                    <span class="role-badge text-xs">{{toRole}}</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-bold text-gray-900">{{count}} times</div>
+                                <div class="text-xs text-gray-600">{{percentage}}% of delegations</div>
+                                <div class="text-xs text-{{#if (gt successRate 80)}}green{{else if (gt successRate 60)}}yellow{{else}}red{{/if}}-600">
+                                    {{successRate}}% success
+                                </div>
+                            </div>
+                        </div>
+                    {{/each}}
+                </div>
+                
+                <!-- Flow Efficiency -->
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <h4 class="text-md font-medium text-gray-900 mb-3">Flow Efficiency</h4>
+                    <div class="space-y-3">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Average Delegation Time:</span>
+                            <span class="font-medium">{{averageDelegationTime}}h</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Fastest Path:</span>
+                            <span class="font-medium text-green-600">{{fastestPath}}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Bottleneck Role:</span>
+                            <span class="font-medium text-red-600">{{bottleneckRole}}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Task Status Distribution -->
+        <div class="card animate-on-scroll">
+            <div class="card-header">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-chart-pie text-green-600 mr-2"></i>
+                    Task Status Distribution
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">Current workflow state</p>
+            </div>
+            <div class="card-body">
+                <div class="space-y-4">
+                    {{#each statusDistribution}}
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-4 h-4 rounded-full bg-{{color}}-500"></div>
+                                <div>
+                                    <div class="text-sm font-medium text-gray-900">{{status}}</div>
+                                    <div class="text-xs text-gray-600">{{description}}</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-lg font-bold text-{{color}}-600">{{count}}</div>
+                                <div class="text-xs text-gray-600">{{percentage}}%</div>
+                            </div>
+                        </div>
+                    {{/each}}
+                </div>
+                
+                <!-- Status Chart -->
+                <div class="mt-6">
+                    <canvas id="statusDistributionChart" width="300" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Priority Analysis -->
+    <div class="card animate-on-scroll">
+        <div class="card-header">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-flag text-red-600 mr-2"></i>
+                Priority Analysis
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">Task priority distribution and completion patterns</p>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Priority Distribution -->
+                <div>
+                    <h4 class="text-md font-medium text-gray-900 mb-4">Priority Distribution</h4>
+                    <div class="space-y-4">
+                        {{#each priorityAnalysis}}
+                            <div class="flex items-center justify-between p-4 bg-{{color}}-50 border border-{{color}}-200 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-6 h-6 bg-{{color}}-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-{{icon}} text-white text-xs"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-{{color}}-900">{{priority}} Priority</div>
+                                        <div class="text-xs text-{{color}}-700">{{taskCount}} tasks</div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-lg font-bold text-{{color}}-600">{{completionRate}}%</div>
+                                    <div class="text-xs text-{{color}}-600">completed</div>
+                                    <div class="text-xs text-{{color}}-500">{{averageTime}}h avg</div>
+                                </div>
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
+                
+                <!-- Priority Performance Chart -->
+                <div>
+                    <h4 class="text-md font-medium text-gray-900 mb-4">Priority Performance</h4>
+                    <canvas id="priorityPerformanceChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bottleneck Analysis -->
+    <div class="card animate-on-scroll">
+        <div class="card-header">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-hourglass-half text-orange-600 mr-2"></i>
+                Bottleneck Analysis
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">Workflow constraints and optimization opportunities</p>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Current Bottlenecks -->
+                <div>
+                    <h4 class="text-md font-medium text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                        Current Bottlenecks
+                    </h4>
+                    {{#if bottlenecks.length}}
+                        <div class="space-y-3">
+                            {{#each bottlenecks}}
+                                <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="role-badge text-xs">{{role}}</span>
+                                        <span class="text-xs text-red-600 font-medium">{{severity}} severity</span>
+                                    </div>
+                                    <div class="text-sm text-red-900 mb-1">{{description}}</div>
+                                    <div class="text-xs text-red-700">
+                                        Avg delay: {{averageDelay}}h • {{affectedTasks}} tasks affected
+                                    </div>
+                                </div>
+                            {{/each}}
+                        </div>
+                    {{else}}
+                        <div class="text-sm text-gray-500 italic">No significant bottlenecks detected</div>
+                    {{/if}}
+                </div>
+                
+                <!-- Optimization Opportunities -->
+                <div>
+                    <h4 class="text-md font-medium text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-lightbulb text-yellow-600 mr-2"></i>
+                        Optimization Tips
+                    </h4>
+                    <div class="space-y-3">
+                        {{#each optimizationTips}}
+                            <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                <div class="text-sm font-medium text-yellow-900 mb-1">{{title}}</div>
+                                <div class="text-xs text-yellow-700 mb-2">{{description}}</div>
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="text-yellow-600">Impact: {{impact}}</span>
+                                    <span class="text-yellow-500">Effort: {{effort}}</span>
+                                </div>
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
+                
+                <!-- Performance Improvements -->
+                <div>
+                    <h4 class="text-md font-medium text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-arrow-up text-green-600 mr-2"></i>
+                        Recent Improvements
+                    </h4>
+                    <div class="space-y-3">
+                        {{#each improvements}}
+                            <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+                                <div class="text-sm font-medium text-green-900 mb-1">{{title}}</div>
+                                <div class="text-xs text-green-700 mb-2">{{description}}</div>
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="text-green-600">{{metric}}</span>
+                                    <span class="text-green-500">{{timeframe}}</span>
+                                </div>
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Workflow Insights -->
+    <div class="card animate-on-scroll">
+        <div class="card-header">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-brain text-purple-600 mr-2"></i>
+                AI-Powered Workflow Insights
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">Intelligent analysis and recommendations</p>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Key Insights -->
+                <div>
+                    <h4 class="text-md font-medium text-gray-900 mb-4">Key Insights</h4>
+                    <div class="space-y-4">
+                        {{#each insights}}
+                            <div class="p-4 bg-{{type}}-50 border border-{{type}}-200 rounded-lg">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-8 h-8 bg-{{type}}-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-{{icon}} text-{{type}}-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-{{type}}-900">{{title}}</div>
+                                        <div class="text-xs text-{{type}}-700 mt-1">{{description}}</div>
+                                        {{#if metric}}
+                                            <div class="text-xs text-{{type}}-600 mt-2 font-medium">📊 {{metric}}</div>
+                                        {{/if}}
+                                        {{#if recommendation}}
+                                            <div class="text-xs text-{{type}}-600 mt-1">💡 {{recommendation}}</div>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
+                
+                <!-- Recommendations -->
+                <div>
+                    <h4 class="text-md font-medium text-gray-900 mb-4">Strategic Recommendations</h4>
+                    <div class="space-y-4">
+                        {{#each recommendations}}
+                            <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-{{icon}} text-blue-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-blue-900">{{title}}</div>
+                                        <div class="text-xs text-blue-700 mt-1">{{description}}</div>
+                                        {{#if action}}
+                                            <div class="text-xs text-blue-600 mt-2 font-medium">🎯 {{action}}</div>
+                                        {{/if}}
+                                        {{#if expectedImpact}}
+                                            <div class="text-xs text-blue-500 mt-1">Expected: {{expectedImpact}}</div>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="card animate-on-scroll">
+        <div class="card-header">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-bolt text-yellow-600 mr-2"></i>
+                Quick Actions
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">MCP commands for workflow analysis</p>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <button onclick="copyAnalyticsMcpCommand('task-summary')" class="btn-secondary text-left p-4 h-auto">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-list text-blue-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900">Task Summary</div>
+                            <div class="text-sm text-gray-500">Get task overview</div>
+                        </div>
+                    </div>
+                </button>
+                
+                <button onclick="copyAnalyticsMcpCommand('delegation-analytics')" class="btn-secondary text-left p-4 h-auto">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exchange-alt text-green-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900">Delegation Analytics</div>
+                            <div class="text-sm text-gray-500">Analyze delegation patterns</div>
+                        </div>
+                    </div>
+                </button>
+                
+                <button onclick="copyAnalyticsMcpCommand('performance-dashboard')" class="btn-secondary text-left p-4 h-auto">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chart-line text-purple-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900">Performance Dashboard</div>
+                            <div class="text-sm text-gray-500">View performance metrics</div>
+                        </div>
+                    </div>
+                </button>
+                
+                <button onclick="copyAnalyticsMcpCommand('comprehensive-report')" class="btn-secondary text-left p-4 h-auto">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-file-alt text-orange-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900">Comprehensive Report</div>
+                            <div class="text-sm text-gray-500">Generate full analysis</div>
+                        </div>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+</div>
 
-    <!-- Safely embed JSON data -->
-    <script type="application/json" id="workflow-analytics-data">
-        {{{jsonData}}}
-    </script>
-
-    <script>
-        function workflowAnalyticsApp() {
-            return {
-                data: {},
-                
-                loadData() {
-                    try {
-                        const dataScript = document.getElementById('workflow-analytics-data');
-                        if (dataScript) {
-                            this.data = JSON.parse(dataScript.textContent);
-                        }
-                    } catch (error) {
-                        console.error('Failed to load workflow analytics data:', error);
-                    }
-                    
-                    this.$nextTick(() => {
-                        this.initCharts();
-                    });
-                },
-                
-                initCharts() {
-                    this.createStatusChart();
-                    this.createPriorityChart();
-                    this.createRolePerformanceChart();
-                    if (this.data.delegationFlow) {
-                        this.createDelegationFlowChart();
-                    }
-                    if (this.data.performanceTrends) {
-                        this.createTrendsChart();
-                    }
-                },
-                
-                createStatusChart() {
-                    const ctx = document.getElementById('statusChart');
-                    if (!ctx || !this.data.statusDistribution) return;
-                    
-                    new Chart(ctx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: this.data.statusDistribution.map(item => item.status),
-                            datasets: [{
-                                data: this.data.statusDistribution.map(item => item.count),
-                                backgroundColor: this.data.statusDistribution.map(item => item.color)
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false }
-                            }
-                        }
-                    });
-                },
-                
-                createPriorityChart() {
-                    const ctx = document.getElementById('priorityChart');
-                    if (!ctx || !this.data.priorityDistribution) return;
-                    
-                    new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: this.data.priorityDistribution.map(item => item.priority),
-                            datasets: [{
-                                data: this.data.priorityDistribution.map(item => item.count),
-                                backgroundColor: this.data.priorityDistribution.map(item => item.color)
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false }
-                            },
-                            scales: {
-                                y: { beginAtZero: true }
-                            }
-                        }
-                    });
-                },
-                
-                createRolePerformanceChart() {
-                    const ctx = document.getElementById('rolePerformanceChart');
-                    if (!ctx || !this.data.roleMetrics) return;
-                    
-                    new Chart(ctx, {
-                        type: 'radar',
-                        data: {
-                            labels: ['Tasks Handled', 'Success Rate', 'Efficiency', 'Avg Duration'],
-                            datasets: this.data.roleMetrics.map((role, index) => ({
-                                label: role.role,
-                                data: [
-                                    role.tasksHandled,
-                                    role.successRate,
-                                    role.efficiency,
-                                    100 - (role.averageDuration * 10) // Invert duration for radar
-                                ],
-                                borderColor: `hsl(${index * 60}, 70%, 50%)`,
-                                backgroundColor: `hsla(${index * 60}, 70%, 50%, 0.2)`
-                            }))
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            scales: {
-                                r: {
-                                    beginAtZero: true,
-                                    max: 100
-                                }
-                            }
-                        }
-                    });
-                },
-                
-                createDelegationFlowChart() {
-                    const ctx = document.getElementById('delegationFlowChart');
-                    if (!ctx) return;
-                    
-                    // Create a sankey-style visualization using Chart.js
-                    // This is a simplified version - for a real sankey, you'd use a specialized library
-                    new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: this.data.delegationFlow.commonFlows.map(item => item.flow),
-                            datasets: [{
-                                label: 'Flow Count',
-                                data: this.data.delegationFlow.commonFlows.map(item => item.count),
-                                backgroundColor: 'rgba(147, 51, 234, 0.7)'
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false }
-                            },
-                            scales: {
-                                y: { beginAtZero: true }
-                            }
-                        }
-                    });
-                },
-                
-                createTrendsChart() {
-                    const ctx = document.getElementById('trendsChart');
-                    if (!ctx) return;
-                    
-                    new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: this.data.performanceTrends.labels,
-                            datasets: [{
-                                label: 'Completion Rate',
-                                data: this.data.performanceTrends.completionRate,
-                                borderColor: 'rgb(59, 130, 246)',
-                                tension: 0.1
-                            }, {
-                                label: 'Efficiency',
-                                data: this.data.performanceTrends.efficiency,
-                                borderColor: 'rgb(16, 185, 129)',
-                                tension: 0.1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            scales: {
-                                y: { beginAtZero: true, max: 100 }
-                            }
-                        }
-                    });
-                }
-            }
+<!-- Analytics-specific JavaScript -->
+<script>
+    // Analytics-specific MCP commands
+    const analyticsMcpCommands = {
+        'task-summary': `generate_workflow_report({
+  reportType: "task_summary",
+  outputFormat: "html"
+})`,
+        'delegation-analytics': `generate_workflow_report({
+  reportType: "delegation_analytics",
+  outputFormat: "html"
+})`,
+        'performance-dashboard': `generate_workflow_report({
+  reportType: "performance_dashboard",
+  outputFormat: "html"
+})`,
+        'comprehensive-report': `generate_workflow_report({
+  reportType: "comprehensive",
+  outputFormat: "html"
+})`
+    };
+    
+    window.copyAnalyticsMcpCommand = function(commandType) {
+        const command = analyticsMcpCommands[commandType];
+        if (command) {
+            navigator.clipboard.writeText(command).then(() => {
+                showToast(`${commandType.replace('-', ' ')} command copied!`, 'success');
+            }).catch(() => {
+                showToast('Failed to copy command', 'error');
+            });
         }
-    </script>
-</body>
-</html> 
+    };
+    
+    // Initialize charts
+    document.addEventListener('DOMContentLoaded', function() {
+        // Workflow Efficiency Chart
+        const efficiencyCtx = document.getElementById('workflowEfficiencyChart');
+        if (efficiencyCtx) {
+            new Chart(efficiencyCtx, {
+                type: 'line',
+                data: {
+                    labels: {{{json efficiencyTrend.labels}}},
+                    datasets: [{
+                        label: 'Workflow Efficiency %',
+                        data: {{{json efficiencyTrend.efficiency}}},
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Completion Rate %',
+                        data: {{{json efficiencyTrend.completionRate}}},
+                        borderColor: 'rgb(16, 185, 129)',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Status Distribution Chart
+        const statusCtx = document.getElementById('statusDistributionChart');
+        if (statusCtx) {
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: {{{json statusChart.labels}}},
+                    datasets: [{
+                        data: {{{json statusChart.data}}},
+                        backgroundColor: {{{json statusChart.colors}}},
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Priority Performance Chart
+        const priorityCtx = document.getElementById('priorityPerformanceChart');
+        if (priorityCtx) {
+            new Chart(priorityCtx, {
+                type: 'bar',
+                data: {
+                    labels: {{{json priorityChart.labels}}},
+                    datasets: [{
+                        label: 'Completion Rate %',
+                        data: {{{json priorityChart.completionRates}}},
+                        backgroundColor: {{{json priorityChart.colors}}},
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+    });
+    
+    // Helper for Handlebars
+    if (typeof Handlebars !== 'undefined') {
+        Handlebars.registerHelper('multiply', function(a, b) {
+            return a * b;
+        });
+        
+        Handlebars.registerHelper('eq', function(a, b) {
+            return a === b;
+        });
+        
+        Handlebars.registerHelper('gt', function(a, b) {
+            return a > b;
+        });
+    }
+</script>
+
+{{/base-layout}} 

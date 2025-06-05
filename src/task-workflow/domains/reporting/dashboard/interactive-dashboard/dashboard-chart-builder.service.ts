@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Injectable } from '@nestjs/common';
-import { FormattedTaskData, FormattedDelegationData } from '../../shared/types';
+import { FormattedDelegationData, FormattedTaskData } from '../../shared/types';
 
 @Injectable()
 export class DashboardChartBuilderService {
@@ -8,7 +9,7 @@ export class DashboardChartBuilderService {
    */
   buildAllCharts(
     tasks: FormattedTaskData[],
-    delegations: FormattedDelegationData[],
+    _delegations: FormattedDelegationData[],
     taskDistribution: any,
     workflowMetrics: any,
   ) {
@@ -35,28 +36,35 @@ export class DashboardChartBuilderService {
     const data = Object.values(statusData);
     const colors = this.getStatusColors(labels);
 
+    // Return simple structure that template expects
     return {
-      type: 'doughnut',
-      data: {
-        labels,
-        datasets: [
-          {
-            data,
-            backgroundColor: colors,
-            borderWidth: 2,
-            borderColor: '#ffffff',
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            position: 'bottom',
-          },
-          title: {
-            display: true,
-            text: 'Task Status Distribution',
+      labels,
+      data,
+      colors,
+      // Also include Chart.js config for JavaScript initialization
+      chartConfig: {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [
+            {
+              data,
+              backgroundColor: colors,
+              borderWidth: 2,
+              borderColor: '#ffffff',
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+            },
+            title: {
+              display: true,
+              text: 'Task Status Distribution',
+            },
           },
         },
       },
@@ -71,33 +79,40 @@ export class DashboardChartBuilderService {
     const data = Object.values(priorityData);
     const colors = this.getPriorityColors(labels);
 
+    // Return simple structure that template expects
     return {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [
-          {
-            label: 'Tasks',
-            data,
-            backgroundColor: colors,
-            borderWidth: 1,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            display: false,
-          },
-          title: {
-            display: true,
-            text: 'Task Priority Distribution',
-          },
+      labels,
+      data,
+      colors,
+      // Also include Chart.js config for JavaScript initialization
+      chartConfig: {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Tasks',
+              data,
+              backgroundColor: colors,
+              borderWidth: 1,
+            },
+          ],
         },
-        scales: {
-          y: {
-            beginAtZero: true,
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false,
+            },
+            title: {
+              display: true,
+              text: 'Task Priority Distribution',
+            },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
           },
         },
       },
@@ -110,41 +125,46 @@ export class DashboardChartBuilderService {
   private buildCompletionTrendsChart(tasks: FormattedTaskData[]) {
     const monthlyData = this.aggregateTasksByMonth(tasks);
     const labels = Object.keys(monthlyData).sort();
-    const completedData = labels.map((month) => monthlyData[month].completed);
-    const startedData = labels.map((month) => monthlyData[month].started);
+    const data = labels.map((month) => monthlyData[month].completed);
 
+    // Return simple structure that template expects
     return {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [
-          {
-            label: 'Completed',
-            data: completedData,
-            borderColor: '#10b981',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            tension: 0.4,
-          },
-          {
-            label: 'Started',
-            data: startedData,
-            borderColor: '#3b82f6',
-            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-            tension: 0.4,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          title: {
-            display: true,
-            text: 'Task Completion Trends',
-          },
+      labels,
+      data,
+      // Also include Chart.js config for JavaScript initialization
+      chartConfig: {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Completed',
+              data,
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              tension: 0.4,
+            },
+            {
+              label: 'Started',
+              data: labels.map((month) => monthlyData[month].started),
+              borderColor: '#3b82f6',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              tension: 0.4,
+            },
+          ],
         },
-        scales: {
-          y: {
-            beginAtZero: true,
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Task Completion Trends',
+            },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
           },
         },
       },
@@ -156,34 +176,40 @@ export class DashboardChartBuilderService {
    */
   private buildRolePerformanceChart(roleEfficiency: any[]) {
     const labels = roleEfficiency.map((r) => r.role);
-    const successRates = roleEfficiency.map((r) => r.successRate);
+    const data = roleEfficiency.map((r) => r.successRate);
 
+    // Return simple structure that template expects
     return {
-      type: 'radar',
-      data: {
-        labels,
-        datasets: [
-          {
-            label: 'Success Rate (%)',
-            data: successRates,
-            borderColor: '#8b5cf6',
-            backgroundColor: 'rgba(139, 92, 246, 0.2)',
-            pointBackgroundColor: '#8b5cf6',
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          title: {
-            display: true,
-            text: 'Role Performance',
-          },
+      labels,
+      data,
+      // Also include Chart.js config for JavaScript initialization
+      chartConfig: {
+        type: 'radar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Success Rate (%)',
+              data,
+              borderColor: '#8b5cf6',
+              backgroundColor: 'rgba(139, 92, 246, 0.2)',
+              pointBackgroundColor: '#8b5cf6',
+            },
+          ],
         },
-        scales: {
-          r: {
-            beginAtZero: true,
-            max: 100,
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Role Performance',
+            },
+          },
+          scales: {
+            r: {
+              beginAtZero: true,
+              max: 100,
+            },
           },
         },
       },

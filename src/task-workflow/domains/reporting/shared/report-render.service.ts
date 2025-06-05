@@ -1,9 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Injectable, Logger } from '@nestjs/common';
 import { promises as fs } from 'fs';
+import * as fsSync from 'fs';
+import * as path from 'path';
 import * as Handlebars from 'handlebars';
 import { IReportRenderService } from './interfaces';
 import { TemplateContext } from './types';
+import { TemplatePathResolverService } from './template-path-resolver.service';
 
 /**
  * Template rendering service for all reports
@@ -17,9 +20,13 @@ export class ReportRenderService implements IReportRenderService {
     string,
     HandlebarsTemplateDelegate
   >();
+  private partialsRegistered = false;
 
-  constructor() {
+  constructor(
+    private readonly templatePathResolver: TemplatePathResolverService,
+  ) {
     this.registerDefaultHelpers();
+    // Note: Partials will be registered on first use
   }
 
   /**
@@ -69,16 +76,38 @@ export class ReportRenderService implements IReportRenderService {
    * Render template with context
    */
   async renderTemplate(
-    templatePath: string,
+    templateName: string,
     context: TemplateContext,
+    basePath?: string,
   ): Promise<string> {
     try {
+      this.logger.log(`Starting template render for: ${templateName}`);
+      this.logger.log(`Current working directory: ${process.cwd()}`);
+      this.logger.log(`Base path provided: ${basePath || 'none'}`);
+
+      // Ensure partials are registered before rendering
+      if (!this.partialsRegistered) {
+        this.logger.log('Registering partials...');
+        await this.registerPartials(basePath);
+        this.partialsRegistered = true;
+      }
+
+      this.logger.log(`Resolving template path for: ${templateName}`);
+      const templatePath = this.templatePathResolver.resolveTemplatePath(
+        templateName,
+        basePath,
+      );
+      this.logger.log(`Template path resolved to: ${templatePath}`);
+
       const template = await this.compileTemplate(templatePath);
-      return template(context);
+      const result = template(context);
+      this.logger.log(`Template rendered successfully for: ${templateName}`);
+      return result;
     } catch (error) {
       this.logger.error(
-        `Failed to render template ${templatePath}: ${error.message}`,
+        `Failed to render template ${templateName}: ${error.message}`,
       );
+      this.logger.error(`Error stack: ${error.stack}`);
       throw error;
     }
   }
@@ -110,6 +139,101 @@ export class ReportRenderService implements IReportRenderService {
     Object.entries(helpers).forEach(([name, helper]) => {
       Handlebars.registerHelper(name, helper);
     });
+  }
+
+  /**
+   * Register Handlebars partials
+   */
+  async registerPartials(basePath?: string): Promise<void> {
+    try {
+      const partialNames = [
+        'base-layout',
+        'navigation-header',
+        'page-header',
+        'report-footer',
+        'status-badge',
+        'priority-badge',
+        'metric-cards',
+        'data-table',
+      ];
+
+      for (const partialName of partialNames) {
+        try {
+          const partialPath = this.resolvePartialPath(partialName, basePath);
+          const partialContent = await fs.readFile(partialPath, 'utf-8');
+          Handlebars.registerPartial(partialName, partialContent);
+          this.logger.log(`Registered partial: ${partialName}`);
+        } catch (error) {
+          this.logger.warn(
+            `Failed to register partial ${partialName}: ${error.message}`,
+          );
+        }
+      }
+    } catch (error) {
+      this.logger.error(`Failed to register partials: ${error.message}`);
+    }
+  }
+
+  /**
+   * Resolve partial file path
+   */
+  private resolvePartialPath(partialName: string, basePath?: string): string {
+    const workingDirectory = basePath || process.cwd();
+
+    // Try different path resolution strategies for partials
+    const strategies = [
+      // 1. Production build (dist folder)
+      () =>
+        path.join(
+          workingDirectory,
+          'dist',
+          'task-workflow',
+          'domains',
+          'reporting',
+          'shared',
+          'partials',
+          `${partialName}.hbs`,
+        ),
+
+      // 2. Development (src folder)
+      () =>
+        path.join(
+          workingDirectory,
+          'src',
+          'task-workflow',
+          'domains',
+          'reporting',
+          'shared',
+          'partials',
+          `${partialName}.hbs`,
+        ),
+
+      // 3. Docker environment (dist folder)
+      () =>
+        path.join(
+          '/app',
+          'dist',
+          'task-workflow',
+          'domains',
+          'reporting',
+          'shared',
+          'partials',
+          `${partialName}.hbs`,
+        ),
+    ];
+
+    for (const strategy of strategies) {
+      try {
+        const candidatePath = strategy();
+        if (fsSync.existsSync(candidatePath)) {
+          return candidatePath;
+        }
+      } catch (_error) {
+        // Continue to next strategy
+      }
+    }
+
+    throw new Error(`Partial not found: ${partialName}`);
   }
 
   /**

@@ -155,7 +155,10 @@ export class WorkflowAnalyticsService {
   /**
    * Generate HTML report using shared render service
    */
-  async generateHtmlReport(filters: ReportFilters = {}): Promise<string> {
+  async generateHtmlReport(
+    filters: ReportFilters = {},
+    basePath?: string,
+  ): Promise<string> {
     const reportData = await this.generateReport(filters);
 
     const templateContext: TemplateContext = {
@@ -173,6 +176,7 @@ export class WorkflowAnalyticsService {
     return this.renderService.renderTemplate(
       'workflow-analytics',
       templateContext,
+      basePath,
     );
   }
 }

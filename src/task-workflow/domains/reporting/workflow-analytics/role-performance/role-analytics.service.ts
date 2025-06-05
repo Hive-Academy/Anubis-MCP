@@ -287,4 +287,77 @@ export class RoleAnalyticsService {
 
     return recommendations;
   }
+
+  /**
+   * Generate insights from role performance data
+   */
+  generateInsights(reportData: any): any[] {
+    const insights = [];
+
+    if (reportData.roleMetrics && reportData.roleMetrics.length > 0) {
+      const avgEfficiency =
+        reportData.roleMetrics.reduce(
+          (sum: number, role: any) => sum + role.successRate,
+          0,
+        ) / reportData.roleMetrics.length;
+
+      insights.push({
+        title: 'Workflow Efficiency',
+        description: `Overall workflow efficiency is ${Math.round(avgEfficiency)}% across all roles`,
+        icon: 'chart-line',
+      });
+
+      const balancedRoles = reportData.roleMetrics.filter(
+        (role: any) =>
+          role.workloadDistribution > 15 && role.workloadDistribution < 25,
+      );
+
+      insights.push({
+        title: 'Role Balance',
+        description: `${balancedRoles.length} out of ${reportData.roleMetrics.length} roles have balanced workload distribution`,
+        icon: 'balance-scale',
+      });
+    }
+
+    return insights;
+  }
+
+  /**
+   * Generate recommendations from role performance data
+   */
+  generateRecommendations(reportData: any): any[] {
+    const recommendations = [];
+
+    if (reportData.roleMetrics && reportData.roleMetrics.length > 0) {
+      const lowEfficiencyRoles = reportData.roleMetrics.filter(
+        (role: any) => role.delegationEfficiency < 70,
+      );
+
+      if (lowEfficiencyRoles.length > 0) {
+        recommendations.push({
+          title: 'Optimize Handoffs',
+          description: `${lowEfficiencyRoles.length} roles have low delegation efficiency`,
+          action: 'Implement standardized handoff templates',
+          impact: 'Reduce redelegation by 15-20%',
+          icon: 'exchange-alt',
+        });
+      }
+
+      const slowRoles = reportData.roleMetrics.filter(
+        (role: any) => role.averageCompletionTime > 24,
+      );
+
+      if (slowRoles.length > 0) {
+        recommendations.push({
+          title: 'Quality Gates',
+          description: `${slowRoles.length} roles have completion times above 24 hours`,
+          action: 'Add automated quality checks and process optimization',
+          impact: 'Improve overall completion time by 20%',
+          icon: 'shield-check',
+        });
+      }
+    }
+
+    return recommendations;
+  }
 }

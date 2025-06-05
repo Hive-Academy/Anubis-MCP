@@ -9,13 +9,19 @@ import { ReportMcpOperationsService } from './report-mcp-operations.service';
 import { McpReportRouterService } from './shared/mcp-report-router.service';
 import { McpFileManagerService } from './shared/mcp-file-manager.service';
 import { McpResponseBuilderService } from './shared/mcp-response-builder.service';
+import { TemplatePathResolverService } from './shared/template-path-resolver.service';
 
 // Shared Services
 import { ReportDataService } from './shared/report-data.service';
 import { ReportTransformService } from './shared/report-transform.service';
 import { ReportRenderService } from './shared/report-render.service';
 import { ReportMetadataService } from './shared/report-metadata.service';
-// Simple report services will be created in next batch
+
+// NEW: Domain-specific HTML Generator Services
+import { InteractiveDashboardGeneratorService } from './dashboard/interactive-dashboard/interactive-dashboard-generator.service';
+import { SimpleReportGeneratorService } from './dashboard/simple-report/simple-report-generator.service';
+import { TaskDetailGeneratorService } from './task-management/task-detail/task-detail-generator.service';
+import { HtmlGeneratorFactoryService } from './shared/html-generator-factory.service';
 
 // Task Management Domain
 import { TaskDetailService } from './task-management/task-detail/task-detail.service';
@@ -44,6 +50,7 @@ import { RoleMetricsCalculatorService } from './workflow-analytics/role-performa
 import { InteractiveDashboardService } from './dashboard/interactive-dashboard/interactive-dashboard.service';
 import { DashboardDataAggregatorService } from './dashboard/interactive-dashboard/dashboard-data-aggregator.service';
 import { DashboardChartBuilderService } from './dashboard/interactive-dashboard/dashboard-chart-builder.service';
+import { TemplateDataValidatorService } from './shared/template-data-validator.service';
 
 /**
  * Domain-Based Reporting Module - Clean Architecture
@@ -116,6 +123,13 @@ import { DashboardChartBuilderService } from './dashboard/interactive-dashboard/
     ReportTransformService,
     ReportRenderService,
     ReportMetadataService,
+    TemplatePathResolverService,
+
+    // === NEW: TYPE-SAFE HTML GENERATOR SERVICES ===
+    InteractiveDashboardGeneratorService,
+    SimpleReportGeneratorService,
+    TaskDetailGeneratorService,
+    HtmlGeneratorFactoryService,
 
     // === TASK MANAGEMENT DOMAIN ===
     TaskDetailService,
@@ -148,11 +162,19 @@ import { DashboardChartBuilderService } from './dashboard/interactive-dashboard/
     McpFileManagerService,
     McpResponseBuilderService,
     ReportMcpOperationsService,
+
+    TemplateDataValidatorService,
   ],
   exports: [
     // Primary MCP interface for external consumption
     ReportMcpOperationsService,
     McpOrchestratorService,
+
+    // NEW: Type-safe HTML generator services
+    HtmlGeneratorFactoryService,
+    InteractiveDashboardGeneratorService,
+    SimpleReportGeneratorService,
+    TaskDetailGeneratorService,
 
     // Domain services for direct access
     TaskDetailService,

@@ -199,7 +199,7 @@ export class TaskDetailService {
   /**
    * Generate HTML report using shared render service
    */
-  async generateHtmlReport(taskId: string): Promise<string> {
+  async generateHtmlReport(taskId: string, basePath?: string): Promise<string> {
     const reportData = await this.generateReport(taskId);
 
     const templateContext: TemplateContext = {
@@ -221,6 +221,10 @@ export class TaskDetailService {
       metadata: reportData.metadata,
     };
 
-    return this.renderService.renderTemplate('task-detail', templateContext);
+    return this.renderService.renderTemplate(
+      'task-detail',
+      templateContext,
+      basePath,
+    );
   }
 }

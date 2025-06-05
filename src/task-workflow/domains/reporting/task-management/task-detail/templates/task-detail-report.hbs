@@ -1,375 +1,476 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Detail Report - {{task.name}}</title>
+{{#> base-layout title="Task Detail Report" reportType="Task Detail"}}
+
+<!-- Task Detail Content -->
+<div class="space-y-8">
     
-    <!-- Alpine.js -->
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    
-    <style>
-        .fade-in { animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .section-card { @apply bg-white rounded-xl shadow-lg p-6 mb-6; }
-        .info-grid { @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4; }
-    </style>
-</head>
-<body class="bg-gray-50 min-h-screen">
-    <div x-data="taskDetailApp()" x-init="loadData()" class="container mx-auto px-4 py-8">
+    <!-- Task Overview Card -->
+    <div class="card animate-on-scroll">
+        <div class="card-header">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                        <i class="fas fa-tasks text-primary-600 mr-3"></i>
+                        {{task.name}}
+                    </h2>
+                    <p class="text-gray-600 mt-1">{{task.taskId}} • Created {{formatDate task.createdAt}}</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="status-badge status-{{task.status}}">{{task.status}}</span>
+                    <span class="priority-badge priority-{{toLowerCase task.priority}}">{{task.priority}}</span>
+                </div>
+            </div>
+        </div>
         
-        <!-- Header -->
-        <div class="section-card">
-            <div class="flex items-center justify-between mb-4">
-                <h1 class="text-3xl font-bold text-gray-900">
-                    <i class="fas fa-tasks text-blue-600 mr-3"></i>
-                    Task Detail Report
-                </h1>
-                <div class="text-sm text-gray-500">
-                    Generated: {{metadata.generatedAt}}
-                </div>
-            </div>
-            
-            <!-- Task Overview -->
-            <div class="border-l-4 border-blue-500 pl-4">
-                <h2 class="text-2xl font-semibold text-gray-900 mb-2">{{task.name}}</h2>
-                <div x-show="data.task.taskSlug" class="mb-2">
-                    <p class="text-gray-600">Slug: <code class="bg-gray-100 px-2 py-1 rounded" x-text="data.task.taskSlug"></code></p>
-                </div>
-                <div class="info-grid mt-4">
-                    <div>
-                        <span class="text-sm font-medium text-gray-500">Status:</span>
-                        <span class="ml-2 px-3 py-1 rounded-full text-sm font-medium" 
-                              :class="{
-                                'bg-green-100 text-green-800': data.task.status === 'completed',
-                                'bg-blue-100 text-blue-800': data.task.status === 'in-progress',
-                                'bg-gray-100 text-gray-800': data.task.status === 'not-started',
-                                'bg-yellow-100 text-yellow-800': data.task.status === 'needs-review'
-                              }"
-                              x-text="data.task.status">
-                        </span>
-                    </div>
-                    <div>
-                        <span class="text-sm font-medium text-gray-500">Priority:</span>
-                        <span class="ml-2 text-sm font-medium" x-text="data.task.priority"></span>
-                    </div>
-                    <div>
-                        <span class="text-sm font-medium text-gray-500">Owner:</span>
-                        <span class="ml-2 text-sm font-medium" x-text="data.task.owner"></span>
-                    </div>
-                    <div>
-                        <span class="text-sm font-medium text-gray-500">Created:</span>
-                        <span class="ml-2 text-sm" x-text="formatDate(data.task.createdAt)"></span>
-                    </div>
-                    <div>
-                        <span class="text-sm font-medium text-gray-500">Duration:</span>
-                        <span class="ml-2 text-sm" x-text="data.task.duration + ' hours'"></span>
-                    </div>
-                    <div>
-                        <span class="text-sm font-medium text-gray-500">Progress:</span>
-                        <span class="ml-2 text-sm" x-text="data.task.progress + '% (' + data.task.completedSubtasks + '/' + data.task.totalSubtasks + ' subtasks)'"></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Progress Bar -->
-        <div class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-chart-line text-green-600 mr-2"></i>
-                Overall Progress
-            </h3>
-            <div class="w-full bg-gray-200 rounded-full h-4">
-                <div class="h-4 rounded-full bg-gradient-to-r from-blue-500 to-green-500" 
-                     :style="'width: ' + data.task.progress + '%'"></div>
-            </div>
-            <div class="flex justify-between text-sm text-gray-600 mt-2">
-                <span x-text="data.task.completedSubtasks + ' completed'"></span>
-                <span x-text="data.task.totalSubtasks + ' total subtasks'"></span>
-            </div>
-        </div>
-
-        <!-- Task Description -->
-        <div x-show="data.task.description" class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-file-alt text-purple-600 mr-2"></i>
-                Task Description
-            </h3>
-            <div class="space-y-4">
-                <div>
-                    <h4 class="font-medium text-gray-700 mb-2">Description</h4>
-                    <p class="text-gray-600" x-text="data.task.description?.description"></p>
-                </div>
-                <div>
-                    <h4 class="font-medium text-gray-700 mb-2">Business Requirements</h4>
-                    <p class="text-gray-600" x-text="data.task.description?.businessRequirements"></p>
-                </div>
-                <div>
-                    <h4 class="font-medium text-gray-700 mb-2">Technical Requirements</h4>
-                    <p class="text-gray-600" x-text="data.task.description?.technicalRequirements"></p>
-                </div>
-                <div x-show="data.task.description?.acceptanceCriteria?.length > 0">
-                    <h4 class="font-medium text-gray-700 mb-2">Acceptance Criteria</h4>
-                    <ul class="list-disc list-inside space-y-1">
-                        <template x-for="criteria in data.task.description?.acceptanceCriteria || []" :key="criteria">
-                            <li class="text-gray-600" x-text="criteria"></li>
-                        </template>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- Codebase Analysis -->
-        <div x-show="data.task.codebaseAnalysis" class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-code text-orange-600 mr-2"></i>
-                Codebase Analysis
-            </h3>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div>
-                    <h4 class="font-medium text-gray-700 mb-3">Architecture Findings</h4>
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <pre class="text-sm text-gray-700 whitespace-pre-wrap" x-text="JSON.stringify(data.task.codebaseAnalysis?.architectureFindings, null, 2)"></pre>
-                    </div>
-                </div>
-                <div>
-                    <h4 class="font-medium text-gray-700 mb-3">Technology Stack</h4>
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <pre class="text-sm text-gray-700 whitespace-pre-wrap" x-text="JSON.stringify(data.task.codebaseAnalysis?.technologyStack, null, 2)"></pre>
-                    </div>
-                </div>
-                <div>
-                    <h4 class="font-medium text-gray-700 mb-3">Problems Identified</h4>
-                    <div class="bg-red-50 p-4 rounded-lg">
-                        <pre class="text-sm text-gray-700 whitespace-pre-wrap" x-text="JSON.stringify(data.task.codebaseAnalysis?.problemsIdentified, null, 2)"></pre>
-                    </div>
-                </div>
-                <div>
-                    <h4 class="font-medium text-gray-700 mb-3">Quality Assessment</h4>
-                    <div class="bg-green-50 p-4 rounded-lg">
-                        <pre class="text-sm text-gray-700 whitespace-pre-wrap" x-text="JSON.stringify(data.task.codebaseAnalysis?.qualityAssessment, null, 2)"></pre>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-6" x-show="data.task.codebaseAnalysis?.filesCovered?.length > 0">
-                <h4 class="font-medium text-gray-700 mb-3">Files Covered</h4>
-                <div class="flex flex-wrap gap-2">
-                    <template x-for="file in data.task.codebaseAnalysis?.filesCovered || []" :key="file">
-                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded" x-text="file"></span>
-                    </template>
-                </div>
-            </div>
-            <div class="mt-4 text-sm text-gray-500">
-                <span>Analyzed by: </span>
-                <span x-text="data.task.codebaseAnalysis?.analyzedBy"></span>
-                <span> on </span>
-                <span x-text="formatDate(data.task.codebaseAnalysis?.analyzedAt)"></span>
-            </div>
-        </div>
-
-        <!-- Implementation Plans -->
-        <div x-show="data.task.implementationPlans?.length > 0" class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-project-diagram text-indigo-600 mr-2"></i>
-                Implementation Plans
-            </h3>
-            <template x-for="plan in data.task.implementationPlans || []" :key="plan.id">
-                <div class="border border-gray-200 rounded-lg p-4 mb-4">
-                    <div class="flex justify-between items-start mb-4">
-                        <h4 class="font-semibold text-gray-800" x-text="'Plan #' + plan.id"></h4>
-                        <span class="text-sm text-gray-500" x-text="'Created by ' + plan.createdBy + ' on ' + formatDate(plan.createdAt)"></span>
-                    </div>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <h5 class="font-medium text-gray-700 mb-2">Overview</h5>
-                            <p class="text-gray-600" x-text="plan.overview"></p>
-                        </div>
-                        <div>
-                            <h5 class="font-medium text-gray-700 mb-2">Approach</h5>
-                            <p class="text-gray-600" x-text="plan.approach"></p>
-                        </div>
-                        <div x-show="plan.architecturalRationale">
-                            <h5 class="font-medium text-gray-700 mb-2">Architectural Rationale</h5>
-                            <p class="text-gray-600" x-text="plan.architecturalRationale"></p>
-                        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Task Description -->
+                <div class="lg:col-span-2">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">Description</h3>
+                    <div class="prose prose-sm max-w-none">
+                        <p class="text-gray-700">{{task.description.description}}</p>
                         
-                        <!-- Files to Modify -->
-                        <div x-show="plan.filesToModify?.length > 0">
-                            <h5 class="font-medium text-gray-700 mb-2">Files to Modify</h5>
-                            <div class="flex flex-wrap gap-2">
-                                <template x-for="file in plan.filesToModify || []" :key="file">
-                                    <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded" x-text="file"></span>
-                                </template>
+                        {{#if task.description.businessRequirements}}
+                            <h4 class="text-md font-medium text-gray-900 mt-4 mb-2">Business Requirements</h4>
+                            <p class="text-gray-700">{{task.description.businessRequirements}}</p>
+                        {{/if}}
+                        
+                        {{#if task.description.technicalRequirements}}
+                            <h4 class="text-md font-medium text-gray-900 mt-4 mb-2">Technical Requirements</h4>
+                            <p class="text-gray-700">{{task.description.technicalRequirements}}</p>
+                        {{/if}}
+                    </div>
+                </div>
+                
+                <!-- Task Metadata -->
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3">Task Information</h3>
+                        <dl class="space-y-2">
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Current Owner</dt>
+                                <dd class="text-sm text-gray-900">
+                                    <span class="role-badge">{{task.currentOwner}}</span>
+                                </dd>
                             </div>
-                        </div>
-                        
-                        <!-- Subtasks by Batch -->
-                        <div x-show="plan.subtasks?.length > 0">
-                            <h5 class="font-medium text-gray-700 mb-3" x-text="'Subtasks (' + (plan.subtasks?.length || 0) + ' total)'"></h5>
-                            <div class="space-y-3">
-                                <template x-for="subtask in plan.subtasks || []" :key="subtask.id">
-                                    <div class="bg-gray-50 p-3 rounded border-l-4"
-                                         :class="{
-                                           'border-green-500': subtask.status === 'completed',
-                                           'border-blue-500': subtask.status === 'in-progress',
-                                           'border-gray-400': subtask.status === 'not-started'
-                                         }">
-                                        <div class="flex justify-between items-start">
-                                            <div>
-                                                <h6 class="font-medium text-gray-800" x-text="subtask.sequenceNumber + '. ' + subtask.name"></h6>
-                                                <p class="text-sm text-gray-600 mt-1" x-text="subtask.description"></p>
-                                                <div x-show="subtask.batchId" class="mt-2">
-                                                    <span class="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded"
-                                                          x-text="'Batch: ' + subtask.batchId + ' - ' + subtask.batchTitle"></span>
-                                                </div>
-                                            </div>
-                                            <div class="text-right">
-                                                <span class="px-2 py-1 rounded text-xs font-medium"
-                                                      :class="{
-                                                        'bg-green-100 text-green-800': subtask.status === 'completed',
-                                                        'bg-blue-100 text-blue-800': subtask.status === 'in-progress',
-                                                        'bg-gray-100 text-gray-800': subtask.status === 'not-started'
-                                                      }"
-                                                      x-text="subtask.status"></span>
-                                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Git Branch</dt>
+                                <dd class="text-sm text-gray-900 font-mono">
+                                    {{#if task.gitBranch}}
+                                        {{task.gitBranch}}
+                                    {{else}}
+                                        <span class="text-gray-400">Not assigned</span>
+                                    {{/if}}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Dependencies</dt>
+                                <dd class="text-sm text-gray-900">
+                                    {{#if task.dependencies.length}}
+                                        <div class="space-y-1">
+                                            {{#each task.dependencies}}
+                                                <div class="text-xs bg-gray-100 px-2 py-1 rounded">{{this}}</div>
+                                            {{/each}}
                                         </div>
-                                    </div>
-                                </template>
+                                    {{else}}
+                                        <span class="text-gray-400">None</span>
+                                    {{/if}}
+                                </dd>
                             </div>
-                        </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Last Updated</dt>
+                                <dd class="text-sm text-gray-900">{{formatDate task.updatedAt}}</dd>
+                            </div>
+                        </dl>
                     </div>
-                </div>
-            </template>
-        </div>
-
-        <!-- Reports Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
-            <!-- Research Reports -->
-            <div x-show="data.task.researchReports?.length > 0" class="section-card">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                    <i class="fas fa-search text-green-600 mr-2"></i>
-                    <span x-text="'Research Reports (' + (data.task.researchReports?.length || 0) + ')'"></span>
-                </h3>
-                <div class="space-y-4">
-                    <template x-for="report in data.task.researchReports || []" :key="report.id">
-                        <div class="border border-gray-200 rounded-lg p-4">
-                            <h4 class="font-medium text-gray-800 mb-2" x-text="report.title"></h4>
-                            <p class="text-sm text-gray-600 mb-3" x-text="report.summary"></p>
-                            <div class="text-xs text-gray-500" x-text="'Created: ' + formatDate(report.createdAt)"></div>
-                        </div>
-                    </template>
-                </div>
-            </div>
-
-            <!-- Code Reviews -->
-            <div x-show="data.task.codeReviews?.length > 0" class="section-card">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                    <i class="fas fa-code-branch text-red-600 mr-2"></i>
-                    <span x-text="'Code Reviews (' + (data.task.codeReviews?.length || 0) + ')'"></span>
-                </h3>
-                <div class="space-y-4">
-                    <template x-for="review in data.task.codeReviews || []" :key="review.id">
-                        <div class="border border-gray-200 rounded-lg p-4">
-                            <div class="flex justify-between items-start mb-2">
-                                <span class="px-3 py-1 rounded-full text-sm font-medium"
-                                      :class="{
-                                        'bg-green-100 text-green-800': review.status === 'APPROVED',
-                                        'bg-yellow-100 text-yellow-800': review.status === 'APPROVED_WITH_RESERVATIONS',
-                                        'bg-red-100 text-red-800': review.status === 'NEEDS_CHANGES'
-                                      }"
-                                      x-text="review.status"></span>
-                                <span class="text-xs text-gray-500" x-text="formatDate(review.createdAt)"></span>
-                            </div>
-                            <p class="text-sm text-gray-600" x-text="review.summary"></p>
-                            <div x-show="review.strengths" class="mt-2">
-                                <span class="text-xs font-medium text-green-700">Strengths:</span>
-                                <p class="text-xs text-gray-600" x-text="review.strengths"></p>
-                            </div>
-                            <div x-show="review.issues" class="mt-2">
-                                <span class="text-xs font-medium text-red-700">Issues:</span>
-                                <p class="text-xs text-gray-600" x-text="review.issues"></p>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-            </div>
-        </div>
-
-        <!-- Comments -->
-        <div x-show="data.task.comments?.length > 0" class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-comments text-blue-600 mr-2"></i>
-                <span x-text="'Comments & Communications (' + (data.task.comments?.length || 0) + ')'"></span>
-            </h3>
-            <div class="space-y-3">
-                <template x-for="comment in data.task.comments || []" :key="comment.id">
-                    <div class="border-l-4 border-blue-500 pl-4 py-2">
-                        <div class="flex justify-between items-start">
-                            <span class="text-sm font-medium text-gray-700" x-text="comment.mode"></span>
-                            <span class="text-xs text-gray-500" x-text="formatDate(comment.createdAt)"></span>
-                        </div>
-                        <p class="text-sm text-gray-600 mt-1" x-text="comment.content"></p>
-                    </div>
-                </template>
-            </div>
-        </div>
-
-        <!-- Statistics Summary -->
-        <div class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-chart-bar text-purple-600 mr-2"></i>
-                Task Statistics
-            </h3>
-            <div class="info-grid">
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-blue-600" x-text="data.task.delegationCount || 0"></div>
-                    <div class="text-sm text-gray-600">Delegations</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-green-600" x-text="data.task.completedSubtasks || 0"></div>
-                    <div class="text-sm text-gray-600">Completed Subtasks</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-purple-600" x-text="data.task.totalSubtasks || 0"></div>
-                    <div class="text-sm text-gray-600">Total Subtasks</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-orange-600" x-text="(data.task.duration || 0) + 'h'"></div>
-                    <div class="text-sm text-gray-600">Duration</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-red-600" x-text="data.task.researchReports?.length || 0"></div>
-                    <div class="text-sm text-gray-600">Research Reports</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold text-indigo-600" x-text="data.task.codeReviews?.length || 0"></div>
-                    <div class="text-sm text-gray-600">Code Reviews</div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- Acceptance Criteria -->
+    {{#if task.description.acceptanceCriteria}}
+        <div class="card animate-on-scroll">
+            <div class="card-header">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-check-circle text-success-600 mr-2"></i>
+                    Acceptance Criteria
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">Requirements that must be met for task completion</p>
+            </div>
+            <div class="card-body">
+                <div class="space-y-3">
+                    {{#each task.description.acceptanceCriteria}}
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0 mt-1">
+                                <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center">
+                                    <i class="fas fa-check text-xs text-gray-400"></i>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-gray-700">{{this}}</p>
+                            </div>
+                        </div>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+    {{/if}}
+    
+    <!-- Implementation Plans -->
+    {{#if implementationPlans.length}}
+        <div class="card animate-on-scroll">
+            <div class="card-header">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-project-diagram text-indigo-600 mr-2"></i>
+                    Implementation Plans
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">Detailed implementation approach and strategy</p>
+            </div>
+            <div class="card-body">
+                {{#each implementationPlans}}
+                    <div class="border border-gray-200 rounded-lg p-4 {{#unless @first}}mt-4{{/unless}}">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-md font-medium text-gray-900">Plan #{{add @index 1}}</h4>
+                            <span class="text-xs text-gray-500">by {{createdBy}}</span>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            {{#if overview}}
+                                <div>
+                                    <h5 class="text-sm font-medium text-gray-700">Overview</h5>
+                                    <p class="text-sm text-gray-600 mt-1">{{overview}}</p>
+                                </div>
+                            {{/if}}
+                            
+                            {{#if approach}}
+                                <div>
+                                    <h5 class="text-sm font-medium text-gray-700">Approach</h5>
+                                    <p class="text-sm text-gray-600 mt-1">{{approach}}</p>
+                                </div>
+                            {{/if}}
+                            
+                            {{#if filesToModify.length}}
+                                <div>
+                                    <h5 class="text-sm font-medium text-gray-700">Files to Modify</h5>
+                                    <div class="mt-1 flex flex-wrap gap-1">
+                                        {{#each filesToModify}}
+                                            <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-mono">{{this}}</span>
+                                        {{/each}}
+                                    </div>
+                                </div>
+                            {{/if}}
+                        </div>
+                    </div>
+                {{/each}}
+            </div>
+        </div>
+    {{/if}}
+    
+    <!-- Subtasks by Batch -->
+    {{#if subtaskBatches.length}}
+        <div class="card animate-on-scroll">
+            <div class="card-header">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-layer-group text-orange-600 mr-2"></i>
+                    Implementation Batches
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">Organized subtasks grouped by implementation phase</p>
+            </div>
+            <div class="card-body">
+                <div class="space-y-6">
+                    {{#each subtaskBatches}}
+                        <div class="border border-gray-200 rounded-lg overflow-hidden">
+                            <!-- Batch Header -->
+                            <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="text-md font-medium text-gray-900">{{batchTitle}}</h4>
+                                        <p class="text-sm text-gray-600">Batch ID: {{batchId}}</p>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-sm text-gray-500">{{completedCount}}/{{totalCount}} completed</span>
+                                        <div class="w-16 bg-gray-200 rounded-full h-2">
+                                            <div 
+                                                class="bg-success-600 h-2 rounded-full transition-all duration-1000" 
+                                                style="width: {{progressPercentage}}%"
+                                            ></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Subtasks List -->
+                            <div class="divide-y divide-gray-200">
+                                {{#each subtasks}}
+                                    <div class="px-4 py-3 hover:bg-gray-50 transition-colors duration-150">
+                                        <div class="flex items-start space-x-3">
+                                            <div class="flex-shrink-0 mt-1">
+                                                {{#if (eq status 'completed')}}
+                                                    <div class="w-5 h-5 rounded-full bg-success-100 flex items-center justify-center">
+                                                        <i class="fas fa-check text-success-600 text-xs"></i>
+                                                    </div>
+                                                {{else if (eq status 'in-progress')}}
+                                                    <div class="w-5 h-5 rounded-full bg-primary-100 flex items-center justify-center">
+                                                        <i class="fas fa-clock text-primary-600 text-xs"></i>
+                                                    </div>
+                                                {{else}}
+                                                    <div class="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center">
+                                                        <i class="fas fa-circle text-gray-400 text-xs"></i>
+                                                    </div>
+                                                {{/if}}
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center justify-between">
+                                                    <h5 class="text-sm font-medium text-gray-900">{{sequenceNumber}}. {{name}}</h5>
+                                                    <span class="status-badge status-{{status}}">{{status}}</span>
+                                                </div>
+                                                <p class="text-sm text-gray-600 mt-1">{{description}}</p>
+                                                {{#if strategicGuidance}}
+                                                    <div class="mt-2 text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
+                                                        <i class="fas fa-lightbulb mr-1"></i>
+                                                        Strategic guidance available
+                                                    </div>
+                                                {{/if}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {{/each}}
+                            </div>
+                        </div>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+    {{/if}}
+    
+    <!-- Delegation History -->
+    {{#if delegationHistory.length}}
+        <div class="card animate-on-scroll">
+            <div class="card-header">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-exchange-alt text-purple-600 mr-2"></i>
+                    Delegation History
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">Workflow transitions and role handoffs</p>
+            </div>
+            <div class="card-body">
+                <div class="flow-root">
+                    <ul class="-mb-8">
+                        {{#each delegationHistory}}
+                            <li>
+                                <div class="relative pb-8 {{#unless @last}}{{else}}pb-0{{/unless}}">
+                                    {{#unless @last}}
+                                        <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+                                    {{/unless}}
+                                    <div class="relative flex space-x-3">
+                                        <div>
+                                            <span class="h-8 w-8 rounded-full bg-primary-500 flex items-center justify-center ring-8 ring-white">
+                                                <i class="fas fa-arrow-right text-white text-xs"></i>
+                                            </span>
+                                        </div>
+                                        <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                                            <div>
+                                                <p class="text-sm text-gray-500">
+                                                    Delegated from <span class="role-badge">{{fromRole}}</span> 
+                                                    to <span class="role-badge">{{toRole}}</span>
+                                                </p>
+                                                {{#if message}}
+                                                    <p class="text-sm text-gray-700 mt-1">{{message}}</p>
+                                                {{/if}}
+                                            </div>
+                                            <div class="text-right text-sm whitespace-nowrap text-gray-500">
+                                                {{formatDate delegatedAt}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        {{/each}}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    {{/if}}
+    
+    <!-- Reports and Reviews -->
+    {{#if (or researchReports.length codeReviews.length completionReports.length)}}
+        <div class="card animate-on-scroll">
+            <div class="card-header">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-file-alt text-green-600 mr-2"></i>
+                    Reports & Reviews
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">Research findings, code reviews, and completion reports</p>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Research Reports -->
+                    {{#if researchReports.length}}
+                        <div>
+                            <h4 class="text-md font-medium text-gray-900 mb-3 flex items-center">
+                                <i class="fas fa-search text-blue-600 mr-2"></i>
+                                Research Reports
+                            </h4>
+                            <div class="space-y-3">
+                                {{#each researchReports}}
+                                    <div class="border border-gray-200 rounded-lg p-3">
+                                        <h5 class="text-sm font-medium text-gray-900">{{title}}</h5>
+                                        <p class="text-xs text-gray-600 mt-1">{{summary}}</p>
+                                        <div class="mt-2 text-xs text-gray-500">
+                                            by {{researchedBy}} • {{formatDate createdAt}}
+                                        </div>
+                                    </div>
+                                {{/each}}
+                            </div>
+                        </div>
+                    {{/if}}
+                    
+                    <!-- Code Reviews -->
+                    {{#if codeReviews.length}}
+                        <div>
+                            <h4 class="text-md font-medium text-gray-900 mb-3 flex items-center">
+                                <i class="fas fa-code text-purple-600 mr-2"></i>
+                                Code Reviews
+                            </h4>
+                            <div class="space-y-3">
+                                {{#each codeReviews}}
+                                    <div class="border border-gray-200 rounded-lg p-3">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-sm font-medium text-gray-900">Review</span>
+                                            <span class="status-badge status-{{toLowerCase status}}">{{status}}</span>
+                                        </div>
+                                        <p class="text-xs text-gray-600">{{summary}}</p>
+                                        <div class="mt-2 text-xs text-gray-500">
+                                            by {{reviewedBy}} • {{formatDate createdAt}}
+                                        </div>
+                                    </div>
+                                {{/each}}
+                            </div>
+                        </div>
+                    {{/if}}
+                    
+                    <!-- Completion Reports -->
+                    {{#if completionReports.length}}
+                        <div>
+                            <h4 class="text-md font-medium text-gray-900 mb-3 flex items-center">
+                                <i class="fas fa-flag-checkered text-success-600 mr-2"></i>
+                                Completion Reports
+                            </h4>
+                            <div class="space-y-3">
+                                {{#each completionReports}}
+                                    <div class="border border-gray-200 rounded-lg p-3">
+                                        <h5 class="text-sm font-medium text-gray-900">Final Report</h5>
+                                        <p class="text-xs text-gray-600 mt-1">{{summary}}</p>
+                                        <div class="mt-2 text-xs text-gray-500">
+                                            {{formatDate createdAt}}
+                                        </div>
+                                    </div>
+                                {{/each}}
+                            </div>
+                        </div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+    {{/if}}
+    
+    <!-- Quick Actions -->
+    <div class="card animate-on-scroll">
+        <div class="card-header">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-bolt text-yellow-600 mr-2"></i>
+                Quick Actions
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">MCP commands for this task</p>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <button onclick="copyTaskMcpCommand('get-context')" class="btn-secondary text-left p-4 h-auto">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-info-circle text-blue-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900">Get Full Context</div>
+                            <div class="text-sm text-gray-500">Retrieve complete task data</div>
+                        </div>
+                    </div>
+                </button>
+                
+                <button onclick="copyTaskMcpCommand('update-status')" class="btn-secondary text-left p-4 h-auto">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-edit text-green-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900">Update Status</div>
+                            <div class="text-sm text-gray-500">Change task status</div>
+                        </div>
+                    </div>
+                </button>
+                
+                <button onclick="copyTaskMcpCommand('delegate')" class="btn-secondary text-left p-4 h-auto">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-share text-purple-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900">Delegate Task</div>
+                            <div class="text-sm text-gray-500">Hand off to another role</div>
+                        </div>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+</div>
 
-    <script>
-        function taskDetailApp() {
-            return {
-                data: {{{jsonData}}},
-                
-                loadData() {
-                    console.log('Task Detail Data:', this.data);
-                },
-                
-                formatDate(dateStr) {
-                    if (!dateStr) return 'N/A';
-                    return new Date(dateStr).toLocaleDateString();
-                }
-            };
+<!-- Task-specific JavaScript -->
+<script>
+    // Task-specific MCP commands
+    const taskMcpCommands = {
+        'get-context': `query_task_context({
+  taskId: "{{task.taskId}}",
+  includeLevel: "comprehensive"
+})`,
+        'update-status': `task_operations({
+  operation: "update",
+  taskId: "{{task.taskId}}",
+  taskData: {
+    status: "completed" // Change as needed
+  }
+})`,
+        'delegate': `workflow_operations({
+  operation: "delegate",
+  taskId: "{{task.taskId}}",
+  fromRole: "{{task.currentOwner}}",
+  toRole: "target-role", // Specify target role
+  message: "Delegation message"
+})`
+    };
+    
+    window.copyTaskMcpCommand = function(commandType) {
+        const command = taskMcpCommands[commandType];
+        if (command) {
+            navigator.clipboard.writeText(command).then(() => {
+                showToast(`${commandType.replace('-', ' ')} command copied!`, 'success');
+            }).catch(() => {
+                showToast('Failed to copy command', 'error');
+            });
         }
-    </script>
-</body>
-</html> 
+    };
+    
+    // Helper for Handlebars
+    if (typeof Handlebars !== 'undefined') {
+        Handlebars.registerHelper('add', function(a, b) {
+            return a + b;
+        });
+        
+        Handlebars.registerHelper('or', function(a, b) {
+            return a || b;
+        });
+    }
+</script>
+
+{{/base-layout}} 

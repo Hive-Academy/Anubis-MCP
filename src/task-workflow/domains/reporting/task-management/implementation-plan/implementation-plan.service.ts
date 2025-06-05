@@ -140,7 +140,7 @@ export class ImplementationPlanService {
   /**
    * Generate HTML report using shared render service
    */
-  async generateHtmlReport(taskId: string): Promise<string> {
+  async generateHtmlReport(taskId: string, basePath?: string): Promise<string> {
     const reportData = await this.generateReport(taskId);
 
     const templateContext: TemplateContext = {
@@ -163,6 +163,7 @@ export class ImplementationPlanService {
     return this.renderService.renderTemplate(
       'implementation-plan',
       templateContext,
+      basePath,
     );
   }
 

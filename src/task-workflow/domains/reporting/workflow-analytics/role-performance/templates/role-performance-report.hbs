@@ -1,489 +1,570 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Role Performance Report - {{roleMetrics.role}}</title>
+{{#> base-layout title="Role Performance Report" reportType="Role Performance"}}
+
+<!-- Role Performance Content -->
+<div class="space-y-8">
     
-    <!-- Alpine.js -->
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    
-    <style>
-        .fade-in { animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .section-card { @apply bg-white rounded-xl shadow-lg p-6 mb-6; }
-        .metric-card { @apply bg-gradient-to-br from-white to-gray-50 rounded-lg p-4 border border-gray-200; }
-        .chart-container { @apply bg-white rounded-lg p-4 border border-gray-200; }
-        .performance-indicator { @apply text-center p-4 rounded-lg border-2; }
-    </style>
-</head>
-<body class="bg-gray-50 min-h-screen">
-    <div x-data="rolePerformanceApp()" x-init="loadData()" class="container mx-auto px-4 py-8">
+    <!-- Performance Overview Card -->
+    <div class="card animate-on-scroll">
+        <div class="card-header">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                        <i class="fas fa-user-chart text-primary-600 mr-3"></i>
+                        Role Performance Analysis
+                    </h2>
+                    <p class="text-gray-600 mt-1">{{#if owner}}{{owner}} Performance{{else}}All Roles Performance{{/if}} • {{totalTasks}} tasks analyzed</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm text-gray-500">{{dateRange}}</span>
+                    <div class="flex items-center space-x-2">
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <span class="text-sm text-gray-600">{{overallEfficiency}}% efficiency</span>
+                    </div>
+                </div>
+            </div>
+        </div>
         
-        <!-- Header -->
-        <div class="section-card">
-            <div class="flex items-center justify-between mb-4">
-                <h1 class="text-3xl font-bold text-gray-900">
-                    <i class="fas fa-user-tie text-purple-600 mr-3"></i>
-                    Role Performance Report
-                </h1>
-                <div class="text-sm text-gray-500">
-                    Generated: {{metadata.generatedAt}}
+        <div class="card-body">
+            <!-- Key Performance Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
+                    <div class="w-16 h-16 mx-auto bg-blue-500 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-tasks text-white text-xl"></i>
+                    </div>
+                    <div class="text-3xl font-bold text-blue-600">{{totalTasks}}</div>
+                    <div class="text-sm text-blue-700">Total Tasks</div>
+                    <div class="text-xs text-blue-600 mt-1">{{completedTasks}} completed</div>
+                </div>
+                
+                <div class="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl">
+                    <div class="w-16 h-16 mx-auto bg-green-500 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-clock text-white text-xl"></i>
+                    </div>
+                    <div class="text-3xl font-bold text-green-600">{{averageCompletionTime}}h</div>
+                    <div class="text-sm text-green-700">Avg Completion</div>
+                    <div class="text-xs text-green-600 mt-1">{{fastestTask}}h fastest</div>
+                </div>
+                
+                <div class="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl">
+                    <div class="w-16 h-16 mx-auto bg-purple-500 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-star text-white text-xl"></i>
+                    </div>
+                    <div class="text-3xl font-bold text-purple-600">{{qualityScore}}/10</div>
+                    <div class="text-sm text-purple-700">Quality Score</div>
+                    <div class="text-xs text-purple-600 mt-1">{{qualityTrend}} trend</div>
+                </div>
+                
+                <div class="text-center p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl">
+                    <div class="w-16 h-16 mx-auto bg-orange-500 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-exchange-alt text-white text-xl"></i>
+                    </div>
+                    <div class="text-3xl font-bold text-orange-600">{{delegationEfficiency}}%</div>
+                    <div class="text-sm text-orange-700">Delegation Efficiency</div>
+                    <div class="text-xs text-orange-600 mt-1">{{redelegationRate}}% redelegation</div>
                 </div>
             </div>
             
-            <!-- Role Overview -->
-            <div class="border-l-4 border-purple-500 pl-4">
-                <h2 class="text-2xl font-semibold text-gray-900 mb-2" x-text="data.roleMetrics.role"></h2>
-                <p class="text-gray-600 mb-4" x-text="data.roleMetrics.description"></p>
-                
-                <!-- Key Metrics Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="metric-card text-center">
-                        <div class="text-3xl font-bold text-blue-600" x-text="data.roleMetrics.tasksHandled"></div>
-                        <div class="text-sm text-gray-600">Tasks Handled</div>
-                    </div>
-                    <div class="metric-card text-center">
-                        <div class="text-3xl font-bold"
-                             :class="data.roleMetrics.successRate > 80 ? 'text-green-600' : 'text-yellow-600'"
-                             x-text="data.roleMetrics.successRate + '%'">
-                        </div>
-                        <div class="text-sm text-gray-600">Success Rate</div>
-                    </div>
-                    <div class="metric-card text-center">
-                        <div class="text-3xl font-bold text-indigo-600" x-text="data.roleMetrics.averageDuration + 'h'"></div>
-                        <div class="text-sm text-gray-600">Avg Duration</div>
-                    </div>
-                    <div class="metric-card text-center">
-                        <div class="text-3xl font-bold"
-                             :class="data.roleMetrics.efficiency > 90 ? 'text-green-600' : 'text-orange-600'"
-                             x-text="data.roleMetrics.efficiency + '%'">
-                        </div>
-                        <div class="text-sm text-gray-600">Efficiency</div>
-                    </div>
-                </div>
+            <!-- Performance Trend Chart -->
+            <div class="bg-gray-50 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-chart-line text-blue-600 mr-2"></i>
+                    Performance Trend (Last 30 Days)
+                </h3>
+                <canvas id="performanceTrendChart" width="400" height="200"></canvas>
             </div>
         </div>
-
-        <!-- Performance Indicators -->
-        <div class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-gauge text-green-600 mr-2"></i>
-                Performance Indicators
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Quality Score -->
-                <div class="performance-indicator"
-                     :class="data.roleMetrics.qualityScore > 80 ? 'border-green-300 bg-green-50' : 'border-yellow-300 bg-yellow-50'">
-                    <div class="text-2xl font-bold"
-                         :class="data.roleMetrics.qualityScore > 80 ? 'text-green-600' : 'text-yellow-600'"
-                         x-text="data.roleMetrics.qualityScore + '/100'">
-                    </div>
-                    <div class="text-sm font-medium text-gray-700">Quality Score</div>
-                    <div class="text-xs text-gray-600 mt-1">Based on reviews & feedback</div>
-                </div>
-                
-                <!-- Velocity Score -->
-                <div class="performance-indicator"
-                     :class="data.roleMetrics.velocityScore > 75 ? 'border-blue-300 bg-blue-50' : 'border-orange-300 bg-orange-50'">
-                    <div class="text-2xl font-bold"
-                         :class="data.roleMetrics.velocityScore > 75 ? 'text-blue-600' : 'text-orange-600'"
-                         x-text="data.roleMetrics.velocityScore + '/100'">
-                    </div>
-                    <div class="text-sm font-medium text-gray-700">Velocity Score</div>
-                    <div class="text-xs text-gray-600 mt-1">Task completion speed</div>
-                </div>
-                
-                <!-- Collaboration Score -->
-                <div class="performance-indicator"
-                     :class="data.roleMetrics.collaborationScore > 85 ? 'border-purple-300 bg-purple-50' : 'border-gray-300 bg-gray-50'">
-                    <div class="text-2xl font-bold"
-                         :class="data.roleMetrics.collaborationScore > 85 ? 'text-purple-600' : 'text-gray-600'"
-                         x-text="data.roleMetrics.collaborationScore + '/100'">
-                    </div>
-                    <div class="text-sm font-medium text-gray-700">Collaboration Score</div>
-                    <div class="text-xs text-gray-600 mt-1">Delegation & handoff quality</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Performance Charts -->
-        <div class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-chart-area text-blue-600 mr-2"></i>
-                Performance Analytics
-            </h3>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Performance Radar -->
-                <div class="chart-container">
-                    <h4 class="font-medium text-gray-700 mb-3">Performance Radar</h4>
-                    <canvas id="performanceRadar" width="400" height="300"></canvas>
-                </div>
-                
-                <!-- Trends Over Time -->
-                <div class="chart-container">
-                    <h4 class="font-medium text-gray-700 mb-3">Performance Trends</h4>
-                    <canvas id="performanceTrends" width="400" height="300"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Task Breakdown -->
-        <div x-show="data.taskBreakdown" class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-tasks text-indigo-600 mr-2"></i>
-                Task Breakdown
-            </h3>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Status Distribution -->
-                <div class="chart-container">
-                    <h4 class="font-medium text-gray-700 mb-3">Task Status Distribution</h4>
-                    <canvas id="statusBreakdown" width="400" height="200"></canvas>
-                </div>
-                
-                <!-- Priority Distribution -->
-                <div class="chart-container">
-                    <h4 class="font-medium text-gray-700 mb-3">Priority Distribution</h4>
-                    <canvas id="priorityBreakdown" width="400" height="200"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Delegation Analysis -->
-        <div x-show="data.delegationAnalysis" class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-share-alt text-purple-600 mr-2"></i>
-                Delegation Analysis
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="metric-card">
-                    <h4 class="font-semibold text-gray-800 mb-3">Outgoing Delegations</h4>
-                    <div class="text-2xl font-bold text-blue-600 mb-2" x-text="data.delegationAnalysis.outgoingCount"></div>
-                    <div class="text-sm text-gray-600">
-                        <span>Average handoff time: </span>
-                        <span x-text="data.delegationAnalysis.averageHandoffTime + 'h'"></span>
-                    </div>
-                </div>
-                <div class="metric-card">
-                    <h4 class="font-semibold text-gray-800 mb-3">Incoming Delegations</h4>
-                    <div class="text-2xl font-bold text-green-600 mb-2" x-text="data.delegationAnalysis.incomingCount"></div>
-                    <div class="text-sm text-gray-600">
-                        <span>Pickup time: </span>
-                        <span x-text="data.delegationAnalysis.averagePickupTime + 'h'"></span>
-                    </div>
-                </div>
-                <div class="metric-card">
-                    <h4 class="font-semibold text-gray-800 mb-3">Escalations</h4>
-                    <div class="text-2xl font-bold text-red-600 mb-2" x-text="data.delegationAnalysis.escalationCount"></div>
-                    <div class="text-sm text-gray-600">
-                        <span>Rate: </span>
-                        <span x-text="data.delegationAnalysis.escalationRate + '%'"></span>
-                    </div>
-                </div>
-            </div>
-            
-            <div x-show="data.delegationAnalysis?.commonPatterns?.length > 0" class="mt-6">
-                <h4 class="font-medium text-gray-700 mb-3">Common Delegation Patterns</h4>
-                <div class="space-y-2">
-                    <template x-for="pattern in data.delegationAnalysis.commonPatterns || []" :key="pattern.id">
-                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <span class="text-sm font-medium" x-text="pattern.pattern"></span>
-                            <span class="text-sm text-gray-600" x-text="pattern.frequency + ' times'"></span>
-                        </div>
-                    </template>
-                </div>
-            </div>
-        </div>
-
-        <!-- Strengths and Areas for Improvement -->
-        <div x-show="data.insights" class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-lightbulb text-yellow-600 mr-2"></i>
-                Performance Insights
-            </h3>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Strengths -->
-                <div class="bg-green-50 p-4 rounded-lg border border-green-200">
-                    <h4 class="font-semibold text-green-800 mb-3">
-                        <i class="fas fa-thumbs-up mr-2"></i>
-                        Strengths
-                    </h4>
-                    <ul class="space-y-2">
-                        <template x-for="strength in data.insights.strengths || []" :key="strength">
-                            <li class="text-sm text-green-700 flex items-start">
-                                <i class="fas fa-check-circle text-green-600 mr-2 mt-1 flex-shrink-0"></i>
-                                <span x-text="strength"></span>
-                            </li>
-                        </template>
-                    </ul>
-                </div>
-                
-                <!-- Areas for Improvement -->
-                <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
-                    <h4 class="font-semibold text-orange-800 mb-3">
-                        <i class="fas fa-arrow-up mr-2"></i>
-                        Areas for Improvement
-                    </h4>
-                    <ul class="space-y-2">
-                        <template x-for="improvement in data.insights.improvements || []" :key="improvement">
-                            <li class="text-sm text-orange-700 flex items-start">
-                                <i class="fas fa-exclamation-circle text-orange-600 mr-2 mt-1 flex-shrink-0"></i>
-                                <span x-text="improvement"></span>
-                            </li>
-                        </template>
-                    </ul>
-                </div>
-            </div>
-            
-            <div x-show="data.insights?.recommendations?.length > 0" class="mt-6 bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <h4 class="font-semibold text-blue-800 mb-3">
-                    <i class="fas fa-lightbulb mr-2"></i>
-                    Recommendations
-                </h4>
-                <ul class="space-y-2">
-                    <template x-for="recommendation in data.insights.recommendations || []" :key="recommendation">
-                        <li class="text-sm text-blue-700 flex items-start">
-                            <i class="fas fa-arrow-right text-blue-600 mr-2 mt-1 flex-shrink-0"></i>
-                            <span x-text="recommendation"></span>
-                        </li>
-                    </template>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Recent Tasks -->
-        <div x-show="data.recentTasks?.length > 0" class="section-card">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">
-                <i class="fas fa-history text-gray-600 mr-2"></i>
-                Recent Tasks
-            </h3>
-            <div class="overflow-x-auto">
-                <table class="min-w-full">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Task</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quality</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <template x-for="task in data.recentTasks || []" :key="task.id">
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900" x-text="task.name"></div>
-                                    <div x-show="task.taskSlug" class="text-xs text-gray-500" x-text="task.taskSlug"></div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 text-xs rounded-full"
-                                          :class="{
-                                            'bg-green-100 text-green-800': task.status === 'completed',
-                                            'bg-blue-100 text-blue-800': task.status === 'in-progress',
-                                            'bg-gray-100 text-gray-800': task.status === 'not-started',
-                                            'bg-yellow-100 text-yellow-800': task.status === 'needs-review'
-                                          }"
-                                          x-text="task.status">
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 text-xs rounded"
-                                          :class="{
-                                            'bg-red-100 text-red-800': task.priority === 'Critical',
-                                            'bg-orange-100 text-orange-800': task.priority === 'High',
-                                            'bg-yellow-100 text-yellow-800': task.priority === 'Medium',
-                                            'bg-gray-100 text-gray-800': task.priority === 'Low'
-                                          }"
-                                          x-text="task.priority">
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    <span x-show="task.duration" x-text="task.duration + 'h'"></span>
-                                    <span x-show="!task.duration" class="text-gray-400">-</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    <div x-show="task.qualityScore" class="flex items-center">
-                                        <span class="text-sm font-medium" x-text="task.qualityScore + '/100'"></span>
-                                        <div class="ml-2 w-16 bg-gray-200 rounded-full h-2">
-                                            <div class="h-2 rounded-full"
-                                                 :class="{
-                                                   'bg-green-500': task.qualityScore >= 80,
-                                                   'bg-yellow-500': task.qualityScore >= 60 && task.qualityScore < 80,
-                                                   'bg-red-500': task.qualityScore < 60
-                                                 }"
-                                                 :style="'width: ' + task.qualityScore + '%'">
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <span x-show="!task.qualityScore" class="text-gray-400">-</span>
-                                </td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
     </div>
-
-    <!-- Safely embed JSON data -->
-    <script type="application/json" id="role-performance-data">
-        {{{jsonData}}}
-    </script>
-
-    <script>
-        function rolePerformanceApp() {
-            return {
-                data: {},
-                
-                loadData() {
-                    try {
-                        const dataScript = document.getElementById('role-performance-data');
-                        if (dataScript) {
-                            this.data = JSON.parse(dataScript.textContent);
-                        }
-                    } catch (error) {
-                        console.error('Failed to load role performance data:', error);
-                    }
+    
+    <!-- Role-Specific Analysis -->
+    {{#if owner}}
+        <!-- Individual Role Analysis -->
+        <div class="card animate-on-scroll">
+            <div class="card-header">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-user text-indigo-600 mr-2"></i>
+                    {{owner}} Role Analysis
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">Detailed performance breakdown for {{owner}} role</p>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Strengths -->
+                    <div>
+                        <h4 class="text-md font-medium text-gray-900 mb-4 flex items-center">
+                            <i class="fas fa-thumbs-up text-green-600 mr-2"></i>
+                            Key Strengths
+                        </h4>
+                        <div class="space-y-3">
+                            {{#each roleAnalysis.strengths}}
+                                <div class="flex items-start space-x-3 p-3 bg-green-50 rounded-lg">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                                    <div>
+                                        <div class="text-sm font-medium text-green-900">{{title}}</div>
+                                        <div class="text-xs text-green-700 mt-1">{{description}}</div>
+                                        {{#if metric}}
+                                            <div class="text-xs text-green-600 mt-1 font-medium">{{metric}}</div>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                            {{/each}}
+                        </div>
+                    </div>
                     
-                    // Initialize charts after data is loaded
-                    this.$nextTick(() => {
-                        this.initializeCharts();
-                    });
-                },
+                    <!-- Areas for Improvement -->
+                    <div>
+                        <h4 class="text-md font-medium text-gray-900 mb-4 flex items-center">
+                            <i class="fas fa-arrow-up text-orange-600 mr-2"></i>
+                            Growth Opportunities
+                        </h4>
+                        <div class="space-y-3">
+                            {{#each roleAnalysis.improvements}}
+                                <div class="flex items-start space-x-3 p-3 bg-orange-50 rounded-lg">
+                                    <div class="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
+                                    <div>
+                                        <div class="text-sm font-medium text-orange-900">{{title}}</div>
+                                        <div class="text-xs text-orange-700 mt-1">{{description}}</div>
+                                        {{#if recommendation}}
+                                            <div class="text-xs text-orange-600 mt-1 font-medium">💡 {{recommendation}}</div>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Performance Metrics Grid -->
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h5 class="text-sm font-medium text-gray-900 mb-3">Task Completion</h5>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Completed:</span>
+                                <span class="font-medium">{{roleMetrics.completed}}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">In Progress:</span>
+                                <span class="font-medium">{{roleMetrics.inProgress}}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Success Rate:</span>
+                                <span class="font-medium text-green-600">{{roleMetrics.successRate}}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h5 class="text-sm font-medium text-gray-900 mb-3">Time Management</h5>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Avg Time:</span>
+                                <span class="font-medium">{{roleMetrics.averageTime}}h</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Fastest:</span>
+                                <span class="font-medium">{{roleMetrics.fastestTime}}h</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">On Time:</span>
+                                <span class="font-medium text-blue-600">{{roleMetrics.onTimeRate}}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h5 class="text-sm font-medium text-gray-900 mb-3">Quality Metrics</h5>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Quality Score:</span>
+                                <span class="font-medium">{{roleMetrics.qualityScore}}/10</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Rework Rate:</span>
+                                <span class="font-medium">{{roleMetrics.reworkRate}}%</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">First Pass:</span>
+                                <span class="font-medium text-purple-600">{{roleMetrics.firstPassRate}}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {{else}}
+        <!-- Multi-Role Comparison -->
+        <div class="card animate-on-scroll">
+            <div class="card-header">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-users text-indigo-600 mr-2"></i>
+                    Role Comparison Analysis
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">Performance comparison across all workflow roles</p>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {{#each roleComparison}}
+                        <div class="border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-{{color}}-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-{{icon}} text-{{color}}-600"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-lg font-medium text-gray-900">{{role}}</h4>
+                                        <p class="text-sm text-gray-600">{{taskCount}} tasks</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold text-{{color}}-600">{{efficiency}}%</div>
+                                    <div class="text-xs text-gray-500">efficiency</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Performance Bars -->
+                            <div class="space-y-3">
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1">
+                                        <span class="text-gray-600">Completion Rate</span>
+                                        <span class="font-medium">{{completionRate}}%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-{{color}}-500 h-2 rounded-full transition-all duration-1000" style="width: {{completionRate}}%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1">
+                                        <span class="text-gray-600">Quality Score</span>
+                                        <span class="font-medium">{{qualityScore}}/10</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-{{color}}-500 h-2 rounded-full transition-all duration-1000" style="width: {{multiply qualityScore 10}}%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <div class="flex justify-between text-sm mb-1">
+                                        <span class="text-gray-600">Speed Index</span>
+                                        <span class="font-medium">{{speedIndex}}%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-{{color}}-500 h-2 rounded-full transition-all duration-1000" style="width: {{speedIndex}}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Key Stats -->
+                            <div class="mt-4 pt-4 border-t border-gray-200">
+                                <div class="grid grid-cols-2 gap-4 text-center">
+                                    <div>
+                                        <div class="text-lg font-bold text-gray-900">{{averageTime}}h</div>
+                                        <div class="text-xs text-gray-600">Avg Time</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-lg font-bold text-gray-900">{{delegationCount}}</div>
+                                        <div class="text-xs text-gray-600">Delegations</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Performance Trend -->
+                            <div class="mt-4">
+                                <div class="flex items-center justify-between text-xs text-gray-600 mb-1">
+                                    <span>Recent Trend</span>
+                                    <span class="{{#if (eq trend 'up')}}text-green-600{{else if (eq trend 'down')}}text-red-600{{else}}text-gray-600{{/if}}">
+                                        <i class="fas fa-arrow-{{#if (eq trend 'up')}}up{{else if (eq trend 'down')}}down{{else}}right{{/if}}"></i>
+                                        {{trendPercentage}}%
+                                    </span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-1">
+                                    <div class="bg-gradient-to-r from-{{color}}-400 to-{{color}}-600 h-1 rounded-full transition-all duration-1000" style="width: {{efficiency}}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+    {{/if}}
+    
+    <!-- Task Performance Breakdown -->
+    <div class="card animate-on-scroll">
+        <div class="card-header">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-chart-bar text-blue-600 mr-2"></i>
+                Task Performance Breakdown
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">Detailed analysis of task completion patterns</p>
+        </div>
+        <div class="card-body">
+            <!-- Performance by Priority -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div>
+                    <h4 class="text-md font-medium text-gray-900 mb-4">Performance by Priority</h4>
+                    <div class="space-y-4">
+                        {{#each performanceByPriority}}
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-4 h-4 rounded-full bg-{{color}}-500"></div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900">{{priority}} Priority</div>
+                                        <div class="text-xs text-gray-600">{{taskCount}} tasks</div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm font-bold text-{{color}}-600">{{completionRate}}%</div>
+                                    <div class="text-xs text-gray-500">{{averageTime}}h avg</div>
+                                </div>
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
+                
+                <!-- Performance by Status -->
+                <div>
+                    <h4 class="text-md font-medium text-gray-900 mb-4">Current Status Distribution</h4>
+                    <div class="space-y-4">
+                        {{#each statusDistribution}}
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-4 h-4 rounded-full bg-{{color}}-500"></div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900">{{status}}</div>
+                                        <div class="text-xs text-gray-600">{{percentage}}% of tasks</div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm font-bold text-gray-900">{{count}}</div>
+                                    <div class="text-xs text-gray-500">tasks</div>
+                                </div>
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Tasks Table -->
+            <div>
+                <h4 class="text-md font-medium text-gray-900 mb-4">Recent Task Performance</h4>
+                {{> data-table 
+                    title="Recent Tasks" 
+                    description="Latest task completions and performance metrics"
+                    searchable=true
+                    data=recentTasks
+                    columns=taskColumns
+                }}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Performance Insights -->
+    <div class="card animate-on-scroll">
+        <div class="card-header">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-lightbulb text-yellow-600 mr-2"></i>
+                Performance Insights & Recommendations
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">AI-powered insights and actionable recommendations</p>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Positive Insights -->
+                <div>
+                    <h4 class="text-md font-medium text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-star text-green-600 mr-2"></i>
+                        Key Achievements
+                    </h4>
+                    <div class="space-y-3">
+                        {{#each insights.achievements}}
+                            <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-{{icon}} text-green-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-green-900">{{title}}</div>
+                                        <div class="text-xs text-green-700 mt-1">{{description}}</div>
+                                        {{#if metric}}
+                                            <div class="text-xs text-green-600 mt-2 font-medium">📊 {{metric}}</div>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
+                
+                <!-- Improvement Recommendations -->
+                <div>
+                    <h4 class="text-md font-medium text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-arrow-up text-blue-600 mr-2"></i>
+                        Improvement Recommendations
+                    </h4>
+                    <div class="space-y-3">
+                        {{#each insights.recommendations}}
+                            <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-{{icon}} text-blue-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-blue-900">{{title}}</div>
+                                        <div class="text-xs text-blue-700 mt-1">{{description}}</div>
+                                        {{#if action}}
+                                            <div class="text-xs text-blue-600 mt-2 font-medium">🎯 {{action}}</div>
+                                        {{/if}}
+                                        {{#if impact}}
+                                            <div class="text-xs text-blue-500 mt-1">Expected impact: {{impact}}</div>
+                                        {{/if}}
+                                    </div>
+                                </div>
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="card animate-on-scroll">
+        <div class="card-header">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-bolt text-yellow-600 mr-2"></i>
+                Quick Actions
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">MCP commands for role performance analysis</p>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <button onclick="copyPerformanceMcpCommand('get-assignments')" class="btn-secondary text-left p-4 h-auto">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-tasks text-blue-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900">Get Current Assignments</div>
+                            <div class="text-sm text-gray-500">View tasks assigned to role</div>
+                        </div>
+                    </div>
+                </button>
+                
+                <button onclick="copyPerformanceMcpCommand('delegation-history')" class="btn-secondary text-left p-4 h-auto">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-history text-green-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900">Delegation History</div>
+                            <div class="text-sm text-gray-500">Review delegation patterns</div>
+                        </div>
+                    </div>
+                </button>
+                
+                <button onclick="copyPerformanceMcpCommand('performance-report')" class="btn-secondary text-left p-4 h-auto">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chart-line text-purple-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900">Generate Report</div>
+                            <div class="text-sm text-gray-500">Create detailed performance report</div>
+                        </div>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+</div>
 
-                initializeCharts() {
-                    // Performance Radar Chart
-                    const radarCtx = document.getElementById('performanceRadar');
-                    if (radarCtx && this.data.roleMetrics) {
-                        new Chart(radarCtx, {
-                            type: 'radar',
-                            data: {
-                                labels: ['Quality', 'Velocity', 'Collaboration', 'Efficiency', 'Success Rate'],
-                                datasets: [{
-                                    label: this.data.roleMetrics.role || 'Performance',
-                                    data: [
-                                        this.data.roleMetrics.qualityScore || 0,
-                                        this.data.roleMetrics.velocityScore || 0,
-                                        this.data.roleMetrics.collaborationScore || 0,
-                                        this.data.roleMetrics.efficiency || 0,
-                                        this.data.roleMetrics.successRate || 0
-                                    ],
-                                    borderColor: 'rgb(99, 102, 241)',
-                                    backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                                    pointBackgroundColor: 'rgb(99, 102, 241)',
-                                    pointBorderColor: '#fff',
-                                    pointHoverBackgroundColor: '#fff',
-                                    pointHoverBorderColor: 'rgb(99, 102, 241)'
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                scales: {
-                                    r: {
-                                        beginAtZero: true,
-                                        max: 100
-                                    }
-                                }
-                            }
-                        });
-                    }
-
-                    // Performance Trends Chart
-                    const trendsCtx = document.getElementById('performanceTrends');
-                    if (trendsCtx && this.data.performanceTrends) {
-                        new Chart(trendsCtx, {
-                            type: 'line',
-                            data: {
-                                labels: this.data.performanceTrends.labels || [],
-                                datasets: [{
-                                    label: 'Performance Score',
-                                    data: this.data.performanceTrends.scores || [],
-                                    borderColor: 'rgb(59, 130, 246)',
-                                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                    tension: 0.4
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                scales: {
-                                    y: {
-                                        beginAtZero: true,
-                                        max: 100
-                                    }
-                                }
-                            }
-                        });
-                    }
-
-                    // Task Status Breakdown
-                    const statusCtx = document.getElementById('statusBreakdown');
-                    if (statusCtx && this.data.taskBreakdown?.statusDistribution) {
-                        new Chart(statusCtx, {
-                            type: 'doughnut',
-                            data: {
-                                labels: Object.keys(this.data.taskBreakdown.statusDistribution),
-                                datasets: [{
-                                    data: Object.values(this.data.taskBreakdown.statusDistribution),
-                                    backgroundColor: [
-                                        'rgb(34, 197, 94)',   // completed - green
-                                        'rgb(59, 130, 246)',  // in-progress - blue
-                                        'rgb(156, 163, 175)', // not-started - gray
-                                        'rgb(245, 158, 11)',  // needs-review - yellow
-                                        'rgb(239, 68, 68)'    // needs-changes - red
-                                    ]
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false
-                            }
-                        });
-                    }
-
-                    // Priority Distribution
-                    const priorityCtx = document.getElementById('priorityBreakdown');
-                    if (priorityCtx && this.data.taskBreakdown?.priorityDistribution) {
-                        new Chart(priorityCtx, {
-                            type: 'bar',
-                            data: {
-                                labels: Object.keys(this.data.taskBreakdown.priorityDistribution),
-                                datasets: [{
-                                    label: 'Tasks',
-                                    data: Object.values(this.data.taskBreakdown.priorityDistribution),
-                                    backgroundColor: [
-                                        'rgb(239, 68, 68)',   // Critical - red
-                                        'rgb(245, 158, 11)',  // High - orange
-                                        'rgb(59, 130, 246)',  // Medium - blue
-                                        'rgb(156, 163, 175)'  // Low - gray
-                                    ]
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                scales: {
-                                    y: {
-                                        beginAtZero: true
-                                    }
-                                }
-                            }
-                        });
-                    }
-                },
-
-                formatDate(dateStr) {
-                    if (!dateStr) return 'N/A';
-                    return new Date(dateStr).toLocaleDateString();
-                }
-            };
+<!-- Performance-specific JavaScript -->
+<script>
+    // Performance-specific MCP commands
+    const performanceMcpCommands = {
+        'get-assignments': `query_workflow_status({
+  queryType: "current_assignments",
+  currentRole: "{{#if owner}}{{owner}}{{else}}role-name{{/if}}",
+  status: "in-progress"
+})`,
+        'delegation-history': `query_workflow_status({
+  queryType: "delegation_history",
+  currentRole: "{{#if owner}}{{owner}}{{else}}role-name{{/if}}",
+  includeDelegations: true,
+  includeTransitions: true
+})`,
+        'performance-report': `generate_workflow_report({
+  reportType: "role-performance",
+  {{#if owner}}owner: "{{owner}}",{{/if}}
+  outputFormat: "html"
+})`
+    };
+    
+    window.copyPerformanceMcpCommand = function(commandType) {
+        const command = performanceMcpCommands[commandType];
+        if (command) {
+            navigator.clipboard.writeText(command).then(() => {
+                showToast(`${commandType.replace('-', ' ')} command copied!`, 'success');
+            }).catch(() => {
+                showToast('Failed to copy command', 'error');
+            });
         }
-    </script>
-</body>
-</html> 
+    };
+    
+    // Initialize performance trend chart
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('performanceTrendChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: {{{json performanceTrend.labels}}},
+                    datasets: [{
+                        label: 'Efficiency %',
+                        data: {{{json performanceTrend.efficiency}}},
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Quality Score',
+                        data: {{{json performanceTrend.quality}}},
+                        borderColor: 'rgb(16, 185, 129)',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+    });
+    
+    // Helper for Handlebars
+    if (typeof Handlebars !== 'undefined') {
+        Handlebars.registerHelper('multiply', function(a, b) {
+            return a * b;
+        });
+        
+        Handlebars.registerHelper('eq', function(a, b) {
+            return a === b;
+        });
+    }
+</script>
+
+{{/base-layout}} 
