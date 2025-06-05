@@ -1,0 +1,105 @@
+<footer class="mt-12 bg-white border-t border-gray-200">
+    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between">
+            <!-- Report Metadata -->
+            <div class="flex items-center space-x-6 text-sm text-gray-500">
+                {{#if metadata.generatedAt}}
+                <div class="flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Generated: {{formatDate metadata.generatedAt}}</span>
+                </div>
+                {{/if}}
+                
+                {{#if metadata.version}}
+                <div class="flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                    <span>Version: {{metadata.version}}</span>
+                </div>
+                {{/if}}
+                
+                {{#if metadata.dataRange}}
+                <div class="flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Data: {{metadata.dataRange}}</span>
+                </div>
+                {{/if}}
+            </div>
+            
+            <!-- Branding -->
+            <div class="flex items-center space-x-4">
+                {{#if metadata.exportedBy}}
+                <span class="text-sm text-gray-500">
+                    Exported by: <span class="font-medium text-gray-700">{{metadata.exportedBy}}</span>
+                </span>
+                {{/if}}
+                
+                <div class="flex items-center text-sm text-gray-500">
+                    <span>Powered by</span>
+                    <svg class="w-5 h-5 mx-2 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span class="font-medium text-gray-700">Workflow Manager</span>
+                </div>
+            </div>
+        </div>
+        
+        {{#if showDisclaimer}}
+        <!-- Disclaimer -->
+        <div class="mt-4 pt-4 border-t border-gray-200">
+            <p class="text-xs text-gray-400 text-center">
+                This report contains confidential and proprietary information. 
+                Distribution should be limited to authorized personnel only.
+                Data is current as of the generation timestamp above.
+            </p>
+        </div>
+        {{/if}}
+    </div>
+</footer>
+
+<!-- Print Styles -->
+<style media="print">
+    @page {
+        margin: 0.5in;
+        size: letter;
+    }
+    
+    body {
+        font-size: 12pt;
+        line-height: 1.4;
+    }
+    
+    .no-print {
+        display: none !important;
+    }
+    
+    .print-break {
+        page-break-before: always;
+    }
+    
+    .print-avoid-break {
+        page-break-inside: avoid;
+    }
+    
+    /* Ensure charts are visible in print */
+    canvas {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+    
+    /* Simplify colors for print */
+    .bg-primary-50 { background-color: #f8f9fa !important; }
+    .bg-success-50 { background-color: #f8f9fa !important; }
+    .bg-warning-50 { background-color: #f8f9fa !important; }
+    .bg-danger-50 { background-color: #f8f9fa !important; }
+    
+    /* Hide interactive elements */
+    button, .hover\:bg-gray-50 {
+        display: none !important;
+    }
+</style> 

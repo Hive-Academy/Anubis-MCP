@@ -1,0 +1,103 @@
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    {{#each metrics}}
+    <div class="metric-card fade-in">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                {{#if icon}}
+                <div class="w-8 h-8 bg-{{color}}-100 rounded-lg flex items-center justify-center">
+                    {{{icon}}}
+                </div>
+                {{/if}}
+            </div>
+            <div class="ml-4 flex-1">
+                <div class="flex items-baseline">
+                    <p class="text-2xl font-semibold text-gray-900">{{value}}</p>
+                    {{#if change}}
+                    <p class="ml-2 flex items-baseline text-sm font-semibold {{#if (gt change 0)}}text-success-600{{else}}text-danger-600{{/if}}">
+                        {{#if (gt change 0)}}
+                        <svg class="self-center flex-shrink-0 h-4 w-4 text-success-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        {{else}}
+                        <svg class="self-center flex-shrink-0 h-4 w-4 text-danger-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        {{/if}}
+                        <span class="sr-only">{{#if (gt change 0)}}Increased{{else}}Decreased{{/if}} by</span>
+                        {{#if (gt change 0)}}+{{/if}}{{change}}%
+                    </p>
+                    {{/if}}
+                </div>
+                <p class="text-sm font-medium text-gray-500 truncate">{{label}}</p>
+                {{#if description}}
+                <p class="text-xs text-gray-400 mt-1">{{description}}</p>
+                {{/if}}
+            </div>
+        </div>
+        
+        {{#if trend}}
+        <!-- Mini trend chart -->
+        <div class="mt-4">
+            <div class="flex items-center justify-between text-xs text-gray-500">
+                <span>{{trend.period}}</span>
+                <span>{{trend.label}}</span>
+            </div>
+            <div class="mt-1 h-8">
+                <canvas 
+                    id="trend-{{@index}}" 
+                    class="w-full h-full"
+                    data-trend="{{json trend.data}}"
+                ></canvas>
+            </div>
+        </div>
+        {{/if}}
+    </div>
+    {{/each}}
+</div>
+
+{{#if metrics}}
+<script>
+    // Initialize mini trend charts
+    document.addEventListener('DOMContentLoaded', function() {
+        {{#each metrics}}
+        {{#if trend}}
+        const trendCanvas{{@index}} = document.getElementById('trend-{{@index}}');
+        if (trendCanvas{{@index}}) {
+            const trendData = JSON.parse(trendCanvas{{@index}}.dataset.trend);
+            new Chart(trendCanvas{{@index}}, {
+                type: 'line',
+                data: {
+                    labels: trendData.labels,
+                    datasets: [{
+                        data: trendData.values,
+                        borderColor: '{{#if (gt change 0)}}#22c55e{{else}}#ef4444{{/if}}',
+                        backgroundColor: '{{#if (gt change 0)}}rgba(34, 197, 94, 0.1){{else}}rgba(239, 68, 68, 0.1){{/if}}',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    },
+                    elements: {
+                        line: { borderWidth: 2 }
+                    }
+                }
+            });
+        }
+        {{/if}}
+        {{/each}}
+    });
+</script>
+{{/if}} 

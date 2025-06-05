@@ -1,0 +1,268 @@
+{{#> base-layout title="Interactive Dashboard" reportType="Dashboard"}}
+
+<!-- Dashboard Content -->
+<div x-data="dashboardData()" class="space-y-8">
+    
+    <!-- Key Metrics -->
+    {{> metric-cards metrics=summary.metrics}}
+    
+    <!-- Charts Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Status Distribution Chart -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Task Status Distribution</h3>
+            <div class="chart-container">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Priority Distribution Chart -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Priority Distribution</h3>
+            <div class="chart-container">
+                <canvas id="priorityChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Completion Trends Chart -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Completion Trends</h3>
+            <div class="chart-container">
+                <canvas id="trendsChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Role Performance Chart -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Role Performance</h3>
+            <div class="chart-container">
+                <canvas id="roleChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tasks Table -->
+    {{> data-table 
+        tableId="tasks-table"
+        title="Recent Tasks"
+        description="Overview of all tasks with current status and progress"
+        searchable=true
+        searchPlaceholder="tasks"
+        columns=taskTable.columns
+        data=taskTable.data
+        emptyMessage="No tasks found matching your criteria"
+    }}
+    
+    <!-- Delegation Flow Table -->
+    {{> data-table 
+        tableId="delegations-table"
+        title="Recent Delegations"
+        description="Latest workflow transitions and role handoffs"
+        searchable=true
+        searchPlaceholder="delegations"
+        columns=delegationTable.columns
+        data=delegationTable.data
+        emptyMessage="No delegation records found"
+    }}
+    
+</div>
+
+<!-- Dashboard JavaScript -->
+<script>
+    function dashboardData() {
+        return {
+            // Dashboard state
+            refreshInterval: null,
+            lastRefresh: new Date(),
+            
+            init() {
+                this.initializeCharts();
+                this.startAutoRefresh();
+            },
+            
+            initializeCharts() {
+                // Status Distribution Chart
+                const statusCtx = document.getElementById('statusChart');
+                if (statusCtx) {
+                    new Chart(statusCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: {{{json charts.statusDistribution.labels}}},
+                            datasets: [{
+                                data: {{{json charts.statusDistribution.data}}},
+                                backgroundColor: [
+                                    '#22c55e', // completed - green
+                                    '#3b82f6', // in-progress - blue
+                                    '#f59e0b', // needs-review - yellow
+                                    '#ef4444', // needs-changes - red
+                                    '#6b7280', // not-started - gray
+                                    '#f97316', // paused - orange
+                                    '#dc2626'  // cancelled - dark red
+                                ],
+                                borderWidth: 2,
+                                borderColor: '#ffffff'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        padding: 20,
+                                        usePointStyle: true
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                            const percentage = Math.round((context.parsed / total) * 100);
+                                            return `${context.label}: ${context.parsed} (${percentage}%)`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                
+                // Priority Distribution Chart
+                const priorityCtx = document.getElementById('priorityChart');
+                if (priorityCtx) {
+                    new Chart(priorityCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: {{{json charts.priorityDistribution.labels}}},
+                            datasets: [{
+                                label: 'Tasks',
+                                data: {{{json charts.priorityDistribution.data}}},
+                                backgroundColor: [
+                                    '#dc2626', // Critical - red
+                                    '#f97316', // High - orange
+                                    '#f59e0b', // Medium - yellow
+                                    '#22c55e'  // Low - green
+                                ],
+                                borderRadius: 4,
+                                borderSkipped: false
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        stepSize: 1
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                
+                // Completion Trends Chart
+                const trendsCtx = document.getElementById('trendsChart');
+                if (trendsCtx) {
+                    new Chart(trendsCtx, {
+                        type: 'line',
+                        data: {
+                            labels: {{{json charts.completionTrends.labels}}},
+                            datasets: [{
+                                label: 'Completed Tasks',
+                                data: {{{json charts.completionTrends.data}}},
+                                borderColor: '#22c55e',
+                                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: '#22c55e',
+                                pointBorderColor: '#ffffff',
+                                pointBorderWidth: 2,
+                                pointRadius: 5
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        stepSize: 1
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+                
+                // Role Performance Chart
+                const roleCtx = document.getElementById('roleChart');
+                if (roleCtx) {
+                    new Chart(roleCtx, {
+                        type: 'radar',
+                        data: {
+                            labels: {{{json charts.rolePerformance.labels}}},
+                            datasets: [{
+                                label: 'Efficiency Score',
+                                data: {{{json charts.rolePerformance.data}}},
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                borderWidth: 2,
+                                pointBackgroundColor: '#3b82f6',
+                                pointBorderColor: '#ffffff',
+                                pointBorderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                r: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    ticks: {
+                                        stepSize: 20
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            },
+            
+            startAutoRefresh() {
+                // Auto-refresh every 5 minutes
+                this.refreshInterval = setInterval(() => {
+                    this.refreshData();
+                }, 5 * 60 * 1000);
+            },
+            
+            refreshData() {
+                // In a real implementation, this would fetch fresh data
+                this.lastRefresh = new Date();
+                console.log('Dashboard data refreshed at:', this.lastRefresh);
+            },
+            
+            destroy() {
+                if (this.refreshInterval) {
+                    clearInterval(this.refreshInterval);
+                }
+            }
+        }
+    }
+</script>
+
+{{/base-layout}}

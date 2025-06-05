@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}} - Workflow Report</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a'
+                        },
+                        success: {
+                            50: '#f0fdf4',
+                            500: '#22c55e',
+                            600: '#16a34a'
+                        },
+                        warning: {
+                            50: '#fffbeb',
+                            500: '#f59e0b',
+                            600: '#d97706'
+                        },
+                        danger: {
+                            50: '#fef2f2',
+                            500: '#ef4444',
+                            600: '#dc2626'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom Styles -->
+    <style>
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        .status-badge {
+            @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+        }
+        
+        .priority-badge {
+            @apply inline-flex items-center px-2 py-1 rounded text-xs font-semibold;
+        }
+        
+        .metric-card {
+            @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+        }
+        
+        .data-table {
+            @apply min-w-full divide-y divide-gray-200;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="h-full bg-gray-50">
+    <!-- Navigation Header -->
+    {{> navigation-header}}
+    
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <!-- Page Header -->
+        {{> page-header}}
+        
+        <!-- Report Content -->
+        <div class="mt-8">
+            {{> @partial-block}}
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    {{> report-footer}}
+    
+    <!-- Global Alpine.js Data -->
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('reportData', {
+                filters: {
+                    status: '',
+                    priority: '',
+                    owner: '',
+                    dateRange: ''
+                },
+                
+                // Filter functions
+                applyFilters() {
+                    // Trigger filter update event
+                    this.$dispatch('filters-updated', this.filters);
+                },
+                
+                clearFilters() {
+                    this.filters = {
+                        status: '',
+                        priority: '',
+                        owner: '',
+                        dateRange: ''
+                    };
+                    this.applyFilters();
+                },
+                
+                // Utility functions
+                formatDate(dateString) {
+                    return new Date(dateString).toLocaleDateString();
+                },
+                
+                formatDuration(minutes) {
+                    if (minutes < 60) return `${minutes}m`;
+                    const hours = Math.floor(minutes / 60);
+                    const mins = minutes % 60;
+                    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,190 @@
+{{!-- Data Table Partial --}}
+{{!-- Usage: {{> data-table tableId="tasks-table" columns=columns data=tasks}} --}}
+
+<div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+    {{#if title}}
+    <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-medium text-gray-900">{{title}}</h3>
+        {{#if description}}
+        <p class="mt-1 text-sm text-gray-600">{{description}}</p>
+        {{/if}}
+    </div>
+    {{/if}}
+    
+    {{#if searchable}}
+    <!-- Search Bar -->
+    <div class="px-6 py-3 border-b border-gray-200 bg-gray-50">
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+            <input 
+                type="text" 
+                placeholder="Search {{searchPlaceholder}}..."
+                x-model="searchTerm"
+                @input="filterData()"
+                class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+            >
+        </div>
+    </div>
+    {{/if}}
+    
+    <!-- Table -->
+    <div class="overflow-x-auto">
+        <table class="data-table">
+            <thead class="bg-gray-50">
+                <tr>
+                    {{#each columns}}
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider
+                        {{#if sortable}}cursor-pointer hover:bg-gray-100{{/if}}">
+                        <div class="flex items-center space-x-1">
+                            <span>{{label}}</span>
+                            {{#if sortable}}
+                            <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                            </svg>
+                            {{/if}}
+                        </div>
+                    </th>
+                    {{/each}}
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {{#each data}}
+                <tr class="hover:bg-gray-50 transition-colors duration-150">
+                    {{#each ../columns}}
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{#if (eq type 'status')}}
+                            {{> status-badge status=(lookup ../this field) showIcon=true}}
+                        {{else if (eq type 'priority')}}
+                            {{> priority-badge priority=(lookup ../this field) showIcon=true}}
+                        {{else if (eq type 'date')}}
+                            {{#if (lookup ../this field)}}
+                            <time datetime="{{lookup ../this field}}">
+                                {{formatDate (lookup ../this field)}}
+                            </time>
+                            {{else}}
+                            <span class="text-gray-400">-</span>
+                            {{/if}}
+                        {{else if (eq type 'duration')}}
+                            {{#if (lookup ../this field)}}
+                            {{formatDuration (lookup ../this field)}}
+                            {{else}}
+                            <span class="text-gray-400">-</span>
+                            {{/if}}
+                        {{else if (eq type 'progress')}}
+                            <div class="flex items-center">
+                                <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                    <div class="bg-primary-600 h-2 rounded-full" style="width: {{lookup ../this field}}%"></div>
+                                </div>
+                                <span class="text-xs text-gray-500">{{lookup ../this field}}%</span>
+                            </div>
+                        {{else if (eq type 'link')}}
+                            {{#if (lookup ../this field)}}
+                            <a href="{{lookup ../this field}}" class="text-primary-600 hover:text-primary-900 font-medium">
+                                {{#if linkText}}{{linkText}}{{else}}View{{/if}}
+                            </a>
+                            {{else}}
+                            <span class="text-gray-400">-</span>
+                            {{/if}}
+                        {{else if (eq type 'badge')}}
+                            {{#if (lookup ../this field)}}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                {{lookup ../this field}}
+                            </span>
+                            {{else}}
+                            <span class="text-gray-400">-</span>
+                            {{/if}}
+                        {{else if (eq type 'number')}}
+                            {{#if (lookup ../this field)}}
+                            <span class="font-mono">{{lookup ../this field}}</span>
+                            {{else}}
+                            <span class="text-gray-400">0</span>
+                            {{/if}}
+                        {{else}}
+                            {{#if (lookup ../this field)}}
+                            <span class="{{#if truncate}}truncate max-w-xs{{/if}}">
+                                {{lookup ../this field}}
+                            </span>
+                            {{else}}
+                            <span class="text-gray-400">-</span>
+                            {{/if}}
+                        {{/if}}
+                    </td>
+                    {{/each}}
+                </tr>
+                {{else}}
+                <tr>
+                    <td colspan="{{columns.length}}" class="px-6 py-12 text-center text-sm text-gray-500">
+                        <div class="flex flex-col items-center">
+                            <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <p class="text-lg font-medium text-gray-900 mb-1">No data available</p>
+                            <p class="text-gray-500">{{emptyMessage}}</p>
+                        </div>
+                    </td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+    
+    {{#if pagination}}
+    <!-- Pagination -->
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div class="flex-1 flex justify-between sm:hidden">
+            <button class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                Previous
+            </button>
+            <button class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                Next
+            </button>
+        </div>
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm text-gray-700">
+                    Showing <span class="font-medium">{{pagination.start}}</span> to <span class="font-medium">{{pagination.end}}</span> of <span class="font-medium">{{pagination.total}}</span> results
+                </p>
+            </div>
+            <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <!-- Pagination buttons would be generated here -->
+                </nav>
+            </div>
+        </div>
+    </div>
+    {{/if}}
+</div>
+
+{{#if searchable}}
+<script>
+    // Table search and filter functionality
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('dataTable{{tableId}}', () => ({
+            searchTerm: '',
+            sortColumn: '',
+            sortDirection: 'asc',
+            
+            filterData() {
+                // Implement client-side filtering logic
+                const rows = document.querySelectorAll('#{{tableId}} tbody tr');
+                const searchTerm = this.searchTerm.toLowerCase();
+                
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(searchTerm) ? '' : 'none';
+                });
+            },
+            
+            sortTable(column) {
+                this.sortDirection = this.sortColumn === column && this.sortDirection === 'asc' ? 'desc' : 'asc';
+                this.sortColumn = column;
+                // Implement sorting logic
+            }
+        }));
+    });
+</script>
+{{/if}} 
