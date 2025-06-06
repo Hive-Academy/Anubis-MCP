@@ -189,9 +189,15 @@ export class DashboardDataAggregatorService {
       }
 
       roleStats[d.toMode].total++;
-      if (d.success) {
+
+      // Handle success calculation: treat as successful if explicitly true,
+      // or if success is null but delegation has been completed (has duration > 0)
+      const isSuccessful =
+        d.success === true || (d.success === null && d.duration > 0);
+      if (isSuccessful) {
         roleStats[d.toMode].successful++;
       }
+
       if (d.duration > 0) {
         roleStats[d.toMode].totalDuration += d.duration;
         roleStats[d.toMode].tasksCompleted++;
@@ -221,7 +227,12 @@ export class DashboardDataAggregatorService {
         flowStats[key] = { total: 0, successful: 0 };
       }
       flowStats[key].total++;
-      if (d.success) {
+
+      // Handle success calculation: treat as successful if explicitly true,
+      // or if success is null but delegation has been completed (has duration > 0)
+      const isSuccessful =
+        d.success === true || (d.success === null && d.duration > 0);
+      if (isSuccessful) {
         flowStats[key].successful++;
       }
     });

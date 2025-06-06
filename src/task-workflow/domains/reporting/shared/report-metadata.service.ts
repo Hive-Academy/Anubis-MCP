@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { IReportMetadataService } from './interfaces';
-import { ReportMetadata } from './types';
+import { ReportMetadata } from './types/report-data.types';
 
 /**
  * Metadata generation service for all reports

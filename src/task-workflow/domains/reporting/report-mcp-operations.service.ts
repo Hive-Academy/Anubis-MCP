@@ -117,9 +117,9 @@ export class ReportMcpOperationsService {
     name: 'generate_workflow_report',
     description: `Generate interactive workflow reports with real-time analytics and beautiful visualizations.
 
-**CLEAN ARCHITECTURE - PURE HANDLEBARS + VANILLA JS:**
+**CLEAN ARCHITECTURE - TYPE-SAFE TYPESCRIPT + VANILLA JS:**
 
-✅ **Interactive HTML Dashboards** - Pure Handlebars with vanilla JavaScript interactivity
+✅ **Interactive HTML Dashboards** - Type-safe TypeScript with vanilla JavaScript interactivity
 ✅ **Beautiful Charts** - Chart.js visualizations (status, priority, trends)  
 ✅ **Mobile Responsive** - Enhanced Tailwind CSS responsive design
 ✅ **Fast Generation** - Direct Prisma queries, no browser rendering

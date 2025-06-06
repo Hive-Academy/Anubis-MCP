@@ -3,25 +3,15 @@
  * Following KISS principle with clear, focused interfaces
  */
 
-// Core report metadata structure
-export interface ReportMetadata {
-  generatedAt: string;
-  reportType: string;
-  version: string;
-  generatedBy?: string;
-}
+import { ReportMetadata } from './types/report-data.types';
 
-// Common report data structure
-export interface BaseReportData<T = unknown> {
-  data: T;
-  metadata: ReportMetadata;
-}
+// Note: Main data interfaces are in shared/types/report-data.types.ts
+// This file contains Prisma-related and formatting utility types
 
-// Template rendering context
+// Template rendering context (legacy interface, kept for compatibility)
 export interface TemplateContext<T = unknown> {
   data: T;
   metadata: ReportMetadata;
-  helpers?: Record<string, HandlebarsHelper>;
 }
 
 // Data transformation options
@@ -411,7 +401,4 @@ export type TemplateData =
   | InteractiveDashboardTemplateData
   | Record<string, unknown>; // Fallback for custom templates
 
-// Handlebars helper function type
-export type HandlebarsHelper = (
-  ...args: unknown[]
-) => string | number | boolean | undefined;
+// Legacy type definitions (kept for backward compatibility during migration)

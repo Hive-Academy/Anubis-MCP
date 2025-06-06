@@ -11,7 +11,6 @@ import {
   FormattedWorkflowData,
   PerformanceMetrics,
   ReportFilters,
-  ReportMetadata,
   RoleAggregation,
   SummaryStats,
   TaskWithRelations,
@@ -22,6 +21,7 @@ import {
   ImplementationPlanWithRelations,
   SubtaskWithRelations,
 } from './types';
+import { ReportMetadata } from './types/report-data.types';
 
 /**
  * Data fetching service interface
@@ -110,29 +110,22 @@ export interface IReportTransformService {
 }
 
 /**
- * Template rendering service interface
- * Handles Handlebars compilation and rendering
+ * HTML rendering service interface
+ * Handles type-safe HTML generation (replaces legacy Handlebars system)
  */
 export interface IReportRenderService {
-  // Template compilation
-  compileTemplate(templatePath: string): Promise<HandlebarsTemplateDelegate>;
+  // Type-safe HTML generation
+  generateHTML(data: any, reportType: string): Promise<string>;
 
-  // Context preparation
+  // Context preparation (legacy, kept for compatibility)
   prepareTemplateContext(data: any, reportType: string): TemplateContext;
 
-  // Rendering
-  renderTemplate(
-    templatePath: string,
-    context: TemplateContext,
-  ): Promise<string>;
+  // File output
   renderToFile(
-    templatePath: string,
-    context: TemplateContext,
+    data: any,
+    reportType: string,
     outputPath: string,
   ): Promise<void>;
-
-  // Template helpers
-  registerHelpers(helpers: Record<string, any>): void;
 }
 
 /**

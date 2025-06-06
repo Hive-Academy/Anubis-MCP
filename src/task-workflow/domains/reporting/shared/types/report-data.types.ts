@@ -257,95 +257,110 @@ export interface ImplementationPlanData {
 // DELEGATION FLOW DATA
 // ============================================================================
 
-export interface DelegationStep {
-  id: number;
-  fromMode: Role;
-  toMode: Role;
-  delegationTimestamp: string;
-  completionTimestamp?: string;
-  success?: boolean;
-  message?: string;
-  duration?: number;
-  redelegationCount: number;
-}
-
-export interface WorkflowTransition {
-  id: number;
-  fromMode: Role;
-  toMode: Role;
-  transitionTimestamp: string;
-  reason: string;
-}
+// Import types for delegation flow data (using shared formatted types)
+import { FormattedDelegationData, FormattedWorkflowData } from '../types';
 
 export interface DelegationFlowData {
   task: {
     taskId: string;
     name: string;
-    taskSlug?: string;
-    currentMode: Role;
-    status: TaskStatus;
+    taskSlug?: string | null;
+    status: string;
+    currentOwner: string | null;
+    totalDelegations: number;
+    redelegationCount: number;
   };
-  delegationChain: DelegationStep[];
-  workflowTransitions: WorkflowTransition[];
-  flowAnalysis: {
+  delegationChain: FormattedDelegationData[];
+  workflowTransitions: FormattedWorkflowData[];
+  summary: {
     totalDelegations: number;
     successfulDelegations: number;
-    averageDelegationTime: number;
-    redelegationCount: number;
-    currentStage: Role;
-    bottlenecks: string[];
-  };
-  visualFlow: {
-    nodes: Array<{
-      id: string;
-      role: Role;
-      status: 'completed' | 'current' | 'pending';
-      timestamp?: string;
+    failedDelegations: number;
+    averageDelegationDuration: number;
+    mostCommonPath: string[];
+    redelegationPoints: Array<{
+      fromMode: string;
+      toMode: string;
+      count: number;
+      reasons: string[];
     }>;
-    edges: Array<{
-      from: string;
-      to: string;
-      type: 'delegation' | 'redelegation';
-      timestamp: string;
+    roleInvolvement: Array<{
+      role: string;
+      timeAsOwner: number;
+      tasksReceived: number;
+      tasksDelegated: number;
+      successRate: number;
     }>;
   };
-  metadata: ReportMetadata;
+  metadata: {
+    generatedAt: string;
+    reportType: 'delegation-flow';
+    version: string;
+    generatedBy: string;
+  };
 }
 
 // ============================================================================
 // ROLE PERFORMANCE DATA
 // ============================================================================
 
-export interface RoleMetrics {
-  role: Role;
-  tasksHandled: number;
-  averageCompletionTime: number;
-  successRate: number;
-  redelegationRate: number;
-  currentLoad: number;
-  efficiency: number;
-}
-
 export interface RolePerformanceData {
-  targetRole?: Role;
-  timeRange: {
-    start: string;
-    end: string;
+  roleMetrics: Array<{
+    role: string;
+    tasksReceived: number;
+    tasksCompleted: number;
+    averageCompletionTime: number;
+    successRate: number;
+    delegationEfficiency: number;
+    workloadDistribution: number;
+    qualityScore: number;
+  }>;
+  comparativeAnalysis: {
+    topPerformers: Array<{
+      role: string;
+      metric: string;
+      value: number;
+      rank: number;
+    }>;
+    improvementAreas: Array<{
+      role: string;
+      issue: string;
+      impact: 'low' | 'medium' | 'high';
+      recommendation: string;
+    }>;
   };
-  roleMetrics: RoleMetrics[];
-  performanceCharts: {
-    efficiencyComparison: ChartConfiguration;
-    taskDistribution: ChartConfiguration;
-    completionTimes: ChartConfiguration;
-    redelegationRates: ChartConfiguration;
+  timeSeriesAnalysis: {
+    performanceTrends: Array<{
+      period: string;
+      roleMetrics: Record<
+        string,
+        {
+          completionRate: number;
+          averageDuration: number;
+          taskCount: number;
+        }
+      >;
+    }>;
   };
-  insights: {
-    topPerformer: Role;
-    bottleneckRole: Role;
-    recommendations: string[];
-    trends: string[];
+  workloadAnalysis: {
+    currentWorkload: Array<{
+      role: string;
+      activeTasks: number;
+      pendingTasks: number;
+      capacity: 'underutilized' | 'optimal' | 'overloaded';
+    }>;
+    balanceRecommendations: string[];
   };
-  metadata: ReportMetadata;
+  metadata: {
+    generatedAt: string;
+    reportType: 'role-performance';
+    version: string;
+    generatedBy: string;
+    analysisTimeframe: {
+      startDate?: string;
+      endDate?: string;
+    };
+  };
 }
 
 // ============================================================================

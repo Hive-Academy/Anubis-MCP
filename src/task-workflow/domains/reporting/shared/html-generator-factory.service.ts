@@ -1,15 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InteractiveDashboardGeneratorService } from '../dashboard/interactive-dashboard/interactive-dashboard-generator.service';
 import { SimpleReportGeneratorService } from '../dashboard/simple-report/simple-report-generator.service';
-import { TaskDetailGeneratorService } from '../task-management/task-detail/task-detail-generator.service';
+import { ImplementationPlanGeneratorService } from '../task-management/implementation-plan/implementation-plan-generator.service';
+import { TaskDetailGeneratorService } from '../task-management/task-detail/view/task-detail-generator.service';
+import { DelegationFlowGeneratorService } from '../workflow-analytics/delegation-flow/delegation-flow-generator.service';
+import { DelegationFlowData } from './types/report-data.types';
+import { RolePerformanceGeneratorService } from '../workflow-analytics/role-performance/role-performance-generator.service';
+
+import { RolePerformanceData } from './types/report-data.types';
+import { WorkflowAnalyticsGeneratorService } from '../workflow-analytics/workflow-analytics/workflow-analytics-generator.service';
+import { WorkflowAnalyticsData } from '../workflow-analytics/workflow-analytics/workflow-analytics.service';
 import {
+  ImplementationPlanData,
   InteractiveDashboardData,
   SimpleReportData,
   TaskDetailData,
-  ImplementationPlanData,
-  DelegationFlowData,
-  RolePerformanceData,
-  WorkflowAnalyticsData,
 } from './types/report-data.types';
 
 /**
@@ -27,6 +32,10 @@ export class HtmlGeneratorFactoryService {
     private readonly interactiveDashboardGenerator: InteractiveDashboardGeneratorService,
     private readonly simpleReportGenerator: SimpleReportGeneratorService,
     private readonly taskDetailGenerator: TaskDetailGeneratorService,
+    private readonly implementationPlanGenerator: ImplementationPlanGeneratorService,
+    private readonly workflowAnalyticsGenerator: WorkflowAnalyticsGeneratorService,
+    private readonly delegationFlowGenerator: DelegationFlowGeneratorService,
+    private readonly rolePerformanceGenerator: RolePerformanceGeneratorService,
   ) {}
 
   /**
@@ -64,24 +73,25 @@ export class HtmlGeneratorFactoryService {
         );
 
       case 'implementation-plan':
-        // TODO: Create ImplementationPlanGeneratorService in task-management/implementation-plan/
-        this.logger.warn('Implementation plan generator not yet implemented');
-        throw new Error('Implementation plan generator not yet implemented');
+        return this.implementationPlanGenerator.generateImplementationPlan(
+          data as ImplementationPlanData,
+        );
 
       case 'delegation-flow':
-        // TODO: Create DelegationFlowGeneratorService in workflow-analytics/delegation-flow/
-        this.logger.warn('Delegation flow generator not yet implemented');
-        throw new Error('Delegation flow generator not yet implemented');
+        // The data has been transformed by the service before reaching here
+        return this.delegationFlowGenerator.generateDelegationFlow(
+          data as DelegationFlowData,
+        );
 
       case 'role-performance':
-        // TODO: Create RolePerformanceGeneratorService in workflow-analytics/role-performance/
-        this.logger.warn('Role performance generator not yet implemented');
-        throw new Error('Role performance generator not yet implemented');
+        return this.rolePerformanceGenerator.generateRolePerformance(
+          data as RolePerformanceData,
+        );
 
       case 'workflow-analytics':
-        // TODO: Create WorkflowAnalyticsGeneratorService in workflow-analytics/workflow-analytics/
-        this.logger.warn('Workflow analytics generator not yet implemented');
-        throw new Error('Workflow analytics generator not yet implemented');
+        return this.workflowAnalyticsGenerator.generateWorkflowAnalytics(
+          data as WorkflowAnalyticsData,
+        );
 
       default:
         this.logger.error(`Unknown report type: ${reportType}`);
@@ -99,10 +109,10 @@ export class HtmlGeneratorFactoryService {
       'summary',
       'simple-report',
       'task-detail',
-      'implementation-plan', // TODO: Implement
-      'delegation-flow', // TODO: Implement
-      'role-performance', // TODO: Implement
-      'workflow-analytics', // TODO: Implement
+      'implementation-plan',
+      'delegation-flow',
+      'role-performance',
+      'workflow-analytics',
     ];
   }
 
@@ -116,6 +126,10 @@ export class HtmlGeneratorFactoryService {
       'summary',
       'simple-report',
       'task-detail',
+      'implementation-plan',
+      'delegation-flow',
+      'role-performance',
+      'workflow-analytics',
     ];
     return implementedTypes.includes(reportType);
   }

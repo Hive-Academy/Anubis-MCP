@@ -1,164 +1,245 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ReportDataService } from '../../shared/report-data.service';
+import { TaskDetailData } from '../../shared/types/report-data.types';
 import {
   TaskWithRelations,
   DelegationRecordWithRelations,
   ImplementationPlanWithRelations,
   SubtaskWithRelations,
-  FormattedTaskData,
-  FormattedDelegationData,
 } from '../../shared/types';
 
+/**
+ * Task Detail Builder Service
+ *
+ * Focused service for building and structuring task detail data.
+ * Uses database types as source of truth and transforms to TaskDetailData structure.
+ * Follows Single Responsibility Principle by focusing solely on data building.
+ */
 @Injectable()
 export class TaskDetailBuilderService {
   private readonly logger = new Logger(TaskDetailBuilderService.name);
 
-  constructor(private readonly dataService: ReportDataService) {}
-
   /**
-   * Build comprehensive task detail object
+   * Build complete TaskDetailData structure from database entities
+   * Uses database types as source of truth
    */
-  buildTaskDetail(task: TaskWithRelations, formattedTask: FormattedTaskData) {
+  buildTaskDetailData(
+    task: TaskWithRelations,
+    implementationPlans: ImplementationPlanWithRelations[],
+    subtasks: SubtaskWithRelations[],
+    delegations: DelegationRecordWithRelations[],
+  ): TaskDetailData {
+    this.logger.log(`Building task detail data for task: ${task.name}`);
+
     return {
-      taskId: task.taskId,
-      name: task.name,
-      taskSlug: task.taskSlug,
-      status: task.status,
-      priority: task.priority,
-      owner: task.owner,
-      creationDate: formattedTask.creationDate,
-      completionDate: formattedTask.completionDate,
-      duration: formattedTask.duration,
+      task: this.buildTaskInfo(task),
       description: task.taskDescription
-        ? {
-            description: task.taskDescription.description,
-            businessRequirements: task.taskDescription.businessRequirements,
-            technicalRequirements: task.taskDescription.technicalRequirements,
-            acceptanceCriteria: task.taskDescription.acceptanceCriteria,
-          }
+        ? this.buildDescription(task.taskDescription)
         : undefined,
+      implementationPlans: this.buildImplementationPlans(implementationPlans),
+      subtasks: this.buildSubtasks(subtasks),
       codebaseAnalysis: task.codebaseAnalysis
-        ? {
-            architectureFindings: task.codebaseAnalysis.architectureFindings,
-            problemsIdentified: task.codebaseAnalysis.problemsIdentified,
-            implementationContext: task.codebaseAnalysis.implementationContext,
-            integrationPoints: task.codebaseAnalysis.integrationPoints,
-            qualityAssessment: task.codebaseAnalysis.qualityAssessment,
-            filesCovered: task.codebaseAnalysis.filesCovered,
-            technologyStack: task.codebaseAnalysis.technologyStack,
-          }
+        ? this.buildCodebaseAnalysis(task.codebaseAnalysis)
         : undefined,
+      delegationHistory: this.buildDelegationHistory(delegations, task.name),
+      metadata: this.buildMetadata(task.taskId),
     };
   }
 
   /**
-   * Build delegation history with proper sorting and formatting
+   * Build task information section from database task
    */
-  buildDelegationHistory(
-    delegations: DelegationRecordWithRelations[],
-    formattedDelegations: FormattedDelegationData[],
-  ) {
-    return delegations
-      .sort(
-        (a, b) =>
-          new Date(a.delegationTimestamp).getTime() -
-          new Date(b.delegationTimestamp).getTime(),
-      )
-      .map((delegation) => {
-        const formatted = formattedDelegations.find(
-          (fd) => fd.id === delegation.id,
-        );
-
-        return {
-          id: delegation.id,
-          fromMode: delegation.fromMode,
-          toMode: delegation.toMode,
-          delegationTimestamp: delegation.delegationTimestamp.toISOString(),
-          completionTimestamp:
-            delegation.completionTimestamp?.toISOString() || null,
-          duration: formatted?.duration || 0,
-          success: delegation.success,
-          rejectionReason: delegation.rejectionReason,
-        };
-      });
+  private buildTaskInfo(task: TaskWithRelations): TaskDetailData['task'] {
+    return {
+      taskId: task.taskId,
+      name: task.name,
+      taskSlug: task.taskSlug || undefined,
+      status: task.status as any,
+      priority: task.priority as any,
+      owner: task.owner || 'Unassigned',
+      currentMode: 'senior-developer', // Default mode
+      createdAt: task.creationDate.toISOString(),
+      completedAt: task.completionDate?.toISOString(),
+      gitBranch: undefined, // Not in current schema
+    };
   }
 
   /**
-   * Build implementation plans detail with subtasks
+   * Build task description section from database description
    */
-  buildImplementationPlansDetail(
-    implementationPlans: ImplementationPlanWithRelations[],
-    subtasks: SubtaskWithRelations[],
-  ) {
-    return implementationPlans.map((plan) => {
-      const planSubtasks = subtasks
-        .filter((subtask) => subtask.planId === plan.id)
-        .sort((a, b) => a.sequenceNumber - b.sequenceNumber);
+  private buildDescription(
+    description: TaskWithRelations['taskDescription'],
+  ): TaskDetailData['description'] {
+    if (!description) return undefined;
 
-      return {
-        id: plan.id,
-        overview: plan.overview,
-        approach: plan.approach,
-        technicalDecisions: plan.technicalDecisions,
-        filesToModify: plan.filesToModify,
-        createdBy: plan.createdBy,
-        createdAt: plan.createdAt.toISOString(),
-        subtasks: planSubtasks.map((subtask) => ({
-          id: subtask.id,
-          name: subtask.name,
-          description: subtask.description,
-          status: subtask.status,
-          sequenceNumber: subtask.sequenceNumber,
-          batchId: subtask.batchId,
-        })),
+    return {
+      description: description.description,
+      businessRequirements: description.businessRequirements || '',
+      technicalRequirements: description.technicalRequirements || '',
+      acceptanceCriteria: Array.isArray(description.acceptanceCriteria)
+        ? (description.acceptanceCriteria as string[])
+        : [],
+    };
+  }
+
+  /**
+   * Build implementation plans section from database plans
+   */
+  private buildImplementationPlans(
+    plans: ImplementationPlanWithRelations[],
+  ): TaskDetailData['implementationPlans'] {
+    return plans.map((plan) => ({
+      id: plan.id,
+      overview: plan.overview,
+      approach: plan.approach,
+      technicalDecisions:
+        typeof plan.technicalDecisions === 'string'
+          ? { notes: plan.technicalDecisions }
+          : plan.technicalDecisions || {},
+      filesToModify: plan.filesToModify || [],
+      createdBy: plan.createdBy,
+      createdAt: plan.createdAt.toISOString(),
+    }));
+  }
+
+  /**
+   * Build subtasks section with batch organization from database subtasks
+   */
+  private buildSubtasks(
+    subtasks: SubtaskWithRelations[],
+  ): TaskDetailData['subtasks'] {
+    return subtasks.map((subtask) => ({
+      id: subtask.id,
+      name: subtask.name,
+      description: subtask.description,
+      sequenceNumber: subtask.sequenceNumber,
+      status: subtask.status as any,
+      batchId: subtask.batchId || 'default',
+      batchTitle: subtask.batchTitle || 'Implementation Batch',
+      strategicGuidance: subtask.strategicGuidance || undefined,
+    }));
+  }
+
+  /**
+   * Build codebase analysis section from database analysis
+   */
+  private buildCodebaseAnalysis(
+    analysis: TaskWithRelations['codebaseAnalysis'],
+  ): TaskDetailData['codebaseAnalysis'] {
+    if (!analysis) return undefined;
+
+    return {
+      architectureFindings: analysis.architectureFindings || {},
+      problemsIdentified: analysis.problemsIdentified || {},
+      implementationContext: analysis.implementationContext || {},
+      integrationPoints: analysis.integrationPoints || {},
+      qualityAssessment: analysis.qualityAssessment || {},
+      filesCovered: Array.isArray(analysis.filesCovered)
+        ? (analysis.filesCovered as string[])
+        : [],
+      technologyStack: analysis.technologyStack || {},
+      analyzedBy: analysis.analyzedBy || 'system',
+      analyzedAt:
+        analysis.analyzedAt?.toISOString() || new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Build delegation history section from database delegations
+   */
+  private buildDelegationHistory(
+    delegations: DelegationRecordWithRelations[],
+    taskName: string,
+  ): TaskDetailData['delegationHistory'] {
+    return delegations.map((delegation) => ({
+      id: delegation.id,
+      taskId: delegation.taskId,
+      fromMode: delegation.fromMode as any,
+      toMode: delegation.toMode as any,
+      delegationTimestamp: delegation.delegationTimestamp.toISOString(),
+      completionTimestamp: delegation.completionTimestamp?.toISOString(),
+      duration: this.calculateDelegationDuration(delegation),
+      success: delegation.success || undefined,
+      taskName: taskName,
+    }));
+  }
+
+  /**
+   * Calculate delegation duration in hours
+   */
+  private calculateDelegationDuration(
+    delegation: DelegationRecordWithRelations,
+  ): number {
+    if (!delegation.completionTimestamp) return 0;
+
+    const start = delegation.delegationTimestamp.getTime();
+    const end = delegation.completionTimestamp.getTime();
+    return Math.round((end - start) / (1000 * 60 * 60)); // Convert to hours
+  }
+
+  /**
+   * Build metadata section
+   */
+  private buildMetadata(taskId: string): TaskDetailData['metadata'] {
+    return {
+      generatedAt: new Date().toISOString(),
+      version: '1.0.0',
+      generatedBy: 'task-detail-builder-service',
+      reportType: 'task-detail',
+      taskId: taskId,
+    };
+  }
+
+  /**
+   * Build batch summary for progress tracking
+   */
+  buildBatchSummary(subtasks: TaskDetailData['subtasks']): Record<
+    string,
+    {
+      batchId: string;
+      batchTitle: string;
+      totalSubtasks: number;
+      completedSubtasks: number;
+      inProgressSubtasks: number;
+      completionRate: number;
+    }
+  > {
+    const batches = subtasks.reduce(
+      (groups, subtask) => {
+        const batchId = subtask.batchId;
+        if (!groups[batchId]) {
+          groups[batchId] = [];
+        }
+        groups[batchId].push(subtask);
+        return groups;
+      },
+      {} as Record<string, TaskDetailData['subtasks']>,
+    );
+
+    const batchSummary: Record<string, any> = {};
+
+    Object.entries(batches).forEach(([batchId, batchSubtasks]) => {
+      const totalSubtasks = batchSubtasks.length;
+      const completedSubtasks = batchSubtasks.filter(
+        (s) => s.status === 'completed',
+      ).length;
+      const inProgressSubtasks = batchSubtasks.filter(
+        (s) => s.status === 'in-progress',
+      ).length;
+
+      const completionRate = Math.round(
+        (completedSubtasks / totalSubtasks) * 100,
+      );
+
+      batchSummary[batchId] = {
+        batchId: batchId,
+        batchTitle: batchSubtasks[0]?.batchTitle || 'Implementation Batch',
+        totalSubtasks,
+        completedSubtasks,
+        inProgressSubtasks,
+        completionRate,
       };
     });
-  }
 
-  /**
-   * Find related tasks based on similarity and dependencies
-   */
-  async findRelatedTasks(taskId: string): Promise<
-    Array<{
-      taskId: string;
-      name: string;
-      relationship: 'dependency' | 'related' | 'blocker';
-      status: string;
-    }>
-  > {
-    try {
-      const allTasks = await this.dataService.getTasks({});
-
-      // Find current task
-      const currentTask = allTasks.find((t) => t.taskId === taskId);
-      if (!currentTask) return [];
-
-      // Find related tasks based on name similarity
-      const relatedTasks = allTasks
-        .filter((t) => t.taskId !== taskId)
-        .filter((t) => {
-          // Simple similarity check
-          const nameWords = currentTask.name.toLowerCase().split(' ');
-          const otherWords = t.name.toLowerCase().split(' ');
-          const commonWords = nameWords.filter((word) =>
-            otherWords.includes(word),
-          );
-          return commonWords.length > 0;
-        })
-        .slice(0, 5)
-        .map((t) => ({
-          taskId: t.taskId,
-          name: t.name,
-          relationship: 'related' as const,
-          status: t.status,
-        }));
-
-      return relatedTasks;
-    } catch (error) {
-      this.logger.warn(
-        `Failed to find related tasks for ${taskId}: ${error.message}`,
-      );
-      return [];
-    }
+    return batchSummary;
   }
 }

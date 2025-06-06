@@ -1,11 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ReportDataService } from '../../shared/report-data.service';
 import { ReportMetadataService } from '../../shared/report-metadata.service';
-import { ReportRenderService } from '../../shared/report-render.service';
 import { ReportTransformService } from '../../shared/report-transform.service';
-import { ReportFilters, TemplateContext } from '../../shared/types';
+import { ReportFilters } from '../../shared/types';
+// Note: Using generator's expected data structure, not the types file interface
 import { WorkflowAnalyticsCalculatorService } from './workflow-analytics-calculator.service';
 import { WorkflowSummaryService } from './workflow-summary.service';
+import { WorkflowAnalyticsGeneratorService } from './workflow-analytics-generator.service';
 
 export interface WorkflowAnalyticsData {
   summary: {
@@ -71,10 +72,10 @@ export class WorkflowAnalyticsService {
   constructor(
     private readonly dataService: ReportDataService,
     private readonly transformService: ReportTransformService,
-    private readonly renderService: ReportRenderService,
     private readonly metadataService: ReportMetadataService,
     private readonly summaryService: WorkflowSummaryService,
     private readonly analyticsCalculator: WorkflowAnalyticsCalculatorService,
+    private readonly workflowAnalyticsGenerator: WorkflowAnalyticsGeneratorService,
   ) {}
 
   /**
@@ -153,30 +154,15 @@ export class WorkflowAnalyticsService {
   }
 
   /**
-   * Generate HTML report using shared render service
+   * Generate HTML report using type-safe generator with real database data
    */
-  async generateHtmlReport(
-    filters: ReportFilters = {},
-    basePath?: string,
-  ): Promise<string> {
+  async generateHtmlReport(filters: ReportFilters = {}): Promise<string> {
     const reportData = await this.generateReport(filters);
 
-    const templateContext: TemplateContext = {
-      data: {
-        ...reportData,
-        title: 'Workflow Analytics Report',
-        chartData: {
-          statusDistribution: reportData.taskAnalytics.statusDistribution,
-          delegationFlow: reportData.delegationAnalytics.roleTransitions,
-        },
-      },
-      metadata: reportData.metadata,
-    };
-
-    return this.renderService.renderTemplate(
-      'workflow-analytics',
-      templateContext,
-      basePath,
+    // Pass the actual database data directly to the generator
+    // No dummy data transformation needed - generator now works with real data structure
+    return this.workflowAnalyticsGenerator.generateWorkflowAnalytics(
+      reportData,
     );
   }
 }

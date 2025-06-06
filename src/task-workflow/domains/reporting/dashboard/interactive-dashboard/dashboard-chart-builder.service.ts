@@ -1,9 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { FormattedDelegationData, FormattedTaskData } from '../../shared/types';
+import {
+  ChartValidationError,
+  getPriorityColor,
+  getRoleColor,
+  getStatusColor,
+  isValidChartConfiguration,
+} from '../../shared/types/chart-types';
 
 @Injectable()
 export class DashboardChartBuilderService {
+  private readonly logger = new Logger(DashboardChartBuilderService.name);
   /**
    * Build all chart data for the dashboard
    */
@@ -18,12 +26,12 @@ export class DashboardChartBuilderService {
       priorityDistribution: this.buildPriorityChart(
         taskDistribution.byPriority,
       ),
-      completionTrends: this.buildCompletionTrendsChart(tasks),
+      completionTrend: this.buildCompletionTrendsChart(tasks),
       rolePerformance: this.buildRolePerformanceChart(
-        workflowMetrics.roleEfficiency,
+        workflowMetrics.roleEfficiency || [],
       ),
       delegationFlow: this.buildDelegationFlowChart(
-        workflowMetrics.delegationFlow,
+        workflowMetrics.delegationFlow || [],
       ),
     };
   }
@@ -36,8 +44,11 @@ export class DashboardChartBuilderService {
     const data = Object.values(statusData);
     const colors = this.getStatusColors(labels);
 
-    // Return simple structure that template expects
+    // Return simple structure that validation expects
     return {
+      id: 'statusChart',
+      title: 'Task Status Distribution',
+      type: 'doughnut',
       labels,
       data,
       colors,
@@ -79,8 +90,11 @@ export class DashboardChartBuilderService {
     const data = Object.values(priorityData);
     const colors = this.getPriorityColors(labels);
 
-    // Return simple structure that template expects
+    // Return simple structure that validation expects
     return {
+      id: 'priorityChart',
+      title: 'Task Priority Distribution',
+      type: 'bar',
       labels,
       data,
       colors,
@@ -127,10 +141,14 @@ export class DashboardChartBuilderService {
     const labels = Object.keys(monthlyData).sort();
     const data = labels.map((month) => monthlyData[month].completed);
 
-    // Return simple structure that template expects
+    // Return simple structure that validation expects
     return {
+      id: 'completionTrendChart',
+      title: 'Task Completion Trends',
+      type: 'line',
       labels,
       data,
+      colors: ['#10b981', '#3b82f6'],
       // Also include Chart.js config for JavaScript initialization
       chartConfig: {
         type: 'line',
@@ -172,16 +190,75 @@ export class DashboardChartBuilderService {
   }
 
   /**
-   * Build role performance chart data
+   * Build role performance chart data with type validation
    */
   private buildRolePerformanceChart(roleEfficiency: any[]) {
-    const labels = roleEfficiency.map((r) => r.role);
-    const data = roleEfficiency.map((r) => r.successRate);
+    // Handle empty array case
+    if (!roleEfficiency || roleEfficiency.length === 0) {
+      const chart = {
+        id: 'rolePerformanceChart',
+        title: 'Role Performance',
+        type: 'radar',
+        labels: ['No Data'],
+        data: [0],
+        colors: ['#6b7280'], // Gray for no data
+        chartConfig: {
+          type: 'radar',
+          data: {
+            labels: ['No Data'],
+            datasets: [
+              {
+                label: 'Success Rate (%)',
+                data: [0],
+                borderColor: '#8b5cf6',
+                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                borderWidth: 2,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Role Performance',
+              },
+            },
+            scales: {
+              r: {
+                beginAtZero: true,
+                max: 100,
+              },
+            },
+          },
+        },
+      };
 
-    // Return simple structure that template expects
-    return {
+      // Validate chart configuration
+      if (!isValidChartConfiguration(chart)) {
+        this.logger.warn('Invalid chart configuration for role performance');
+        throw new ChartValidationError(
+          'Role performance chart configuration is invalid',
+          'rolePerformanceChart',
+          ['Chart configuration validation failed'],
+        );
+      }
+
+      return chart;
+    }
+
+    const labels = roleEfficiency.map((role) => role.role);
+    const data = roleEfficiency.map((role) => role.successRate);
+    const colors = this.getRoleColors(labels);
+
+    // Return simple structure that validation expects
+    const chart = {
+      id: 'rolePerformanceChart',
+      title: 'Role Performance',
+      type: 'radar',
       labels,
       data,
+      colors,
       // Also include Chart.js config for JavaScript initialization
       chartConfig: {
         type: 'radar',
@@ -192,8 +269,8 @@ export class DashboardChartBuilderService {
               label: 'Success Rate (%)',
               data,
               borderColor: '#8b5cf6',
-              backgroundColor: 'rgba(139, 92, 246, 0.2)',
-              pointBackgroundColor: '#8b5cf6',
+              backgroundColor: 'rgba(139, 92, 246, 0.1)',
+              borderWidth: 2,
             },
           ],
         },
@@ -214,12 +291,59 @@ export class DashboardChartBuilderService {
         },
       },
     };
+
+    // Validate chart configuration
+    if (!isValidChartConfiguration(chart)) {
+      this.logger.warn('Invalid chart configuration for role performance');
+      throw new ChartValidationError(
+        'Role performance chart configuration is invalid',
+        'rolePerformanceChart',
+        ['Chart configuration validation failed'],
+      );
+    }
+
+    return chart;
   }
 
   /**
    * Build delegation flow chart data
    */
   private buildDelegationFlowChart(delegationFlow: any[]) {
+    // Handle empty array case
+    if (!delegationFlow || delegationFlow.length === 0) {
+      return {
+        type: 'horizontalBar',
+        data: {
+          labels: ['No Data'],
+          datasets: [
+            {
+              label: 'Delegations',
+              data: [0],
+              backgroundColor: '#f59e0b',
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false,
+            },
+            title: {
+              display: true,
+              text: 'Top Delegation Flows (No Data Available)',
+            },
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+            },
+          },
+        },
+      };
+    }
+
     const labels = delegationFlow.map((d) => `${d.fromRole} → ${d.toRole}`);
     const counts = delegationFlow.map((d) => d.count);
 
@@ -257,29 +381,15 @@ export class DashboardChartBuilderService {
   }
 
   private getStatusColors(statuses: string[]): string[] {
-    const colorMap: Record<string, string> = {
-      completed: '#10b981',
-      'in-progress': '#3b82f6',
-      'not-started': '#6b7280',
-      'needs-review': '#f59e0b',
-      'needs-changes': '#ef4444',
-      paused: '#8b5cf6',
-      cancelled: '#374151',
-    };
-
-    return statuses.map((status) => colorMap[status] || '#6b7280');
+    return statuses.map((status) => getStatusColor(status));
   }
 
   private getPriorityColors(priorities: string[]): string[] {
-    const colorMap: Record<string, string> = {
-      Critical: '#ef4444',
-      High: '#f59e0b',
-      Medium: '#3b82f6',
-      Low: '#10b981',
-      Unknown: '#6b7280',
-    };
+    return priorities.map((priority) => getPriorityColor(priority));
+  }
 
-    return priorities.map((priority) => colorMap[priority] || '#6b7280');
+  private getRoleColors(roles: string[]): string[] {
+    return roles.map((role) => getRoleColor(role));
   }
 
   private aggregateTasksByMonth(tasks: FormattedTaskData[]) {
@@ -287,14 +397,36 @@ export class DashboardChartBuilderService {
       {};
 
     tasks.forEach((task) => {
-      const creationMonth = task.creationDate.slice(0, 7); // YYYY-MM
-      if (!monthlyData[creationMonth]) {
-        monthlyData[creationMonth] = { completed: 0, started: 0 };
+      // Handle undefined/null creationDate
+      if (task.creationDate) {
+        const creationMonth = task.creationDate.slice(0, 7); // YYYY-MM
+        if (!monthlyData[creationMonth]) {
+          monthlyData[creationMonth] = { completed: 0, started: 0 };
+        }
+        monthlyData[creationMonth].started++;
       }
-      monthlyData[creationMonth].started++;
 
-      if (task.status === 'completed' && task.completionDate) {
-        const completionMonth = task.completionDate.slice(0, 7);
+      // Handle completed tasks - use completionDate if available, otherwise use creationDate for completed status
+      if (task.status === 'completed') {
+        let completionMonth: string;
+
+        if (task.completionDate) {
+          // Use actual completion date if available
+          completionMonth = task.completionDate.slice(0, 7);
+        } else if (task.creationDate) {
+          // Fallback to creation date for completed tasks without completion date
+          completionMonth = task.creationDate.slice(0, 7);
+          this.logger.warn(
+            `Task ${task.taskId} marked as completed but has no completionDate, using creationDate`,
+          );
+        } else {
+          // Skip if no date information available
+          this.logger.warn(
+            `Task ${task.taskId} marked as completed but has no date information`,
+          );
+          return;
+        }
+
         if (!monthlyData[completionMonth]) {
           monthlyData[completionMonth] = { completed: 0, started: 0 };
         }

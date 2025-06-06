@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Injectable } from '@nestjs/common';
-import { FormattedTaskData, FormattedDelegationData } from '../../shared/types';
+import { FormattedDelegationData, FormattedTaskData } from '../../shared/types';
 
 @Injectable()
 export class RoleAnalyticsService {
@@ -291,8 +292,16 @@ export class RoleAnalyticsService {
   /**
    * Generate insights from role performance data
    */
-  generateInsights(reportData: any): any[] {
-    const insights = [];
+  generateInsights(reportData: any): Array<{
+    title: string;
+    description: string;
+    icon: string;
+  }> {
+    const insights: Array<{
+      title: string;
+      description: string;
+      icon: string;
+    }> = [];
 
     if (reportData.roleMetrics && reportData.roleMetrics.length > 0) {
       const avgEfficiency =
@@ -325,8 +334,20 @@ export class RoleAnalyticsService {
   /**
    * Generate recommendations from role performance data
    */
-  generateRecommendations(reportData: any): any[] {
-    const recommendations = [];
+  generateRecommendations(reportData: any): Array<{
+    title: string;
+    description: string;
+    action: string;
+    impact: string;
+    icon: string;
+  }> {
+    const recommendations: Array<{
+      title: string;
+      description: string;
+      action: string;
+      impact: string;
+      icon: string;
+    }> = [];
 
     if (reportData.roleMetrics && reportData.roleMetrics.length > 0) {
       const lowEfficiencyRoles = reportData.roleMetrics.filter(

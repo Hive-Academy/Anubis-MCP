@@ -69,7 +69,7 @@ export class McpReportRouterService {
    */
   private async handleTaskDetailRequest(
     request: McpReportRequest,
-    filters: any,
+    _filters: any,
   ): Promise<any> {
     if (!request.filters?.taskId) {
       throw new Error('Task ID is required for task detail reports');
@@ -78,10 +78,7 @@ export class McpReportRouterService {
     if (request.outputFormat === 'json') {
       return this.taskDetailService.generateReport(request.filters.taskId);
     } else {
-      return this.taskDetailService.generateHtmlReport(
-        request.filters.taskId,
-        filters.basePath,
-      );
+      return this.taskDetailService.generateHtmlReport(request.filters.taskId);
     }
   }
 
@@ -90,7 +87,7 @@ export class McpReportRouterService {
    */
   private async handleDelegationFlowRequest(
     request: McpReportRequest,
-    filters: any,
+    _filters: any,
   ): Promise<any> {
     if (!request.filters?.taskId) {
       throw new Error('Task ID is required for delegation flow reports');
@@ -101,7 +98,6 @@ export class McpReportRouterService {
     } else {
       return this.delegationFlowService.generateHtmlReport(
         request.filters.taskId,
-        filters.basePath,
       );
     }
   }
@@ -111,7 +107,7 @@ export class McpReportRouterService {
    */
   private async handleImplementationPlanRequest(
     request: McpReportRequest,
-    filters: any,
+    _filters: any,
   ): Promise<any> {
     if (!request.filters?.taskId) {
       throw new Error('Task ID is required for implementation plan reports');
@@ -124,7 +120,6 @@ export class McpReportRouterService {
     } else {
       return this.implementationPlanService.generateHtmlReport(
         request.filters.taskId,
-        filters.basePath,
       );
     }
   }
@@ -139,10 +134,7 @@ export class McpReportRouterService {
     if (request.outputFormat === 'json') {
       return this.workflowAnalyticsService.generateReport(filters);
     } else {
-      return this.workflowAnalyticsService.generateHtmlReport(
-        filters,
-        filters.basePath,
-      );
+      return this.workflowAnalyticsService.generateHtmlReport(filters);
     }
   }
 

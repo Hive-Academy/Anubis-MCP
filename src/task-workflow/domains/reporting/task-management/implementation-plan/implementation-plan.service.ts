@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ReportDataService } from '../../shared/report-data.service';
 import { ReportTransformService } from '../../shared/report-transform.service';
-import { ReportRenderService } from '../../shared/report-render.service';
 import { ReportMetadataService } from '../../shared/report-metadata.service';
 import { ImplementationPlanBuilderService } from './implementation-plan-builder.service';
 import { ImplementationPlanAnalyzerService } from './implementation-plan-analyzer.service';
-import { TemplateContext } from '../../shared/types';
+import { ImplementationPlanGeneratorService } from './implementation-plan-generator.service';
+// Type imports removed - using any cast for generator compatibility
 
 export interface ImplementationPlanData {
   task: {
@@ -74,10 +74,10 @@ export class ImplementationPlanService {
   constructor(
     private readonly dataService: ReportDataService,
     private readonly transformService: ReportTransformService,
-    private readonly renderService: ReportRenderService,
     private readonly metadataService: ReportMetadataService,
     private readonly planBuilder: ImplementationPlanBuilderService,
     private readonly planAnalyzer: ImplementationPlanAnalyzerService,
+    private readonly implementationPlanGenerator: ImplementationPlanGeneratorService,
   ) {}
 
   /**
@@ -138,32 +138,15 @@ export class ImplementationPlanService {
   }
 
   /**
-   * Generate HTML report using shared render service
+   * Generate HTML report using type-safe generator
    */
-  async generateHtmlReport(taskId: string, basePath?: string): Promise<string> {
+  async generateHtmlReport(taskId: string): Promise<string> {
     const reportData = await this.generateReport(taskId);
 
-    const templateContext: TemplateContext = {
-      data: {
-        ...reportData,
-        title: `Implementation Plan - ${reportData.task.name}`,
-        chartData: {
-          completionProgress: {
-            completed: reportData.planAnalysis.completedSubtasks,
-            total: reportData.planAnalysis.totalSubtasks,
-            percentage: reportData.planAnalysis.completionPercentage,
-          },
-          batchProgress: reportData.planAnalysis.batchSummary,
-          effortEstimation: reportData.planAnalysis.estimatedEffort,
-        },
-      },
-      metadata: reportData.metadata,
-    };
-
-    return this.renderService.renderTemplate(
-      'implementation-plan',
-      templateContext,
-      basePath,
+    // Pass the actual database data directly to the generator
+    // The generator should adapt to work with the real data structure
+    return this.implementationPlanGenerator.generateImplementationPlan(
+      reportData as any,
     );
   }
 

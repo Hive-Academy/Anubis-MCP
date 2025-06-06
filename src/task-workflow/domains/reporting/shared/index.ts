@@ -10,5 +10,5 @@ export * from './interfaces';
 // Services
 export { ReportDataService } from './report-data.service';
 export { ReportTransformService } from './report-transform.service';
-export { ReportRenderService } from './report-render.service';
+// ReportRenderService removed - using type-safe HTML generators instead
 export { ReportMetadataService } from './report-metadata.service';

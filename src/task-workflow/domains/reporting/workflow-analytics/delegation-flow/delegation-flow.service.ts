@@ -1,58 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ReportDataService } from '../../shared/report-data.service';
-import { ReportTransformService } from '../../shared/report-transform.service';
-import { ReportRenderService } from '../../shared/report-render.service';
 import { ReportMetadataService } from '../../shared/report-metadata.service';
+import { ReportTransformService } from '../../shared/report-transform.service';
+import { ReportFilters, TaskWithRelations } from '../../shared/types';
+import { DelegationFlowData } from '../../shared/types/report-data.types';
 import { DelegationAnalyticsService } from './delegation-analytics.service';
+import { DelegationFlowGeneratorService } from './delegation-flow-generator.service';
 import { DelegationSummaryService } from './delegation-summary.service';
-import {
-  TaskWithRelations,
-  FormattedDelegationData,
-  FormattedWorkflowData,
-  ReportFilters,
-  TemplateContext,
-  DelegationFlowTemplateData,
-} from '../../shared/types';
 
-export interface DelegationFlowReportData {
-  task: {
-    taskId: string;
-    name: string;
-    taskSlug?: string | null;
-    status: string;
-    currentOwner: string | null;
-    totalDelegations: number;
-    redelegationCount: number;
-  };
-  delegationChain: FormattedDelegationData[];
-  workflowTransitions: FormattedWorkflowData[];
-  summary: {
-    totalDelegations: number;
-    successfulDelegations: number;
-    failedDelegations: number;
-    averageDelegationDuration: number;
-    mostCommonPath: string[];
-    redelegationPoints: Array<{
-      fromMode: string;
-      toMode: string;
-      count: number;
-      reasons: string[];
-    }>;
-    roleInvolvement: Array<{
-      role: string;
-      timeAsOwner: number;
-      tasksReceived: number;
-      tasksDelegated: number;
-      successRate: number;
-    }>;
-  };
-  metadata: {
-    generatedAt: string;
-    reportType: 'delegation-flow';
-    version: string;
-    generatedBy: string;
-  };
-}
+// Note: DelegationFlowData interface moved to shared/types/report-data.types.ts
+// to avoid duplication and ensure consistency across the application
 
 @Injectable()
 export class DelegationFlowService {
@@ -61,16 +18,16 @@ export class DelegationFlowService {
   constructor(
     private readonly dataService: ReportDataService,
     private readonly transformService: ReportTransformService,
-    private readonly renderService: ReportRenderService,
     private readonly metadataService: ReportMetadataService,
     private readonly analyticsService: DelegationAnalyticsService,
     private readonly summaryService: DelegationSummaryService,
+    private readonly delegationFlowGenerator: DelegationFlowGeneratorService,
   ) {}
 
   /**
    * Generate delegation flow report for a specific task
    */
-  async generateReport(taskId: string): Promise<DelegationFlowReportData> {
+  async generateReport(taskId: string): Promise<DelegationFlowData> {
     try {
       this.logger.log(`Generating delegation flow report for: ${taskId}`);
 
@@ -147,138 +104,30 @@ export class DelegationFlowService {
   }
 
   /**
-   * Generate HTML report using shared render service
+   * Generate HTML report using dedicated generator service
    */
-  async generateHtmlReport(taskId: string, basePath?: string): Promise<string> {
+  async generateHtmlReport(
+    taskId: string,
+    _basePath?: string,
+  ): Promise<string> {
     const reportData = await this.generateReport(taskId);
 
-    // Transform data to match template expectations
-    const templateData = this.transformDataForTemplate(reportData);
+    // Transform data to match generator expectations
+    const delegationFlowData = this.transformDataForGenerator(reportData);
 
-    const templateContext: TemplateContext<DelegationFlowTemplateData> = {
-      data: {
-        ...templateData,
-        title: `Delegation Flow Report - ${reportData.task.name}`,
-        chartData: this.transformService.prepareChartData(
-          reportData.delegationChain,
-          'delegation-flow',
-        ),
-      } as DelegationFlowTemplateData,
-      metadata: reportData.metadata,
-    };
-
-    return this.renderService.renderTemplate(
-      'delegation-flow',
-      templateContext,
-      basePath,
+    return this.delegationFlowGenerator.generateDelegationFlow(
+      delegationFlowData,
     );
   }
 
   /**
-   * Transform report data to match template expectations
+   * The generator now derives what it needs from the service data structure,
+   * so we can pass the data through without transformation
    */
-  private transformDataForTemplate(reportData: DelegationFlowReportData) {
-    // Map delegationChain to delegations for template
-    const delegations = reportData.delegationChain.map((delegation) => ({
-      ...delegation,
-      fromRole: delegation.fromMode,
-      toRole: delegation.toMode,
-      delegatedAt: delegation.delegationTimestamp,
-    }));
-
-    // Calculate unique roles
-    const uniqueRoles = Array.from(
-      new Set([
-        ...delegations.map((d) => d.fromRole),
-        ...delegations.map((d) => d.toRole),
-      ]),
-    );
-
-    // Calculate average delegation time
-    const completedDelegations = delegations.filter((d) => d.duration > 0);
-    const averageDelegationTime =
-      completedDelegations.length > 0
-        ? Math.round(
-            (completedDelegations.reduce((sum, d) => sum + d.duration, 0) /
-              completedDelegations.length) *
-              10,
-          ) / 10
-        : 0;
-
-    // Calculate flow efficiency (successful delegations / total)
-    const successfulDelegations = delegations.filter(
-      (d) => d.success !== false,
-    );
-    const flowEfficiency =
-      delegations.length > 0
-        ? Math.round((successfulDelegations.length / delegations.length) * 100)
-        : 0;
-
-    // Transform role involvement to role analysis
-    const roleAnalysis = reportData.summary.roleInvolvement.map((role) => ({
-      role: role.role,
-      involvement: Math.round((role.tasksReceived / delegations.length) * 100),
-      delegationsReceived: role.tasksReceived,
-      delegationsMade: role.tasksDelegated,
-      averageHoldTime: Math.round(role.timeAsOwner * 10) / 10,
-      efficiency: Math.round(role.successRate),
-    }));
-
-    // Transform most common paths
-    const commonPaths = reportData.summary.mostCommonPath.map((path) => {
-      const [fromRole, toRole] = path.split(' → ');
-      const count = delegations.filter(
-        (d) => `${d.fromRole} → ${d.toRole}` === path,
-      ).length;
-      return {
-        fromRole,
-        toRole,
-        count,
-        percentage: Math.round((count / delegations.length) * 100),
-      };
-    });
-
-    // Transform redelegation points to escalation patterns
-    const escalationPatterns = reportData.summary.redelegationPoints.map(
-      (point) => ({
-        fromRole: point.fromMode,
-        toRole: point.toMode,
-        count: point.count,
-        reason: point.reasons[0] || 'Unknown reason',
-      }),
-    );
-
-    // Calculate timeline data
-    const taskStartDate = delegations[0]?.delegationTimestamp || new Date();
-    const firstDelegation = delegations[0]?.delegationTimestamp || new Date();
-    const lastDelegation =
-      delegations[delegations.length - 1]?.delegationTimestamp || new Date();
-    const totalFlowTime = delegations.reduce((sum, d) => sum + d.duration, 0);
-
-    return {
-      task: reportData.task, // Ensure task data is available at root level
-      delegations,
-      uniqueRoles,
-      averageDelegationTime,
-      flowEfficiency,
-      roleAnalysis,
-      commonPaths,
-      escalationPatterns,
-      taskStartDate,
-      firstDelegation,
-      lastDelegation,
-      totalFlowTime,
-      // Add missing fields for bottlenecks and optimization
-      bottlenecks: [],
-      fastTransitions: [],
-      optimizationTips: [
-        {
-          title: 'Reduce Delegation Cycles',
-          description: 'Consider consolidating similar role transitions',
-          impact: 'Medium',
-        },
-      ],
-    };
+  private transformDataForGenerator(
+    reportData: DelegationFlowData,
+  ): DelegationFlowData {
+    return reportData;
   }
 
   /**

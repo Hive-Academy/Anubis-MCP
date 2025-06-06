@@ -1,16 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ReportDataService } from '../../shared/report-data.service';
 import { ReportTransformService } from '../../shared/report-transform.service';
-import { ReportRenderService } from '../../shared/report-render.service';
 import { ReportMetadataService } from '../../shared/report-metadata.service';
-import { TemplateDataValidatorService } from '../../shared/template-data-validator.service';
-import {
-  HtmlGeneratorService,
-  DashboardData,
-} from '../../shared/html-generator.service';
+import { InteractiveDashboardGeneratorService } from './interactive-dashboard-generator.service';
 import { DashboardDataAggregatorService } from './dashboard-data-aggregator.service';
 import { DashboardChartBuilderService } from './dashboard-chart-builder.service';
-import { ReportFilters, TemplateContext } from '../../shared/types';
+import { ReportFilters } from '../../shared/types';
+import {
+  InteractiveDashboardData as TypeSafeInteractiveDashboardData,
+  TaskSummary,
+  DelegationSummary,
+} from '../../shared/types/report-data.types';
 
 export interface InteractiveDashboardData {
   summary: {
@@ -65,7 +65,7 @@ export interface InteractiveDashboardData {
   chartData: {
     statusDistribution: any;
     priorityDistribution: any;
-    completionTrends: any;
+    completionTrend: any;
     rolePerformance: any;
     delegationFlow: any;
   };
@@ -85,10 +85,8 @@ export class InteractiveDashboardService {
   constructor(
     private readonly dataService: ReportDataService,
     private readonly transformService: ReportTransformService,
-    private readonly renderService: ReportRenderService,
     private readonly metadataService: ReportMetadataService,
-    private readonly templateValidator: TemplateDataValidatorService,
-    private readonly htmlGenerator: HtmlGeneratorService,
+    private readonly dashboardGenerator: InteractiveDashboardGeneratorService,
     private readonly dataAggregator: DashboardDataAggregatorService,
     private readonly chartBuilder: DashboardChartBuilderService,
   ) {}
@@ -187,213 +185,70 @@ export class InteractiveDashboardService {
   }
 
   /**
-   * Generate HTML dashboard using TypeScript template literals (NEW - Type Safe)
-   */
-  async generateTypeSafeDashboard(
-    filters: ReportFilters = {},
-  ): Promise<string> {
-    const dashboardData = await this.generateDashboard(filters);
-
-    // Transform to type-safe structure
-    const typeSafeData: DashboardData = {
-      title: 'Interactive Workflow Dashboard',
-      metrics: dashboardData.summary,
-      charts: {
-        statusDistribution: dashboardData.chartData.statusDistribution,
-        priorityDistribution: dashboardData.chartData.priorityDistribution,
-        completionTrend: dashboardData.chartData.completionTrends,
-        rolePerformance: dashboardData.chartData.rolePerformance,
-      },
-      taskTable: {
-        data: dashboardData.recentActivity.recentTasks.map((task) => ({
-          taskId: task.taskId,
-          name: task.name,
-          status: task.status,
-          priority: 'Medium', // Default since not in recentTasks
-          owner: task.owner || 'Unassigned',
-          creationDate: task.lastUpdate,
-          duration: 0, // Calculate from timestamps if available
-        })),
-      },
-      delegationTable: {
-        data: dashboardData.recentActivity.recentDelegations.map(
-          (delegation, index) => ({
-            id: index + 1,
-            fromMode: delegation.fromRole,
-            toMode: delegation.toRole,
-            delegationTimestamp: delegation.timestamp,
-            success: delegation.success || false,
-            duration: 0, // Calculate from timestamps if available
-            taskName: delegation.taskName,
-          }),
-        ),
-      },
-      metadata: {
-        generatedAt: dashboardData.metadata.generatedAt,
-        version: dashboardData.metadata.version,
-        generatedBy: dashboardData.metadata.generatedBy,
-      },
-    };
-
-    this.logger.log('Generating type-safe HTML dashboard');
-    this.logger.log(`Task table rows: ${typeSafeData.taskTable.data.length}`);
-    this.logger.log(
-      `Delegation table rows: ${typeSafeData.delegationTable.data.length}`,
-    );
-
-    return this.htmlGenerator.generateInteractiveDashboard(typeSafeData);
-  }
-
-  /**
-   * Generate HTML dashboard using shared render service (LEGACY - Handlebars)
+   * Generate HTML dashboard using dedicated generator service (PROPERLY MIGRATED)
    */
   async generateHtmlDashboard(filters: ReportFilters = {}): Promise<string> {
     const dashboardData = await this.generateDashboard(filters);
 
-    // Transform data to match EXACT template structure
-    const templateData = {
+    // Transform to type-safe structure matching InteractiveDashboardData interface
+    const typeSafeData: TypeSafeInteractiveDashboardData = {
       title: 'Interactive Workflow Dashboard',
-
-      // Template expects summary.metrics, not summary directly
-      summary: {
-        metrics: dashboardData.summary,
+      subtitle: 'Real-time workflow analytics and task management',
+      metrics: {
+        totalTasks: dashboardData.summary.totalTasks,
+        completedTasks: dashboardData.summary.completedTasks,
+        inProgressTasks: dashboardData.summary.inProgressTasks,
+        completionRate: dashboardData.summary.completionRate,
+        averageCompletionTime: dashboardData.summary.averageCompletionTime,
+        totalDelegations: dashboardData.summary.totalDelegations,
+        delegationSuccessRate: dashboardData.summary.delegationSuccessRate,
       },
-
-      // Template expects charts.*, not chartData.*
       charts: {
         statusDistribution: dashboardData.chartData.statusDistribution,
         priorityDistribution: dashboardData.chartData.priorityDistribution,
-        completionTrend: dashboardData.chartData.completionTrends,
+        completionTrend: dashboardData.chartData.completionTrend,
         rolePerformance: dashboardData.chartData.rolePerformance,
       },
-
-      // Create task table structure that template expects
-      taskTable: {
-        columns: [
-          { key: 'taskId', label: 'Task ID', sortable: true, type: 'text' },
-          { key: 'name', label: 'Name', sortable: true, type: 'text' },
-          { key: 'status', label: 'Status', sortable: true, type: 'badge' },
-          { key: 'priority', label: 'Priority', sortable: true, type: 'badge' },
-          { key: 'owner', label: 'Owner', sortable: true, type: 'text' },
-          {
-            key: 'creationDate',
-            label: 'Created',
-            sortable: true,
-            type: 'date',
-          },
-          {
-            key: 'duration',
-            label: 'Duration (hrs)',
-            sortable: true,
-            type: 'number',
-          },
-        ],
-        data: dashboardData.recentActivity.recentTasks.map((task) => ({
+      tasks: dashboardData.recentActivity.recentTasks.map(
+        (task): TaskSummary => ({
           taskId: task.taskId,
           name: task.name,
-          status: task.status,
-          priority: 'Medium', // Default since not in recentTasks
+          status: task.status as any, // Type assertion for compatibility
+          priority: 'Medium' as any, // Default since not in recentTasks
           owner: task.owner || 'Unassigned',
-          creationDate: task.lastUpdate, // Use lastUpdate as fallback for creationDate
-          completionDate:
-            task.status === 'completed' ? task.lastUpdate : undefined,
-          duration: 24, // Default 24 hours - could be calculated from actual data
-        })),
+          createdAt: new Date(task.lastUpdate),
+          duration: 0, // Calculate from timestamps if available
+        }),
+      ),
+      delegations: dashboardData.recentActivity.recentDelegations.map(
+        (delegation, index): DelegationSummary => ({
+          id: index + 1,
+          taskId: delegation.taskName || 'unknown',
+          fromMode: delegation.fromRole as any,
+          toMode: delegation.toRole as any,
+          delegationTimestamp: delegation.timestamp,
+          success: delegation.success || false,
+          duration: 0, // Calculate from timestamps if available
+          taskName: delegation.taskName,
+        }),
+      ),
+      filters: {}, // Empty filters for now - type compatibility
+      metadata: {
+        generatedAt: dashboardData.metadata.generatedAt,
+        version: dashboardData.metadata.version,
+        generatedBy: dashboardData.metadata.generatedBy,
+        reportType: 'interactive-dashboard',
       },
-
-      // Create delegation table structure that template expects
-      delegationTable: {
-        columns: [
-          { key: 'id', label: 'ID', sortable: true, type: 'number' },
-          {
-            key: 'fromMode',
-            label: 'From Role',
-            sortable: true,
-            type: 'badge',
-          },
-          {
-            key: 'toMode',
-            label: 'To Role',
-            sortable: true,
-            type: 'badge',
-          },
-          {
-            key: 'delegationTimestamp',
-            label: 'When',
-            sortable: true,
-            type: 'date',
-          },
-          {
-            key: 'success',
-            label: 'Status',
-            sortable: true,
-            type: 'badge',
-          },
-          {
-            key: 'duration',
-            label: 'Duration (hrs)',
-            sortable: true,
-            type: 'number',
-          },
-        ],
-        data: dashboardData.recentActivity.recentDelegations.map(
-          (delegation, index) => ({
-            id: index + 1, // Generate sequential ID
-            fromMode: delegation.fromRole,
-            toMode: delegation.toRole,
-            delegationTimestamp: delegation.timestamp,
-            completionTimestamp: delegation.success
-              ? delegation.timestamp
-              : undefined,
-            success: Boolean(delegation.success), // Ensure boolean type
-            duration: 2, // Default 2 hours - could be calculated from actual data
-            taskName: delegation.taskName,
-          }),
-        ),
-      },
-
-      // Include other data the template might need
-      filters: filters,
-      hasFilters: Object.keys(filters).length > 0,
-      metadata: dashboardData.metadata,
     };
 
-    // DEBUG: Log the data being passed to template
     this.logger.log(
-      `Task table data count: ${templateData.taskTable.data.length}`,
+      'Delegating HTML generation to dedicated generator service',
     );
-    this.logger.log(
-      `Delegation table data count: ${templateData.delegationTable.data.length}`,
-    );
-    this.logger.log(
-      `First task: ${JSON.stringify(templateData.taskTable.data[0] || 'none')}`,
-    );
-    this.logger.log(
-      `First delegation: ${JSON.stringify(templateData.delegationTable.data[0] || 'none')}`,
-    );
+    this.logger.log(`Tasks: ${typeSafeData.tasks.length}`);
+    this.logger.log(`Delegations: ${typeSafeData.delegations.length}`);
 
-    // BULLETPROOF: Validate template data before rendering
-    const validatedData =
-      this.templateValidator.validateInteractiveDashboardData(templateData);
-
-    // DEBUG: Log the validated data
-    this.logger.log(
-      `Validated task table data count: ${validatedData.taskTable.data.length}`,
-    );
-    this.logger.log(
-      `Validated delegation table data count: ${validatedData.delegationTable.data.length}`,
-    );
-
-    const templateContext: TemplateContext = {
-      data: validatedData,
-      metadata: dashboardData.metadata,
-    };
-
-    return this.renderService.renderTemplate(
-      'interactive-dashboard',
-      templateContext,
-      filters.basePath,
-    );
+    // Use the dedicated generator service following SRP
+    return this.dashboardGenerator.generateInteractiveDashboard(typeSafeData);
   }
 
   /**
@@ -415,6 +270,7 @@ export class InteractiveDashboardService {
         ).length;
 
       const topBottleneck =
+        dashboardData.workflowMetrics.bottlenecks &&
         dashboardData.workflowMetrics.bottlenecks.length > 0
           ? dashboardData.workflowMetrics.bottlenecks[0].stage
           : 'None identified';
