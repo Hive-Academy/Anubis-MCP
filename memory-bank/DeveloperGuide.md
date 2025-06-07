@@ -96,32 +96,110 @@ The reporting domain (`src/task-workflow/domains/reporting/`) follows a sophisti
 #### **Shared Services Layer** (KISS Principle Applied)
 - **`shared/report-data.service.ts`**: Centralized Prisma queries with optimized includes (200 lines max)
 - **`shared/report-transform.service.ts`**: Data formatting, Chart.js preparation, aggregation logic
-- **`shared/report-render.service.ts`**: Handlebars template compilation, caching, rendering
+- **`shared/report-render.service.ts`**: HTML generation coordination (NO TEMPLATE ENGINES)
 - **`shared/report-metadata.service.ts`**: Common metadata generation and complexity assessment
-- **`shared/partials/`**: Reusable template components (base-layout, data-table, metric-cards, etc.)
+- **`shared/types/`**: TypeScript interfaces and types for type-safe HTML generation
 
 #### **Business Domain Organization**
 1. **`workflow-analytics/`**: Delegation flow, role performance, workflow analytics reports
 2. **`task-management/`**: Task detail and implementation plan reports
-3. **`dashboard/`**: Interactive dashboard and simple report features
+3. **`dashboard/`**: Interactive dashboard with focused view generators
 
-#### **Feature-Based Structure Pattern**
-Each report feature follows this pattern:
-```
+#### **Current HTML Generation Architecture (No Template Engines)**
+
+**Enhanced Pattern (Replaces Handlebars):**
+```typescript
+// Each report feature follows this focused generator pattern:
 /[report-name]/
   - [report-name].service.ts        # Main service (150 lines max)
-  - [specific-analyzer].service.ts  # Analytics calculations
+  - [specific-analyzer].service.ts  # Analytics calculations  
   - [specific-builder].service.ts   # Data building logic
-  /templates/
-    - [report-name]-report.hbs      # Enhanced with Alpine.js + Chart.js
+  /view/                            # Focused view generators (SRP)
+    - html-head.generator.ts        # HTML head with CDN resources
+    - header.generator.ts           # Page header generation
+    - content.generator.ts          # Main content sections
+    - footer.generator.ts           # Page footer
+    - scripts.generator.ts          # Vanilla JavaScript generation
+    - [feature]-generator.service.ts # Coordinator (under 100 lines)
+    - [feature]-view.module.ts      # NestJS module for DI
 ```
 
-#### **Template Enhancement Standards**
-- **Alpine.js**: Reactive data binding and client-side interactivity
-- **Chart.js**: Rich data visualization with responsive charts
-- **Tailwind CSS**: Utility-first styling for stunning visual design
-- **Handlebars**: Server-side template compilation with caching
-- **Component-Based**: Reusable partials for consistent UI patterns
+#### **Technology Stack Standards (Updated)**
+
+**Server-Side HTML Generation:**
+- **Direct TypeScript**: String interpolation for HTML generation (no template engines)
+- **Type Safety**: TypeScript interfaces for all data structures  
+- **Security**: Built-in HTML escaping utilities in all generators
+- **Performance**: Direct string concatenation, no template compilation overhead
+
+**Client-Side Interactivity:**
+- **Vanilla JavaScript**: Native DOM manipulation and event handling
+- **Chart.js**: Data visualization with responsive charts
+- **No Frameworks**: No Alpine.js, React, or Vue dependencies
+- **CDN Assets**: Tailwind CSS, Chart.js, Font Awesome via CDN
+
+**Enhanced UI/UX Guidelines:**
+- **Tailwind CSS**: Utility-first styling with custom CSS classes
+- **Google Fonts**: Inter font family for modern typography
+- **Design System**: Consistent card layouts, status badges, hover effects
+- **Responsive**: Mobile-first design with CSS Grid and Flexbox
+- **Animations**: CSS transitions and Intersection Observer API
+
+#### **Service Development Standards**
+
+**Focused Generator Pattern:**
+```typescript
+@Injectable()
+export class ExampleContentGenerator {
+  generateSection(data: TypeSafeData): string {
+    return `
+      <div class="bg-white rounded-xl shadow-lg p-6">
+          <h2 class="text-xl font-semibold">${this.escapeHtml(data.title)}</h2>
+          ${data.items.map(item => this.generateItem(item)).join('')}
+      </div>`;
+  }
+  
+  private generateItem(item: ItemType): string {
+    return `
+      <div class="flex items-center space-x-4 p-3 hover:bg-gray-50">
+          <span class="font-medium">${this.escapeHtml(item.name)}</span>
+          <span class="status-badge status-${item.status}">${item.status}</span>
+      </div>`;
+  }
+  
+  private escapeHtml(text: string): string {
+    // HTML escaping implementation
+  }
+}
+```
+
+**Client-Side JavaScript Pattern:**
+```typescript
+generateScripts(data: ReportData): string {
+  return `
+    <script>
+        // Direct data embedding (secure, no window dependencies)
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeInteractivity();
+            ${this.generateChartInitialization(data.charts)}
+        });
+        
+        function initializeInteractivity() {
+            // Native event handling
+            document.querySelectorAll('.filterable').forEach(setupFiltering);
+        }
+    </script>`;
+}
+```
+
+#### **Key Implementation Principles**
+
+1. **Single Responsibility**: Each generator handles one UI section
+2. **Type Safety**: TypeScript interfaces for all data structures
+3. **Security First**: HTML escaping built into all generators
+4. **Performance**: Direct string interpolation, CDN assets, no build step
+5. **Maintainability**: Services under 200 lines, generators under 100 lines
+6. **Testability**: Focused services with clear dependencies
 
 ## 3. Coding Standards & Best Practices
 

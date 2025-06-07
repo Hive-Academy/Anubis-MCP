@@ -56,6 +56,8 @@ export interface TaskWithRelations {
   subtasks?: SubtaskWithRelations[];
   codebaseAnalysis?: CodebaseAnalysisData;
   taskDescription?: TaskDescriptionData;
+  currentMode?: string | null;
+  gitBranch?: string | null;
 }
 
 export interface DelegationRecordWithRelations {

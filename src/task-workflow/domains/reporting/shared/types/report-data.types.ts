@@ -254,6 +254,95 @@ export interface ImplementationPlanData {
 }
 
 // ============================================================================
+// IMPLEMENTATION PLAN REPORT DATA (Enhanced)
+// ============================================================================
+
+export interface ImplementationPlanReportData {
+  task: {
+    taskId: string;
+    name: string;
+    taskSlug?: string;
+    status: TaskStatus;
+    priority: Priority;
+    owner: string;
+    currentMode: Role;
+    createdAt: string;
+    completedAt?: string;
+    gitBranch?: string;
+  };
+  implementationPlan?: {
+    id: number;
+    overview: string;
+    approach: string;
+    architecturalRationale?: string;
+    technicalDecisions: Record<string, any> | string;
+    strategicGuidance?: Record<string, any>;
+    filesToModify: string[];
+    createdBy: string;
+    createdAt: string;
+    solutionStrategy?: Record<string, any>;
+    qualityGates?: Record<string, any>;
+    patternCompliance?: Record<string, any>;
+    antiPatternPrevention?: Record<string, any>;
+    strategicContext?: Record<string, any>;
+    issueAnalysis?: Record<string, any>;
+    redelegationContext?: Record<string, any>;
+    verificationEvidence?: Record<string, any>;
+  };
+  subtaskBatches: Array<{
+    batchId: string;
+    batchTitle: string;
+    subtasks: Array<{
+      id: number;
+      name: string;
+      description: string;
+      sequenceNumber: number;
+      status: TaskStatus;
+      strategicGuidance?: Record<string, any>;
+      qualityConstraints?: Record<string, any>;
+      successCriteria?: string[];
+      architecturalRationale?: string;
+    }>;
+  }>;
+  progress: {
+    overallCompletion: number;
+    batchesCompleted: number;
+    totalBatches: number;
+    totalSubtasks: number;
+    completedSubtasks: number;
+    estimatedTimeRemaining?: string;
+  };
+  executionAnalysis?: {
+    totalSubtasks: number;
+    completedSubtasks: number;
+    completionPercentage: number;
+    batchSummary: Array<{
+      batchId: string;
+      taskCount: number;
+      completedCount: number;
+      status: 'not-started' | 'in-progress' | 'completed';
+    }>;
+    estimatedEffort: {
+      totalHours: number;
+      remainingHours: number;
+      complexityScore: number;
+    };
+  };
+  executionGuidance?: {
+    nextSteps: string[];
+    dependencies: string[];
+    riskFactors: Array<{
+      risk: string;
+      impact: 'low' | 'medium' | 'high';
+      mitigation: string;
+    }>;
+    qualityChecks: string[];
+  };
+  complexityScore?: number;
+  metadata: ReportMetadata;
+}
+
+// ============================================================================
 // DELEGATION FLOW DATA
 // ============================================================================
 
@@ -424,6 +513,7 @@ export type ReportData =
   | SimpleReportData
   | TaskDetailData
   | ImplementationPlanData
+  | ImplementationPlanReportData
   | DelegationFlowData
   | RolePerformanceData
   | WorkflowAnalyticsData;
