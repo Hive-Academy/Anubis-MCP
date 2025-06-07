@@ -108,20 +108,51 @@ model Subtask {
   batchId             String?    // Added for batch information
   batchTitle          String?    // Added for batch information
   
-  // Strategic Implementation Guidance - NEW FIELDS
+  // Strategic Implementation Guidance - EXISTING FIELDS
   strategicGuidance   Json?     // architecturalContext, implementationSpecifics, codeExample
   qualityConstraints  Json?     // patternCompliance, errorHandling, performanceTarget
   successCriteria     Json?     // Specific validation points and completion requirements
   architecturalRationale String? // Why this subtask is needed and how it fits the solution
+
+  // NEW EVIDENCE COLLECTION FIELDS - Added for subtask-focused workflow
+  acceptanceCriteria     Json?     // Array of specific testable requirements for this subtask
+  technicalSpecifications Json?    // Technical specs: frameworks, patterns, testing requirements
+  dependencies           Json?     // Array of prerequisite subtask names or IDs
+  completionEvidence     Json?     // Evidence collection: testing results, quality assurance, implementation summary
+  actualDuration         String?   // Actual time taken to complete this subtask
 
   task                Task                @relation(fields: [taskId], references: [taskId])
   plan                ImplementationPlan  @relation(fields: [planId], references: [id])
   delegationRecords   DelegationRecord[]
   comments            Comment[]
   
+  // Subtask dependency relationships - for dependency tracking
+  dependencyRelations SubtaskDependency[] @relation("SubtaskDependencies")  // Dependencies this subtask has
+  dependentRelations  SubtaskDependency[] @relation("SubtaskDependents")    // Subtasks that depend on this one
+  
   @@index([taskId])
   @@index([status])
+  @@index([batchId])  // Added index for efficient batch queries
   // @@map("subtasks")
+}
+
+// SubtaskDependency junction table for many-to-many subtask dependencies
+// Enables dependency tracking and validation for subtask-focused workflow
+model SubtaskDependency {
+  id                  Int       @id @default(autoincrement())
+  subtaskId           Int       // The subtask that has a dependency
+  dependsOnSubtaskId  Int       // The subtask that must be completed first
+  createdAt           DateTime  @default(now())
+
+  // Foreign key relationships
+  subtask             Subtask   @relation("SubtaskDependencies", fields: [subtaskId], references: [id], onDelete: Cascade)
+  dependsOnSubtask    Subtask   @relation("SubtaskDependents", fields: [dependsOnSubtaskId], references: [id], onDelete: Cascade)
+
+  // Prevent duplicate dependencies and self-references
+  @@unique([subtaskId, dependsOnSubtaskId])
+  @@index([subtaskId])
+  @@index([dependsOnSubtaskId])
+  // @@map("subtask_dependencies")
 }
 
 model DelegationRecord {
