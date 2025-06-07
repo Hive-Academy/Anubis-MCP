@@ -203,6 +203,12 @@ Bulk subtask management by batchId with efficient operations.
       throw new Error('New status is required for batch status update');
     }
 
+    // Enhanced: Check current individual subtask states before bulk update
+    const currentSubtasks = await this.prisma.subtask.findMany({
+      where: { taskId, batchId },
+      select: { id: true, name: true, status: true, completionEvidence: true },
+    });
+
     const updateResult = await this.prisma.subtask.updateMany({
       where: {
         taskId,
@@ -224,11 +230,35 @@ Bulk subtask management by batchId with efficient operations.
       orderBy: { sequenceNumber: 'asc' },
     });
 
+    // Enhanced: Check for automatic batch completion after status update
+    let batchCompletionResult = null;
+    if (newStatus === 'completed') {
+      batchCompletionResult = await this.checkAndTriggerBatchCompletion(
+        taskId,
+        batchId,
+      );
+    }
+
     return {
       updatedCount: updateResult.count,
       newStatus,
       subtasks: updatedSubtasks,
       statusBreakdown: this.calculateStatusBreakdown(updatedSubtasks),
+
+      // Enhanced: Individual subtask tracking information
+      individualSubtaskTracking: {
+        previousStates: currentSubtasks.map((s) => ({
+          id: s.id,
+          name: s.name,
+          previousStatus: s.status,
+          hadEvidence: s.completionEvidence
+            ? Object.keys(s.completionEvidence).length > 0
+            : false,
+        })),
+        batchCompletionResult,
+        automaticCompletionTriggered:
+          batchCompletionResult?.completionTriggered || false,
+      },
     };
   }
 
@@ -329,6 +359,16 @@ Bulk subtask management by batchId with efficient operations.
       (completedSubtasks / totalSubtasks) * 100,
     );
 
+    // Enhanced: Check for automatic batch completion
+    const batchCompletionResult = await this.checkAndTriggerBatchCompletion(
+      taskId,
+      batchId,
+    );
+
+    // Enhanced: Include individual subtask evidence aggregation
+    const individualSubtaskEvidence =
+      this.aggregateIndividualSubtaskEvidence(subtasks);
+
     return {
       batchId,
       taskId,
@@ -339,6 +379,19 @@ Bulk subtask management by batchId with efficient operations.
       isComplete: completedSubtasks === totalSubtasks,
       nextSubtask: subtasks.find((s) => s.status !== 'completed'),
       subtasks,
+
+      // Enhanced: Individual subtask tracking
+      individualSubtaskTracking: {
+        evidenceCollection: individualSubtaskEvidence,
+        completionReadiness: batchCompletionResult.batchCompleted,
+        automaticCompletionTriggered: batchCompletionResult.completionTriggered,
+        batchCompletionMessage: batchCompletionResult.message,
+      },
+
+      // Enhanced: Batch completion status based on individual subtasks
+      batchCompletionStatus: batchCompletionResult.batchCompleted
+        ? 'ready-for-completion'
+        : 'in-progress',
     };
   }
 
@@ -543,5 +596,68 @@ Bulk subtask management by batchId with efficient operations.
 
     notes.push('All acceptance criteria met and evidence collected.');
     return notes.join('\n');
+  }
+
+  /**
+   * Enhanced: Aggregate individual subtask evidence for batch tracking
+   *
+   * This method provides detailed evidence collection from individual subtasks
+   * to support batch completion status based on individual subtask evidence.
+   */
+  private aggregateIndividualSubtaskEvidence(subtasks: Subtask[]): {
+    totalEvidence: number;
+    subtasksWithEvidence: number;
+    evidenceQuality: 'complete' | 'partial' | 'minimal';
+    evidenceDetails: Array<{
+      subtaskId: number;
+      subtaskName: string;
+      hasEvidence: boolean;
+      evidenceFields: string[];
+      completionStatus: string;
+    }>;
+  } {
+    const evidenceDetails = subtasks.map((subtask) => {
+      const evidence = subtask.completionEvidence as any;
+      const hasEvidence = evidence && Object.keys(evidence).length > 0;
+      const evidenceFields = hasEvidence ? Object.keys(evidence) : [];
+
+      return {
+        subtaskId: subtask.id,
+        subtaskName: subtask.name,
+        hasEvidence,
+        evidenceFields,
+        completionStatus: subtask.status,
+      };
+    });
+
+    const subtasksWithEvidence = evidenceDetails.filter(
+      (detail) => detail.hasEvidence,
+    ).length;
+    const totalEvidence = evidenceDetails.reduce(
+      (total, detail) => total + detail.evidenceFields.length,
+      0,
+    );
+
+    // Determine evidence quality based on completion and evidence collection
+    let evidenceQuality: 'complete' | 'partial' | 'minimal';
+    const completedSubtasks = subtasks.filter(
+      (s) => s.status === 'completed',
+    ).length;
+    const evidenceRatio = subtasksWithEvidence / subtasks.length;
+
+    if (completedSubtasks === subtasks.length && evidenceRatio >= 0.8) {
+      evidenceQuality = 'complete';
+    } else if (evidenceRatio >= 0.5) {
+      evidenceQuality = 'partial';
+    } else {
+      evidenceQuality = 'minimal';
+    }
+
+    return {
+      totalEvidence,
+      subtasksWithEvidence,
+      evidenceQuality,
+      evidenceDetails,
+    };
   }
 }
