@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { McpModule, McpTransportType } from '@rekog/mcp-nest';
 import { TaskWorkflowModule } from './task-workflow/task-workflow.module';
+import { UtilsModule } from './task-workflow/utils/utils.module';
 
 // Determine transport type based on environment
 const getTransportType = (): McpTransportType => {
@@ -44,6 +45,7 @@ const getTransportType = (): McpTransportType => {
       }),
     }),
     TaskWorkflowModule,
+    UtilsModule,
   ],
 })
 export class AppModule {}

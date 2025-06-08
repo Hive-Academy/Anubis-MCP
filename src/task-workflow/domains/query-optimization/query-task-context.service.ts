@@ -6,6 +6,12 @@ import {
   QueryTaskContextInput,
 } from './schemas/query-task-context.schema';
 import { ImplementationPlan } from 'generated/prisma';
+import { PerformanceMonitorService } from '../../utils/performance-monitor.service';
+import { MCPCacheService } from '../../utils/mcp-cache.service';
+import {
+  MCPPerformance,
+  CacheKeyGenerators,
+} from '../../utils/performance.decorator';
 
 // Add interface for batch organization
 interface BatchGroup {
@@ -23,12 +29,17 @@ interface BatchAccumulator {
  *
  * Pre-configured task context queries with comprehensive relationships.
  * Eliminates complex include/select decisions.
+ * Enhanced with performance monitoring and intelligent caching.
  */
 @Injectable()
 export class QueryTaskContextService {
   private readonly logger = new Logger(QueryTaskContextService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly performanceMonitor: PerformanceMonitorService,
+    private readonly cacheService: MCPCacheService,
+  ) {}
 
   @Tool({
     name: 'query_task_context',
@@ -45,6 +56,7 @@ Pre-configured task context retrieval with comprehensive relationships.
 - Subtask batch organization
 - Optional filtering by status and batch
 - Optimized single query with pre-configured includes
+- Intelligent caching with performance monitoring
 
 **Examples:**
 - Basic context: { taskId: "TSK-001", includeLevel: "basic" }
@@ -52,6 +64,15 @@ Pre-configured task context retrieval with comprehensive relationships.
 - Filtered subtasks: { taskId: "TSK-001", batchId: "B001", subtaskStatus: "completed" }
 `,
     parameters: QueryTaskContextSchema,
+  })
+  @MCPPerformance({
+    operation: 'query_task_context',
+    cacheable: true,
+    cacheKey: (args: any[]) => {
+      const [input] = args;
+      return CacheKeyGenerators.taskContext(input);
+    },
+    cacheTTL: 300000, // 5 minutes
   })
   async queryTaskContext(input: QueryTaskContextInput): Promise<any> {
     try {
@@ -82,10 +103,7 @@ Pre-configured task context retrieval with comprehensive relationships.
             include: {
               subtasks: includeSubtasks
                 ? {
-                    where:
-                      Object.keys(subtaskWhere).length > 0
-                        ? subtaskWhere
-                        : undefined,
+                    where: subtaskStatus || batchId ? subtaskWhere : undefined,
                     orderBy: { sequenceNumber: 'asc' },
                   }
                 : false,
@@ -155,6 +173,7 @@ Pre-configured task context retrieval with comprehensive relationships.
                   includeLevel,
                   relationships: Object.keys(include),
                   taskId,
+                  cached: false, // Will be set to true by decorator if cached
                 },
               },
               null,
@@ -183,5 +202,21 @@ Pre-configured task context retrieval with comprehensive relationships.
         ],
       };
     }
+  }
+
+  /**
+   * Invalidate cache for a specific task
+   * Call this when task data changes
+   */
+  async invalidateTaskCache(taskId: string): Promise<void> {
+    await this.cacheService.invalidateTask(taskId);
+    this.logger.log(`Cache invalidated for task: ${taskId}`);
+  }
+
+  /**
+   * Get performance statistics for this service
+   */
+  async getPerformanceStats() {
+    return this.performanceMonitor.getCachedStats();
   }
 }
