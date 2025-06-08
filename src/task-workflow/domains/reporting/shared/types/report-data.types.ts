@@ -275,7 +275,7 @@ export interface ImplementationPlanReportData {
     overview: string;
     approach: string;
     architecturalRationale?: string;
-    technicalDecisions: Record<string, any> | string;
+    technicalDecisions: Record<string, any>;
     strategicGuidance?: Record<string, any>;
     filesToModify: string[];
     createdBy: string;

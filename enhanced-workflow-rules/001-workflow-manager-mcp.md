@@ -111,7 +111,11 @@ This guide provides essential patterns and examples for the new domain-based MCP
   "planData": {
     "overview": "Authentication implementation with JWT",
     "approach": "Using NestJS with JWT strategy",
-    "technicalDecisions": "Passport.js with jsonwebtoken library",
+    "technicalDecisions": {
+      "authStrategy": "JWT with refresh tokens",
+      "storage": "httpOnly cookies for tokens",
+      "validation": "Zod schemas with custom decorators"
+    },
     "filesToModify": ["src/auth/*", "src/users/*"],
     "createdBy": "architect"
   }
