@@ -1,0 +1,322 @@
+// ===== PROJECT ONBOARDING SYSTEM =====
+// Automated project analysis and intelligent context generation
+
+model ProjectOnboarding {
+  id                    Int       @id @default(autoincrement())
+  projectPath           String    @unique // Root path of the project
+  onboardingStatus      OnboardingStatus @default(PENDING)
+  analysisVersion       String    @default("1.0") // Version of analysis algorithm used
+  lastAnalyzed          DateTime  @default(now())
+  analysisTriggeredBy   String?   // Who/what triggered the analysis
+  
+  // Project identification
+  projectName           String?
+  projectType           ProjectType?
+  detectedFrameworks    Json?     // Array of detected frameworks and versions
+  
+  // Analysis configuration
+  analysisDepth         String    @default("comprehensive") // 'basic', 'standard', 'comprehensive'
+  customAnalysisRules   Json?     // Custom rules for this specific project
+  
+  // Generated Context
+  roleContexts          RoleProjectContext[]
+  generatedPatterns     GeneratedPattern[]
+  analysisRequests      AnalysisRequest[]
+  
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  
+  @@index([projectPath])
+  @@index([onboardingStatus])
+  @@index([projectType])
+  @@map("project_onboarding")
+}
+
+// Comprehensive project analysis results
+model ProjectAnalysisResult {
+  id                    Int       @id @default(autoincrement())
+  onboardingId          Int
+  analysisType          String    // 'initial', 'deep_dive', 'pattern_analysis', 'quality_assessment'
+  
+  // Core analysis data
+  projectStructure      Json      // Directory structure, key files, organization patterns
+  technologyStack       Json      // Frameworks, libraries, tools, versions
+  architecturalPatterns Json      // Detected architectural patterns and decisions
+  codeQualityMetrics    Json      // Quality assessment, test coverage, documentation
+  
+  // AI-generated insights
+  aiInsights            Json      // AI-generated observations and recommendations
+  complexityAssessment  Json      // Project complexity analysis
+  riskAssessment        Json      // Potential risks and challenges identified
+  
+  // Context for roles
+  roleRecommendations   Json      // Specific recommendations for each role
+  workflowSuggestions   Json      // Suggested workflow adaptations
+  
+  // Analysis metadata
+  analysisConfidence    Float     @default(0.0) // Confidence score (0.0 - 1.0)
+  analysisEvidence      Json      // Evidence supporting the analysis
+  
+  onboarding            ProjectOnboarding @relation(fields: [onboardingId], references: [id])
+  
+  createdAt             DateTime  @default(now())
+  
+  @@index([onboardingId])
+  @@index([analysisType])
+  @@map("project_analysis_results")
+}
+
+// Detailed codebase insights for intelligent guidance
+model CodebaseInsights {
+  id                    Int       @id @default(autoincrement())
+  onboardingId          Int
+  
+  // Code organization insights
+  moduleStructure       Json      // How code is organized into modules/packages
+  dependencyGraph       Json      // Internal and external dependencies
+  serviceInterfaces     Json      // API contracts, service boundaries
+  dataFlowPatterns      Json      // How data flows through the system
+  
+  // Code quality insights
+  codeStylePatterns     Json      // Detected coding style and conventions
+  testingPatterns       Json      // Testing strategies and coverage patterns
+  errorHandlingPatterns Json      // Error handling approaches
+  securityPatterns      Json      // Security implementations and concerns
+  
+  // Integration insights
+  externalIntegrations  Json      // External services, APIs, databases
+  deploymentPatterns    Json      // Deployment and infrastructure patterns
+  configurationPatterns Json     // Configuration management approaches
+  
+  onboarding            ProjectOnboarding @relation(fields: [onboardingId], references: [id])
+  
+  createdAt             DateTime  @default(now())
+  
+  @@index([onboardingId])
+  @@map("codebase_insights")
+}
+
+// Project-specific architectural profile
+model ArchitecturalProfile {
+  id                    Int       @id @default(autoincrement())
+  onboardingId          Int
+  
+  // Architectural characteristics
+  architecturalStyle    String    // 'monolithic', 'microservices', 'layered', 'hexagonal'
+  designPatterns        Json      // Detected design patterns in use
+  architecturalDecisions Json     // Key architectural decisions and rationale
+  
+  // Quality attributes
+  performanceProfile    Json      // Performance characteristics and requirements
+  scalabilityProfile    Json      // Scalability patterns and limitations
+  securityProfile       Json      // Security architecture and practices
+  maintainabilityProfile Json    // Maintainability characteristics
+  
+  // Technical constraints
+  technicalConstraints  Json      // Technical limitations and constraints
+  integrationConstraints Json     // Integration limitations and requirements
+  
+  onboarding            ProjectOnboarding @relation(fields: [onboardingId], references: [id])
+  
+  createdAt             DateTime  @default(now())
+  
+  @@index([onboardingId])
+  @@map("architectural_profiles")
+}
+
+// Role-specific project context and behavioral guidance
+model RoleProjectContext {
+  id                    Int       @id @default(autoincrement())
+  onboardingId          Int
+  roleName              String    // 'boomerang', 'architect', 'senior-developer', etc.
+  
+  // Role-specific context
+  roleSpecificGuidance  Json      // Guidance tailored for this role
+  behavioralContext     Json      // How this role should behave in this project
+  qualityStandards      Json      // Quality standards specific to this role and project
+  toolingGuidance       Json      // Tool usage guidance for this project
+  
+  // Project-specific patterns for this role
+  codePatterns          Json      // Code patterns this role should follow
+  testingApproach       Json      // Testing approach for this role
+  documentationStyle    Json      // Documentation standards for this role
+  reviewCriteria        Json      // Review criteria specific to this project
+  
+  // Workflow adaptations
+  workflowAdaptations   Json      // How standard workflow should be adapted
+  priorityAdjustments   Json      // Priority adjustments for this project
+  
+  onboarding            ProjectOnboarding @relation(fields: [onboardingId], references: [id])
+  
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  
+  @@unique([onboardingId, roleName])
+  @@index([onboardingId])
+  @@index([roleName])
+  @@map("role_project_contexts")
+}
+
+// Generated patterns and best practices for the project
+model GeneratedPattern {
+  id                    Int       @id @default(autoincrement())
+  onboardingId          Int
+  patternName           String
+  patternType           PatternType
+  
+  // Pattern definition
+  patternDescription    String
+  patternImplementation Json      // How to implement this pattern
+  patternExamples       Json      // Examples from the codebase
+  
+  // Pattern context
+  applicableScenarios   Json      // When to use this pattern
+  antiPatterns          Json      // What to avoid
+  qualityImpact         Json      // How this pattern affects quality
+  
+  // Pattern validation
+  validationRules       Json      // Rules to validate pattern usage
+  complianceChecks      Json      // Automated checks for compliance
+  
+  // Pattern metadata
+  confidence            Float     @default(0.0) // Confidence in pattern detection
+  usage                 String    @default("recommended") // 'required', 'recommended', 'optional'
+  
+  onboarding            ProjectOnboarding @relation(fields: [onboardingId], references: [id])
+  
+  createdAt             DateTime  @default(now())
+  
+  @@index([onboardingId])
+  @@index([patternType])
+  @@index([usage])
+  @@map("generated_patterns")
+}
+
+// AI analysis requests and responses
+model AnalysisRequest {
+  id                    Int       @id @default(autoincrement())
+  onboardingId          Int
+  requestType           AnalysisRequestType
+  
+  // Request details
+  requestPrompt         String    // The prompt sent to AI
+  requestContext        Json      // Context provided with the request
+  targetFiles           Json?     // Specific files to analyze
+  analysisScope         String    @default("project") // 'project', 'module', 'file'
+  
+  // Response details
+  aiResponse            String?   // Raw AI response
+  processedInsights     Json?     // Processed and structured insights
+  confidence            Float?    // AI confidence in the analysis
+  
+  // Request metadata
+  processingStatus      ProcessingStatus @default(PENDING)
+  requestedAt           DateTime  @default(now())
+  completedAt           DateTime?
+  processingTime        Int?      // Processing time in milliseconds
+  
+  // Error handling
+  errorDetails          Json?     // Error information if processing failed
+  retryCount            Int       @default(0)
+  
+  onboarding            ProjectOnboarding @relation(fields: [onboardingId], references: [id])
+  
+  @@index([onboardingId])
+  @@index([requestType])
+  @@index([processingStatus])
+  @@map("analysis_requests")
+}
+
+// Project context and behavioral profiles
+model ProjectContext {
+  id                    Int       @id @default(autoincrement())
+  projectPath           String    @unique
+  projectName           String
+  projectType           ProjectType
+  
+  // Project characteristics
+  complexity            String    @default("medium") // 'low', 'medium', 'high', 'enterprise'
+  teamSize              String?   // 'solo', 'small', 'medium', 'large'
+  developmentStage      String?   // 'prototype', 'development', 'production', 'maintenance'
+  
+  // Technical profile
+  primaryLanguage       String?
+  frameworkStack        Json      // Primary frameworks and their versions
+  architecturalStyle    String?   // 'monolithic', 'microservices', 'serverless'
+  
+  // Behavioral profiles for each role
+  behavioralProfiles    ProjectBehavioralProfile[]
+  patterns              ProjectPattern[]
+  
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  
+  @@index([projectType])
+  @@index([complexity])
+  @@map("project_contexts")
+}
+
+// Role-specific behavioral profiles for different project types
+model ProjectBehavioralProfile {
+  id                    Int       @id @default(autoincrement())
+  projectContextId      Int
+  roleId                String    // Reference to WorkflowRole
+  
+  // Behavioral guidance
+  approachMethodology   Json      // How this role should approach tasks in this project
+  qualityStandards      Json      // Quality standards specific to this project type
+  toolingPreferences    Json      // Preferred tools and configurations
+  communicationStyle    Json      // How to communicate in this project context
+  
+  // Project-specific adaptations
+  workflowAdaptations   Json      // Adaptations to standard workflow
+  priorityMatrix        Json      // Priority adjustments for this project type
+  riskConsiderations    Json      // Risk factors to consider
+  
+  // Performance expectations
+  deliveryExpectations  Json      // What constitutes good delivery for this role/project
+  qualityGates          Json      // Quality gates specific to this context
+  
+  projectContext        ProjectContext @relation(fields: [projectContextId], references: [id])
+  role                  WorkflowRole @relation(fields: [roleId], references: [id])
+  
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  
+  @@unique([projectContextId, roleId])
+  @@index([projectContextId])
+  @@index([roleId])
+  @@map("project_behavioral_profiles")
+}
+
+// Project-specific patterns and conventions
+model ProjectPattern {
+  id                    Int       @id @default(autoincrement())
+  projectContextId      Int
+  patternName           String
+  patternType           PatternType
+  
+  // Pattern definition
+  description           String
+  implementation        Json      // How to implement this pattern
+  examples              Json      // Code examples
+  
+  // Pattern rules
+  enforcementLevel      String    @default("recommended") // 'required', 'recommended', 'optional'
+  validationRules       Json      // Rules for validating pattern usage
+  antiPatterns          Json      // What to avoid
+  
+  // Pattern context
+  applicableRoles       Json      // Which roles should use this pattern
+  applicableScenarios   Json      // When to use this pattern
+  
+  projectContext        ProjectContext @relation(fields: [projectContextId], references: [id])
+  
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  
+  @@index([projectContextId])
+  @@index([patternType])
+  @@index([enforcementLevel])
+  @@map("project_patterns")
+}
