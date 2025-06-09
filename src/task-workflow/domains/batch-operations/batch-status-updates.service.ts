@@ -153,7 +153,7 @@ Cross-entity status synchronization with data consistency.
 
     // Get current task status
     const currentTask = await this.prisma.task.findUnique({
-      where: { taskId },
+      where: { id: taskId },
       select: { status: true },
     });
 
@@ -164,7 +164,7 @@ Cross-entity status synchronization with data consistency.
     // Update task status if changed or forced
     if (currentTask.status !== newTaskStatus || forceSync) {
       const updatedTask = await this.prisma.task.update({
-        where: { taskId },
+        where: { id: taskId },
         data: { status: newTaskStatus },
       });
 
@@ -284,7 +284,7 @@ Cross-entity status synchronization with data consistency.
       if (allCompleted === allTotal) {
         // All subtasks complete - update task status
         taskUpdate = await this.prisma.task.update({
-          where: { taskId },
+          where: { id: taskId },
           data: { status: 'completed' },
         });
       }
@@ -327,7 +327,7 @@ Cross-entity status synchronization with data consistency.
         switch (update.entity) {
           case 'task':
             result = await prisma.task.update({
-              where: { taskId: update.entityId as string },
+              where: { id: update.entityId as number },
               data: { status: update.newStatus },
             });
             break;
@@ -377,7 +377,7 @@ Cross-entity status synchronization with data consistency.
 
     // Get task
     const task = await this.prisma.task.findUnique({
-      where: { taskId },
+      where: { id: taskId },
     });
 
     if (!task) {
@@ -429,7 +429,7 @@ Cross-entity status synchronization with data consistency.
     const repairs = [];
 
     // Get all entities
-    const task = await this.prisma.task.findUnique({ where: { taskId } });
+    const task = await this.prisma.task.findUnique({ where: { id: taskId } });
     const plan = await this.prisma.implementationPlan.findFirst({
       where: { taskId },
     });
@@ -461,7 +461,7 @@ Cross-entity status synchronization with data consistency.
 
         if (autoRepair) {
           await this.prisma.task.update({
-            where: { taskId },
+            where: { id: taskId },
             data: { status: expectedTaskStatus },
           });
           repairs.push({
@@ -525,9 +525,9 @@ Cross-entity status synchronization with data consistency.
     }
   }
 
-  private async getCurrentTaskStatus(taskId: string): Promise<string | null> {
+  private async getCurrentTaskStatus(taskId: number): Promise<string | null> {
     const task = await this.prisma.task.findUnique({
-      where: { taskId },
+      where: { id: taskId },
       select: { status: true },
     });
     return task?.status || null;

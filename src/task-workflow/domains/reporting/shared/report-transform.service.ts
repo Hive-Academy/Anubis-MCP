@@ -32,18 +32,18 @@ export class ReportTransformService implements IReportTransformService {
     options: TransformOptions = {},
   ): FormattedTaskData {
     return {
-      taskId: task.taskId,
+      taskId: task.id,
       name: task.name,
-      taskSlug: task.taskSlug,
+      slug: task.slug,
       status: task.status,
       owner: task.owner,
       priority: task.priority,
-      creationDate: this.formatDate(task.creationDate, options.dateFormat),
+      creationDate: this.formatDate(task.createdAt, options.dateFormat),
       completionDate: task.completionDate
         ? this.formatDate(task.completionDate, options.dateFormat)
         : null,
       duration: this.calculateDuration(
-        task.creationDate,
+        task.createdAt,
         task.completionDate || undefined,
       ),
       ...(options.includeMetadata && {

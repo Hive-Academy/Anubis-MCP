@@ -98,7 +98,7 @@ export class TasksListGenerator {
           <div class="flex-1 min-w-0">
             <div class="flex items-center space-x-2 mb-2">
               <span class="text-xs font-mono text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                ${task.taskId}
+                ${task.id}
               </span>
               ${priorityConfig.badge}
             </div>
@@ -238,15 +238,15 @@ export class TasksListGenerator {
     return `
     <div class="flex space-x-1">
       <button class="mcp-action px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors"
-              data-action="delegate" data-task-id="${task.taskId}">
+              data-action="delegate" data-task-id="${task.id}">
         Delegate
       </button>
       <button class="mcp-action px-2 py-1 text-xs bg-green-50 text-green-700 rounded hover:bg-green-100 transition-colors"
-              data-action="update" data-task-id="${task.taskId}">
+              data-action="update" data-task-id="${task.id}">
         Update
       </button>
       <button class="mcp-action px-2 py-1 text-xs bg-purple-50 text-purple-700 rounded hover:bg-purple-100 transition-colors"
-              data-action="plan" data-task-id="${task.taskId}">
+              data-action="plan" data-task-id="${task.id}">
         Plan
       </button>
     </div>`;

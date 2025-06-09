@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
-import { Subtask, SubtaskDependency } from '../../../../generated/prisma';
+import { Subtask } from '../../../../generated/prisma';
 import { PrismaService } from '../../../prisma/prisma.service';
 import {
   IndividualSubtaskOperationsInput,
@@ -22,26 +22,6 @@ interface BatchCompletionResult {
   };
   message: string;
 }
-
-// Type definitions for Prisma relations
-type SubtaskWithDependencies = Subtask & {
-  dependencyRelations: (SubtaskDependency & {
-    dependsOnSubtask: {
-      id: number;
-      name: string;
-      status: string;
-      sequenceNumber: number;
-    };
-  })[];
-  dependentRelations: (SubtaskDependency & {
-    subtask: {
-      id: number;
-      name: string;
-      status: string;
-      sequenceNumber: number;
-    };
-  })[];
-};
 
 /**
  * Individual Subtask Operations Service
@@ -211,9 +191,9 @@ Individual subtask management with evidence collection and dependency validation
         strategicGuidance: subtaskData.strategicGuidance || {},
       },
       include: {
-        dependencyRelations: {
+        dependencies_from: {
           include: {
-            dependsOnSubtask: {
+            requiredSubtask: {
               select: { id: true, name: true, status: true },
             },
           },
@@ -253,12 +233,12 @@ Individual subtask management with evidence collection and dependency validation
     }
 
     // Verify subtask exists and belongs to task
-    const existingSubtask = (await this.prisma.subtask.findFirst({
+    const existingSubtask = await this.prisma.subtask.findFirst({
       where: { id: subtaskId, taskId },
       include: {
-        dependencyRelations: {
+        dependencies_from: {
           include: {
-            dependsOnSubtask: {
+            requiredSubtask: {
               select: {
                 id: true,
                 name: true,
@@ -268,9 +248,9 @@ Individual subtask management with evidence collection and dependency validation
             },
           },
         },
-        dependentRelations: {
+        dependencies_to: {
           include: {
-            subtask: {
+            dependentSubtask: {
               select: {
                 id: true,
                 name: true,
@@ -281,7 +261,7 @@ Individual subtask management with evidence collection and dependency validation
           },
         },
       },
-    })) as SubtaskWithDependencies | null;
+    });
 
     if (!existingSubtask) {
       throw new Error(`Subtask ${subtaskId} not found for task ${taskId}`);
@@ -289,7 +269,10 @@ Individual subtask management with evidence collection and dependency validation
 
     // Validate status transition and dependencies
     if (updateData.status) {
-      this.validateSubtaskStatusTransition(existingSubtask, updateData.status);
+      await this.validateSubtaskStatusTransition(
+        existingSubtask,
+        updateData.status,
+      );
     }
 
     // Prepare update data
@@ -315,16 +298,16 @@ Individual subtask management with evidence collection and dependency validation
       where: { id: subtaskId },
       data: updateFields,
       include: {
-        dependencyRelations: {
+        dependencies_from: {
           include: {
-            dependsOnSubtask: {
+            requiredSubtask: {
               select: { id: true, name: true, status: true },
             },
           },
         },
-        dependentRelations: {
+        dependencies_to: {
           include: {
-            subtask: {
+            dependentSubtask: {
               select: { id: true, name: true, status: true },
             },
           },
@@ -376,7 +359,7 @@ Individual subtask management with evidence collection and dependency validation
    * Get specific subtask details with optional evidence
    */
   private async getSubtask(input: IndividualSubtaskOperationsInput): Promise<{
-    subtask: SubtaskWithDependencies;
+    subtask: Subtask;
     dependsOn: Array<{
       id: number;
       name: string;
@@ -395,18 +378,18 @@ Individual subtask management with evidence collection and dependency validation
       canStart: boolean;
     };
   }> {
-    const { taskId, subtaskId, includeEvidence } = input;
+    const { taskId, subtaskId } = input;
 
     if (!subtaskId) {
       throw new Error('Subtask ID is required for subtask retrieval');
     }
 
-    const subtask = (await this.prisma.subtask.findFirst({
+    const subtask = await this.prisma.subtask.findFirst({
       where: { id: subtaskId, taskId },
       include: {
-        dependencyRelations: {
+        dependencies_from: {
           include: {
-            dependsOnSubtask: {
+            requiredSubtask: {
               select: {
                 id: true,
                 name: true,
@@ -416,9 +399,9 @@ Individual subtask management with evidence collection and dependency validation
             },
           },
         },
-        dependentRelations: {
+        dependencies_to: {
           include: {
-            subtask: {
+            dependentSubtask: {
               select: {
                 id: true,
                 name: true,
@@ -429,18 +412,18 @@ Individual subtask management with evidence collection and dependency validation
           },
         },
       },
-    })) as SubtaskWithDependencies | null;
+    });
 
     if (!subtask) {
       throw new Error(`Subtask ${subtaskId} not found for task ${taskId}`);
     }
 
     // Format dependency information
-    const dependsOn = (subtask.dependencyRelations || []).map(
-      (dep) => dep.dependsOnSubtask,
+    const dependsOn = (subtask.dependencies_from || []).map(
+      (dep) => dep.requiredSubtask,
     );
-    const dependents = (subtask.dependentRelations || []).map(
-      (dep) => dep.subtask,
+    const dependents = (subtask.dependencies_to || []).map(
+      (dep) => dep.dependentSubtask,
     );
 
     const result = {
@@ -455,15 +438,6 @@ Individual subtask management with evidence collection and dependency validation
         canStart: dependsOn.every((dep) => dep.status === 'completed'),
       },
     };
-
-    if (!includeEvidence) {
-      // Remove evidence fields if not requested
-      const { completionEvidence, ...subtaskWithoutEvidence } = subtask;
-      return {
-        ...result,
-        subtask: subtaskWithoutEvidence as SubtaskWithDependencies,
-      };
-    }
 
     return result;
   }
@@ -490,9 +464,9 @@ Individual subtask management with evidence collection and dependency validation
     const subtasks = await this.prisma.subtask.findMany({
       where: whereClause,
       include: {
-        dependencyRelations: {
+        dependencies_from: {
           include: {
-            dependsOnSubtask: {
+            requiredSubtask: {
               select: { id: true, name: true, status: true },
             },
           },
@@ -516,9 +490,9 @@ Individual subtask management with evidence collection and dependency validation
       }
 
       // Check if all dependencies are completed
-      const dependencyRelations = subtask.dependencyRelations || [];
-      const allDependenciesCompleted = dependencyRelations.every(
-        (dep) => dep.dependsOnSubtask.status === 'completed',
+      const dependencies_from = subtask.dependencies_from || [];
+      const allDependenciesCompleted = dependencies_from.every(
+        (dep) => dep.requiredSubtask.status === 'completed',
       );
 
       return allDependenciesCompleted;
@@ -531,9 +505,9 @@ Individual subtask management with evidence collection and dependency validation
         blockedSubtasks: subtasks.map((s) => ({
           id: s.id,
           name: s.name,
-          pendingDependencies: (s.dependencyRelations || [])
-            .filter((dep) => dep.dependsOnSubtask.status !== 'completed')
-            .map((dep) => dep.dependsOnSubtask?.name),
+          pendingDependencies: (s.dependencies_from || [])
+            .filter((dep) => dep.requiredSubtask.status !== 'completed')
+            .map((dep) => dep.requiredSubtask?.name),
         })),
       };
     }
@@ -550,7 +524,7 @@ Individual subtask management with evidence collection and dependency validation
    * Validate that dependency subtask names exist in the task
    */
   private async validateSubtaskDependencies(
-    taskId: string,
+    taskId: number,
     dependencyNames: string[],
   ): Promise<void> {
     const existingSubtasks = await this.prisma.subtask.findMany({
@@ -578,7 +552,7 @@ Individual subtask management with evidence collection and dependency validation
    */
   private async createSubtaskDependencyRelations(
     subtaskId: number,
-    taskId: string,
+    taskId: number,
     dependencyNames: string[],
   ): Promise<void> {
     // Get dependency subtask IDs
@@ -592,8 +566,8 @@ Individual subtask management with evidence collection and dependency validation
 
     // Create dependency relations
     const dependencyData = dependencySubtasks.map((dep) => ({
-      subtaskId,
-      dependsOnSubtaskId: dep.id,
+      dependentSubtaskId: subtaskId,
+      requiredSubtaskId: dep.id,
     }));
 
     await this.prisma.subtaskDependency.createMany({
@@ -604,23 +578,30 @@ Individual subtask management with evidence collection and dependency validation
   /**
    * Validate subtask status transitions and dependency requirements
    */
-  private validateSubtaskStatusTransition(
-    subtask: SubtaskWithDependencies,
+  private async validateSubtaskStatusTransition(
+    subtask: Subtask,
     newStatus: string,
-  ): void {
+  ): Promise<void> {
     // If transitioning to in-progress or completed, check dependencies
     if (newStatus === 'in-progress' || newStatus === 'completed') {
-      // Check if dependencyRelations exists and has incomplete dependencies
-      const dependencyRelations = subtask.dependencyRelations || [];
+      // Get actual dependency relationships from the database
+      const dependencies = await this.prisma.subtaskDependency.findMany({
+        where: { dependentSubtaskId: subtask.id },
+        include: {
+          requiredSubtask: {
+            select: { id: true, name: true, status: true },
+          },
+        },
+      });
 
-      if (dependencyRelations.length > 0) {
-        const incompleteDependencies = dependencyRelations.filter(
-          (dep) => dep.dependsOnSubtask?.status !== 'completed',
+      if (dependencies.length > 0) {
+        const incompleteDependencies = dependencies.filter(
+          (dep) => dep.requiredSubtask.status !== 'completed',
         );
 
         if (incompleteDependencies.length > 0) {
           const dependencyNames = incompleteDependencies.map(
-            (dep) => dep.dependsOnSubtask?.name || 'Unknown',
+            (dep) => dep.requiredSubtask.name,
           );
           throw new Error(
             `Cannot transition to '${newStatus}' - incomplete dependencies: ${dependencyNames.join(', ')}`,
@@ -637,7 +618,7 @@ Individual subtask management with evidence collection and dependency validation
    * aggregated evidence collection for batch completion tracking.
    */
   private async checkAndTriggerBatchCompletion(
-    taskId: string,
+    taskId: number,
     batchId: string,
   ): Promise<BatchCompletionResult> {
     try {

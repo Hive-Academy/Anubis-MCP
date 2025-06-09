@@ -11,7 +11,7 @@ export const BatchStatusUpdatesSchema = z.object({
     'validate_consistency',
   ]),
 
-  taskId: z.string(),
+  taskId: z.number(),
 
   // For status synchronization
   sourceEntity: z.enum(['task', 'plan', 'batch', 'subtask']).optional(),

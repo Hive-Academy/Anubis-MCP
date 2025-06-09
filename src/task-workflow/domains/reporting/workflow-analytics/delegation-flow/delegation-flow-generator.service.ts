@@ -59,8 +59,8 @@ export class DelegationFlowGeneratorService {
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900">Delegation Flow</h1>
                     <p class="text-lg text-gray-700">${this.escapeHtml(task.name)}</p>
-                    <p class="text-sm text-gray-600">${this.escapeHtml(task.taskId)}</p>
-                    ${task.taskSlug ? `<p class="text-xs text-blue-600">${this.escapeHtml(task.taskSlug)}</p>` : ''}
+                    <p class="text-sm text-gray-600">${this.escapeHtml(String(task.id))}</p>
+                    ${task.slug ? `<p class="text-xs text-blue-600">${this.escapeHtml(task.slug)}</p>` : ''}
                 </div>
             </div>
             <div class="flex items-center space-x-4">

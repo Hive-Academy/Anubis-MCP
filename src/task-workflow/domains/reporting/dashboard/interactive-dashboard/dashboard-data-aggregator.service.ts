@@ -132,16 +132,16 @@ export class DashboardDataAggregatorService {
     // Recent tasks (last 10 updated)
     const recentTasks = rawTasks
       .sort((a, b) => {
-        const aDate = a.completionDate || a.creationDate;
-        const bDate = b.completionDate || b.creationDate;
+        const aDate = a.completionDate || a.createdAt;
+        const bDate = b.completionDate || b.createdAt;
         return new Date(bDate).getTime() - new Date(aDate).getTime();
       })
       .slice(0, 10)
       .map((task) => ({
-        taskId: task.taskId,
+        id: task.id,
         name: task.name,
         status: task.status,
-        lastUpdate: (task.completionDate || task.creationDate).toISOString(),
+        lastUpdate: (task.completionDate || task.createdAt).toISOString(),
         owner: task.owner,
       }));
 

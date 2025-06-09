@@ -324,10 +324,10 @@ research_operations({
 workflow_operations({
   operation: "delegate",
   taskId: taskId,
-  taskSlug: taskSlug,
+  slug: slug,
   fromRole: "researcher",
   toRole: "architect",
-  message: `Comprehensive research completed for [${taskSlug}]. Technical analysis validates feasibility within existing MCP architectural context. Primary recommendation provides optimal solution with significant performance and security enhancements while maintaining compatibility with current technology stack. Detailed implementation guidance includes risk mitigation strategies and phased approach. Research findings stored in MCP context for architectural planning and strategic guidance development.`,
+  message: `Comprehensive research completed for [${slug}]. Technical analysis validates feasibility within existing MCP architectural context. Primary recommendation provides optimal solution with significant performance and security enhancements while maintaining compatibility with current technology stack. Detailed implementation guidance includes risk mitigation strategies and phased approach. Research findings stored in MCP context for architectural planning and strategic guidance development.`,
   researchSummary: {
     analysisCompleteness: "Comprehensive technical research with gap analysis and solution validation",
     mcpAlignment: "Research findings fully aligned with existing MCP codebase analysis and context",

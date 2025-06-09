@@ -12,9 +12,9 @@ export class ImplementationPlanBuilderService {
    */
   buildTaskInfo(task: TaskWithRelations) {
     return {
-      taskId: task.taskId,
+      taskId: task.id,
       name: task.name,
-      taskSlug: task.taskSlug,
+      slug: task.slug,
       status: task.status,
       priority: task.priority,
       owner: task.owner,

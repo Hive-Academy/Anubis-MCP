@@ -458,7 +458,7 @@ Bulk subtask management by batchId with efficient operations.
    * as specified in Phase 3 requirements.
    */
   async checkAndTriggerBatchCompletion(
-    taskId: string,
+    taskId: number,
     batchId: string,
   ): Promise<BatchCompletionResult> {
     try {

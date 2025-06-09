@@ -11,7 +11,7 @@ export const BatchSubtaskOperationsSchema = z.object({
     'complete_batch',
   ]),
 
-  taskId: z.string(),
+  taskId: z.number(),
   batchId: z.string(),
 
   // For status updates

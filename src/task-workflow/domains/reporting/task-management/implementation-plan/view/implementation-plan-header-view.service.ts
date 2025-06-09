@@ -61,11 +61,11 @@ export class ImplementationPlanHeaderViewService {
                                 ${this.escapeHtml(task.taskId)}
                             </span>
                             ${
-                              task.taskSlug
+                              task.slug
                                 ? `
                             <span class="flex items-center">
                                 <i class="fas fa-link mr-2"></i>
-                                ${this.escapeHtml(task.taskSlug)}
+                                ${this.escapeHtml(task.slug)}
                             </span>
                             `
                                 : ''

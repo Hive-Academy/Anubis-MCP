@@ -350,10 +350,10 @@ PERFORMANCE & SCALABILITY (integrated with MCP performance baseline):
 workflow_operations({
   operation: 'delegate',
   taskId: taskId,
-  taskSlug: taskSlug,
+  slug: slug,
   fromRole: 'architect',
   toRole: 'senior-developer',
-  message: `Implementation plan ready for [${taskSlug}]. Strategic architecture designed using Clean Architecture with Repository and Service patterns based on comprehensive MCP analysis. SOLID principles enforced throughout with specific guidance for each subtask. Begin with Foundation batch - focus on entity models, service interfaces, and repository abstractions. Each subtask includes detailed strategic guidance, quality constraints, and success criteria for consistent implementation following established patterns from MCP codebase analysis.`,
+  message: `Implementation plan ready for [${slug}]. Strategic architecture designed using Clean Architecture with Repository and Service patterns based on comprehensive MCP analysis. SOLID principles enforced throughout with specific guidance for each subtask. Begin with Foundation batch - focus on entity models, service interfaces, and repository abstractions. Each subtask includes detailed strategic guidance, quality constraints, and success criteria for consistent implementation following established patterns from MCP codebase analysis.`,
   strategicContext: {
     architecturalApproach:
       'Clean Architecture with clear separation of concerns based on MCP analysis',
@@ -440,10 +440,10 @@ planning_operations({
 workflow_operations({
   operation: 'delegate',
   taskId: taskId,
-  taskSlug: taskSlug,
+  slug: slug,
   fromRole: 'architect',
   toRole: 'senior-developer',
-  message: `Enhanced architectural guidance provided for [${taskSlug}]. Issue resolution includes specific pattern corrections with MCP evidence and implementation examples. Redelegation cycle broken with strategic architectural decisions based on comprehensive MCP analysis. Updated implementation plan includes preventive measures and enhanced quality gates.`,
+  message: `Enhanced architectural guidance provided for [${slug}]. Issue resolution includes specific pattern corrections with MCP evidence and implementation examples. Redelegation cycle broken with strategic architectural decisions based on comprehensive MCP analysis. Updated implementation plan includes preventive measures and enhanced quality gates.`,
   enhancedContext: {
     issueResolved: 'Specific architectural issue addressed with MCP evidence',
     newPatterns:

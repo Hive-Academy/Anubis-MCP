@@ -6,16 +6,13 @@ export const TaskOperationsSchema = z
     operation: z.enum(['create', 'update', 'get', 'list']),
 
     // Required for get and update operations
-    taskId: z.string().optional(),
-    taskSlug: z
-      .string()
-      .optional()
-      .describe('Human-readable task slug for lookup'),
+    id: z.number().optional(),
+    slug: z.string().optional().describe('Human-readable task slug for lookup'),
 
     // For create/update operations
     taskData: z
       .object({
-        taskId: z.string().optional(),
+        id: z.number().optional(),
         name: z.string().optional(),
         status: z
           .enum([
@@ -66,20 +63,20 @@ export const TaskOperationsSchema = z
   })
   .refine(
     (data) => {
-      // Validate that get operations have either taskId or taskSlug
-      if (data.operation === 'get' && !data.taskId && !data.taskSlug) {
+      // Validate that get operations have either taskId or slug
+      if (data.operation === 'get' && !data.id && !data.slug) {
         return false;
       }
       // Validate that update operations have taskId (require explicit taskId for updates)
-      if (data.operation === 'update' && !data.taskId) {
+      if (data.operation === 'update' && !data.id) {
         return false;
       }
       return true;
     },
     {
       message:
-        "Get operations require either 'taskId' or 'taskSlug'; Update operations require 'taskId'",
-      path: ['taskId'],
+        "Get operations require either 'taskId' or 'slug'; Update operations require 'taskId'",
+      path: ['id'],
     },
   );
 

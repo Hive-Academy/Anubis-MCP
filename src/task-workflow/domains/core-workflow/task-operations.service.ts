@@ -48,7 +48,7 @@ Task lifecycle management with clear, focused operations.
 
     try {
       this.logger.debug(`Task Operation: ${input.operation}`, {
-        taskId: input.taskId ?? 'unknown',
+        id: input.id ?? 'unknown',
         operation: input.operation,
       });
 
@@ -80,7 +80,7 @@ Task lifecycle management with clear, focused operations.
         `Task operation completed in ${responseTime.toFixed(2)}ms`,
         {
           operation: input.operation,
-          taskId: input.taskId ?? 'unknown',
+          id: input.id ?? 'unknown',
           responseTime,
         },
       );
@@ -95,7 +95,7 @@ Task lifecycle management with clear, focused operations.
                 data: result,
                 metadata: {
                   operation: input.operation,
-                  taskId: input.taskId ?? 'unknown',
+                  id: input.id ?? 'unknown',
                   responseTime: Math.round(responseTime),
                 },
               },
@@ -140,7 +140,7 @@ Task lifecycle management with clear, focused operations.
     // Create task with description in transaction
     const result = await this.prisma.$transaction(async (tx) => {
       // Generate unique slug from task name
-      const taskSlug = await this.ensureUniqueSlug(
+      const slug = await this.ensureUniqueSlug(
         this.generateSlugFromName(taskData.name!),
       );
 
@@ -149,19 +149,19 @@ Task lifecycle management with clear, focused operations.
         data: {
           // Remove taskId - let Prisma auto-generate it
           name: taskData.name!,
-          taskSlug,
+          slug,
           status: taskData.status || 'not-started',
           priority: taskData.priority || 'Medium',
           dependencies: taskData.dependencies || [],
           gitBranch: taskData.gitBranch,
-          creationDate: new Date(),
+          createdAt: new Date(),
           owner: 'boomerang',
           currentMode: 'boomerang',
         },
       });
 
       // Use the auto-generated taskId for related records
-      const taskId = task.taskId;
+      const taskId = task.id;
 
       // Create task description if provided
       let taskDescription = null;
@@ -202,9 +202,9 @@ Task lifecycle management with clear, focused operations.
   }
 
   private async updateTask(input: TaskOperationsInput): Promise<any> {
-    const { taskId, taskData, description, codebaseAnalysis } = input;
+    const { id, taskData, description, codebaseAnalysis } = input;
 
-    if (!taskId) {
+    if (!id) {
       throw new Error('Task ID is required for updates');
     }
 
@@ -216,7 +216,7 @@ Task lifecycle management with clear, focused operations.
       // Update task if data provided
       if (taskData) {
         task = await tx.task.update({
-          where: { taskId },
+          where: { id },
           data: {
             ...(taskData.name && { name: taskData.name }),
             ...(taskData.status && { status: taskData.status }),
@@ -232,7 +232,7 @@ Task lifecycle management with clear, focused operations.
       // Update task description if provided
       if (description) {
         taskDescription = await tx.taskDescription.upsert({
-          where: { taskId },
+          where: { taskId: id },
           update: {
             ...(description.description && {
               description: description.description,
@@ -248,7 +248,7 @@ Task lifecycle management with clear, focused operations.
             }),
           },
           create: {
-            taskId,
+            taskId: id,
             description: description.description || '',
             businessRequirements: description.businessRequirements || '',
             technicalRequirements: description.technicalRequirements || '',
@@ -260,7 +260,7 @@ Task lifecycle management with clear, focused operations.
       // Update codebase analysis if provided
       if (codebaseAnalysis) {
         analysis = await tx.codebaseAnalysis.upsert({
-          where: { taskId },
+          where: { taskId: id },
           update: {
             ...(codebaseAnalysis.architectureFindings && {
               architectureFindings: codebaseAnalysis.architectureFindings,
@@ -288,7 +288,7 @@ Task lifecycle management with clear, focused operations.
             }),
           },
           create: {
-            taskId,
+            taskId: id,
             architectureFindings: codebaseAnalysis.architectureFindings || {},
             problemsIdentified: codebaseAnalysis.problemsIdentified || {},
             implementationContext: codebaseAnalysis.implementationContext || {},
@@ -308,9 +308,9 @@ Task lifecycle management with clear, focused operations.
   }
 
   private async getTask(input: TaskOperationsInput): Promise<any> {
-    const { taskId, taskSlug, includeDescription, includeAnalysis } = input;
+    const { id, slug, includeDescription, includeAnalysis } = input;
 
-    if (!taskId && !taskSlug) {
+    if (!id && !slug) {
       throw new Error('Either Task ID or Task Slug is required for retrieval');
     }
 
@@ -322,8 +322,8 @@ Task lifecycle management with clear, focused operations.
       include.codebaseAnalysis = true;
     }
 
-    // Use taskSlug first, fallback to taskId
-    const whereClause = taskSlug ? { taskSlug } : { taskId };
+    // Use slug first, fallback to taskId
+    const whereClause = slug ? { slug } : { id };
 
     const task = await this.prisma.task.findFirst({
       where: whereClause,
@@ -331,22 +331,22 @@ Task lifecycle management with clear, focused operations.
     });
 
     if (!task) {
-      throw new Error(`Task not found: ${taskSlug || taskId}`);
+      throw new Error(`Task not found: ${slug || id}`);
     }
 
     return task;
   }
 
   private async listTasks(input: TaskOperationsInput): Promise<any> {
-    const { status, priority, taskSlug, includeDescription, includeAnalysis } =
+    const { status, priority, slug, includeDescription, includeAnalysis } =
       input;
 
     const where: any = {};
     if (status) where.status = status;
     if (priority) where.priority = priority;
-    if (taskSlug) {
+    if (slug) {
       // Support partial slug matching (contains the slug pattern)
-      where.taskSlug = { contains: taskSlug };
+      where.slug = { contains: slug };
     }
 
     const include: any = {};
@@ -360,13 +360,13 @@ Task lifecycle management with clear, focused operations.
     const tasks = await this.prisma.task.findMany({
       where,
       include,
-      orderBy: { creationDate: 'desc' },
+      orderBy: { createdAt: 'desc' },
     });
 
     return {
       tasks,
       count: tasks.length,
-      filters: { status, priority, taskSlug },
+      filters: { status, priority, slug },
     };
   }
 
@@ -388,7 +388,7 @@ Task lifecycle management with clear, focused operations.
    */
   private async ensureUniqueSlug(
     baseSlug: string,
-    excludeTaskId?: string,
+    excludeTaskId?: number,
   ): Promise<string> {
     let slug = baseSlug;
     let counter = 1;
@@ -406,12 +406,12 @@ Task lifecycle management with clear, focused operations.
    */
   private async isSlugTaken(
     slug: string,
-    excludeTaskId?: string,
+    excludeTaskId?: number,
   ): Promise<boolean> {
     const existingTask = await this.prisma.task.findFirst({
       where: {
-        taskSlug: slug,
-        ...(excludeTaskId && { taskId: { not: excludeTaskId } }),
+        slug: slug,
+        ...(excludeTaskId && { id: { not: excludeTaskId } }),
       },
     });
 

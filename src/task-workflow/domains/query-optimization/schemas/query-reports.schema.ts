@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 // Query Reports Schema - Pre-configured report queries with relationships
 export const QueryReportsSchema = z.object({
-  taskId: z.string(),
+  taskId: z.number(),
 
   // Report types to include
   reportTypes: z

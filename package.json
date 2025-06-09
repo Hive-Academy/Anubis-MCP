@@ -36,6 +36,9 @@
     "node": ">=18.0.0",
     "npm": ">=8.0.0"
   },
+  "prisma": {
+    "schema": "./prisma"
+  },
   "files": [
     "dist/**/*",
     "prisma/**/*",

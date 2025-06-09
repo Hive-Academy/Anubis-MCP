@@ -1,9 +1,10 @@
 // ===== MULTI-FILE SCHEMA CONFIGURATION =====
 // This is the main schema file that references all other schema files
-// Prisma automatically discovers and includes all .prisma files in the schema/ directory
+// Prisma automatically discovers and includes all .prisma files in the same directory
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -11,10 +12,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// All models are now organized in separate files:
-// - schema/enums/workflow-enums.prisma - All enums
-// - schema/core/task-models.prisma - Core task management models  
-// - schema/workflow-rules/rule-models.prisma - Intelligent workflow rules system
-// - schema/project-onboarding/onboarding-models.prisma - Project onboarding system
+// All models are now organized in separate files in the same directory:
+// - workflow-enums.prisma - All enums
+// - task-models.prisma - Core task management models  
+// - rule-models.prisma - Intelligent workflow rules system
+// - onboarding-models.prisma - Project onboarding system
 
-// Prisma automatically includes all .prisma files in the schema/ directory
+// Prisma automatically includes all .prisma files in the same directory

@@ -52,7 +52,7 @@ const GenerateReportInputSchema = z.object({
     .string()
     .optional()
     .describe('Filter tasks by priority (Low, Medium, High, Critical)'),
-  taskId: z.string().optional().describe('Task ID for individual task reports'),
+  taskId: z.number().optional().describe('Task ID for individual task reports'),
   outputFormat: z.enum(['html', 'json']).default('html')
     .describe(`Output format for the report:
 
@@ -184,7 +184,10 @@ Reports saved to 'workflow-reports/interactive/' with meaningful names.`,
       // Use our new simplified report generation service
       const reportResponse = await this.mcpOrchestrator.generateReport({
         reportType: input.reportType,
-        filters,
+        filters: {
+          ...filters,
+          taskId: filters.taskId ? String(filters.taskId) : undefined,
+        },
         basePath: input.basePath,
         outputFormat: input.outputFormat,
       });

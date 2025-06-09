@@ -302,10 +302,10 @@ review_operations({
 workflow_operations({
   operation: "complete",
   taskId: taskId,
-  taskSlug: taskSlug,
+  slug: slug,
   fromRole: "code-review",
   completionData: {
-    summary: "Task [${taskSlug}] completed with comprehensive quality validation and MCP compliance",
+    summary: "Task [${slug}] completed with comprehensive quality validation and MCP compliance",
     filesModified: [
       "Complete list of all modified files with MCP strategic guidance compliance"
     ],
@@ -360,7 +360,7 @@ BLOCKING ISSUES (Require redelegation):
 workflow_operations({
   operation: 'escalate',
   taskId: taskId,
-  taskSlug: taskSlug,
+  slug: slug,
   fromRole: 'code-review',
   toRole: 'architect', // or "senior-developer" based on issue type
   escalationData: {

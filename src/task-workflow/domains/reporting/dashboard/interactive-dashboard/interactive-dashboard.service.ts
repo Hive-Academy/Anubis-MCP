@@ -48,7 +48,7 @@ export interface InteractiveDashboardData {
   };
   recentActivity: {
     recentTasks: Array<{
-      taskId: string;
+      id: number;
       name: string;
       status: string;
       lastUpdate: string;
@@ -211,7 +211,7 @@ export class InteractiveDashboardService {
       },
       tasks: dashboardData.recentActivity.recentTasks.map(
         (task): TaskSummary => ({
-          taskId: task.taskId,
+          id: task.id,
           name: task.name,
           status: task.status as any, // Type assertion for compatibility
           priority: 'Medium' as any, // Default since not in recentTasks

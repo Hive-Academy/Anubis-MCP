@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 // Query Task Context Schema - Pre-configured comprehensive task queries
 export const QueryTaskContextSchema = z.object({
-  taskId: z.string(),
+  taskId: z.number(),
 
   // Pre-configured query options
   includeLevel: z.enum(['basic', 'full', 'comprehensive']).default('full'),

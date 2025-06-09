@@ -9,7 +9,7 @@ export const IndividualSubtaskOperationsSchema = z.object({
     'get_next_subtask',
   ]),
 
-  taskId: z.string(),
+  taskId: z.number(),
 
   // Individual subtask data for create_subtask operation
   subtaskData: z

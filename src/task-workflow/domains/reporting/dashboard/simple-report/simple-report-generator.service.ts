@@ -104,7 +104,7 @@ export class SimpleReportGeneratorService {
                         <div class="flex-1">
                             <h3 class="text-sm font-medium text-gray-900">${this.escapeHtml(task.name)}</h3>
                             <p class="text-sm text-gray-500">${this.escapeHtml(task.taskId)}</p>
-                            ${task.taskSlug ? `<p class="text-xs text-blue-600">${this.escapeHtml(task.taskSlug)}</p>` : ''}
+                            ${task.slug ? `<p class="text-xs text-blue-600">${this.escapeHtml(task.slug)}</p>` : ''}
                         </div>
                         <div class="flex items-center space-x-4">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${this.getStatusClasses(task.status)}">

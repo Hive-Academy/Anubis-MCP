@@ -94,10 +94,12 @@ export class McpReportRouterService {
     }
 
     if (request.outputFormat === 'json') {
-      return this.delegationFlowService.generateReport(request.filters.taskId);
+      return this.delegationFlowService.generateReport(
+        parseInt(request.filters.taskId),
+      );
     } else {
       return this.delegationFlowService.generateHtmlReport(
-        request.filters.taskId,
+        parseInt(request.filters.taskId),
       );
     }
   }

@@ -111,7 +111,7 @@ git log --oneline | grep -E "TSK-|feat:|fix:|docs:" # Verify proper commit forma
 
 ```bash
 # Push feature branch to remote with MCP context
-TASK_SLUG="${mcpTaskContext.taskSlug}"    # From MCP task data
+TASK_SLUG="${mcpTaskContext.slug}"    # From MCP task data
 git push origin "feature/TSK-${timestamp}-${TASK_SLUG}"
 
 # Create pull request with comprehensive MCP evidence
@@ -222,10 +222,10 @@ MCP CONTEXT PRESERVATION:
 workflow_operations({
   operation: "complete",
   taskId: taskId,
-  taskSlug: taskSlug,
+  slug: slug,
   fromRole: "integration-engineer",
   completionData: {
-    summary: `Task [${taskSlug}] successfully integrated and ready for production deployment with comprehensive MCP validation`,
+    summary: `Task [${slug}] successfully integrated and ready for production deployment with comprehensive MCP validation`,
     integrationStatus: "COMPLETE",
     mcpValidation: {
       strategicGuidanceCompliance: "All MCP strategic guidance requirements implemented and validated",
@@ -235,7 +235,7 @@ workflow_operations({
       acceptanceCriteriaVerification: "All MCP acceptance criteria verified with specific evidence"
     },
     deploymentReadiness: {
-      gitOperations: `Feature branch ${taskSlug} pushed, pull request created with comprehensive MCP evidence`,
+      gitOperations: `Feature branch ${slug} pushed, pull request created with comprehensive MCP evidence`,
       testingValidation: "All tests passing after rebase, production build successful per MCP quality validation",
       documentationUpdates: "Memory bank files updated with MCP evidence, API documentation current, deployment guide enhanced",
       securityCompliance: "Security validation completed per MCP requirements, vulnerability assessment passed",
@@ -272,7 +272,7 @@ workflow_operations({
 ### Comprehensive User Delivery Template with MCP Evidence
 
 ```markdown
-# 🚀 Task [${taskSlug}] - Production Ready Implementation
+# 🚀 Task [${slug}] - Production Ready Implementation
 
 ## Implementation Delivered & Validated with MCP Evidence
 

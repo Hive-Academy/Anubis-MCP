@@ -128,7 +128,7 @@ Pre-configured task context retrieval with comprehensive relationships.
       }
 
       const task = await this.prisma.task.findUnique({
-        where: { taskId },
+        where: { id: taskId },
         include,
       });
 

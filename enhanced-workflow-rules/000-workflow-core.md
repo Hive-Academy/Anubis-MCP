@@ -114,7 +114,7 @@ planning_operations({
 // Role transitions and delegation with enhanced context
 workflow_operations({
   operation: "delegate|complete|escalate",
-  taskId, taskSlug,  // Use both for clarity
+  taskId, slug,  // Use both for clarity
   fromRole, toRole,
   message,
   strategicContext: {...},  // Enhanced delegation context
@@ -284,7 +284,7 @@ DECISION: [Use MCP Context/Get Additional Data/Escalate Issues]
 workflow_operations({
   operation: 'escalate',
   taskId: taskId,
-  taskSlug: taskSlug, // Include for human readability
+  slug: slug, // Include for human readability
   fromRole: 'current-role',
   toRole: 'target-role',
   escalationData: {
@@ -338,7 +338,7 @@ workflow_operations({
 - Use comprehensive queries instead of multiple targeted calls
 - Leverage automatic batch organization and relationship loading
 - Store analysis and context in MCP instead of conversation repetition
-- Use taskSlug for human-readable communication alongside taskId
+- Use slug for human-readable communication alongside taskId
 
 **Quality Assurance with Evidence:**
 

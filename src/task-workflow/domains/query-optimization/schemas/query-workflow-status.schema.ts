@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 // Query Workflow Status Schema - Pre-configured delegation and workflow queries
 export const QueryWorkflowStatusSchema = z.object({
-  taskId: z.string().optional(),
+  taskId: z.number().optional(),
 
   // Query type
   queryType: z

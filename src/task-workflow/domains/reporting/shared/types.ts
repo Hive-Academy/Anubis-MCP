@@ -36,19 +36,19 @@ export interface ReportFilters {
     | 'cancelled';
   owner?: string;
   priority?: 'Low' | 'Medium' | 'High' | 'Critical';
-  taskId?: string;
+  taskId?: number;
   basePath?: string;
 }
 
 // Prisma query result types with proper relations
 export interface TaskWithRelations {
-  taskId: string;
+  id: number;
   name: string;
-  taskSlug?: string | null;
+  slug?: string | null;
   status: string;
   owner?: string | null;
   priority?: string | null;
-  creationDate: Date;
+  createdAt: Date;
   completionDate?: Date | null;
   delegationRecords?: DelegationRecordWithRelations[];
   workflowTransitions?: WorkflowTransitionWithRelations[];
@@ -62,7 +62,7 @@ export interface TaskWithRelations {
 
 export interface DelegationRecordWithRelations {
   id: number;
-  taskId: string;
+  taskId: number;
   subtaskId?: number | null;
   fromMode: string;
   toMode: string;
@@ -70,35 +70,35 @@ export interface DelegationRecordWithRelations {
   completionTimestamp?: Date | null;
   success?: boolean | null;
   rejectionReason?: string | null;
-  redelegationCount: number;
+  redelegationCount?: number;
   subtask?: {
     id: number;
     name: string;
   } | null;
   task?: {
-    taskId: string;
+    id: number;
     name: string;
-    taskSlug?: string | null;
+    slug?: string | null;
   };
 }
 
 export interface WorkflowTransitionWithRelations {
   id: number;
-  taskId: string;
+  taskId: number;
   fromMode: string;
   toMode: string;
   transitionTimestamp: Date;
   reason?: string | null;
   task?: {
-    taskId: string;
+    id: number;
     name: string;
-    taskSlug?: string | null;
+    slug?: string | null;
   };
 }
 
 export interface ImplementationPlanWithRelations {
   id: number;
-  taskId: string;
+  taskId: number;
   overview: string;
   approach: string;
   technicalDecisions: Record<string, unknown>;
@@ -121,7 +121,7 @@ export interface ImplementationPlanWithRelations {
 
 export interface SubtaskWithRelations {
   id: number;
-  taskId: string;
+  taskId: number;
   planId: number;
   name: string;
   description: string;
@@ -145,7 +145,7 @@ export interface SubtaskWithRelations {
 
 export interface CodebaseAnalysisData {
   id: number;
-  taskId: string;
+  taskId: number;
   architectureFindings: Record<string, unknown>;
   problemsIdentified: Record<string, unknown>;
   implementationContext: Record<string, unknown>;
@@ -160,7 +160,7 @@ export interface CodebaseAnalysisData {
 }
 
 export interface TaskDescriptionData {
-  taskId: string;
+  taskId: number;
   description: string;
   businessRequirements: string;
   technicalRequirements: string;
@@ -171,9 +171,9 @@ export interface TaskDescriptionData {
 
 // Transformed data types for reporting
 export interface FormattedTaskData {
-  taskId: string;
+  taskId: number;
   name: string;
-  taskSlug?: string | null;
+  slug?: string | null;
   status: string;
   owner?: string | null;
   priority?: string | null;
@@ -264,9 +264,9 @@ export interface ReactiveData {
 // Delegation Flow specific template data
 export interface DelegationFlowTemplateData {
   task: {
-    taskId: string;
+    id: number;
     name: string;
-    taskSlug?: string | null;
+    slug?: string | null;
     status: string;
     currentOwner: string | null;
     totalDelegations: number;

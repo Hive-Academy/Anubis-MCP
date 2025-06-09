@@ -166,7 +166,7 @@ task_operations({
   operation: 'create',
   taskData: {
     name: 'Clear descriptive task name',
-    taskSlug: 'human-readable-task-reference', // Auto-generated from name
+    slug: 'human-readable-task-reference', // Auto-generated from name
     status: 'not-started',
     priority: 'High',
     dependencies: [],
@@ -284,10 +284,10 @@ Decision: [RESEARCH/SKIP] Rationale: [Evidence-based reasoning with MCP data]
 workflow_operations({
   operation: 'delegate',
   taskId: taskId,
-  taskSlug: taskSlug, // Include for human readability
+  slug: slug, // Include for human readability
   fromRole: 'boomerang',
   toRole: 'researcher', // or "architect" based on evidence-based decision
-  message: `Task [${taskSlug}] setup complete with comprehensive analysis stored in MCP. ${contextualMessage} based on evidence from functional verification and stored codebase analysis.`,
+  message: `Task [${slug}] setup complete with comprehensive analysis stored in MCP. ${contextualMessage} based on evidence from functional verification and stored codebase analysis.`,
   strategicContext: {
     analysisCompleteness:
       'Comprehensive codebase analysis stored in MCP context',
@@ -391,10 +391,10 @@ task_operations({
 workflow_operations({
   operation: 'delegate',
   taskId: taskId,
-  taskSlug: taskSlug,
+  slug: slug,
   fromRole: 'boomerang',
   toRole: 'researcher', // or appropriate restart role
-  message: `Strategic escalation resolved for [${taskSlug}]. Enhanced requirements and workflow reset with executive guidance stored in MCP context.`,
+  message: `Strategic escalation resolved for [${slug}]. Enhanced requirements and workflow reset with executive guidance stored in MCP context.`,
   strategicContext: {
     resolutionStrategy: 'Strategic decisions made to resolve escalation',
     enhancedGuidance: 'Updated guidance to prevent redelegation cycles',
@@ -422,7 +422,7 @@ query_task_context({
 ### Enhanced User Delivery Template with MCP Evidence
 
 ```markdown
-# Task [${taskSlug}] Complete & Production Ready
+# Task [${slug}] Complete & Production Ready
 
 ## 🚀 Implementation Delivered
 
@@ -445,7 +445,7 @@ query_task_context({
 ## 🔍 MCP Context Summary
 
 - **Task ID**: ${taskId}
-- **Task Slug**: ${taskSlug}
+- **Task Slug**: ${slug}
 - **Quality Metrics**: [Test coverage, performance, security scores from MCP]
 - **Implementation Evidence**: [Files modified, patterns applied, standards met]
 
@@ -527,7 +527,7 @@ const workflowAnalysis = await query_workflow_status({
 
 ### Human-Readable Communication
 
-- Use taskSlug alongside taskId for clarity
+- Use slug alongside taskId for clarity
 - Reference MCP context in all communications
 - Provide direct links to MCP dashboards and reports
 - Enhance delegation messages with strategic context from MCP
@@ -658,7 +658,7 @@ task_operations({
   operation: 'create',
   taskData: {
     name: 'Clear descriptive task name',
-    taskSlug: 'human-readable-task-reference', // Auto-generated from name
+    slug: 'human-readable-task-reference', // Auto-generated from name
     status: 'not-started',
     priority: 'High',
     dependencies: [],
@@ -768,10 +768,10 @@ Decision: [RESEARCH/SKIP] Rationale: [Evidence-based reasoning with MCP data]
 workflow_operations({
   operation: 'delegate',
   taskId: taskId,
-  taskSlug: taskSlug, // Include for human readability
+  slug: slug, // Include for human readability
   fromRole: 'boomerang',
   toRole: 'researcher', // or "architect" based on evidence-based decision
-  message: `Task [${taskSlug}] setup complete with comprehensive analysis stored in MCP. ${contextualMessage} based on evidence from functional verification and stored codebase analysis.`,
+  message: `Task [${slug}] setup complete with comprehensive analysis stored in MCP. ${contextualMessage} based on evidence from functional verification and stored codebase analysis.`,
   strategicContext: {
     analysisCompleteness:
       'Comprehensive codebase analysis stored in MCP context',
@@ -848,10 +848,10 @@ task_operations({
 workflow_operations({
   operation: 'delegate',
   taskId: taskId,
-  taskSlug: taskSlug,
+  slug: slug,
   fromRole: 'boomerang',
   toRole: 'researcher', // or appropriate restart role
-  message: `Strategic escalation resolved for [${taskSlug}]. Enhanced requirements and workflow reset with executive guidance stored in MCP context.`,
+  message: `Strategic escalation resolved for [${slug}]. Enhanced requirements and workflow reset with executive guidance stored in MCP context.`,
   strategicContext: {
     resolutionStrategy: 'Strategic decisions made to resolve escalation',
     enhancedGuidance: 'Updated guidance to prevent redelegation cycles',
@@ -879,7 +879,7 @@ query_task_context({
 ### Enhanced User Delivery Template with MCP Evidence
 
 ```markdown
-# Task [${taskSlug}] Complete & Production Ready
+# Task [${slug}] Complete & Production Ready
 
 ## 🚀 Implementation Delivered
 
@@ -902,7 +902,7 @@ query_task_context({
 ## 🔍 MCP Context Summary
 
 - **Task ID**: ${taskId}
-- **Task Slug**: ${taskSlug}
+- **Task Slug**: ${slug}
 - **Quality Metrics**: [Test coverage, performance, security scores from MCP]
 - **Implementation Evidence**: [Files modified, patterns applied, standards met]
 
@@ -977,7 +977,7 @@ const workflowAnalysis = await query_workflow_status({
 
 ### Human-Readable Communication
 
-- Use taskSlug alongside taskId for clarity
+- Use slug alongside taskId for clarity
 - Reference MCP context in all communications
 - Provide direct links to MCP dashboards and reports
 - Enhance delegation messages with strategic context from MCP

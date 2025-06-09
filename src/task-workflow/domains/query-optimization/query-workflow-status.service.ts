@@ -2,8 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { PrismaService } from '../../../prisma/prisma.service';
 import {
-  QueryWorkflowStatusSchema,
   QueryWorkflowStatusInput,
+  QueryWorkflowStatusSchema,
 } from './schemas/query-workflow-status.schema';
 
 /**
@@ -92,19 +92,20 @@ Pre-configured delegation and workflow status queries.
     }
   }
 
-  private async getTaskStatus(input: QueryWorkflowStatusInput) {
+  private getTaskStatus(input: QueryWorkflowStatusInput) {
     if (!input.taskId) throw new Error('TaskId required for task_status query');
 
-    return await this.prisma.task.findUnique({
-      where: { taskId: input.taskId },
+    return this.prisma.task.findUnique({
+      where: { id: input.taskId },
       select: {
-        taskId: true,
+        id: true,
         name: true,
         status: true,
         currentMode: true,
         priority: true,
-        creationDate: true,
+        createdAt: true,
         completionDate: true,
+        slug: true,
       },
     });
   }
@@ -137,14 +138,14 @@ Pre-configured delegation and workflow status queries.
     return await this.prisma.task.findMany({
       where,
       select: {
-        taskId: true,
+        id: true,
         name: true,
         status: true,
         currentMode: true,
         priority: true,
-        creationDate: true,
+        createdAt: true,
       },
-      orderBy: { creationDate: 'desc' },
+      orderBy: { createdAt: 'desc' },
     });
   }
 }

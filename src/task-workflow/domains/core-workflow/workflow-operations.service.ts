@@ -123,11 +123,11 @@ Role-based workflow transitions and delegation management.
   }
 
   private async validateTaskOwnership(
-    taskId: string,
+    taskId: number,
     fromRole: string,
   ): Promise<void> {
     const task = await this.prisma.task.findUnique({
-      where: { taskId },
+      where: { id: taskId },
     });
 
     if (!task) {
@@ -160,17 +160,16 @@ Role-based workflow transitions and delegation management.
       // Create delegation record
       const delegation = await tx.delegationRecord.create({
         data: {
-          taskId,
+          taskId: taskId,
           fromMode: fromRole,
           toMode: toRole,
           delegationTimestamp: new Date(),
-          success: true,
         },
       });
 
       // Update task
       const task = await tx.task.update({
-        where: { taskId },
+        where: { id: taskId },
         data: {
           currentMode: toRole,
           status: input.newStatus || 'in-progress',
@@ -180,7 +179,7 @@ Role-based workflow transitions and delegation management.
       // Create workflow transition
       await tx.workflowTransition.create({
         data: {
-          taskId,
+          taskId: taskId,
           fromMode: fromRole,
           toMode: toRole,
           reason: message || `Delegated from ${fromRole} to ${toRole}`,
@@ -216,7 +215,7 @@ Role-based workflow transitions and delegation management.
 
       // Update task
       const task = await tx.task.update({
-        where: { taskId },
+        where: { id: taskId },
         data: {
           status: 'completed',
           currentMode: 'boomerang', // Task returns to boomerang when completed
@@ -256,14 +255,13 @@ Role-based workflow transitions and delegation management.
           fromMode: fromRole,
           toMode: toRole,
           delegationTimestamp: new Date(),
-          rejectionReason: escalationData.reason,
-          success: true,
+          message: `Escalation: ${escalationData.reason}`,
         },
       });
 
       // Update task
       const task = await tx.task.update({
-        where: { taskId },
+        where: { id: taskId },
         data: {
           currentMode: toRole,
           status: input.newStatus || 'needs-changes',
@@ -297,7 +295,7 @@ Role-based workflow transitions and delegation management.
       if (newStatus) updateData.status = newStatus;
 
       const task = await tx.task.update({
-        where: { taskId },
+        where: { id: taskId },
         data: updateData,
       });
 
