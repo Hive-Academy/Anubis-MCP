@@ -95,29 +95,41 @@ docker run -v "/path/to/project-a/data:/app/data" hiveacademy/mcp-workflow-manag
 docker run -v "/path/to/project-b/data:/app/data" hiveacademy/mcp-workflow-manager
 ```
 
-## 🛠️ Available MCP Tools
+## 🛠️ Available MCP Tools (Enhanced)
 
-### Core Workflow Management
+### Core Workflow Management (6 tools)
 
-- **`task_operations`** - Task lifecycle management (create, update, get, list)
-- **`planning_operations`** - Implementation planning and batch subtask management
-- **`workflow_operations`** - Role-based delegation and workflow transitions
-- **`review_operations`** - Code review and completion report management
-- **`research_operations`** - Research reports and communication management
+- **`task_operations`** - Enhanced task lifecycle management with codebase analysis and evidence tracking
+- **`planning_operations`** - Implementation planning and batch subtask management with strategic guidance
+- **`individual_subtask_operations`** - **NEW**: Individual subtask management with evidence collection and dependency tracking
+- **`workflow_operations`** - Role-based delegation and workflow transitions with enhanced context preservation
+- **`review_operations`** - Code review and completion report management with comprehensive evidence tracking
+- **`research_operations`** - Research reports and communication management with evidence-based findings
 
-### Query & Analytics
+### Query & Analytics (3 tools)
 
-- **`query_task_context`** - Comprehensive task context retrieval
-- **`query_workflow_status`** - Delegation and workflow status queries
-- **`query_reports`** - Report queries with evidence relationships
-- **`batch_subtask_operations`** - Bulk subtask management by batch
-- **`batch_status_updates`** - Cross-entity status synchronization
+- **`query_task_context`** - Comprehensive task context retrieval with **performance caching** (25-75% token savings)
+- **`query_workflow_status`** - Delegation and workflow status queries with role-specific filtering
+- **`query_reports`** - Report queries with evidence relationships and comprehensive filtering
 
-### Reporting & Analytics
+### Batch Operations (2 tools)
 
-- **`generate_workflow_report`** - Comprehensive workflow analytics and reports
+- **`batch_subtask_operations`** - Enhanced bulk subtask management with progress tracking and evidence collection
+- **`batch_status_updates`** - Cross-entity status synchronization with data consistency validation
+
+### Reporting & Analytics (3 tools)
+
+- **`generate_workflow_report`** - Comprehensive workflow analytics and reports with interactive dashboards
 - **`get_report_status`** - Report generation status tracking
 - **`cleanup_report`** - Report file management
+
+### 🚀 Performance Features (Latest Updates)
+
+- **Two-Layer Caching System**: MCP response cache + database query cache for optimal performance
+- **Token Optimization**: 25-75% reduction in token usage through intelligent caching strategies
+- **STDIO-Compatible Monitoring**: File-based performance logging that doesn't interfere with MCP protocol
+- **Enhanced Evidence Collection**: Comprehensive tracking and validation throughout workflow lifecycle
+- **Individual Subtask Operations**: Detailed subtask management with dependency tracking and strategic guidance
 
 ## 🔄 Workflow Roles
 

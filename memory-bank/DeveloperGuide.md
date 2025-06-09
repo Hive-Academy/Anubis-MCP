@@ -80,12 +80,196 @@ if (!status.playwrightBrowsersInstalled && !options.skipPlaywright) {
 
 - See `memory-bank/TechnicalArchitecture.md` for a detailed architecture diagram and explanation of the overall NestJS architecture.
 - The `TaskWorkflowModule` (located in `src/task-workflow/`) is a key feature module. It is internally structured using a Domain-Driven Design (DDD) approach:
+
+### 2.1. Enhanced MCP Tools Architecture (Latest Updates)
+
+**Status**: ✅ **ENHANCED WITH INDIVIDUAL SUBTASK OPERATIONS & PERFORMANCE MONITORING** (Completed 2025-06-07)
+
+The project now includes 11 enhanced MCP tools with individual subtask operations and performance monitoring:
+
+#### **New Individual Subtask Operations Tool**
+
+**Location**: `src/task-workflow/domains/core-workflow/individual-subtask-operations.service.ts`
+
+**Key Features:**
+
+- **Evidence Collection**: Comprehensive completion evidence with file modifications, testing results, and quality metrics
+- **Dependency Tracking**: Automatic dependency validation and resolution for complex workflows
+- **Strategic Guidance**: Architectural patterns, implementation approaches, and quality requirements per subtask
+- **Technical Specifications**: Framework requirements, testing specifications, and acceptance criteria
+
+**Operations:**
+
+- `create_subtask`: Create individual subtask with detailed specifications
+- `update_subtask`: Update subtask with evidence collection
+- `get_subtask`: Retrieve specific subtask details with evidence
+- `get_next_subtask`: Get next available subtask based on dependencies
+
+#### **Performance Monitoring & Caching System**
+
+**Location**: `src/task-workflow/utils/`
+
+**Core Services:**
+
+- **`PerformanceMonitorService`** (`performance-monitor.service.ts`): STDIO-compatible file-based logging
+- **`MCPCacheService`** (`mcp-cache.service.ts`): Two-layer caching with LRU eviction
+- **`@MCPPerformance` Decorator** (`performance.decorator.ts`): Automatic performance monitoring
+
+**Integration Pattern:**
+
+```typescript
+@Injectable()
+export class ExampleService {
+  constructor(
+    private readonly performanceMonitor: PerformanceMonitorService,
+    private readonly cacheService: MCPCacheService,
+  ) {}
+
+  @MCPPerformance({
+    cacheTTL: 300, // 5 minutes
+    cacheKeyGenerator: (params) => `example-${params.id}`,
+    enableCaching: true,
+  })
+  async exampleOperation(params: any) {
+    // Implementation with automatic caching and monitoring
+  }
+}
+```
+
+**Performance Benefits:**
+
+- **Token Savings**: 25-75% reduction through intelligent caching
+- **Response Times**: Sub-50ms for cached operations
+- **Memory Management**: LRU eviction with configurable limits
+- **STDIO Compatibility**: File-based logging that doesn't interfere with MCP protocol
   - **`src/task-workflow/domains/`**: This directory contains subdirectories for each domain/feature area (e.g., `crud`, `query`, `state`, `interaction`, `plan`, `reporting`).
   - Within each domain folder (e.g., `src/task-workflow/domains/crud/`):
     - **MCP Operation Services** (e.g., `task-crud-operations.service.ts`): These services expose MCP tools using `@Tool` decorators from `@rekog/mcp-nest`. They handle MCP request/response formatting and delegate business logic to core services.
     - **Core Business Logic Services** (e.g., `task-crud.service.ts`): These services implement the actual business logic for the domain, often interacting with Prisma.
     - **Schemas** (e.g., in a `schemas/` subdirectory like `task-crud.schema.ts`): Zod schemas define the input parameters for MCP tools and may also define shapes for internal data structures.
 - The old facade (`task-workflow.service.ts`) and utility directories (`mcp-operations/`, `services/`, `schemas/` directly under `src/task-workflow/`) have been removed and their responsibilities redistributed into the new domain structure.
+
+### 2.1. Advanced Reporting Domain Structure
+
+**Status**: ✅ **FULLY RE-ARCHITECTED** (Completed 2025-06-05)
+
+The reporting domain (`src/task-workflow/domains/reporting/`) follows a sophisticated feature-based architecture:
+
+#### **Shared Services Layer** (KISS Principle Applied)
+
+- **`shared/report-data.service.ts`**: Centralized Prisma queries with optimized includes (200 lines max)
+- **`shared/report-transform.service.ts`**: Data formatting, Chart.js preparation, aggregation logic
+- **`shared/report-render.service.ts`**: HTML generation coordination (NO TEMPLATE ENGINES)
+- **`shared/report-metadata.service.ts`**: Common metadata generation and complexity assessment
+- **`shared/types/`**: TypeScript interfaces and types for type-safe HTML generation
+
+#### **Business Domain Organization**
+
+1. **`workflow-analytics/`**: Delegation flow, role performance, workflow analytics reports
+2. **`task-management/`**: Task detail and implementation plan reports
+3. **`dashboard/`**: Interactive dashboard with focused view generators
+
+#### **Current HTML Generation Architecture (No Template Engines)**
+
+**Enhanced Pattern (Replaces Handlebars):**
+
+```typescript
+// Each report feature follows this focused generator pattern:
+/[report-name]/
+  - [report-name].service.ts        # Main service (150 lines max)
+  - [specific-analyzer].service.ts  # Analytics calculations
+  - [specific-builder].service.ts   # Data building logic
+  /view/                            # Focused view generators (SRP)
+    - html-head.generator.ts        # HTML head with CDN resources
+    - header.generator.ts           # Page header generation
+    - content.generator.ts          # Main content sections
+    - footer.generator.ts           # Page footer
+    - scripts.generator.ts          # Vanilla JavaScript generation
+    - [feature]-generator.service.ts # Coordinator (under 100 lines)
+    - [feature]-view.module.ts      # NestJS module for DI
+```
+
+#### **Technology Stack Standards (Updated)**
+
+**Server-Side HTML Generation:**
+
+- **Direct TypeScript**: String interpolation for HTML generation (no template engines)
+- **Type Safety**: TypeScript interfaces for all data structures
+- **Security**: Built-in HTML escaping utilities in all generators
+- **Performance**: Direct string concatenation, no template compilation overhead
+
+**Client-Side Interactivity:**
+
+- **Vanilla JavaScript**: Native DOM manipulation and event handling
+- **Chart.js**: Data visualization with responsive charts
+- **No Frameworks**: No Alpine.js, React, or Vue dependencies
+- **CDN Assets**: Tailwind CSS, Chart.js, Font Awesome via CDN
+
+**Enhanced UI/UX Guidelines:**
+
+- **Tailwind CSS**: Utility-first styling with custom CSS classes
+- **Google Fonts**: Inter font family for modern typography
+- **Design System**: Consistent card layouts, status badges, hover effects
+- **Responsive**: Mobile-first design with CSS Grid and Flexbox
+- **Animations**: CSS transitions and Intersection Observer API
+
+#### **Service Development Standards**
+
+**Focused Generator Pattern:**
+
+```typescript
+@Injectable()
+export class ExampleContentGenerator {
+  generateSection(data: TypeSafeData): string {
+    return `
+      <div class="bg-white rounded-xl shadow-lg p-6">
+          <h2 class="text-xl font-semibold">${this.escapeHtml(data.title)}</h2>
+          ${data.items.map((item) => this.generateItem(item)).join('')}
+      </div>`;
+  }
+
+  private generateItem(item: ItemType): string {
+    return `
+      <div class="flex items-center space-x-4 p-3 hover:bg-gray-50">
+          <span class="font-medium">${this.escapeHtml(item.name)}</span>
+          <span class="status-badge status-${item.status}">${item.status}</span>
+      </div>`;
+  }
+
+  private escapeHtml(text: string): string {
+    // HTML escaping implementation
+  }
+}
+```
+
+**Client-Side JavaScript Pattern:**
+
+```typescript
+generateScripts(data: ReportData): string {
+  return `
+    <script>
+        // Direct data embedding (secure, no window dependencies)
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeInteractivity();
+            ${this.generateChartInitialization(data.charts)}
+        });
+
+        function initializeInteractivity() {
+            // Native event handling
+            document.querySelectorAll('.filterable').forEach(setupFiltering);
+        }
+    </script>`;
+}
+```
+
+#### **Key Implementation Principles**
+
+1. **Single Responsibility**: Each generator handles one UI section
+2. **Type Safety**: TypeScript interfaces for all data structures
+3. **Security First**: HTML escaping built into all generators
+4. **Performance**: Direct string interpolation, CDN assets, no build step
+5. **Maintainability**: Services under 200 lines, generators under 100 lines
+6. **Testability**: Focused services with clear dependencies
 
 ## 3. Coding Standards & Best Practices
 
@@ -120,6 +304,7 @@ if (!status.playwrightBrowsersInstalled && !options.skipPlaywright) {
 
 **Status**: ✅ **All schemas aligned** with database models (Completed TSK-004 on 2025-05-23)
 **Documentation Status**: ✅ **Comprehensive schema documentation** completed (TSK-005 on 2025-05-25)
+**Reports Architecture Status**: ✅ **Feature-based reports system** completed (TSK-cmbikegx30000mtpo6etx0885 on 2025-06-05)
 
 **Key Principles**:
 

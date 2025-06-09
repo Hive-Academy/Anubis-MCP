@@ -2,27 +2,14 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
-import { ReportGenerationMcpService } from './report-generation-mcp.service';
+import { McpOrchestratorService } from './mcp-orchestrator.service';
 
 // Simplified Zod schemas for our new architecture
 const GenerateReportInputSchema = z.object({
   reportType: z.enum([
-    'task_summary',
-    'delegation_analytics',
-    'performance_dashboard',
-    'comprehensive',
-    'implementation_plan_analytics',
-    'code_review_insights',
-    'delegation_flow_analysis',
-    'task_progress_health',
-    'implementation_execution',
-    'code_review_quality',
-    'delegation_flow_analysis_task',
-    'research_documentation',
-    'communication_collaboration',
-    'interactive-dashboard', // NEW: Our main interactive dashboard
+    'interactive-dashboard',
     'dashboard', // Alias for interactive-dashboard
-    'summary', // NEW: Summary view
+    'summary',
     'task-detail',
     'delegation-flow',
     'implementation-plan',
@@ -30,33 +17,26 @@ const GenerateReportInputSchema = z.object({
     'role-performance',
   ]).describe(`Type of report to generate. Available report types:
 
-**NEW SIMPLIFIED ARCHITECTURE:**
-• interactive-dashboard - Interactive HTML dashboard with Alpine.js, charts, filtering (RECOMMENDED)
+**MAIN DASHBOARD REPORTS:**
+• interactive-dashboard - Interactive HTML dashboard with charts, filtering, and analytics (RECOMMENDED)
 • dashboard - Alias for interactive-dashboard
-• summary - Clean summary view with task list
+• summary - Clean summary view with key metrics and task list
 
-**NEW FOCUSED REPORT TYPES:**
+**SPECIALIZED REPORTS:**
 • task-detail - Comprehensive individual task report with codebase analysis, implementation plans, and subtasks
 • delegation-flow - Workflow transitions and delegation patterns for a specific task
 • implementation-plan - Detailed implementation plans with subtask breakdowns and progress tracking
 • workflow-analytics - Cross-task analytics and insights with role performance metrics
 • role-performance - Individual role performance analysis with efficiency metrics
 
-**LEGACY SUPPORT (all redirect to interactive dashboard):**
-• task_summary - Overview of task completion rates, status distribution, and basic metrics
-• delegation_analytics - Deep dive into delegation patterns, handoff efficiency, and role performance
-• performance_dashboard - Real-time performance metrics with trending and benchmarks
-• comprehensive - Complete analysis combining all metrics with executive summary
-
-**Example Usage:**
-- For daily standup: "interactive-dashboard" or "performance_dashboard"
-- For sprint retrospective: "interactive-dashboard" 
-- For quarterly review: "comprehensive"
-- For individual task analysis: "task-detail" with taskId
-- For workflow analysis: "delegation-flow" with taskId
-- For implementation tracking: "implementation-plan" with taskId
-- For role assessment: "role-performance" with owner filter
-- For team analytics: "workflow-analytics" with date filters`),
+**USAGE EXAMPLES:**
+- Daily standup: "interactive-dashboard" or "summary"
+- Sprint retrospective: "workflow-analytics"
+- Individual task analysis: "task-detail" with taskId
+- Workflow optimization: "delegation-flow" with taskId
+- Implementation tracking: "implementation-plan" with taskId
+- Role assessment: "role-performance" with owner filter
+- Team analytics: "workflow-analytics" with date filters`),
 
   startDate: z
     .string()
@@ -131,28 +111,32 @@ export class ReportMcpOperationsService {
   private readonly logger = new Logger(ReportMcpOperationsService.name);
   private readonly reportJobs = new Map<string, ReportJobStatus>();
 
-  constructor(
-    private readonly reportGenerationMcp: ReportGenerationMcpService,
-  ) {}
+  constructor(private readonly mcpOrchestrator: McpOrchestratorService) {}
 
   @Tool({
     name: 'generate_workflow_report',
     description: `Generate interactive workflow reports with real-time analytics and beautiful visualizations.
 
-**NEW SIMPLIFIED ARCHITECTURE - NO PLAYWRIGHT DEPENDENCIES:**
+**CLEAN ARCHITECTURE - TYPE-SAFE TYPESCRIPT + VANILLA JS:**
 
-✅ **Interactive HTML Dashboards** - Alpine.js powered with real-time filtering
+✅ **Interactive HTML Dashboards** - Type-safe TypeScript with vanilla JavaScript interactivity
 ✅ **Beautiful Charts** - Chart.js visualizations (status, priority, trends)  
-✅ **Mobile Responsive** - Tailwind CSS responsive design
+✅ **Mobile Responsive** - Enhanced Tailwind CSS responsive design
 ✅ **Fast Generation** - Direct Prisma queries, no browser rendering
 ✅ **MCP Integration** - Copy-paste MCP commands for workflow actions
-✅ **Real-time Filtering** - Search, filter by status/priority/owner
+✅ **Enhanced Styling** - Modern gradients, animations, and professional design
 ✅ **Task Management** - View details, delegate, update status
 
-**RECOMMENDED REPORT TYPES:**
-• interactive-dashboard - Main interactive dashboard (RECOMMENDED)
-• comprehensive - Multiple views with summary
-• summary - Clean summary view
+**MAIN REPORT TYPES:**
+• interactive-dashboard - Comprehensive interactive dashboard (RECOMMENDED)
+• summary - Clean summary view with key metrics
+• workflow-analytics - Cross-task analytics and insights
+
+**SPECIALIZED REPORTS:**
+• task-detail - Individual task analysis
+• delegation-flow - Workflow transition patterns
+• implementation-plan - Implementation tracking
+• role-performance - Role efficiency analysis
 
 **OUTPUT FORMATS:**
 • html - Interactive HTML dashboard (RECOMMENDED)
@@ -198,7 +182,7 @@ Reports saved to 'workflow-reports/interactive/' with meaningful names.`,
       };
 
       // Use our new simplified report generation service
-      const reportResponse = await this.reportGenerationMcp.generateReport({
+      const reportResponse = await this.mcpOrchestrator.generateReport({
         reportType: input.reportType,
         filters,
         basePath: input.basePath,
@@ -380,10 +364,10 @@ ${jobStatus.error ? `❌ Error: ${jobStatus.error}` : ''}`,
     description: 'Clean up a generated report file to free up disk space.',
     parameters: CleanupReportInputSchema as ZodSchema<CleanupReportInput>,
   })
-  async cleanupReport(input: CleanupReportInput): Promise<any> {
+  cleanupReport(input: CleanupReportInput): any {
     try {
       // Use the new MCP service for cleanup
-      await this.reportGenerationMcp.clearCaches();
+      this.mcpOrchestrator.clearCaches();
 
       this.logger.log(`Report cleanup requested: ${input.filename}`);
 
@@ -431,7 +415,7 @@ Files are stored in organized folders for easy manual management.`,
 
     try {
       // Test the new simplified system
-      const healthResult = await this.reportGenerationMcp.healthCheck();
+      const healthResult = await this.mcpOrchestrator.healthCheck();
       const responseTime = Date.now() - startTime;
 
       const healthStatus = {

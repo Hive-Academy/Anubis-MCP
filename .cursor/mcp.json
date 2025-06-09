@@ -2,7 +2,10 @@
   "mcpServers": {
     "workflow-manager": {
       "command": "node",
-      "args": ["D:/projects/cursor-workflow/dist/main.js"]
+      "args": ["D:/projects/cursor-workflow/dist/main.js"],      
+      "env": {
+        "PROJECT_ROOT": "D:/projects/cursor-workflow"
+      }
     }
   }
 }

@@ -3,16 +3,6 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "deleteOutDir": true,
-    "assets": [
-      {
-        "include": "**/*.hbs",
-        "outDir": "dist"
-      },
-      {
-        "include": "task-workflow/domains/reporting/templates/**/*",
-        "outDir": "dist"
-      }
-    ]
+    "deleteOutDir": true
   }
 }

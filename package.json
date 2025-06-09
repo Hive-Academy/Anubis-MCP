@@ -58,14 +58,16 @@
     "db:init": "npm run db:generate && npm run db:migrate",
     "postinstall": "npm run db:generate && echo '📦 @hive-academy/mcp-workflow-manager installed successfully' && echo '🔧 Prisma client generated automatically'",
     "setup:force": "npm run db:generate",
-    "test:clean-system": "node scripts/test-clean-system.js",
-    "test:clean-system-verbose": "node scripts/test-clean-system.js --verbose",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:mcp": "ts-node test/test-mcp-integration.ts",
+    "test:task-detail": "ts-node test/test-task-detail-integration.ts",
+    "test:task-detail-with-delegations": "ts-node test/test-task-detail-with-delegations.ts",
+    "test:implementation-plan": "ts-node test/test-implementation-plan.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.4",
@@ -79,8 +81,6 @@
     "ejs": "^3.1.10",
     "express": "^4.19.2",
     "fastmcp": "^1.27.6",
-    "handlebars": "^4.7.8",
-    "hbs": "^4.2.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "uuid": "^11.1.0",

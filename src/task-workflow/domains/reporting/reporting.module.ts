@@ -1,109 +1,117 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../../prisma/prisma.module';
 
-// === NEW SIMPLIFIED REPORTING ARCHITECTURE ===
-import { SimpleReportService } from './services/simple-report.service';
-import { SimpleReportRenderer } from './services/simple-report-renderer.service';
-import { ReportGenerationMcpService } from './report-generation-mcp.service';
+// === NEW DOMAIN-BASED REPORTING ARCHITECTURE ===
+import { McpOrchestratorService } from './mcp-orchestrator.service';
 import { ReportMcpOperationsService } from './report-mcp-operations.service';
 
-// New Focused Report Services
-import { TaskDetailReportService } from './services/task-detail-report.service';
-import { DelegationFlowReportService } from './services/delegation-flow-report.service';
-import { ImplementationPlanReportService } from './services/implementation-plan-report.service';
-import { WorkflowAnalyticsService } from './services/workflow-analytics.service';
+// MCP Focused Services
+import { McpFileManagerService } from './shared/mcp-file-manager.service';
+import { McpReportRouterService } from './shared/mcp-report-router.service';
+import { McpResponseBuilderService } from './shared/mcp-response-builder.service';
 
-/**
- * Clean Reporting Module - Simplified Architecture
- *
- * PHILOSOPHY: Simple, reliable, HTML-first reporting with Alpine.js interactivity
- *
- * ARCHITECTURE:
- * ┌─────────────────────────────────────────────────────────────┐
- * │                    MCP REQUEST                              │
- * └─────────────────────┬───────────────────────────────────────┘
- *                       │
- * ┌─────────────────────▼───────────────────────────────────────┐
- * │         ReportMcpOperationsService                          │
- * │         (@Tool decorators for MCP interface)               │
- * └─────────────────────┬───────────────────────────────────────┘
- *                       │
- * ┌─────────────────────▼───────────────────────────────────────┐
- * │         ReportGenerationMcpService                          │
- * │         (Orchestration & Business Logic)                   │
- * └─────────────────────┬───────────────────────────────────────┘
- *                       │
- * ┌─────────────────────▼───────────────────────────────────────┐
- * │            SimpleReportRenderer                             │
- * │         (Template Loading & HTML Generation)               │
- * └─────────────────────┬───────────────────────────────────────┘
- *                       │
- * ┌─────────────────────▼───────────────────────────────────────┐
- * │             SimpleReportService                             │
- * │           (Direct Prisma Queries & Data)                   │
- * └─────────────────────┬───────────────────────────────────────┘
- *                       │
- * ┌─────────────────────▼───────────────────────────────────────┐
- * │         Interactive HTML Dashboard                          │
- * │         (Alpine.js + Chart.js + Tailwind)                  │
- * └─────────────────────────────────────────────────────────────┘
- *
- * KEY BENEFITS:
- * ✅ No Playwright dependencies (removed server bloat)
- * ✅ Direct Prisma queries (reliable data access)
- * ✅ Interactive HTML dashboards (better UX than static PDFs)
- * ✅ Alpine.js reactivity (client-side filtering/actions)
- * ✅ Simple template system (cached Handlebars)
- * ✅ MCP integration (AI agent compatibility)
- * ✅ Fast generation (no browser rendering)
- * ✅ Mobile-friendly responsive design
- *
- * REMOVED COMPLEXITY:
- * ❌ 50+ complex data-api services
- * ❌ 15+ generator services
- * ❌ Playwright browser dependencies
- * ❌ Complex template data transformation
- * ❌ Multiple PDF/PNG/JPEG formats
- * ❌ Infrastructure services
- * ❌ Schema-driven report generation
- *
- * FLOW: MCP → ReportMcpOperationsService → ReportGenerationMcpService → Renderer → HTML
- */
+// Shared Services
+import { ReportDataService } from './shared/report-data.service';
+import { ReportMetadataService } from './shared/report-metadata.service';
+import { ReportTransformService } from './shared/report-transform.service';
+
+// NEW: Domain-specific HTML Generator Services
+import { InteractiveDashboardModule } from './dashboard/interactive-dashboard/interactive-dashboard.module';
+import { SimpleReportGeneratorService } from './dashboard/simple-report/simple-report-generator.service';
+import { HtmlGeneratorFactoryService } from './shared/html-generator-factory.service';
+import { TaskDetailViewModule } from './task-management/task-detail/view/task-detail-view.module';
+
+// Task Management Domain
+import { TaskDetailBuilderService } from './task-management/task-detail/task-detail-builder.service';
+import { TaskDetailService } from './task-management/task-detail/task-detail.service';
+import { TaskProgressAnalyzerService } from './task-management/task-detail/task-progress-analyzer.service';
+import { TaskQualityAnalyzerService } from './task-management/task-detail/task-quality-analyzer.service';
+
+import { ImplementationPlanModule } from './task-management/implementation-plan/implementation-plan.module';
+import { ImplementationPlanViewModule } from './task-management/implementation-plan/view/implementation-plan-view.module';
+
+// Workflow Analytics Domain
+import { WorkflowAnalyticsCalculatorService } from './workflow-analytics/workflow-analytics/workflow-analytics-calculator.service';
+import { WorkflowAnalyticsService } from './workflow-analytics/workflow-analytics/workflow-analytics.service';
+import { WorkflowSummaryService } from './workflow-analytics/workflow-analytics/workflow-summary.service';
+
+import { DelegationAnalyticsService } from './workflow-analytics/delegation-flow/delegation-analytics.service';
+import { DelegationFlowService } from './workflow-analytics/delegation-flow/delegation-flow.service';
+import { DelegationSummaryService } from './workflow-analytics/delegation-flow/delegation-summary.service';
+
+import { RoleAnalyticsService } from './workflow-analytics/role-performance/role-analytics.service';
+import { RoleMetricsCalculatorService } from './workflow-analytics/role-performance/role-metrics-calculator.service';
+import { RolePerformanceService } from './workflow-analytics/role-performance/role-performance.service';
+
+// Dashboard Domain - Now using InteractiveDashboardModule
+import { DelegationFlowGeneratorService } from './workflow-analytics/delegation-flow/delegation-flow-generator.service';
+import { RolePerformanceGeneratorService } from './workflow-analytics/role-performance/role-performance-generator.service';
+import { WorkflowAnalyticsGeneratorService } from './workflow-analytics/workflow-analytics/workflow-analytics-generator.service';
+
 @Module({
-  imports: [PrismaModule],
+  imports: [
+    PrismaModule,
+    InteractiveDashboardModule,
+    TaskDetailViewModule,
+    ImplementationPlanModule,
+    ImplementationPlanViewModule,
+  ],
   providers: [
-    // Core data service
-    SimpleReportService,
+    // === SHARED SERVICES ===
+    ReportDataService,
+    ReportTransformService,
+    ReportMetadataService,
 
-    // Template rendering service
-    SimpleReportRenderer,
+    // === NEW: TYPE-SAFE HTML GENERATOR SERVICES ===
+    SimpleReportGeneratorService,
+    HtmlGeneratorFactoryService,
 
-    // Business logic service
-    ReportGenerationMcpService,
+    // === TASK MANAGEMENT DOMAIN ===
+    TaskDetailService,
+    TaskDetailBuilderService,
+    TaskProgressAnalyzerService,
+    TaskQualityAnalyzerService,
+    // Implementation Plan services provided by ImplementationPlanModule
 
-    // MCP interface service with @Tool decorators
-    ReportMcpOperationsService,
-
-    // New Focused Report Services
-    TaskDetailReportService,
-    DelegationFlowReportService,
-    ImplementationPlanReportService,
+    // === WORKFLOW ANALYTICS DOMAIN ===
     WorkflowAnalyticsService,
+    WorkflowAnalyticsCalculatorService,
+    WorkflowSummaryService,
+    WorkflowAnalyticsGeneratorService,
+    DelegationFlowService,
+    DelegationAnalyticsService,
+    DelegationSummaryService,
+    DelegationFlowGeneratorService,
+    RolePerformanceService,
+    RolePerformanceGeneratorService,
+    RoleAnalyticsService,
+    RoleMetricsCalculatorService,
+
+    // === MCP INTERFACE SERVICES ===
+    McpOrchestratorService,
+    McpReportRouterService,
+    McpFileManagerService,
+    McpResponseBuilderService,
+    ReportMcpOperationsService,
   ],
   exports: [
     // Primary MCP interface for external consumption
     ReportMcpOperationsService,
+    McpOrchestratorService,
 
-    // Secondary services for direct access if needed
-    ReportGenerationMcpService,
-    SimpleReportService,
-    SimpleReportRenderer,
+    // NEW: Type-safe HTML generator services
+    HtmlGeneratorFactoryService,
+    SimpleReportGeneratorService,
 
-    // New Focused Report Services
-    TaskDetailReportService,
-    DelegationFlowReportService,
-    ImplementationPlanReportService,
+    // Domain services for direct access
+    TaskDetailService,
+    // ImplementationPlanService available through ImplementationPlanModule
     WorkflowAnalyticsService,
+    DelegationFlowService,
+    RolePerformanceService,
+
+    // Shared services
+    ReportDataService,
   ],
 })
 export class ReportingModule {}

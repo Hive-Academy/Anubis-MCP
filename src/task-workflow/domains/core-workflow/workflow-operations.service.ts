@@ -164,6 +164,7 @@ Role-based workflow transitions and delegation management.
           fromMode: fromRole,
           toMode: toRole,
           delegationTimestamp: new Date(),
+          success: true,
         },
       });
 
@@ -218,6 +219,7 @@ Role-based workflow transitions and delegation management.
         where: { taskId },
         data: {
           status: 'completed',
+          currentMode: 'boomerang', // Task returns to boomerang when completed
           completionDate: new Date(),
         },
       });
@@ -227,7 +229,7 @@ Role-based workflow transitions and delegation management.
         data: {
           taskId,
           fromMode: fromRole,
-          toMode: fromRole,
+          toMode: 'boomerang', // Completion always transitions to boomerang
           reason: `Task completed: ${completionData.summary}`,
           transitionTimestamp: new Date(),
         },
@@ -255,6 +257,7 @@ Role-based workflow transitions and delegation management.
           toMode: toRole,
           delegationTimestamp: new Date(),
           rejectionReason: escalationData.reason,
+          success: true,
         },
       });
 

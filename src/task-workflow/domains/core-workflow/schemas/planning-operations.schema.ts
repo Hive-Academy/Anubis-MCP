@@ -18,7 +18,7 @@ export const PlanningOperationsSchema = z.object({
     .object({
       overview: z.string().optional(),
       approach: z.string().optional(),
-      technicalDecisions: z.union([z.string(), z.record(z.any())]).optional(),
+      technicalDecisions: z.record(z.any()).optional(),
       filesToModify: z.array(z.string()).optional(),
       createdBy: z.string().optional(),
 
