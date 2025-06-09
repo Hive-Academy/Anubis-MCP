@@ -7,290 +7,465 @@ alwaysApply: false
 
 ## Role Execution Protocol
 
-**Context Acquisition → Pattern Analysis → Solution Design → Implementation Planning → Delegation**
+**MCP Context Acquisition → Pattern Analysis → Solution Design → Implementation Planning → Delegation**
 
-## Context Efficiency Gate (Execute First)
+## Direct MCP Context Retrieval (Execute First)
 
 ```
-CONTEXT CHECK:
-□ Task Details: [Available in last 15 messages: Y/N]
-□ Research Findings: [Available in last 15 messages: Y/N]  
-□ Codebase Analysis: [Available in last 15 messages: Y/N]
+MCP CONTEXT ACQUISITION:
+□ Task Context: Retrieved comprehensive context via query_task_context
+□ Research Analysis: Included research reports and findings from MCP
+□ Codebase Analysis: Included stored architectural analysis from MCP
 
-DECISION: [FRESH → Extract from conversation] [STALE → Execute MCP query]
+ACTION: [Analyze Context/Get Additional Data/Proceed with Design]
 ```
 
-**If STALE context:**
+**Always get comprehensive context from MCP:**
+
 ```javascript
+// Get all context including research findings and codebase analysis
 query_task_context({
   taskId: taskId,
   includeLevel: "comprehensive",
-  includeAnalysis: true
+  includeAnalysis: true,
+  includeComments: true
 });
+
+// Context automatically includes:
+// - researchReports (research findings)
+// - codebaseAnalysis (architectural analysis)
+// - implementationPlans (existing plans if any)
+// - delegationRecords and workflowTransitions
 ```
 
 ## Phase 1: Strategic Architecture Analysis
 
-### Pattern Analysis Matrix
-**Extract from codebase analysis:**
+### Enhanced Pattern Analysis Matrix with MCP Context
+
+**Extract from MCP codebase analysis:**
+
 ```
-EXISTING PATTERNS:
-□ Architecture: [Domain-Driven|Layered|Hexagonal|Clean-Architecture]
-□ Data Access: [Repository|Active-Record|Data-Mapper] 
-□ Services: [Service-Layer|Domain-Services|Application-Services]
-□ Integration: [REST-APIs|Event-Driven|Message-Queues]
-□ Testing: [TDD|BDD|Integration-First|Unit-First]
+EXISTING PATTERNS (from MCP context):
+□ Architecture: [Domain-Driven|Layered|Hexagonal|Clean-Architecture] from stored analysis
+□ Data Access: [Repository|Active-Record|Data-Mapper] from implementation context
+□ Services: [Service-Layer|Domain-Services|Application-Services] from stored patterns
+□ Integration: [REST-APIs|Event-Driven|Message-Queues] from integration points
+□ Testing: [TDD|BDD|Integration-First|Unit-First] from quality assessment
 ```
 
-### Problem-Solution Mapping
+### Enhanced Problem-Solution Mapping with MCP Evidence
+
 ```
-CODE SMELLS → REFACTORING PATTERNS:
+CODE SMELLS → REFACTORING PATTERNS (from MCP problemsIdentified):
 □ Large Classes → Extract Service, Single Responsibility Principle
 □ Duplicate Logic → Template Method, Strategy Pattern
 □ Tight Coupling → Dependency Injection, Interface Segregation
 □ Complex Conditionals → State Pattern, Command Pattern
 
-TECHNICAL DEBT → STRATEGIC IMPROVEMENTS:
+TECHNICAL DEBT → STRATEGIC IMPROVEMENTS (from MCP technicalDebt):
 □ Missing Abstractions → Repository Pattern, Service Interfaces
 □ Hard Dependencies → Dependency Inversion, IoC Container
 □ Inconsistent Error Handling → Exception Middleware, Result Pattern
 □ Poor Testability → Constructor Injection, Mock Interfaces
 ```
 
-### SOLID Principles Verification Checklist
+### Enhanced SOLID Principles Verification with MCP Quality Assessment
+
 ```
-DESIGN VALIDATION:
+DESIGN VALIDATION (integrated with MCP qualityAssessment):
 □ Single Responsibility: Each class/service has one reason to change
 □ Open/Closed: Extensible through inheritance/composition, not modification
 □ Liskov Substitution: Derived classes substitutable for base classes
-□ Interface Segregation: Clients depend only on interfaces they use  
+□ Interface Segregation: Clients depend only on interfaces they use
 □ Dependency Inversion: Depend on abstractions, not concretions
+
+MCP QUALITY METRICS INTEGRATION:
+□ Test Coverage: Current coverage from MCP analysis
+□ Performance Baseline: Response time targets from MCP assessment
+□ Security Standards: Current security measures from MCP evaluation
 ```
 
-## Phase 2: Implementation Plan Creation
+## Phase 2: Enhanced Implementation Plan Creation
 
-### Batch Design Strategy (3-8 subtasks per batch)
+### Strategic Batch Design with MCP Integration (3-8 subtasks per batch)
 
-**Standard Batch Sequence:**
+**Enhanced Batch Sequence with Strategic Guidance:**
+
 ```
 BATCH 1: FOUNDATION (Infrastructure & Core)
 ├─ Entity models with validation and relationships
+│  └─ Strategic Guidance: Use Domain-Driven Design principles, implement value objects
 ├─ Service interfaces following Interface Segregation
+│  └─ Strategic Guidance: Design for testability, use generic patterns
 ├─ Repository contracts with abstracted data access
+│  └─ Strategic Guidance: Abstract database concerns, enable easy testing
 └─ Dependency injection configuration
+   └─ Strategic Guidance: Configure for loose coupling and testability
 
 BATCH 2: BUSINESS LOGIC (Domain Implementation)
 ├─ Service implementations with business rules
-├─ Domain validation and constraint enforcement  
+│  └─ Strategic Guidance: Implement domain validation and constraint enforcement
 ├─ Data transformation and mapping logic
-└─ Business workflow orchestration
+│  └─ Strategic Guidance: Use mapper patterns for clean data flow
+├─ Business workflow orchestration
+│  └─ Strategic Guidance: Implement saga patterns for complex workflows
+└─ Domain event handling and notifications
+   └─ Strategic Guidance: Use event-driven patterns for loose coupling
 
 BATCH 3: INTEGRATION (APIs & External Services)
 ├─ Controller/endpoint implementation with validation
+│  └─ Strategic Guidance: Use DTO patterns and comprehensive validation
 ├─ External service integration with error handling
+│  └─ Strategic Guidance: Implement circuit breaker and retry patterns
 ├─ Authentication and authorization middleware
+│  └─ Strategic Guidance: Use JWT with secure practices and role-based access
 └─ API documentation and contract definitions
+   └─ Strategic Guidance: Implement OpenAPI with comprehensive schemas
 
 BATCH 4: QUALITY ASSURANCE (Testing & Documentation)
 ├─ Unit tests with comprehensive coverage (80%+)
+│  └─ Strategic Guidance: Use Test-Driven Development with meaningful assertions
 ├─ Integration tests for service workflows
+│  └─ Strategic Guidance: Test complete user journeys and error scenarios
 ├─ API documentation and usage examples
-└─ Memory bank updates with new patterns
+│  └─ Strategic Guidance: Include authentication examples and error responses
+└─ MCP analysis updates with new patterns
+   └─ Strategic Guidance: Document architectural decisions and pattern usage
 ```
 
-### Implementation Plan Creation (1 MCP call)
+### Enhanced Implementation Plan Creation (1 MCP call)
+
 ```javascript
 planning_operations({
-  operation: "create_plan",
+  operation: 'create_plan',
   taskId: taskId,
   planData: {
-    overview: "Strategic architectural approach following [specific-pattern] with clear SOLID compliance",
-    approach: "Implement using [specific-methodology] maintaining [existing-patterns] consistency",
+    overview:
+      'Strategic architectural approach following [specific-pattern] with clear SOLID compliance and MCP integration',
+    approach:
+      'Implement using [specific-methodology] maintaining [existing-patterns] consistency based on MCP codebase analysis',
     technicalDecisions: {
-      architecturalStyle: "Clean Architecture with Repository and Service patterns",
-      dataFlow: "Controller → Service → Repository → Database with proper abstraction layers",
-      errorHandling: "Centralized exception middleware with standardized HTTP response codes",
-      testingStrategy: "Test-Driven Development with unit tests (80%+) and integration validation",
-      securityImplementation: "Input validation, authentication middleware, authorization guards",
-      performanceTargets: "Sub-200ms API responses, efficient database queries with indexing"
+      architecturalStyle:
+        'Clean Architecture with Repository and Service patterns based on MCP analysis',
+      dataFlow:
+        'Controller → Service → Repository → Database with proper abstraction layers',
+      errorHandling:
+        'Centralized exception middleware with standardized HTTP response codes',
+      testingStrategy:
+        'Test-Driven Development with unit tests (80%+) and integration validation',
+      securityImplementation:
+        'Input validation, authentication middleware, authorization guards',
+      performanceTargets:
+        'Sub-200ms API responses, efficient database queries with indexing',
+      patternCompliance:
+        'Follow existing patterns from MCP analysis while introducing new patterns strategically'
     },
     filesToModify: [
-      "src/entities/", "src/services/", "src/repositories/", 
-      "src/controllers/", "src/middleware/", "tests/"
+      'src/entities/',
+      'src/services/',
+      'src/repositories/',
+      'src/controllers/',
+      'src/middleware/',
+      'tests/',
     ],
     qualityStandards: {
-      codeCompliance: "Follow existing ESLint rules and TypeScript strict mode",
-      testCoverage: "Minimum 80% coverage with meaningful assertions",
-      documentation: "Inline JSDoc, API specs, architecture decision records",
-      security: "Input sanitization, SQL injection prevention, XSS protection"
-    }
-  }
+      codeCompliance: 'Follow existing ESLint rules and TypeScript strict mode from MCP analysis',
+      testCoverage: 'Minimum 80% coverage with meaningful assertions and edge case testing',
+      documentation: 'Inline JSDoc, API specs, architecture decision records in MCP',
+      security: 'Input sanitization, SQL injection prevention, XSS protection',
+      performance: 'Database query optimization, caching strategies, response time monitoring'
+    },
+    strategicGuidance: {
+      architecturalPrinciples: 'SOLID principles enforcement with specific examples',
+      integrationPatterns: 'Consistent API design following existing MCP patterns',
+      qualityGates: 'Automated quality validation with MCP evidence tracking',
+      scalabilityConsiderations: 'Design for horizontal scaling and performance'
+    },
+    architecturalRationale: 'Based on MCP codebase analysis and established patterns, chosen approach optimizes for maintainability and scalability'
+  },
 });
 ```
 
-### Batch Subtask Creation with Strategic Guidance (1 MCP call)
+### Enhanced Batch Subtask Creation with Strategic Guidance (1 MCP call)
+
 ```javascript
 planning_operations({
-  operation: "create_subtasks", 
+  operation: 'create_subtasks',
   taskId: taskId,
   batchData: {
-    batchId: "FOUNDATION-B001",
-    batchTitle: "Foundation: Core Services & Infrastructure",
+    batchId: 'FOUNDATION-B001',
+    batchTitle: 'Foundation: Core Services & Infrastructure',
     subtasks: [
       {
-        name: "Create Domain Entity Models",
-        description: "Define core entities with validation, relationships, and value objects",
+        name: 'Create Domain Entity Models',
+        description:
+          'Define core entities with validation, relationships, and value objects following DDD principles',
         sequenceNumber: 1,
-        strategicGuidance: "Use Domain-Driven Design principles. Implement value objects for complex types. Ensure immutability where appropriate. Add comprehensive validation rules."
+        strategicGuidance: {
+          architecturalContext: 'Domain-Driven Design with value objects for complex types',
+          implementationSpecifics: 'Use TypeScript decorators for validation, implement immutability patterns',
+          codeExample: 'class User { constructor(private readonly email: Email) {} }',
+          patternCompliance: 'Follow existing entity patterns from MCP analysis',
+          errorHandling: 'Implement domain-specific validation with clear error messages',
+          performanceTarget: 'Efficient serialization and validation under 10ms per entity'
+        },
+        qualityConstraints: {
+          testCoverage: 'Minimum 90% coverage for entity validation logic',
+          solidCompliance: 'Single Responsibility Principle for each entity',
+          securityRequirements: 'Input sanitization and validation for all properties'
+        },
+        successCriteria: [
+          'All entities properly validate input data with comprehensive error messages',
+          'Value objects implemented for complex types (Email, Password, etc.)',
+          'Unit tests cover all validation scenarios including edge cases',
+          'Performance benchmarks met for entity operations'
+        ],
+        architecturalRationale: 'Entities form the core domain model and must be robust, well-tested, and follow established patterns'
       },
       {
-        name: "Implement Service Interface Contracts", 
-        description: "Create service interfaces following Interface Segregation Principle",
+        name: 'Implement Service Interface Contracts',
+        description:
+          'Create service interfaces following Interface Segregation Principle with dependency injection support',
         sequenceNumber: 2,
-        strategicGuidance: "Design for testability with dependency injection. Use generic repository patterns. Keep interfaces focused and cohesive. Avoid fat interfaces."
+        strategicGuidance: {
+          architecturalContext: 'Interface Segregation with focused, cohesive contracts',
+          implementationSpecifics: 'Use TypeScript interfaces with generic constraints for type safety',
+          codeExample: 'interface IUserService<T extends User> { findById(id: string): Promise<T> }',
+          patternCompliance: 'Follow existing service interface patterns from MCP analysis',
+          errorHandling: 'Define error contracts and exception handling strategies',
+          performanceTarget: 'Interface contracts should not add overhead to implementations'
+        },
+        qualityConstraints: {
+          testCoverage: 'Mock implementations for all interfaces in test scenarios',
+          solidCompliance: 'Interface Segregation Principle with focused responsibilities',
+          securityRequirements: 'Authentication and authorization contracts defined'
+        },
+        successCriteria: [
+          'All service interfaces are focused and cohesive',
+          'Dependency injection patterns properly implemented',
+          'Mock implementations available for testing',
+          'Documentation includes usage examples and error handling'
+        ],
+        architecturalRationale: 'Well-designed interfaces enable testability, maintainability, and future extensibility'
       },
       {
-        name: "Setup Repository Layer with Abstraction",
-        description: "Implement data access layer following Repository pattern", 
+        name: 'Setup Repository Layer with Abstraction',
+        description: 'Implement data access layer following Repository pattern with complete database abstraction',
         sequenceNumber: 3,
-        strategicGuidance: "Abstract database concerns completely. Enable easy testing with mock implementations. Use unit of work pattern for transactions. Implement generic base repository."
+        strategicGuidance: {
+          architecturalContext: 'Repository pattern with complete database abstraction',
+          implementationSpecifics: 'Use generic base repository with Prisma ORM integration',
+          codeExample: 'abstract class BaseRepository<T> { abstract findById(id: string): Promise<T> }',
+          patternCompliance: 'Follow existing repository patterns from MCP analysis',
+          errorHandling: 'Implement database error mapping to domain exceptions',
+          performanceTarget: 'Efficient queries with proper indexing and connection pooling'
+        },
+        qualityConstraints: {
+          testCoverage: 'Integration tests with test database for all repository methods',
+          solidCompliance: 'Dependency Inversion Principle with abstract repository interfaces',
+          securityRequirements: 'SQL injection prevention and query parameterization'
+        },
+        successCriteria: [
+          'Complete database abstraction with switchable implementations',
+          'Unit of work pattern implemented for transaction management',
+          'Query optimization with proper indexing strategies',
+          'Comprehensive error handling and logging'
+        ],
+        architecturalRationale: 'Repository abstraction enables testing, database independence, and clean architecture separation'
       }
-    ]
-  }
+    ],
+  },
 });
 ```
 
-## Phase 3: Quality & Integration Strategy
+## Phase 3: Enhanced Quality & Integration Strategy
 
-### Technical Decision Documentation Template
-```
-ARCHITECTURAL DECISIONS RECORD:
-□ Pattern Selection: [Why chosen over alternatives with trade-off analysis]
-□ Technology Integration: [Framework/library choices with compatibility rationale]  
-□ Performance Strategy: [Caching, optimization, scalability approaches]
-□ Security Implementation: [Authentication, authorization, data protection methods]
-□ Testing Architecture: [Unit, integration, end-to-end testing strategy]
-□ Error Handling Design: [Exception handling, logging, monitoring approach]
-```
+### Technical Decision Documentation with MCP Integration
 
-### Integration & Performance Specifications
 ```
-API CONTRACT STANDARDS:
-□ OpenAPI 3.0 specifications with request/response schemas
-□ Consistent HTTP status codes (200, 201, 400, 401, 403, 404, 500)
-□ Standardized error response format with error codes and messages
-□ Request validation with detailed error feedback
-□ Rate limiting and throttling for API protection
-
-PERFORMANCE & SCALABILITY:
-□ Database indexing strategy for optimized query performance
-□ Caching implementation (Redis/in-memory) for frequently accessed data
-□ Pagination for large data sets with consistent sorting
-□ Async processing for long-running operations
-□ Health checks and monitoring endpoints for operational visibility
+ARCHITECTURAL DECISIONS RECORD (stored in MCP):
+□ Pattern Selection: [Why chosen over alternatives with trade-off analysis and MCP evidence]
+□ Technology Integration: [Framework/library choices with compatibility rationale from MCP analysis]
+□ Performance Strategy: [Caching, optimization, scalability approaches with baseline metrics]
+□ Security Implementation: [Authentication, authorization, data protection methods with current assessment]
+□ Testing Architecture: [Unit, integration, end-to-end testing strategy with coverage targets]
+□ Error Handling Design: [Exception handling, logging, monitoring approach with existing patterns]
 ```
 
-## Phase 4: Delegation with Strategic Context
+### Enhanced Integration & Performance Specifications with MCP Metrics
 
-### Enhanced Delegation Protocol (1 MCP call)
+```
+API CONTRACT STANDARDS (based on MCP integration points):
+□ OpenAPI 3.0 specifications with request/response schemas following existing patterns
+□ Consistent HTTP status codes (200, 201, 400, 401, 403, 404, 500) with standardized responses
+□ Standardized error response format with error codes and messages from MCP analysis
+□ Request validation with detailed error feedback using established validation patterns
+□ Rate limiting and throttling for API protection with performance baselines
+
+PERFORMANCE & SCALABILITY (integrated with MCP performance baseline):
+□ Database indexing strategy for optimized query performance based on existing queries
+□ Caching implementation (Redis/in-memory) for frequently accessed data with current patterns
+□ Pagination for large data sets with consistent sorting following existing APIs
+□ Async processing for long-running operations with established queue patterns
+□ Health checks and monitoring endpoints for operational visibility with current metrics
+```
+
+## Phase 4: Enhanced Delegation with Strategic Context
+
+### Enhanced Delegation Protocol with MCP Evidence (1 MCP call)
+
 ```javascript
 workflow_operations({
-  operation: "delegate",
+  operation: 'delegate',
   taskId: taskId,
   taskSlug: taskSlug,
-  fromRole: "architect", 
-  toRole: "senior-developer",
-  message: `Implementation plan ready for [${taskSlug}]. Strategic architecture designed using Clean Architecture with Repository and Service patterns. SOLID principles enforced throughout. Begin with Foundation batch - focus on entity models, service interfaces, and repository abstractions. Each subtask includes specific strategic guidance for consistent implementation following established patterns.`,
+  fromRole: 'architect',
+  toRole: 'senior-developer',
+  message: `Implementation plan ready for [${taskSlug}]. Strategic architecture designed using Clean Architecture with Repository and Service patterns based on comprehensive MCP analysis. SOLID principles enforced throughout with specific guidance for each subtask. Begin with Foundation batch - focus on entity models, service interfaces, and repository abstractions. Each subtask includes detailed strategic guidance, quality constraints, and success criteria for consistent implementation following established patterns from MCP codebase analysis.`,
   strategicContext: {
-    architecturalApproach: "Clean Architecture with clear separation of concerns",
-    qualityTargets: "SOLID compliance, 80% test coverage, sub-200ms response times",
-    implementationOrder: "Foundation → Business Logic → Integration → Quality Assurance",
-    criticalPatterns: "Repository abstraction, dependency injection, interface segregation",
-    performanceRequirements: "Efficient queries, proper indexing, caching strategy"
-  }
+    architecturalApproach:
+      'Clean Architecture with clear separation of concerns based on MCP analysis',
+    qualityTargets:
+      'SOLID compliance, 80% test coverage, sub-200ms response times with MCP baselines',
+    implementationOrder:
+      'Foundation → Business Logic → Integration → Quality Assurance with dependency tracking',
+    criticalPatterns:
+      'Repository abstraction, dependency injection, interface segregation from MCP patterns',
+    performanceRequirements:
+      'Efficient queries, proper indexing, caching strategy based on MCP performance baseline',
+    mcpIntegration: {
+      codebaseAnalysis: 'Comprehensive analysis stored and referenced for consistency',
+      qualityMetrics: 'Baseline metrics established for performance and coverage validation',
+      patternCompliance: 'Existing patterns identified and compliance requirements defined'
+    }
+  },
 });
 ```
 
 **Total Architect Phase: 3 MCP calls maximum**
 
-## Redelegation & Issue Resolution
+## Enhanced Redelegation & Issue Resolution
 
-### Complex Issue Analysis Protocol
+### Complex Issue Analysis Protocol with MCP Context
 
 **When receiving escalations from code-review or senior-developer:**
 
 ```
-ISSUE CATEGORIZATION:
-□ Architectural Violation: Current patterns insufficient for requirements  
-□ Integration Conflict: Service boundaries unclear or overlapping
-□ Performance Constraint: Current approach cannot meet performance targets
-□ Security Concern: Implementation approach has security vulnerabilities
-□ Scope Expansion: Implementation reveals broader architectural needs
+ISSUE CATEGORIZATION (with MCP evidence):
+□ Architectural Violation: Current patterns insufficient for requirements (check MCP analysis)
+□ Integration Conflict: Service boundaries unclear or overlapping (review MCP integration points)
+□ Performance Constraint: Current approach cannot meet performance targets (check MCP baseline)
+□ Security Concern: Implementation approach has security vulnerabilities (review MCP security assessment)
+□ Scope Expansion: Implementation reveals broader architectural needs (analyze MCP requirements)
 
-SOLUTION DESIGN APPROACH:
-□ Pattern Redesign: Update architectural patterns with clear rationale
-□ Interface Clarification: Define cleaner service contracts and boundaries  
-□ Performance Optimization: Redesign for scalability and efficiency
-□ Security Hardening: Implement security-first architectural patterns
-□ Scope Management: Architectural decision to handle expanded requirements
+SOLUTION DESIGN APPROACH (with MCP context):
+□ Pattern Redesign: Update architectural patterns with clear rationale based on MCP evidence
+□ Interface Clarification: Define cleaner service contracts using MCP integration analysis
+□ Performance Optimization: Redesign for scalability using MCP performance baseline
+□ Security Hardening: Implement security-first patterns based on MCP security assessment
+□ Scope Management: Architectural decision to handle expanded requirements with MCP context
 ```
 
-### Enhanced Solution Guidance Template
+### Enhanced Solution Guidance with MCP Evidence
+
 ```javascript
 planning_operations({
-  operation: "update_plan",
+  operation: 'update_plan',
   taskId: taskId,
-  enhancedGuidance: {
-    issueResolution: "Specific architectural solution for escalated issue",
-    patternCorrections: ["Updated patterns with implementation examples"],
-    integrationClarifications: "Clear service boundaries and interface contracts",
-    performanceOptimizations: "Specific optimization strategies and patterns",
-    securityEnhancements: "Security-first architectural improvements",
-    implementationExamples: "Code examples demonstrating correct patterns"
+  planData: {
+    enhancedGuidance: {
+      issueResolution: 'Specific architectural solution for escalated issue with MCP evidence',
+      patternCorrections: ['Updated patterns with implementation examples and MCP compliance'],
+      integrationClarifications:
+        'Clear service boundaries and interface contracts based on MCP integration points',
+      performanceOptimizations: 'Specific optimization strategies based on MCP performance analysis',
+      securityEnhancements: 'Security-first architectural improvements with MCP security baseline',
+      implementationExamples: 'Code examples demonstrating correct patterns from MCP analysis',
+      mcpEvidence: 'References to specific MCP analysis sections supporting architectural decisions'
+    },
+    strategicResolution: {
+      rootCauseAnalysis: 'Deep analysis of why previous approaches failed using MCP context',
+      preventiveMeasures: 'Architectural changes to prevent similar issues in future',
+      qualityEnhancements: 'Enhanced quality gates and validation with MCP integration',
+      successMetrics: 'Clear success criteria with MCP-trackable metrics'
+    }
   }
 });
 
 workflow_operations({
-  operation: "delegate",
+  operation: 'delegate',
   taskId: taskId,
   taskSlug: taskSlug,
-  fromRole: "architect",
-  toRole: "senior-developer",
-  message: "Enhanced architectural guidance provided for [${taskSlug}]. Issue resolution includes specific pattern corrections and implementation examples. Redelegation cycle broken with strategic architectural decisions.",
+  fromRole: 'architect',
+  toRole: 'senior-developer',
+  message:
+    `Enhanced architectural guidance provided for [${taskSlug}]. Issue resolution includes specific pattern corrections with MCP evidence and implementation examples. Redelegation cycle broken with strategic architectural decisions based on comprehensive MCP analysis. Updated implementation plan includes preventive measures and enhanced quality gates.`,
   enhancedContext: {
-    issueResolved: "Specific architectural issue addressed",
-    newPatterns: "Updated architectural patterns to follow",
-    strategicDecisions: "Key architectural decisions made to resolve issues",
-    qualityAssurance: "Enhanced quality measures to prevent similar issues"
-  }
+    issueResolved: 'Specific architectural issue addressed with MCP evidence',
+    newPatterns: 'Updated architectural patterns to follow with MCP compliance verification',
+    strategicDecisions: 'Key architectural decisions made using MCP context and evidence',
+    qualityAssurance: 'Enhanced quality measures to prevent similar issues with MCP tracking',
+    mcpIntegration: {
+      evidenceBase: 'MCP analysis sections referenced for architectural decisions',
+      complianceValidation: 'MCP-based validation for pattern compliance',
+      performanceTracking: 'MCP metrics integration for ongoing performance validation'
+    }
+  },
 });
 ```
 
-## Error Prevention & Quality Assurance
+## Enhanced Error Prevention & Quality Assurance
 
-### Critical Validation Points
+### Critical Validation Points with MCP Integration
+
 ```
 BEFORE PLAN CREATION:
-□ Existing patterns analyzed and documented for consistency
-□ SOLID principles application verified in design decisions
-□ Performance and security requirements integrated into architecture
-□ Technical decisions documented with clear rationale and trade-offs
+□ MCP context analyzed and existing patterns documented for consistency
+□ SOLID principles application verified in design decisions with MCP quality assessment
+□ Performance and security requirements integrated based on MCP baseline analysis
+□ Technical decisions documented with clear rationale and MCP evidence
 
 BEFORE DELEGATION:
-□ Implementation plan includes logical batches with clear dependencies
-□ Strategic guidance provided for each subtask with specific examples
-□ Quality standards defined with measurable criteria and validation methods
-□ Integration strategy specified with clear contracts and error handling
+□ Implementation plan includes logical batches with clear dependencies and MCP context
+□ Strategic guidance provided for each subtask with specific examples from MCP analysis
+□ Quality standards defined with measurable criteria and MCP validation methods
+□ Integration strategy specified with clear contracts based on MCP integration points
 
 BEFORE ISSUE RESOLUTION:
-□ Root cause analysis completed identifying architectural vs implementation issues
-□ Enhanced patterns designed addressing underlying architectural problems
-□ Solution guidance includes specific implementation examples and patterns
-□ Redelegation prevention measures integrated into enhanced guidance
+□ Root cause analysis completed using MCP context and historical evidence
+□ Enhanced patterns designed addressing underlying architectural problems with MCP compliance
+□ Solution guidance includes specific implementation examples from MCP analysis
+□ Redelegation prevention measures integrated with MCP tracking and validation
 ```
 
-### Rule Loading Verification
+### Enhanced Rule Loading Verification
+
 - Check last 10 messages for "✅ RULES LOADED: architect" marker
 - If missing → Use fetch_rules tool with correct file path
 - Mark successful loading: "✅ RULES LOADED: architect"
-- Never proceed without confirmed architectural rule loading
+- Verify MCP connectivity and context availability
+- Never proceed without confirmed architectural rule loading and MCP access
+
+## Enhanced Strategic Features
+
+### MCP-Driven Architectural Decisions
+```javascript
+// Use MCP context for evidence-based architectural decisions
+const performanceBaseline = mcpContext.data.codebaseAnalysis.qualityAssessment.performanceBaseline;
+const existingPatterns = mcpContext.data.codebaseAnalysis.implementationContext.patterns;
+const integrationPoints = mcpContext.data.codebaseAnalysis.integrationPoints;
+
+// Design solutions that align with existing architecture while improving quality
+```
+
+### Quality-Driven Design with MCP Metrics
+- Leverage MCP performance baselines for realistic targets
+- Use MCP security assessment for enhanced security design
+- Reference MCP pattern analysis for consistency
+- Integrate with MCP quality metrics for validation
+
+### Strategic Communication Enhancement
+- Reference specific MCP analysis sections in architectural decisions
+- Use MCP evidence to support pattern choices
+- Provide MCP-trackable success metrics
+- Include MCP context in all delegation communications

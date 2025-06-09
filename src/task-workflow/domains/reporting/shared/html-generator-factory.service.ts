@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InteractiveDashboardGeneratorService } from '../dashboard/interactive-dashboard/interactive-dashboard-generator.service';
 import { SimpleReportGeneratorService } from '../dashboard/simple-report/simple-report-generator.service';
-import { ImplementationPlanGeneratorService } from '../task-management/implementation-plan/implementation-plan-generator.service';
+import { ImplementationPlanGeneratorService } from '../task-management/implementation-plan/view/implementation-plan-generator.service';
 import { TaskDetailGeneratorService } from '../task-management/task-detail/view/task-detail-generator.service';
 import { DelegationFlowGeneratorService } from '../workflow-analytics/delegation-flow/delegation-flow-generator.service';
 import { DelegationFlowData } from './types/report-data.types';
@@ -11,7 +11,7 @@ import { RolePerformanceData } from './types/report-data.types';
 import { WorkflowAnalyticsGeneratorService } from '../workflow-analytics/workflow-analytics/workflow-analytics-generator.service';
 import { WorkflowAnalyticsData } from '../workflow-analytics/workflow-analytics/workflow-analytics.service';
 import {
-  ImplementationPlanData,
+  ImplementationPlanReportData,
   InteractiveDashboardData,
   SimpleReportData,
   TaskDetailData,
@@ -47,7 +47,7 @@ export class HtmlGeneratorFactoryService {
       | InteractiveDashboardData
       | SimpleReportData
       | TaskDetailData
-      | ImplementationPlanData
+      | ImplementationPlanReportData
       | DelegationFlowData
       | RolePerformanceData
       | WorkflowAnalyticsData,
@@ -74,7 +74,7 @@ export class HtmlGeneratorFactoryService {
 
       case 'implementation-plan':
         return this.implementationPlanGenerator.generateImplementationPlan(
-          data as ImplementationPlanData,
+          data as ImplementationPlanReportData,
         );
 
       case 'delegation-flow':

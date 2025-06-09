@@ -4,185 +4,428 @@ import { ReportTransformService } from '../../shared/report-transform.service';
 import { ReportMetadataService } from '../../shared/report-metadata.service';
 import { ImplementationPlanBuilderService } from './implementation-plan-builder.service';
 import { ImplementationPlanAnalyzerService } from './implementation-plan-analyzer.service';
-import { ImplementationPlanGeneratorService } from './implementation-plan-generator.service';
-// Type imports removed - using any cast for generator compatibility
+import { ImplementationPlanGeneratorService } from './view/implementation-plan-generator.service';
+import {
+  ImplementationPlanReportData,
+  Priority,
+  Role,
+  TaskStatus,
+} from '../../shared/types/report-data.types';
+import {
+  TaskWithRelations,
+  ImplementationPlanWithRelations,
+} from '../../shared/types';
 
-export interface ImplementationPlanData {
-  task: {
-    taskId: string;
-    name: string;
-    taskSlug?: string | null;
-    status: string;
-    priority?: string | null;
-    owner?: string | null;
-  };
-  implementationPlans: Array<{
-    id: number;
-    overview: string;
-    approach: string;
-    technicalDecisions: string | Record<string, unknown>;
-    filesToModify: string[];
-    createdBy: string;
-    createdAt: string;
-    subtasks: Array<{
-      id: number;
-      name: string;
-      description: string;
-      status: string;
-      sequenceNumber: number;
-      batchId?: string | null;
-    }>;
-  }>;
-  planAnalysis: {
-    totalSubtasks: number;
-    completedSubtasks: number;
-    completionPercentage: number;
-    batchSummary: Array<{
-      batchId: string;
-      taskCount: number;
-      completedCount: number;
-      status: 'not-started' | 'in-progress' | 'completed';
-    }>;
-    estimatedEffort: {
-      totalHours: number;
-      remainingHours: number;
-      complexityScore: number;
-    };
-  };
-  executionGuidance: {
-    nextSteps: string[];
-    dependencies: string[];
-    riskFactors: Array<{
-      risk: string;
-      impact: 'low' | 'medium' | 'high';
-      mitigation: string;
-    }>;
-    qualityChecks: string[];
-  };
-  metadata: {
-    generatedAt: string;
-    reportType: 'implementation-plan';
-    version: string;
-    generatedBy: string;
-  };
-}
-
+/**
+ * Implementation Plan Service (Refactored)
+ *
+ * Main orchestrator for implementation plan report generation following clean architecture.
+ * Focuses on data fetching, transformation, and coordination while delegating HTML generation
+ * to the specialized ImplementationPlanGeneratorService.
+ *
+ * Architecture:
+ * - Uses shared services for data fetching and transformation
+ * - Uses builder and analyzer services for data preparation
+ * - Delegates HTML generation to ImplementationPlanGeneratorService
+ * - Maintains clean dependencies and follows Single Responsibility Principle
+ */
 @Injectable()
 export class ImplementationPlanService {
   private readonly logger = new Logger(ImplementationPlanService.name);
 
   constructor(
-    private readonly dataService: ReportDataService,
-    private readonly transformService: ReportTransformService,
-    private readonly metadataService: ReportMetadataService,
-    private readonly planBuilder: ImplementationPlanBuilderService,
-    private readonly planAnalyzer: ImplementationPlanAnalyzerService,
-    private readonly implementationPlanGenerator: ImplementationPlanGeneratorService,
+    private readonly reportDataService: ReportDataService,
+    private readonly reportTransformService: ReportTransformService,
+    private readonly reportMetadataService: ReportMetadataService,
+    private readonly builderService: ImplementationPlanBuilderService,
+    private readonly analyzerService: ImplementationPlanAnalyzerService,
+    private readonly generatorService: ImplementationPlanGeneratorService,
   ) {}
 
   /**
-   * Generate implementation plan report for a specific task
+   * Generate implementation plan report using clean architecture pattern
    */
-  async generateReport(taskId: string): Promise<ImplementationPlanData> {
-    try {
-      this.logger.log(`Generating implementation plan report for: ${taskId}`);
+  async generateImplementationPlanReport(taskId: string): Promise<string> {
+    this.logger.log(
+      `Generating implementation plan report for task: ${taskId}`,
+    );
 
-      // Get task and plan data
-      const task = await this.dataService.getTask(taskId);
-      if (!task) {
-        throw new Error(`Task not found: ${taskId}`);
+    try {
+      // Fetch comprehensive task data with implementation plans and subtasks
+      const taskData: TaskWithRelations | null =
+        await this.reportDataService.getTask(taskId);
+
+      if (!taskData) {
+        return this.generateNotFoundPage(taskId);
       }
 
-      const implementationPlans =
-        await this.dataService.getImplementationPlans(taskId);
-      const subtasks = await this.dataService.getSubtasks(taskId);
-
-      // Build plan details using focused services
-      const taskInfo = this.planBuilder.buildTaskInfo(task);
-      const planDetails = this.planBuilder.buildPlanDetails(
-        implementationPlans,
-        subtasks,
+      // Use builder service to structure the data
+      const taskInfo = this.builderService.buildTaskInfo(taskData);
+      const planDetails = this.builderService.buildPlanDetails(
+        taskData.implementationPlans || [],
+        taskData.implementationPlans?.flatMap((p) => p.subtasks || []) || [],
+      );
+      const batchSummary = this.builderService.buildBatchSummary(
+        taskData.implementationPlans?.flatMap((p) => p.subtasks || []) || [],
       );
 
-      // Analyze plan execution
-      const planAnalysis = this.planAnalyzer.analyzePlanExecution(subtasks);
-      const executionGuidance = this.planAnalyzer.generateExecutionGuidance(
-        implementationPlans,
-        subtasks,
+      // Use analyzer service for execution analysis
+      const executionAnalysis = this.analyzerService.analyzePlanExecution(
+        taskData.implementationPlans?.flatMap((p) => p.subtasks || []) || [],
+      );
+      const executionGuidance = this.analyzerService.generateExecutionGuidance(
+        taskData.implementationPlans || [],
+        taskData.implementationPlans?.flatMap((p) => p.subtasks || []) || [],
+      );
+      const complexityScore = this.analyzerService.calculateComplexityScore(
+        taskData.implementationPlans || [],
+        taskData.implementationPlans?.flatMap((p) => p.subtasks || []) || [],
       );
 
-      // Generate metadata
-      const metadata = this.metadataService.generateMetadata(
-        'implementation-plan',
-        'implementation-plan-service',
-      );
-
-      return {
-        task: taskInfo,
-        implementationPlans: planDetails,
-        planAnalysis,
+      // Transform data to implementation plan report format
+      const reportData = this.buildImplementationPlanReport(
+        taskData,
+        taskInfo,
+        planDetails,
+        batchSummary,
+        executionAnalysis,
         executionGuidance,
-        metadata: {
-          generatedAt: metadata.generatedAt,
-          reportType: 'implementation-plan' as const,
-          version: metadata.version,
-          generatedBy: metadata.generatedBy || 'implementation-plan-service',
-        },
-      };
+        complexityScore,
+      );
+
+      // Use generator service to create HTML report
+      const htmlReport =
+        this.generatorService.generateImplementationPlan(reportData);
+
+      this.logger.log(
+        `Implementation plan report generated successfully for task: ${taskId}`,
+      );
+      return htmlReport;
     } catch (error) {
       this.logger.error(
-        `Failed to generate implementation plan report: ${error.message}`,
+        `Failed to generate implementation plan report for task ${taskId}:`,
+        error,
       );
-      throw error;
+      return this.generateErrorPage(taskId, error);
     }
   }
 
   /**
-   * Generate HTML report using type-safe generator
+   * Build implementation plan report data using specialized services
    */
-  async generateHtmlReport(taskId: string): Promise<string> {
-    const reportData = await this.generateReport(taskId);
-
-    // Pass the actual database data directly to the generator
-    // The generator should adapt to work with the real data structure
-    return this.implementationPlanGenerator.generateImplementationPlan(
-      reportData as any,
+  private buildImplementationPlanReport(
+    taskData: TaskWithRelations,
+    taskInfo: ReturnType<ImplementationPlanBuilderService['buildTaskInfo']>,
+    _planDetails: ReturnType<
+      ImplementationPlanBuilderService['buildPlanDetails']
+    >,
+    _batchSummary: ReturnType<
+      ImplementationPlanBuilderService['buildBatchSummary']
+    >,
+    executionAnalysis: ReturnType<
+      ImplementationPlanAnalyzerService['analyzePlanExecution']
+    >,
+    executionGuidance: ReturnType<
+      ImplementationPlanAnalyzerService['generateExecutionGuidance']
+    >,
+    complexityScore: number,
+  ): ImplementationPlanReportData {
+    const metadata = this.reportMetadataService.generateMetadata(
+      'implementation-plan',
+      'implementation-plan-service',
     );
+
+    // Group subtasks by batch using database data as source of truth
+    const subtaskBatches = this.transformBatchesToReportFormat(
+      taskData.implementationPlans || [],
+    );
+
+    // Calculate progress using analyzer results
+    const progress = this.transformExecutionAnalysisToProgress(
+      executionAnalysis,
+      subtaskBatches,
+    );
+
+    return {
+      task: {
+        taskId: taskInfo.taskId || '',
+        name: taskInfo.name || 'Unknown Task',
+        taskSlug: taskInfo.taskSlug || '',
+        status: (taskInfo.status as TaskStatus) || 'not-started',
+        priority: (taskInfo.priority as Priority) || 'Medium',
+        owner: taskInfo.owner || 'Unknown',
+        currentMode: (taskData.currentMode as Role) || 'boomerang',
+        createdAt: taskData.creationDate.toISOString(),
+        completedAt: taskData.completionDate?.toISOString(),
+        gitBranch: taskData.gitBranch || '',
+      },
+      implementationPlan: taskData.implementationPlans?.[0] as any,
+      subtaskBatches,
+      progress,
+      executionAnalysis,
+      executionGuidance,
+      complexityScore,
+      metadata: {
+        generatedAt: metadata.generatedAt,
+        reportType: 'implementation-plan' as const,
+        version: metadata.version,
+        generatedBy: metadata.generatedBy || 'implementation-plan-service',
+      },
+    };
   }
 
   /**
-   * Generate execution summary for quick reference
+   * Transform builder service plan details to report format for subtask batches
    */
-  async generateExecutionSummary(taskId: string): Promise<{
-    nextActions: string[];
-    blockers: string[];
-    readyBatches: string[];
-    completionStatus: string;
-  }> {
-    try {
-      const reportData = await this.generateReport(taskId);
+  private transformBatchesToReportFormat(
+    implementationPlans: ImplementationPlanWithRelations[],
+  ): ImplementationPlanReportData['subtaskBatches'] {
+    const batchMap = new Map<
+      string,
+      {
+        batchId: string;
+        batchTitle: string;
+        subtasks: Array<{
+          id: number;
+          name: string;
+          description: string;
+          sequenceNumber: number;
+          status: TaskStatus;
+          strategicGuidance?: Record<string, unknown>;
+          qualityConstraints?: Record<string, unknown>;
+          successCriteria?: string[];
+          architecturalRationale?: string;
+        }>;
+      }
+    >();
 
-      const readyBatches = reportData.planAnalysis.batchSummary
-        .filter((batch) => batch.status === 'not-started')
-        .map((batch) => batch.batchId);
+    // Process all implementation plans and their subtasks
+    implementationPlans.forEach((plan) => {
+      if (plan.subtasks) {
+        plan.subtasks.forEach((subtask) => {
+          const batchId = subtask.batchId || 'default';
+          const batchTitle = subtask.batchTitle || 'Default Batch';
 
-      const blockers = reportData.executionGuidance.riskFactors
-        .filter((risk) => risk.impact === 'high')
-        .map((risk) => risk.risk);
+          if (!batchMap.has(batchId)) {
+            batchMap.set(batchId, {
+              batchId,
+              batchTitle,
+              subtasks: [],
+            });
+          }
 
-      const completionStatus = `${reportData.planAnalysis.completionPercentage}% complete (${reportData.planAnalysis.completedSubtasks}/${reportData.planAnalysis.totalSubtasks} subtasks)`;
+          const batch = batchMap.get(batchId)!;
+          batch.subtasks.push({
+            id: subtask.id,
+            name: subtask.name,
+            description: subtask.description,
+            sequenceNumber: subtask.sequenceNumber,
+            status: this.normalizeTaskStatus(subtask.status),
+            strategicGuidance: subtask.strategicGuidance as
+              | Record<string, unknown>
+              | undefined,
+            qualityConstraints: subtask.qualityConstraints as
+              | Record<string, unknown>
+              | undefined,
+            successCriteria: this.convertJsonToStringArray(
+              subtask.successCriteria,
+            ),
+            architecturalRationale: subtask.architecturalRationale || undefined,
+          });
+        });
+      }
+    });
 
-      return {
-        nextActions: reportData.executionGuidance.nextSteps.slice(0, 3),
-        blockers,
-        readyBatches,
-        completionStatus,
-      };
-    } catch (error) {
-      this.logger.error(
-        `Failed to generate execution summary: ${error.message}`,
-      );
-      throw error;
+    // Convert map to array and sort subtasks by sequence number
+    return Array.from(batchMap.values()).map((batch) => ({
+      ...batch,
+      subtasks: batch.subtasks.sort(
+        (a, b) => a.sequenceNumber - b.sequenceNumber,
+      ),
+    }));
+  }
+
+  /**
+   * Normalize task status to ensure type safety with TaskStatus enum
+   */
+  private normalizeTaskStatus(status: string): TaskStatus {
+    const validStatuses: TaskStatus[] = [
+      'not-started',
+      'in-progress',
+      'needs-review',
+      'completed',
+      'needs-changes',
+      'paused',
+      'cancelled',
+    ];
+
+    if (validStatuses.includes(status as TaskStatus)) {
+      return status as TaskStatus;
     }
+
+    // Default fallback for invalid status values
+    return 'not-started';
+  }
+
+  /**
+   * Transform execution analysis to progress format for the report
+   */
+  private transformExecutionAnalysisToProgress(
+    executionAnalysis: ReturnType<
+      ImplementationPlanAnalyzerService['analyzePlanExecution']
+    >,
+    subtaskBatches: ImplementationPlanReportData['subtaskBatches'],
+  ): ImplementationPlanReportData['progress'] {
+    const totalBatches = subtaskBatches.length;
+    const completedBatches = subtaskBatches.filter((batch) =>
+      batch.subtasks.every((subtask) => subtask.status === 'completed'),
+    ).length;
+
+    const totalSubtasks = executionAnalysis.totalSubtasks;
+    const completedSubtasks = executionAnalysis.completedSubtasks;
+    const overallCompletion =
+      totalSubtasks > 0
+        ? Math.round((completedSubtasks / totalSubtasks) * 100)
+        : 0;
+
+    // Calculate estimated time remaining based on remaining subtasks
+    const remainingSubtasks = totalSubtasks - completedSubtasks;
+    const estimatedTimeRemaining =
+      this.calculateEstimatedTime(remainingSubtasks);
+
+    return {
+      overallCompletion,
+      batchesCompleted: completedBatches,
+      totalBatches,
+      totalSubtasks,
+      completedSubtasks,
+      estimatedTimeRemaining,
+    };
+  }
+
+  /**
+   * Calculate estimated time remaining
+   */
+  private calculateEstimatedTime(remainingSubtasks: number): string {
+    if (remainingSubtasks === 0) return 'Complete';
+    if (remainingSubtasks <= 5) return '1-2 hours';
+    if (remainingSubtasks <= 10) return '2-4 hours';
+    return `${Math.ceil(remainingSubtasks / 3)} hours`;
+  }
+
+  /**
+   * Generate not found page for invalid task IDs
+   */
+  private generateNotFoundPage(taskId: string): string {
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Not Found - Implementation Plan Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-xl shadow-lg p-12 text-center">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">Implementation Plan Not Found</h1>
+            <p class="text-gray-600 mb-4">The task "${this.escapeHtml(taskId)}" could not be found or has no implementation plan.</p>
+            <div class="text-sm text-gray-500">
+                <p>Please verify the task ID and ensure the task has an implementation plan.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`;
+  }
+
+  /**
+   * Generate error page for system errors
+   */
+  private generateErrorPage(taskId: string, error: any): string {
+    const errorMessage = error?.message || 'Unknown error';
+
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - Implementation Plan Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-xl shadow-lg p-12 text-center">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-bug text-red-600 text-2xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">Report Generation Error</h1>
+            <p class="text-gray-600 mb-4">An error occurred while generating the implementation plan report for task "${this.escapeHtml(taskId)}".</p>
+            <div class="text-sm text-gray-500">
+                <p>Error: ${this.escapeHtml(errorMessage)}</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`;
+  }
+
+  /**
+   * Convert JSON field from database to string array safely
+   */
+  private convertJsonToStringArray(
+    jsonField: Record<string, unknown> | null | undefined,
+  ): string[] | undefined {
+    if (!jsonField) {
+      return undefined;
+    }
+
+    // If it's already an array of strings
+    if (Array.isArray(jsonField)) {
+      return jsonField.map(String);
+    }
+
+    // If it's an object, try to extract an array property
+    if (typeof jsonField === 'object') {
+      // Look for common array property names
+      const arrayProps = ['criteria', 'items', 'list', 'values'];
+      for (const prop of arrayProps) {
+        if (jsonField[prop] && Array.isArray(jsonField[prop])) {
+          return (jsonField[prop] as unknown[]).map(String);
+        }
+      }
+
+      // If no array found, return keys as strings
+      return Object.keys(jsonField);
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Escape HTML to prevent XSS attacks with improved type safety
+   */
+  private escapeHtml(text: string | null | undefined): string {
+    if (text === null || text === undefined) {
+      return '';
+    }
+
+    if (typeof text !== 'string') {
+      return String(text);
+    }
+
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 }

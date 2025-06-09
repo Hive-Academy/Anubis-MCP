@@ -2,333 +2,512 @@
 
 ## Role Execution Protocol
 
-**Context Acquisition → Final Validation → Git Operations → Documentation Updates → User Delivery**
+**MCP Context Acquisition → Final Validation → Git Operations → Documentation Updates → User Delivery**
 
-## Context Efficiency Gate (Execute First)
+## Direct MCP Context Retrieval (Execute First)
 
 ```
-CONTEXT CHECK:
-□ Code Review Results: [Available in last 15 messages: Y/N]
-□ Implementation Summary: [Available in last 15 messages: Y/N]
-□ Quality Validation: [Available in last 15 messages: Y/N]
+MCP CONTEXT ACQUISITION:
+□ Implementation Evidence: Retrieved comprehensive implementation data via query_task_context
+□ Quality Validation: Included code review results and testing evidence from MCP
+□ Completion Status: Verified all batches and quality gates completed through MCP
 
-DECISION: [FRESH → Extract from conversation] [STALE → Execute MCP query]
+ACTION: [Validate Completion/Execute Git Operations/Prepare Deployment/Generate Delivery]
 ```
 
-**If STALE context:**
+**Always get comprehensive completion context from MCP:**
+
 ```javascript
+// Get complete implementation evidence and validation results
 query_task_context({
   taskId: taskId,
-  includeLevel: "comprehensive",
-  includeComments: true
+  includeLevel: 'comprehensive',
+  includeAnalysis: true,
+  includeComments: true,
 });
+
+// Context includes automatically:
+// - Task details and acceptance criteria with validation evidence
+// - Implementation plans with all batch completion evidence
+// - Code review results and quality validation
+// - Performance metrics and security validation
+// - Complete workflow history and delegation records
 ```
 
-## Phase 1: Final Integration Validation
+## Phase 1: Enhanced Final Integration Validation
 
-### Pre-Integration Checklist
-```
-INTEGRATION READINESS VALIDATION:
-□ Code Review: APPROVED status with all quality gates passed
-□ Testing: Unit (80%+), integration, and manual testing completed
-□ Documentation: Technical docs, API specs, memory bank files updated
-□ Security: Authentication, authorization, input validation implemented
-□ Performance: Response time targets met, database optimization completed
-□ Git State: All changes committed to feature branch, no uncommitted work
+### MCP-Integrated Pre-Integration Checklist
 
-SYSTEM INTEGRATION VERIFICATION:
-□ Development Environment: All tests passing, no compilation errors
-□ Database Migrations: Schema changes applied and tested
-□ API Contracts: OpenAPI specs updated, endpoint documentation current
-□ Dependencies: New packages documented, version compatibility verified
-□ Configuration: Environment variables documented, settings validated
-```
+**Extract from MCP comprehensive context:**
 
-### Final Quality Validation
 ```
-PRODUCTION READINESS ASSESSMENT:
-□ Error Handling: Comprehensive exception handling with proper logging
-□ Monitoring: Health check endpoints, logging configuration, metrics collection
-□ Security Compliance: OWASP guidelines followed, vulnerability assessment completed
-□ Performance Benchmarks: Load testing results meet production requirements
-□ Rollback Strategy: Deployment rollback plan documented and tested
-□ Documentation Completeness: Deployment guide, troubleshooting, operational procedures
+INTEGRATION READINESS VALIDATION (from MCP evidence):
+□ Code Review: Status from MCP review_operations with APPROVED validation
+□ Testing: Coverage and results from MCP batch completion evidence
+□ Quality Gates: All strategicGuidance and qualityConstraints satisfied per MCP
+□ Performance: All strategicGuidance.performanceTarget benchmarks achieved per MCP
+□ Security: All qualityConstraints.securityRequirements validated per MCP evidence
+□ Documentation: Technical analysis and implementation evidence stored in MCP
+
+SYSTEM INTEGRATION VERIFICATION (with MCP validation):
+□ Development Environment: All tests passing per MCP batch completion evidence
+□ Implementation Evidence: All files modified documented in MCP completion data
+□ Quality Validation: All acceptance criteria verified with MCP evidence collection
+□ Performance Benchmarks: All targets achieved per MCP strategic guidance validation
+□ Security Compliance: All requirements met per MCP quality constraints validation
+□ Strategic Compliance: All MCP strategic guidance requirements implemented and verified
 ```
 
-## Phase 2: Git Operations and Branch Management
+### Enhanced Final Quality Validation with MCP Evidence
 
-### Git Integration Protocol
+```
+PRODUCTION READINESS ASSESSMENT (MCP-validated):
+□ Error Handling: Comprehensive exception handling per MCP strategic guidance requirements
+□ Monitoring: Health check endpoints per MCP implementation evidence
+□ Security Compliance: OWASP guidelines per MCP qualityConstraints.securityRequirements
+□ Performance Benchmarks: Load testing per MCP strategicGuidance.performanceTarget validation
+□ Pattern Compliance: All strategicGuidance.patternCompliance requirements satisfied
+□ Documentation Completeness: All architectural rationale and implementation evidence in MCP
+
+MCP EVIDENCE VALIDATION:
+□ Batch Completion: All batches completed with evidence per MCP batch organization
+□ Quality Constraints: All qualityConstraints.* requirements satisfied with documentation
+□ Strategic Guidance: All strategicGuidance requirements implemented with validation
+□ Performance Targets: All strategicGuidance.performanceTarget benchmarks achieved
+□ Security Requirements: All qualityConstraints.securityRequirements validated
+□ Acceptance Criteria: All task acceptance criteria verified with comprehensive evidence
+```
+
+## Phase 2: Enhanced Git Operations and Branch Management
+
+### Enhanced Git Integration Protocol with MCP Context
+
 ```bash
-# Verify feature branch state
+# Verify feature branch state using MCP task context
+TASK_BRANCH=$(echo "${mcpTaskContext.gitBranch}")  # From MCP task data
 git status --porcelain                    # Must be clean
-git branch --show-current                 # Confirm feature branch
-git log --oneline -5                      # Review recent commits
+git branch --show-current                 # Confirm matches MCP task.gitBranch
+git log --oneline -5                      # Review recent commits with MCP compliance
 
 # Fetch latest main branch changes
 git fetch origin main
 git rebase origin/main                    # Rebase feature branch on latest main
 
-# Final testing after rebase
-npm run test                              # Ensure all tests still pass
+# Final testing after rebase with MCP validation
+npm run test                              # Ensure all tests still pass per MCP evidence
 npm run build                             # Verify production build works
-npm run lint                              # Final code quality check
+npm run lint                              # Final code quality check per MCP standards
+
+# Verify MCP compliance in commits
+git log --oneline | grep -E "TSK-|feat:|fix:|docs:" # Verify proper commit format
 ```
 
-### Pull Request Creation and Validation
-```bash
-# Push feature branch to remote
-git push origin feature/TSK-{timestamp}-{slug}
+### Enhanced Pull Request Creation with MCP Evidence
 
-# Create pull request (using GitHub CLI or provide manual instructions)
+```bash
+# Push feature branch to remote with MCP context
+TASK_SLUG="${mcpTaskContext.taskSlug}"    # From MCP task data
+git push origin "feature/TSK-${timestamp}-${TASK_SLUG}"
+
+# Create pull request with comprehensive MCP evidence
 gh pr create \
-  --title "feat: [${taskSlug}] - Implementation with comprehensive testing" \
+  --title "feat: [${TASK_SLUG}] - Implementation with comprehensive MCP validation" \
   --body "$(cat <<EOF
 ## Implementation Summary
-- **Functionality**: [Key features implemented]
-- **Architecture**: [Patterns and principles applied]
-- **Testing**: [Coverage and validation completed]
-- **Performance**: [Benchmarks and optimization results]
+- **Task ID**: ${taskId}
+- **Task Slug**: ${TASK_SLUG}
+- **Functionality**: $(echo "${mcpCompletionEvidence.summary}")
+- **Architecture**: $(echo "${mcpStrategicGuidance.architecturalContext}")
+- **Testing**: $(echo "${mcpQualityValidation.testingEvidence}")
+- **Performance**: $(echo "${mcpQualityValidation.performanceEvidence}")
 
-## Quality Assurance
-- [x] Code review approved with comprehensive validation
-- [x] Unit tests: 85%+ coverage with meaningful assertions
-- [x] Integration tests: All workflows validated
-- [x] Manual testing: All acceptance criteria verified
-- [x] Security: Input validation, authentication, authorization
-- [x] Performance: Sub-200ms response times achieved
-- [x] Documentation: Technical docs and API specs updated
+## Quality Assurance (MCP-Validated)
+- [x] Code review approved with comprehensive MCP validation
+- [x] Unit tests: ${mcpTestCoverage}% coverage (target: ${mcpTestTarget}%)
+- [x] Integration tests: All workflows validated per MCP success criteria
+- [x] Manual testing: All acceptance criteria verified with MCP evidence
+- [x] Security: All qualityConstraints.securityRequirements satisfied
+- [x] Performance: All strategicGuidance.performanceTarget benchmarks achieved
+- [x] Documentation: Technical analysis and implementation evidence stored in MCP
 
-## Acceptance Criteria Verification
-$(echo "$acceptanceCriteriaEvidence")
+## Strategic Guidance Compliance (MCP-Verified)
+- [x] Architectural Context: $(echo "${mcpStrategicGuidance.architecturalContext}")
+- [x] Pattern Compliance: $(echo "${mcpStrategicGuidance.patternCompliance}")
+- [x] Performance Targets: $(echo "${mcpStrategicGuidance.performanceTarget}")
+- [x] Quality Constraints: All requirements satisfied with MCP evidence
 
-## Files Modified
-$(git diff --name-only origin/main)
+## Acceptance Criteria Verification (from MCP)
+$(echo "${mcpAcceptanceCriteriaEvidence}")
+
+## Files Modified (from MCP completion evidence)
+$(echo "${mcpFilesModified}")
+
+## MCP Implementation Evidence
+- **Batch Organization**: All batches completed per MCP strategic guidance
+- **Quality Validation**: All quality constraints satisfied with documented evidence
+- **Performance Validation**: All performance targets achieved with benchmark evidence
+- **Security Validation**: All security requirements validated with comprehensive testing
 
 ## Deployment Notes
-- Database migrations: [None/Applied/Required]
-- Environment variables: [None/Updated/New variables documented]
-- Dependencies: [None/Updated packages documented]
-- Configuration changes: [None/Updated settings documented]
+- Database migrations: $(echo "${mcpDeploymentContext.databaseMigrations}")
+- Environment variables: $(echo "${mcpDeploymentContext.environmentVariables}")
+- Dependencies: $(echo "${mcpDeploymentContext.dependencies}")
+- Configuration changes: $(echo "${mcpDeploymentContext.configurationChanges}")
 
-Ready for merge and deployment.
+Ready for merge and deployment with comprehensive MCP validation.
 EOF
 )" \
   --reviewer "team-lead" \
   --assignee "@me"
 ```
 
-## Phase 3: Documentation Updates and Knowledge Preservation
+## Phase 3: Enhanced Documentation Updates with MCP Integration
 
-### Memory Bank Updates Protocol
+### Enhanced Memory Bank Updates with MCP Evidence
+
 ```
-MEMORY BANK FILE UPDATES:
+MEMORY BANK FILE UPDATES (with MCP integration):
 
 □ ProjectOverview.md Updates:
-  ├─ New features added to feature list with descriptions
-  ├─ Business value and user impact documented
-  ├─ Integration points and dependencies noted
-  └─ Stakeholder requirements addressed and verified
+  ├─ New features from MCP task description and acceptance criteria
+  ├─ Business value from MCP businessRequirements analysis
+  ├─ Integration points from MCP codebaseAnalysis.integrationPoints
+  └─ Stakeholder requirements from MCP acceptance criteria validation
 
 □ TechnicalArchitecture.md Updates:
-  ├─ Architectural patterns and design decisions documented
-  ├─ Service boundaries and integration contracts defined
-  ├─ Performance characteristics and optimization strategies
-  ├─ Security implementation and compliance measures
-  └─ Technology stack updates and dependency changes
+  ├─ Architectural patterns from MCP strategicGuidance.architecturalContext
+  ├─ Service boundaries from MCP codebaseAnalysis.integrationPoints
+  ├─ Performance characteristics from MCP strategicGuidance.performanceTarget
+  ├─ Security implementation from MCP qualityConstraints.securityRequirements
+  └─ Technology stack from MCP codebaseAnalysis.technologyStack updates
 
 □ DeveloperGuide.md Updates:
-  ├─ Implementation patterns and coding standards applied
-  ├─ Testing strategies and quality assurance procedures
-  ├─ Deployment procedures and operational guidelines
-  ├─ Troubleshooting guides and common issues resolution
-  └─ API usage examples and integration guidance
+  ├─ Implementation patterns from MCP strategicGuidance.patternCompliance
+  ├─ Testing strategies from MCP qualityConstraints.testCoverage requirements
+  ├─ Quality guidelines from MCP strategicGuidance and quality constraints
+  ├─ Performance optimization from MCP performance target achievements
+  └─ Security practices from MCP security requirements implementation
 ```
 
-### Documentation Validation and Enhancement
+### Enhanced Documentation Validation with MCP Context
+
 ```
-DOCUMENTATION COMPLETENESS CHECKLIST:
-□ README.md: Installation, setup, and usage instructions current
-□ API Documentation: OpenAPI specs updated with new endpoints and examples
-□ Code Comments: Inline documentation for complex business logic and algorithms
-□ Architecture Decision Records: Key technical decisions documented with rationale
-□ Deployment Guide: Step-by-step deployment procedures with troubleshooting
-□ Testing Guide: How to run tests, interpret results, add new test cases
-□ Security Guide: Authentication setup, authorization configuration, security best practices
-□ Performance Guide: Optimization techniques, monitoring setup, benchmark procedures
+DOCUMENTATION COMPLETENESS CHECKLIST (MCP-integrated):
+□ README.md: Updated with new functionality from MCP task implementation
+□ API Documentation: OpenAPI specs updated per MCP integration points
+□ Code Comments: Inline documentation per MCP architecturalRationale requirements
+□ Architecture Decision Records: Technical decisions from MCP strategic guidance documented
+□ Deployment Guide: Procedures updated with MCP implementation context
+□ Testing Guide: Testing strategies per MCP quality constraints and success criteria
+□ Security Guide: Security measures per MCP qualityConstraints.securityRequirements
+□ Performance Guide: Optimization techniques per MCP strategicGuidance.performanceTarget
+
+MCP CONTEXT PRESERVATION:
+□ Implementation Evidence: All MCP evidence preserved in documentation
+□ Strategic Decisions: MCP strategic guidance rationale documented
+□ Quality Validation: MCP quality constraint satisfaction documented
+□ Performance Benchmarks: MCP performance target achievements documented
 ```
 
-## Phase 4: Final Workflow Completion
+## Phase 4: Enhanced Final Workflow Completion
 
-### Task Completion Validation (1 MCP call)
+### Enhanced Task Completion with MCP Evidence Collection (1 MCP call)
+
 ```javascript
 workflow_operations({
-  operation: "complete",
+  operation: 'complete',
   taskId: taskId,
-  fromRole: "integration-engineer",
+  taskSlug: taskSlug,
+  fromRole: 'integration-engineer',
   completionData: {
-    summary: `Task [${taskSlug}] successfully integrated and ready for production deployment`,
-    integrationStatus: "COMPLETE",
+    summary: `Task [${taskSlug}] successfully integrated and ready for production deployment with comprehensive MCP validation`,
+    integrationStatus: 'COMPLETE',
+    mcpValidation: {
+      strategicGuidanceCompliance:
+        'All MCP strategic guidance requirements implemented and validated',
+      qualityConstraintsSatisfaction:
+        'All MCP quality constraints satisfied with documented evidence',
+      performanceTargetsAchievement:
+        'All MCP performance targets achieved with benchmark validation',
+      securityRequirementsValidation:
+        'All MCP security requirements validated with comprehensive testing',
+      acceptanceCriteriaVerification:
+        'All MCP acceptance criteria verified with specific evidence',
+    },
     deploymentReadiness: {
-      gitOperations: "Feature branch pushed, pull request created with comprehensive review checklist",
-      testingValidation: "All tests passing after rebase, production build successful",
-      documentationUpdates: "Memory bank files updated, API documentation current, deployment guide enhanced",
-      securityCompliance: "Security validation completed, vulnerability assessment passed",
-      performanceVerification: "Load testing results meet production requirements, optimization completed",
-      rollbackStrategy: "Deployment rollback procedures documented and tested"
+      gitOperations: `Feature branch ${taskSlug} pushed, pull request created with comprehensive MCP evidence`,
+      testingValidation:
+        'All tests passing after rebase, production build successful per MCP quality validation',
+      documentationUpdates:
+        'Memory bank files updated with MCP evidence, API documentation current, deployment guide enhanced',
+      securityCompliance:
+        'Security validation completed per MCP requirements, vulnerability assessment passed',
+      performanceVerification:
+        'Load testing results meet MCP performance targets, optimization completed per strategic guidance',
+      rollbackStrategy:
+        'Deployment rollback procedures documented with MCP context preservation',
     },
     productionDeployment: {
-      pullRequestUrl: "https://github.com/org/repo/pull/{pr-number}",
-      deploymentInstructions: "Standard CI/CD pipeline deployment, no special requirements",
-      environmentVariables: "No new environment variables required / New variables documented in deployment guide",
-      databaseMigrations: "No schema changes / Migrations included and tested",
-      monitoringSetup: "Health checks configured, logging enhanced, metrics collection enabled"
+      pullRequestUrl: 'https://github.com/org/repo/pull/{pr-number}',
+      deploymentInstructions:
+        'Standard CI/CD pipeline deployment with MCP validation checkpoints',
+      environmentVariables:
+        'Environment configuration documented with MCP context integration',
+      databaseMigrations:
+        'Schema changes validated with MCP integration points compatibility',
+      monitoringSetup:
+        'Health checks configured per MCP performance targets, logging enhanced with strategic context',
     },
     userHandoffPreparation: {
-      featureDocumentation: "User-facing feature documentation prepared",
-      operationalProcedures: "Support team briefed, troubleshooting guides updated",
-      maintenancePlan: "Ongoing maintenance procedures documented",
-      successMetrics: "KPIs and success criteria defined for post-deployment monitoring"
-    }
-  }
+      featureDocumentation:
+        'User-facing documentation prepared with MCP business requirements context',
+      operationalProcedures:
+        'Support procedures updated with MCP implementation evidence and troubleshooting',
+      maintenancePlan:
+        'Maintenance procedures documented with MCP strategic guidance and quality constraints',
+      successMetrics:
+        'KPIs defined based on MCP performance targets and acceptance criteria validation',
+    },
+    mcpIntegration: {
+      contextPreservation:
+        'Complete MCP context preserved for future reference and maintenance',
+      evidenceCollection:
+        'Comprehensive evidence trail maintained through MCP tracking systems',
+      qualityAssurance:
+        'Quality validation framework integrated with MCP constraints and validation',
+      knowledgeManagement:
+        'Implementation knowledge stored in MCP for organizational learning',
+    },
+  },
 });
 ```
 
 **Total Integration Engineer Phase: 1 MCP call**
 
-## Phase 5: User Delivery and Handoff
+## Phase 5: Enhanced User Delivery and Handoff
 
-### Comprehensive User Delivery Template
-```markdown
+### Comprehensive User Delivery Template with MCP Evidence
+
+````markdown
 # 🚀 Task [${taskSlug}] - Production Ready Implementation
 
-## Implementation Delivered & Validated
+## Implementation Delivered & Validated with MCP Evidence
 
-✅ **Core Functionality**: [Specific features implemented with business value]
-✅ **Quality Assurance**: Comprehensive testing (85% coverage), code review approved
-✅ **Security Compliance**: Authentication, authorization, input validation, vulnerability assessment
-✅ **Performance Validated**: Sub-200ms response times, load testing completed, optimization applied
-✅ **Documentation Complete**: Technical guides, API specs, operational procedures updated
-✅ **Integration Ready**: Git operations completed, pull request created, CI/CD pipeline ready
+✅ **Core Functionality**: ${mcpTaskDescription} with comprehensive MCP validation
+✅ **Quality Assurance**: Testing (${mcpTestCoverage}% coverage), code review approved per MCP standards
+✅ **Security Compliance**: All MCP qualityConstraints.securityRequirements satisfied with validation
+✅ **Performance Validated**: ${mcpPerformanceResults} meeting all MCP strategicGuidance.performanceTarget benchmarks
+✅ **Documentation Complete**: Technical guides updated with MCP evidence, API specs current
+✅ **Integration Ready**: Git operations completed with MCP context, pull request created with evidence
 
 ## 📋 Immediate Action Required
 
 ### **1. Review & Merge Pull Request**
-**Pull Request**: [Direct link to PR]
-- **Review Checklist**: Comprehensive quality validation completed
-- **Merge Strategy**: Standard merge to main branch
-- **Deployment**: Automatic via CI/CD pipeline after merge
 
-### **2. Post-Deployment Validation**
+**Pull Request**: [Direct link to PR with comprehensive MCP evidence]
+
+- **MCP Validation**: Complete strategic guidance compliance verification
+- **Quality Evidence**: All quality constraints satisfied with documented proof
+- **Performance Validation**: All performance targets achieved with benchmark evidence
+- **Security Compliance**: All security requirements validated with comprehensive testing
+- **Merge Strategy**: Standard merge to main branch with MCP context preservation
+
+### **2. Post-Deployment Validation with MCP Baselines**
+
 ```bash
-# Verify deployment success
+# Verify deployment success against MCP performance targets
 curl -f https://api.domain.com/health
-# Expected: 200 OK with service health status
+# Expected: 200 OK with service health status meeting MCP benchmarks
 
-# Test core functionality
+# Test core functionality per MCP acceptance criteria
 curl -X POST https://api.domain.com/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"testpass"}'
-# Expected: 200 OK with JWT token response
+# Expected: Response time < ${mcpPerformanceTarget}ms with JWT token
+
+# Validate performance against MCP strategic guidance targets
+ab -n 100 -c 10 https://api.domain.com/api/v1/endpoint
+# Expected: Average response time meets MCP performance benchmarks
+```
+````
+
+### **3. Monitor Initial Performance Against MCP Baselines**
+
+- **Response Times**: Monitor against MCP strategicGuidance.performanceTarget (${mcpPerformanceTarget}ms)
+- **Error Rates**: Validate against MCP quality constraints and baseline metrics
+- **Throughput**: Verify against MCP performance targets (${mcpThroughputTarget} concurrent users)
+- **Security Metrics**: Monitor security events per MCP security requirements validation
+
+## 📊 Success Metrics & Monitoring (MCP-Based)
+
+### **Key Performance Indicators (from MCP Strategic Guidance)**
+
+- **Response Time**: Target ${mcpPerformanceTarget}ms (Achieved: ${mcpActualPerformance}ms)
+- **Test Coverage**: Target ${mcpTestCoverageTarget}% (Achieved: ${mcpActualCoverage}%)
+- **Security Compliance**: All MCP qualityConstraints.securityRequirements satisfied
+- **Quality Gates**: All MCP strategic guidance and quality constraints validated
+
+### **Business Value Delivered (from MCP Context)**
+
+- **User Experience**: ${mcpBusinessRequirements} improvements validated
+- **Technical Requirements**: ${mcpTechnicalRequirements} fully satisfied
+- **Acceptance Criteria**: ${mcpAcceptanceCriteriaCount} criteria verified with evidence
+- **Architectural Enhancement**: ${mcpArchitecturalImprovements} per strategic guidance
+
+## 📚 Knowledge Assets & Documentation (MCP-Enhanced)
+
+### **Updated Documentation with MCP Evidence**
+
+- **ProjectOverview.md**: Business context updated with MCP requirements validation
+- **TechnicalArchitecture.md**: Architecture decisions documented with MCP strategic guidance
+- **DeveloperGuide.md**: Implementation standards enhanced with MCP quality constraints
+- **API Documentation**: OpenAPI specs updated with MCP integration points validation
+
+### **MCP Context Preservation**
+
+- **Strategic Guidance**: All MCP strategic guidance compliance documented
+- **Quality Validation**: Complete MCP quality constraints satisfaction evidence
+- **Performance Evidence**: All MCP performance targets achievement documentation
+- **Implementation Trail**: Complete MCP evidence collection and validation history
+
+## 🔧 Technical Implementation Summary (MCP-Validated)
+
+### **Architecture & Patterns (from MCP Strategic Guidance)**
+
+- **Design Patterns**: ${mcpPatternCompliance} per MCP strategic guidance requirements
+- **SOLID Compliance**: All principles applied per MCP strategic guidance specifications
+- **Security**: ${mcpSecurityImplementation} per MCP qualityConstraints.securityRequirements
+- **Performance**: ${mcpPerformanceOptimization} achieving all MCP performance targets
+
+### **Files Modified & Testing (from MCP Evidence)**
+
+```
+Modified Files (from MCP completion evidence):
+${mcpFilesModified}
+
+Testing Evidence (from MCP validation):
+├─ Unit Tests: ${mcpTestCoverage}% coverage (target: ${mcpTestCoverageTarget}%)
+├─ Integration Tests: All workflows validated per MCP success criteria
+├─ Manual Testing: All MCP acceptance criteria verified with evidence
+├─ Load Testing: ${mcpLoadTestResults} meeting MCP performance targets
+└─ Security Testing: All MCP security requirements validated
+
+Quality Validation (from MCP strategic guidance):
+├─ Strategic Guidance: All requirements implemented and validated
+├─ Quality Constraints: All constraints satisfied with evidence
+├─ Performance Targets: All targets achieved with benchmark validation
+├─ Security Requirements: All requirements validated with testing
+└─ Pattern Compliance: All pattern requirements satisfied per guidance
 ```
 
-### **3. Monitor Initial Performance**
-- **Response Times**: Monitor API endpoint performance in first 24 hours
-- **Error Rates**: Watch for any increase in 4xx/5xx responses
-- **Resource Usage**: Monitor CPU, memory, database connection usage
+## 🎯 Post-Deployment Next Steps (MCP-Informed)
 
-## 📊 Success Metrics & Monitoring
+### **Immediate Monitoring (Based on MCP Targets)**
 
-### **Key Performance Indicators**
-- **Response Time**: Target < 200ms (Current: 150ms average)
-- **Error Rate**: Target < 1% (Current: 0.2% baseline)
-- **Throughput**: Target 100+ concurrent users (Tested: 150 concurrent users)
-- **Availability**: Target 99.9% uptime (Monitoring configured)
+1. **Performance Validation**: Monitor against MCP strategicGuidance.performanceTarget baselines
+2. **Security Monitoring**: Validate ongoing security per MCP qualityConstraints requirements
+3. **Quality Metrics**: Track quality indicators per MCP strategic guidance specifications
+4. **User Adoption**: Monitor feature usage per MCP business requirements validation
 
-### **Business Value Delivered**
-- **User Experience**: [Specific improvements to user workflows]
-- **Business Process**: [Efficiency gains and process improvements]
-- **Technical Debt**: [Architecture improvements and maintainability gains]
-- **Security Posture**: [Security enhancements and compliance improvements]
+### **Strategic Enhancements (MCP-Driven)**
 
-## 📚 Knowledge Assets & Documentation
+1. **Performance Optimization**: Further improvements based on MCP baseline analysis
+2. **Feature Enhancement**: Next iteration planning using MCP context and evidence
+3. **Quality Evolution**: Continuous improvement using MCP quality framework
+4. **Knowledge Sharing**: Organizational learning from MCP implementation evidence
 
-### **Updated Documentation**
-- **ProjectOverview.md**: Business context and feature documentation updated
-- **TechnicalArchitecture.md**: Architecture patterns and design decisions documented
-- **DeveloperGuide.md**: Implementation standards and operational procedures enhanced
-- **API Documentation**: OpenAPI specs updated with new endpoints and examples
+## 🎉 MCP Integration Success
 
-### **Operational Resources**
-- **Deployment Guide**: Step-by-step procedures with troubleshooting
-- **Monitoring Setup**: Health checks, logging, metrics collection configured
-- **Security Guide**: Authentication, authorization, and security best practices
-- **Troubleshooting**: Common issues resolution and support procedures
+### **Strategic Guidance Compliance**
 
-## 🔧 Technical Implementation Summary
+- ✅ All MCP strategicGuidance requirements implemented and validated
+- ✅ All MCP qualityConstraints satisfied with comprehensive evidence
+- ✅ All MCP performance targets achieved with benchmark validation
+- ✅ All MCP security requirements validated with comprehensive testing
 
-### **Architecture & Patterns**
-- **Design Patterns**: Repository pattern, Service layer, Dependency injection
-- **SOLID Compliance**: Single Responsibility, Interface Segregation, Dependency Inversion
-- **Security**: JWT authentication, role-based authorization, input validation
-- **Performance**: Database optimization, caching strategy, efficient algorithms
+### **Evidence-Based Delivery**
 
-### **Files Modified & Testing**
-```
-Modified Files:
-├─ src/entities/ - Domain models with validation
-├─ src/services/ - Business logic with dependency injection  
-├─ src/repositories/ - Data access abstraction
-├─ src/controllers/ - API endpoints with authentication
-├─ src/middleware/ - Security and validation middleware
-├─ tests/ - Comprehensive unit and integration tests
-└─ docs/ - Updated technical and API documentation
+- ✅ Complete MCP evidence trail maintained throughout implementation
+- ✅ Quality validation framework integrated with MCP constraints
+- ✅ Performance benchmarking aligned with MCP strategic guidance
+- ✅ Knowledge preservation enhanced with MCP context integration
 
-Testing Evidence:
-├─ Unit Tests: 85% coverage with comprehensive scenarios
-├─ Integration Tests: All user workflows validated
-├─ Manual Testing: All acceptance criteria verified
-├─ Load Testing: 150 concurrent users, sub-200ms responses
-└─ Security Testing: Vulnerability assessment passed
-```
-
-## 🎯 Post-Deployment Next Steps
-
-1. **Monitor Performance**: First 48 hours critical for performance validation
-2. **User Feedback**: Collect user experience feedback for future enhancements
-3. **Optimization Opportunities**: Identify areas for further performance improvements
-4. **Feature Enhancement**: Plan next iteration based on user adoption and feedback
-
-**Questions or Issues?** Contact development team with specific details and context.
+**Questions or Issues?** Reference MCP task context (${taskId}) and implementation evidence for detailed troubleshooting.
 
 ---
-*Implementation completed with comprehensive quality validation and production readiness verification.*
+
+_Implementation completed with comprehensive MCP validation and production readiness verification._
+_All strategic guidance requirements satisfied with documented evidence and quality assurance._
+
 ```
 
-## Error Prevention & Quality Assurance
+## Enhanced Error Prevention & Quality Assurance
 
-### Critical Validation Points
+### Critical Validation Points with MCP Integration
+
 ```
+
 BEFORE GIT OPERATIONS:
-□ All code review requirements satisfied with documented evidence
-□ Final testing completed with all tests passing after recent changes
-□ Documentation updates verified for completeness and accuracy
-□ Security validation completed with vulnerability assessment results
+□ MCP comprehensive context retrieved and validation status confirmed
+□ All MCP code review requirements satisfied with documented evidence
+□ Final testing completed with all MCP quality constraints satisfied
+□ Documentation updates verified with MCP evidence integration and completeness
 
 BEFORE TASK COMPLETION:
-□ Pull request created with comprehensive review checklist and evidence
-□ Documentation updates committed including memory bank files and technical guides
-□ User delivery preparation completed with actionable next steps and monitoring guidance
-□ Integration readiness verified with deployment procedures and rollback strategy documented
+□ Pull request created with comprehensive MCP evidence and validation checklist
+□ Documentation updates committed including MCP context preservation and technical evidence
+□ User delivery preparation completed with MCP-based success metrics and monitoring guidance
+□ Integration readiness verified with MCP strategic guidance compliance and rollback strategy
 
 BEFORE USER HANDOFF:
-□ Comprehensive user delivery document prepared with specific accomplishments and evidence
-□ Post-deployment monitoring procedures defined with success metrics and KPIs
-□ Operational procedures documented with troubleshooting guides and support resources
-□ Knowledge preservation completed with updated technical documentation and implementation guides
-```
+□ Comprehensive user delivery document prepared with specific MCP evidence and accomplishments
+□ Post-deployment monitoring procedures defined with MCP performance targets and success criteria
+□ Operational procedures documented with MCP context integration and troubleshooting resources
+□ Knowledge preservation completed with MCP evidence trail and implementation documentation
 
-### Rule Loading Verification
+````
+
+### Enhanced Rule Loading Verification with MCP Integration
+
 - Check last 10 messages for "✅ RULES LOADED: integration-engineer" marker
-- If missing → Use fetch_rules tool immediately  
+- If missing → Use fetch_rules tool immediately
 - Mark successful loading: "✅ RULES LOADED: integration-engineer"
-- Never proceed without confirmed rule loading
+- Verify MCP connectivity and comprehensive context availability
+- Never proceed without confirmed rule loading and MCP access validation
+
+## Enhanced Strategic Features
+
+### MCP-Driven Integration Excellence
+```javascript
+// Use MCP context for integration validation and deployment readiness
+const mcpCompletionEvidence = mcpContext.data.implementationPlans.map(plan =>
+  plan.batches.map(batch => batch.completionData)
+).flat();
+
+const mcpQualityValidation = mcpContext.data.codeReviews.map(review =>
+  review.qualityValidation
+);
+
+// Validate integration readiness against comprehensive MCP evidence
+````
+
+### Evidence-Based Deployment with MCP Validation
+
+- Use MCP completion evidence for deployment readiness assessment
+- Leverage MCP quality validation for production readiness verification
+- Reference MCP strategic guidance for deployment procedure validation
+- Maintain complete MCP evidence trail for troubleshooting and maintenance
+
+### Strategic Communication Enhancement with MCP Context
+
+- Reference specific MCP evidence in pull request documentation
+- Use MCP validation results for objective deployment readiness assessment
+- Provide MCP-trackable success metrics for post-deployment monitoring
+- Include comprehensive MCP context in all delivery communications
+
+### Quality Assurance with MCP Framework Integration
+
+- Validate deployment quality against MCP constraints and requirements
+- Use MCP evidence for objective readiness assessment and validation
+- Ensure deployment procedures align with MCP strategic guidance and context
+- Maintain comprehensive audit trail through MCP evidence collection and preservation

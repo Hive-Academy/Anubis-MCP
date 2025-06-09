@@ -4,7 +4,7 @@ This guide provides essential patterns and examples for the new domain-based MCP
 
 ## Core Workflow Domain Tools
 
-### Task Operations - Task lifecycle management
+### Task Operations - Enhanced Task lifecycle management
 
 **Create Task with Description:**
 
@@ -111,7 +111,11 @@ This guide provides essential patterns and examples for the new domain-based MCP
   "planData": {
     "overview": "Authentication implementation with JWT",
     "approach": "Using NestJS with JWT strategy",
-    "technicalDecisions": "Passport.js with jsonwebtoken library",
+    "technicalDecisions": {
+      "authStrategy": "JWT with refresh tokens",
+      "storage": "httpOnly cookies for tokens",
+      "validation": "Zod schemas with custom decorators"
+    },
     "filesToModify": ["src/auth/*", "src/users/*"],
     "createdBy": "architect"
   }
@@ -150,6 +154,104 @@ This guide provides essential patterns and examples for the new domain-based MCP
   "operation": "get_plan",
   "taskId": "TSK-123",
   "includeBatches": true
+}
+```
+
+### Individual Subtask Operations - Enhanced Subtask Management
+
+**Purpose**: Manage individual subtasks with evidence collection, dependency tracking, and strategic guidance.
+
+**Create Individual Subtask with Full Specifications:**
+
+```json
+{
+  "operation": "create_subtask",
+  "taskId": "TSK-123",
+  "subtaskData": {
+    "name": "Implement Password Reset Flow",
+    "description": "Create secure password reset functionality with email verification",
+    "batchId": "AUTH-B002",
+    "sequenceNumber": 3,
+    "acceptanceCriteria": [
+      "Password reset email sent securely",
+      "Reset token validation working",
+      "New password update successful",
+      "Security audit passed"
+    ],
+    "strategicGuidance": {
+      "architecturalPattern": "Command pattern for password operations",
+      "implementationApproach": "Use email service with secure token generation",
+      "performanceConsiderations": "Async email sending, token expiration",
+      "qualityRequirements": "Security testing, rate limiting"
+    },
+    "technicalSpecifications": {
+      "frameworks": ["@nestjs/mailer", "crypto"],
+      "patterns": ["Command pattern", "Repository pattern"],
+      "testingRequirements": "Unit tests for token generation, integration tests for email flow"
+    },
+    "dependencies": ["AUTH-B001-1", "AUTH-B001-2"],
+    "estimatedDuration": "4 hours"
+  }
+}
+```
+
+**Update Subtask with Completion Evidence:**
+
+```json
+{
+  "operation": "update_subtask",
+  "taskId": "TSK-123",
+  "subtaskId": 45,
+  "updateData": {
+    "status": "completed",
+    "completionEvidence": {
+      "implementationSummary": "Password reset flow implemented with secure token generation and email verification",
+      "filesModified": [
+        "src/auth/services/password-reset.service.ts",
+        "src/auth/controllers/auth.controller.ts",
+        "src/auth/dto/password-reset.dto.ts"
+      ],
+      "duration": "3.5 hours",
+      "acceptanceCriteriaVerification": {
+        "Password reset email sent securely": "Implemented with rate limiting and secure token generation",
+        "Reset token validation working": "Token validation with expiration and single-use enforcement",
+        "New password update successful": "Password hashing and database update working",
+        "Security audit passed": "No vulnerabilities found in security review"
+      },
+      "testingResults": {
+        "unitTests": "12 unit tests added, 100% coverage for password reset service",
+        "integrationTests": "E2E tests for complete password reset flow",
+        "manualTesting": "Manual testing completed for all user scenarios"
+      },
+      "qualityAssurance": {
+        "codeQuality": "ESLint passed, TypeScript strict mode compliant",
+        "performance": "Password reset completes in < 500ms",
+        "security": "Security review passed, no OWASP violations"
+      },
+      "strategicGuidanceFollowed": "Command pattern implemented, proper error handling, async email sending"
+    }
+  }
+}
+```
+
+**Get Next Available Subtask:**
+
+```json
+{
+  "operation": "get_next_subtask",
+  "taskId": "TSK-123",
+  "status": "not-started"
+}
+```
+
+**Get Specific Subtask with Evidence:**
+
+```json
+{
+  "operation": "get_subtask",
+  "taskId": "TSK-123",
+  "subtaskId": 45,
+  "includeEvidence": true
 }
 ```
 

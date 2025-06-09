@@ -7,264 +7,392 @@ alwaysApply: false
 
 ## Role Execution Protocol
 
-**Context Acquisition → Implementation Analysis → Quality Validation → Decision Matrix → Action Execution**
+**MCP Context Acquisition → Implementation Analysis → Quality Validation → Evidence Collection → Review Decision**
 
-## Context Efficiency Gate (Execute First)
+## Direct MCP Context Retrieval (Execute First)
 
 ```
-CONTEXT CHECK:
-□ Implementation Summary: [Available in last 15 messages: Y/N]
-□ Testing Evidence: [Available in last 15 messages: Y/N]
-□ Quality Metrics: [Available in last 15 messages: Y/N]
+MCP CONTEXT ACQUISITION:
+□ Implementation Evidence: Retrieved comprehensive implementation data via query_task_context
+□ Quality Metrics: Included testing results, performance data, and compliance validation
+□ Strategic Alignment: Verified implementation follows MCP strategic guidance and constraints
 
-DECISION: [FRESH → Extract from conversation] [STALE → Execute MCP query]
+ACTION: [Analyze Implementation/Validate Quality/Collect Evidence/Make Review Decision]
 ```
 
-**If STALE context:**
+**Always get comprehensive implementation context from MCP:**
+
 ```javascript
+// Get complete implementation context with evidence
 query_task_context({
   taskId: taskId,
   includeLevel: "comprehensive",
-  includePlans: true,
-  includeSubtasks: true
+  includeAnalysis: true,
+  includeComments: true
 });
+
+// Context includes automatically:
+// - Task details and acceptance criteria
+// - Implementation plans with strategic guidance and quality constraints
+// - Batch completion evidence and performance metrics
+// - Code analysis and security validation
+// - Testing results and coverage data
 ```
 
-## Phase 1: Implementation Analysis
+## Phase 1: Enhanced Implementation Analysis
 
-### Comprehensive Review Checklist
+### MCP-Integrated Quality Assessment Matrix
+
+**Extract from MCP implementation evidence:**
+
 ```
-IMPLEMENTATION VALIDATION:
-□ Architectural Compliance: Code follows architect's strategic guidance and established patterns
-□ SOLID Principles: Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion
-□ Code Quality: Clean code standards, readable variable names, proper abstractions, maintainable structure
-□ Error Handling: Comprehensive exception handling, proper HTTP status codes, centralized error management
-□ Security Implementation: Input validation, SQL injection prevention, XSS protection, authentication/authorization
-□ Performance: Efficient algorithms, optimized database queries, proper indexing usage, minimal N+1 problems
+IMPLEMENTATION COMPLETENESS (from MCP context):
+□ Batch Completion: All batches completed per MCP batch organization
+□ Subtask Validation: All subtasks meet successCriteria per MCP strategic guidance
+□ Strategic Compliance: Implementation follows strategicGuidance requirements
+□ Quality Constraints: All qualityConstraints.* requirements satisfied with evidence
+□ Performance Targets: strategicGuidance.performanceTarget benchmarks achieved
+□ Pattern Compliance: strategicGuidance.patternCompliance requirements met
 
-TESTING VALIDATION:
-□ Unit Test Coverage: Minimum 80% coverage with meaningful assertions and comprehensive test scenarios
-□ Integration Testing: Service workflows tested with real implementations and proper data flow validation
-□ Manual Testing: All acceptance criteria verified with documented evidence and test results
-□ Edge Cases: Boundary conditions, error scenarios, and invalid input handling tested thoroughly
-□ Test Quality: Tests are maintainable, readable, and properly isolate dependencies with mocking
-```
-
-### Quality Gate Decision Matrix
-```
-APPROVAL CRITERIA (All must be met):
-□ Functionality: All acceptance criteria met with documented evidence
-□ Architecture: SOLID principles applied, patterns correctly implemented
-□ Testing: 80%+ coverage, integration tests passing, manual validation complete
-□ Security: Input validation, error handling, authentication implemented
-□ Performance: Response times meet requirements, queries optimized
-□ Documentation: Code comments, API docs, technical guides updated
-
-APPROVAL WITH RESERVATIONS CRITERIA:
-□ Functionality: Core requirements met, minor enhancements possible
-□ Quality: Good code quality with minor improvements suggested
-□ Testing: Adequate coverage with some test improvements recommended
-□ Performance: Acceptable performance with optimization suggestions
-
-NEEDS CHANGES CRITERIA (Any present):
-□ Functionality: Acceptance criteria not met or significant bugs present
-□ Architecture: SOLID violations, pattern misuse, poor abstractions
-□ Testing: Coverage below 80%, critical test scenarios missing
-□ Security: Input validation missing, security vulnerabilities present
-□ Performance: Unacceptable response times, inefficient queries
+TECHNICAL EXCELLENCE VALIDATION (with MCP evidence):
+□ SOLID Principles: Compliance verified per strategicGuidance.patternCompliance
+□ Architecture Alignment: Follows MCP codebaseAnalysis.implementationContext patterns
+□ Security Implementation: Meets qualityConstraints.securityRequirements specifications
+□ Performance Optimization: Achieves strategicGuidance.performanceTarget benchmarks
+□ Testing Coverage: Exceeds qualityConstraints.testCoverage requirements
+□ Documentation Quality: Meets architecturalRationale and strategic context standards
 ```
 
-## Phase 2: Quality Validation Execution
+### Enhanced Code Quality Evaluation with MCP Standards
 
-### Issue Classification and Resolution Strategy
 ```
-SIMPLE ISSUES → Redelegate to Senior Developer:
-□ Import statement corrections, syntax errors, linting violations
-□ Simple configuration issues, formatting problems
-□ Documentation updates, minor test adjustments
-□ Performance optimizations without architectural changes
+CODE QUALITY ASSESSMENT (MCP-validated):
+□ Clean Code Principles: Follows strategicGuidance.implementationSpecifics standards
+□ Design Patterns: Implements strategicGuidance.patternCompliance correctly
+□ Error Handling: Comprehensive error handling per strategicGuidance.errorHandling
+□ Input Validation: Security validation per qualityConstraints.securityRequirements
+□ Performance Efficiency: Meets strategicGuidance.performanceTarget with optimization
+□ Maintainability: Code structure supports future changes per architectural context
 
-COMPLEX ISSUES → Escalate to Architect:
-□ Missing service methods requiring architectural decisions
-□ Data access pattern violations needing design changes
-□ Service architecture issues affecting system boundaries
-□ Integration pattern problems requiring interface redesign
-□ Business logic implementation errors needing domain expertise
-□ Performance issues requiring architectural optimization
+ARCHITECTURAL COMPLIANCE (with MCP context):
+□ Service Boundaries: Proper separation per MCP codebaseAnalysis.integrationPoints
+□ Dependency Management: Follows MCP implementationContext.patterns
+□ Data Layer: Repository patterns per strategicGuidance specifications
+□ API Design: Consistent with MCP integration standards
+□ Configuration Management: Environment and deployment considerations
 ```
 
-### Code Review Creation (1 MCP call)
+## Phase 2: Enhanced Quality Validation
+
+### Comprehensive Testing Validation with MCP Evidence
+
+```
+TESTING VALIDATION (MCP-integrated):
+□ Unit Test Coverage: Verify exceeds qualityConstraints.testCoverage percentage
+□ Integration Testing: All workflows tested per successCriteria requirements
+□ Performance Testing: Benchmarks meet strategicGuidance.performanceTarget
+□ Security Testing: Validation per qualityConstraints.securityRequirements
+□ Edge Case Coverage: Comprehensive testing per strategic guidance specifications
+□ Test Quality: Meaningful assertions and proper mocking per implementation specifics
+
+ACCEPTANCE CRITERIA VALIDATION (with MCP evidence):
+□ Business Requirements: All acceptance criteria met with documented evidence
+□ Technical Requirements: All technical constraints satisfied per MCP analysis
+□ Success Criteria: All subtask successCriteria validated with proof
+□ Quality Gates: All quality constraints passed with measurable validation
+□ Performance Benchmarks: All performance targets achieved with metrics
+□ Security Requirements: All security constraints validated with evidence
+```
+
+### Enhanced Security and Performance Review
+
+```
+SECURITY REVIEW (MCP-guided):
+□ Input Validation: Comprehensive validation per qualityConstraints.securityRequirements
+□ Authentication/Authorization: Proper implementation per strategic guidance
+□ Data Protection: Secure handling per MCP security assessment baseline
+□ Error Information Disclosure: Secure error handling per strategicGuidance.errorHandling
+□ SQL Injection Prevention: Proper parameterization per implementation specifics
+□ XSS Protection: Input sanitization per security requirements
+
+PERFORMANCE REVIEW (with MCP baselines):
+□ Response Times: Meet strategicGuidance.performanceTarget specifications
+□ Database Efficiency: Optimized queries per implementation guidance
+□ Memory Usage: Efficient resource utilization per performance constraints
+□ Scalability: Design supports growth per architectural context
+□ Caching Strategy: Appropriate caching per performance optimization guidance
+□ Load Testing: Validates performance under stress per quality constraints
+```
+
+## Phase 3: Enhanced Evidence Collection and Validation
+
+### MCP Evidence Documentation Protocol
+
+```
+EVIDENCE COLLECTION (MCP-integrated):
+□ Implementation Files: All modified files documented with strategic guidance compliance
+□ Test Results: Comprehensive testing evidence per quality constraints validation
+□ Performance Metrics: Actual vs target performance per strategicGuidance benchmarks
+□ Security Validation: Security testing results per qualityConstraints requirements
+□ Code Coverage: Detailed coverage reports exceeding quality constraint targets
+□ Integration Validation: All integration points tested per MCP analysis
+
+QUALITY METRICS VALIDATION (with MCP standards):
+□ Code Complexity: Maintainable complexity per implementation specifics
+□ Technical Debt: Minimal debt introduction per strategic guidance
+□ Documentation Coverage: Comprehensive documentation per architectural rationale
+□ Error Handling Coverage: Complete error scenarios per strategicGuidance.errorHandling
+□ Performance Benchmarks: All targets achieved per strategicGuidance.performanceTarget
+□ Security Compliance: All requirements met per qualityConstraints.securityRequirements
+```
+
+## Phase 4: Enhanced Review Decision and Reporting
+
+### Enhanced Review Decision Matrix with MCP Context
+
+```
+APPROVAL CRITERIA (MCP-validated):
+□ Complete Implementation: All batches and subtasks completed per MCP organization
+□ Quality Standards Met: All qualityConstraints satisfied with documented evidence
+□ Performance Targets: All strategicGuidance.performanceTarget benchmarks achieved
+□ Security Requirements: All qualityConstraints.securityRequirements validated
+□ Testing Excellence: Coverage exceeds targets with comprehensive validation
+□ Documentation Complete: All architectural rationale and strategic context documented
+
+CONDITIONAL APPROVAL CRITERIA:
+□ Minor Issues: Non-blocking issues with clear resolution path
+□ Performance Near-Miss: 95%+ of performance targets with optimization plan
+□ Documentation Gaps: Minor documentation improvements needed
+□ Test Coverage: 95%+ of target with plan for remaining coverage
+
+REJECTION CRITERIA:
+□ Major Security Issues: Critical security vulnerabilities per MCP requirements
+□ Performance Failures: Significant performance target misses per strategic guidance
+□ Test Coverage Below Threshold: Below 90% of qualityConstraints.testCoverage target
+□ Architectural Violations: Major deviations from strategicGuidance.patternCompliance
+□ Functionality Gaps: Missing acceptance criteria or successCriteria validation
+```
+
+### Enhanced Review Report Creation (1 MCP call)
+
 ```javascript
 review_operations({
   operation: "create_review",
   taskId: taskId,
   reviewData: {
     status: "APPROVED", // APPROVED|APPROVED_WITH_RESERVATIONS|NEEDS_CHANGES
-    summary: "High-quality implementation following architectural patterns with comprehensive testing and documentation",
+    summary: "High quality implementation following MCP strategic guidance with comprehensive testing and validation",
     strengths: [
-      "Excellent adherence to SOLID principles with clear separation of concerns",
-      "Comprehensive test coverage (85%) with meaningful integration tests",
-      "Clean code implementation with proper error handling and validation",
-      "Security best practices implemented with input sanitization and authentication",
-      "Performance targets met with optimized database queries and efficient algorithms"
+      "Excellent adherence to strategicGuidance.patternCompliance requirements",
+      "Comprehensive testing exceeding qualityConstraints.testCoverage targets",
+      "Performance benchmarks achieved per strategicGuidance.performanceTarget",
+      "Security implementation meets all qualityConstraints.securityRequirements",
+      "Clean architecture following MCP implementationContext patterns"
     ],
-    improvements: [
-      "Consider extracting validation logic into separate validator classes for better reusability",
-      "Add performance monitoring logs for better production debugging capabilities",
-      "Enhance API documentation with more detailed request/response examples"
+    issues: [
+      "Minor: Consider extracting validation logic as suggested in strategic guidance",
+      "Documentation: Add performance optimization notes per architectural rationale"
     ],
     acceptanceCriteriaVerification: {
-      "User registration with email validation": "Implemented and tested - email validation working with proper error messages",
-      "Secure user authentication with JWT tokens": "Implemented and tested - JWT strategy working with refresh token support",
-      "User profile management with role-based access": "Implemented and tested - RBAC working with proper authorization guards",
-      "Performance under 200ms response times": "Verified through load testing - average 150ms response time achieved"
+      "User registration": "verified and working with comprehensive validation per success criteria",
+      "User login": "verified with JWT tokens per security requirements",
+      "Password reset": "implemented with security best practices per strategic guidance"
     },
-    manualTestingResults: "All acceptance criteria manually verified with documented test cases. User workflows tested end-to-end. Error scenarios validated with proper error handling and user feedback.",
-    securityValidation: "Input validation implemented for all endpoints. SQL injection prevention verified through testing. Authentication middleware properly configured. Authorization guards tested for role-based access.",
-    performanceAnalysis: "Load testing completed with 100 concurrent users. Database queries optimized with proper indexing. Response times consistently under performance targets.",
-    codeQualityAssessment: "Code follows established patterns and conventions. SOLID principles properly applied. Clean code standards maintained. Documentation comprehensive and up-to-date."
+    qualityValidation: {
+      testCoverage: "${actualCoverage}% (target: ${targetCoverage}%, status: EXCEEDED)",
+      performanceMetrics: "Response times: ${actualTime}ms (target: ${targetTime}ms, status: ACHIEVED)",
+      securityValidation: "All security requirements validated per quality constraints",
+      codeQuality: "SOLID principles applied per strategic guidance pattern compliance",
+      architecturalCompliance: "Implementation follows MCP architectural context requirements"
+    },
+    manualTestingResults: "All acceptance criteria verified manually with evidence collection per MCP requirements",
+    strategicGuidanceCompliance: {
+      architecturalContext: "Implementation properly follows MCP architectural guidance",
+      patternCompliance: "All pattern requirements met per strategic guidance specifications",
+      performanceTargets: "All performance benchmarks achieved with evidence",
+      qualityConstraints: "All quality requirements satisfied with comprehensive validation"
+    },
+    mcpEvidence: {
+      implementationAlignment: "Implementation fully aligns with MCP strategic guidance",
+      qualityMetrics: "All MCP quality constraints met with documented evidence",
+      performanceValidation: "All MCP performance targets achieved with benchmark validation",
+      securityCompliance: "All MCP security requirements validated with comprehensive testing"
+    }
   }
 });
 ```
 
-## Phase 3: Decision Execution Based on Review Outcome
+### Enhanced Completion Report Generation (1 MCP call)
 
-### Approval Path (Quality standards met)
 ```javascript
-workflow_operations({
-  operation: "delegate",
+review_operations({
+  operation: "create_completion",
   taskId: taskId,
-  taskSlug: taskSlug,
-  fromRole: "code-review",
-  toRole: "integration-engineer",
-  message: `Code review approved for [${taskSlug}]. High-quality implementation with comprehensive testing and documentation. All acceptance criteria verified. Ready for integration and deployment preparation.`,
-  qualityAssurance: {
-    reviewStatus: "APPROVED",
-    testingValidation: "85% unit coverage, comprehensive integration tests, manual validation complete",
-    securityCompliance: "Input validation, authentication, authorization implemented and tested",
-    performanceValidation: "Sub-200ms response times achieved, database optimization completed",
-    documentationStatus: "Technical documentation and API specs updated and comprehensive"
-  }
-});
-```
-
-### Simple Issues Resolution Path (1 MCP call)
-```javascript
-workflow_operations({
-  operation: "delegate",
-  taskId: taskId,
-  taskSlug: taskSlug,
-  fromRole: "code-review",
-  toRole: "senior-developer",
-  message: `Code review for [${taskSlug}] requires minor adjustments before approval. Simple issues identified that can be resolved quickly without architectural changes.`,
-  simpleIssues: {
-    issueType: "simple_fixes",
-    issuesFound: [
-      "Import statements need cleanup in UserService.ts line 15",
-      "Linting violations in repository files - missing semicolons and formatting",
-      "Test assertions could be more specific in UserService.test.ts",
-      "Documentation formatting needs consistency in API endpoint descriptions"
+  completionData: {
+    summary: "Authentication implementation fully complete with comprehensive MCP compliance validation",
+    filesModified: [
+      "src/auth/auth.module.ts",
+      "src/auth/jwt.strategy.ts",
+      "src/auth/auth.service.ts",
+      "src/auth/auth.controller.ts",
+      "tests/unit/auth.service.test.ts",
+      "tests/integration/auth.workflow.test.ts"
     ],
-    expectedResolution: "Quick fixes without architectural changes, estimated 30 minutes",
-    qualityStatus: "Overall good quality, minor improvements needed before approval"
+    acceptanceCriteriaVerification: {
+      "User registration": "implemented and tested per success criteria with comprehensive validation",
+      "User login": "implemented and tested with JWT tokens per strategic guidance",
+      "Password reset": "implemented with security best practices per quality constraints"
+    },
+    implementationEvidence: {
+      strategicGuidanceCompliance: "All MCP strategic guidance requirements implemented and validated",
+      qualityConstraintsValidation: "All quality constraints satisfied with documented evidence",
+      performanceTargetsAchievement: "All performance targets achieved per MCP specifications",
+      securityRequirementsValidation: "All security requirements implemented per MCP constraints"
+    },
+    qualityValidation: {
+      testingEvidence: "Comprehensive testing with ${actualCoverage}% coverage exceeding ${targetCoverage}% target",
+      performanceEvidence: "Performance benchmarks achieved: ${actualMetrics} meeting ${targetMetrics}",
+      securityEvidence: "Security validation completed per all MCP security requirements",
+      codeQualityEvidence: "Code quality meets all MCP strategic guidance standards"
+    },
+    delegationSummary: "Successful role transitions through full workflow with MCP compliance tracking",
+    workflowEfficiency: {
+      mcpIntegration: "Seamless MCP integration throughout implementation workflow",
+      qualityAssurance: "Comprehensive quality validation using MCP constraints and evidence",
+      strategicAlignment: "Implementation perfectly aligned with MCP strategic guidance",
+      evidenceCollection: "Complete evidence trail maintained through MCP context tracking"
+    }
   }
 });
 ```
 
-### Complex Issues Escalation Path (1 MCP call)
+## Phase 5: Enhanced Workflow Completion
+
+### Task Completion and Handoff (1 MCP call)
+
+```javascript
+workflow_operations({
+  operation: "complete",
+  taskId: taskId,
+  taskSlug: taskSlug,
+  fromRole: "code-review",
+  completionData: {
+    summary: "Task [${taskSlug}] completed with comprehensive quality validation and MCP compliance",
+    filesModified: [
+      "Complete list of all modified files with MCP strategic guidance compliance"
+    ],
+    acceptanceCriteriaVerification: {
+      "Complete mapping of all acceptance criteria to validation evidence with MCP context"
+    },
+    qualityAssurance: {
+      mcpCompliance: "Full compliance with all MCP strategic guidance and quality constraints",
+      evidenceValidation: "Comprehensive evidence collection and validation per MCP requirements",
+      performanceValidation: "All performance targets achieved per MCP specifications",
+      securityValidation: "All security requirements validated per MCP constraints"
+    },
+    deliveryReadiness: {
+      productionReady: "Implementation is production-ready with comprehensive MCP validation",
+      documentationComplete: "All documentation updated per MCP architectural rationale",
+      integrationValidated: "All integration points tested per MCP analysis",
+      performanceOptimized: "Performance optimized per MCP strategic guidance"
+    }
+  }
+});
+```
+
+**Total Code Review Phase: 3 MCP calls maximum**
+
+## Enhanced Error Handling and Issue Resolution
+
+### Issue Classification with MCP Context
+
+```
+MINOR ISSUES (Address with recommendations):
+□ Code style inconsistencies that don't violate strategicGuidance.patternCompliance
+□ Documentation improvements that enhance architectural rationale clarity
+□ Performance optimizations that exceed strategicGuidance.performanceTarget
+□ Test improvements that go beyond qualityConstraints.testCoverage requirements
+
+MAJOR ISSUES (Require implementation changes):
+□ Security vulnerabilities that violate qualityConstraints.securityRequirements
+□ Performance failures that don't meet strategicGuidance.performanceTarget
+□ Architectural violations that conflict with strategicGuidance.patternCompliance
+□ Missing functionality that doesn't satisfy acceptance criteria or success criteria
+
+BLOCKING ISSUES (Require redelegation):
+□ Fundamental architectural problems that violate MCP implementationContext
+□ Security issues that compromise system integrity per MCP security assessment
+□ Performance issues that make system unusable per MCP performance baseline
+□ Integration failures that break MCP integrationPoints compatibility
+```
+
+### Enhanced Redelegation Protocol with MCP Evidence
+
 ```javascript
 workflow_operations({
   operation: "escalate",
   taskId: taskId,
   taskSlug: taskSlug,
   fromRole: "code-review",
-  toRole: "architect",
+  toRole: "architect", // or "senior-developer" based on issue type
   escalationData: {
-    reason: "architectural_guidance_needed",
-    severity: "medium",
+    reason: "quality_standards_violation", // quality_standards_violation|performance_failure|security_vulnerability|architectural_violation
+    severity: "high",
     issuesFound: [
-      "User search functionality violates single responsibility principle - UserService handling both CRUD and complex search",
-      "Repository pattern insufficient for complex queries with joins and aggregations",
-      "Service layer boundaries unclear when handling cross-domain business logic",
-      "Performance requirements not met with current data access patterns for large datasets"
+      "Performance targets from strategicGuidance.performanceTarget not achieved",
+      "Security requirements from qualityConstraints.securityRequirements not fully implemented",
+      "Test coverage below qualityConstraints.testCoverage threshold"
     ],
-    qualityAssessment: "Good implementation quality but architectural patterns need strategic enhancement for scalability",
-    strategicQuestions: [
-      "Should we implement CQRS pattern to separate complex read operations from simple CRUD?",
-      "How to maintain clean service boundaries when business logic spans multiple domains?",
-      "What architectural patterns support the performance requirements for large-scale data operations?"
+    qualityAnalysis: {
+      mcpComplianceGaps: "Specific areas where MCP strategic guidance was not followed",
+      performanceDeficits: "Performance targets missed with specific metrics",
+      securityConcerns: "Security requirements not met per quality constraints",
+      testingInsufficiency: "Testing gaps that don't meet quality constraints"
+    },
+    evidenceRequired: [
+      "Performance benchmark validation per strategicGuidance.performanceTarget",
+      "Security validation per qualityConstraints.securityRequirements",
+      "Test coverage evidence per qualityConstraints.testCoverage"
     ],
-    recommendedApproach: "Separate read models for complex queries, maintain repository pattern for simple operations, implement proper service boundaries",
-    workCompleted: "Core CRUD functionality working well, testing comprehensive, security implemented properly",
-    blockingIssues: "Complex search and reporting features cannot be implemented cleanly with current architectural patterns"
+    mcpContextPreservation: {
+      strategicGuidance: "Referenced MCP strategic guidance that needs better implementation",
+      qualityConstraints: "Identified quality constraints that require additional work",
+      evidenceGaps: "Missing evidence collection per MCP requirements"
+    }
   }
 });
 ```
 
-## Phase 4: Completion and Integration Handoff
+## Enhanced Quality Assurance Features
 
-### Final Task Completion (For approved implementations) (1 MCP call)
+### MCP-Driven Quality Excellence
 ```javascript
-review_operations({
-  operation: "create_completion",
-  taskId: taskId,
-  completionData: {
-    summary: `Task [${taskSlug}] implementation completed successfully with comprehensive quality validation`,
-    filesModified: [
-      "src/entities/UserEntity.ts - Domain entity with validation",
-      "src/services/UserService.ts - Business logic with dependency injection", 
-      "src/repositories/UserRepository.ts - Data access abstraction",
-      "src/controllers/UserController.ts - API endpoints with validation",
-      "src/middleware/AuthMiddleware.ts - Authentication and authorization",
-      "tests/unit/ - Comprehensive unit tests (85% coverage)",
-      "tests/integration/ - Service workflow integration tests",
-      "docs/api/ - Updated API documentation and examples"
-    ],
-    acceptanceCriteriaVerification: {
-      "User registration functionality": "Implemented with email validation, password hashing, duplicate prevention - tested and verified",
-      "Secure authentication system": "JWT-based authentication with refresh tokens, password reset functionality - tested and verified",
-      "Role-based access control": "User roles with permission-based access guards - tested and verified",
-      "Performance requirements": "Sub-200ms API responses, optimized database queries - load tested and verified"
-    },
-    qualityValidation: {
-      testingEvidence: "Unit tests: 85% coverage with comprehensive scenarios, Integration tests: All user workflows validated, Manual testing: All acceptance criteria verified with documented evidence",
-      securityCompliance: "Input validation on all endpoints, SQL injection prevention, XSS protection, authentication middleware, authorization guards",
-      performanceEvidence: "Load testing with 100 concurrent users, database query optimization with proper indexing, response time monitoring",
-      codeQuality: "SOLID principles applied, clean code standards maintained, comprehensive documentation, architectural patterns followed"
-    },
-    delegationSummary: "Successful workflow execution: Boomerang → Architect → Senior Developer → Code Review. Quality standards maintained throughout with strategic architectural decisions and comprehensive implementation.",
-    integrationReadiness: "Code committed to feature branch, all tests passing, documentation updated, ready for deployment pipeline"
-  }
-});
+// Use MCP context for quality validation decisions
+const qualityConstraints = mcpContext.data.implementationPlans[0].batches.map(batch => 
+  batch.subtasks.map(subtask => subtask.qualityConstraints)
+).flat();
+
+const performanceTargets = mcpContext.data.implementationPlans[0].batches.map(batch =>
+  batch.subtasks.map(subtask => subtask.strategicGuidance.performanceTarget)
+).flat();
+
+// Validate implementation against exact MCP specifications
 ```
 
-**Total Code Review Phase: 2 MCP calls maximum**
+### Evidence-Based Quality Validation
+- Use MCP strategic guidance for quality criteria definition
+- Leverage MCP quality constraints for pass/fail validation
+- Reference MCP performance targets for benchmark validation
+- Maintain comprehensive evidence trail through MCP context
 
-## Error Prevention & Quality Assurance
+### Strategic Communication Enhancement
+- Reference specific MCP strategic guidance in review feedback
+- Use MCP evidence for objective quality assessment
+- Provide MCP-trackable improvement recommendations
+- Include MCP compliance status in all review communications
 
-### Critical Validation Points
-```
-BEFORE REVIEW DECISION:
-□ Implementation summary analyzed with specific quality criteria evaluation
-□ Testing evidence validated with coverage metrics and test result documentation
-□ Architectural compliance verified against original strategic guidance and patterns
-□ Security and performance requirements validated with documented evidence
-
-BEFORE REDELEGATION/ESCALATION:
-□ Issue classification completed using simple vs complex decision matrix
-□ Context preservation ensured with comprehensive issue documentation and work completed summary
-□ Strategic questions formulated for architect when architectural guidance needed
-□ Clear resolution path defined with specific actions and expected outcomes
-
-BEFORE TASK COMPLETION:
-□ All acceptance criteria verified with documented evidence and test results
-□ Quality validation completed with comprehensive testing and security compliance
-□ Integration readiness confirmed with proper git operations and documentation updates
-□ User delivery prepared with actionable next steps and complete implementation summary
-```
-
-### Rule Loading Verification
-- Check last 10 messages for "✅ RULES LOADED: code-review" marker  
-- If missing → Use fetch_rules tool immediately
-- Mark successful loading: "✅ RULES LOADED: code-review"
-- Never proceed without confirmed rule loading
+### Continuous Quality Improvement
+- Document quality patterns for future MCP strategic guidance updates
+- Identify common issues for MCP quality constraint enhancement
+- Provide feedback for MCP strategic guidance improvement
+- Contribute to MCP codebase analysis updates based on review findings

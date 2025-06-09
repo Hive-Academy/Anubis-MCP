@@ -2,16 +2,13 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../prisma/prisma.module';
 
-// Utils (if they still exist)
-import { PrismaErrorHandlerService } from './utils/prisma-error.handler';
-
 // Reporting Module - Contains all reporting services and chart generation
 import { ReportingModule } from './domains/reporting/reporting.module';
 
 // Domain-Based Tool Modules - Replace universal tools with focused domain modules
+import { BatchOperationsModule } from './domains/batch-operations/batch-operations.module';
 import { CoreWorkflowModule } from './domains/core-workflow/core-workflow.module';
 import { QueryOptimizationModule } from './domains/query-optimization/query-optimization.module';
-import { BatchOperationsModule } from './domains/batch-operations/batch-operations.module';
 
 @Module({
   imports: [
@@ -23,10 +20,7 @@ import { BatchOperationsModule } from './domains/batch-operations/batch-operatio
     QueryOptimizationModule, // Pre-configured task context, workflow status, and report queries
     BatchOperationsModule, // Bulk subtask management and cross-entity status synchronization
   ],
-  providers: [
-    // Utils
-    PrismaErrorHandlerService,
-  ],
+
   exports: [
     // Export modules for potential external use
     ReportingModule,

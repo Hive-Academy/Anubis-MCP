@@ -367,7 +367,6 @@ export class TasksListGenerator {
       },
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return (
       configs[priority as keyof typeof configs] || {
         badge:

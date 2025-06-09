@@ -114,11 +114,13 @@ export class McpReportRouterService {
     }
 
     if (request.outputFormat === 'json') {
-      return this.implementationPlanService.generateReport(
+      // For now, implementation plan service only has HTML output
+      // TODO: Add JSON output method later
+      return this.implementationPlanService.generateImplementationPlanReport(
         request.filters.taskId,
       );
     } else {
-      return this.implementationPlanService.generateHtmlReport(
+      return this.implementationPlanService.generateImplementationPlanReport(
         request.filters.taskId,
       );
     }

@@ -27,9 +27,8 @@ import { TaskDetailService } from './task-management/task-detail/task-detail.ser
 import { TaskProgressAnalyzerService } from './task-management/task-detail/task-progress-analyzer.service';
 import { TaskQualityAnalyzerService } from './task-management/task-detail/task-quality-analyzer.service';
 
-import { ImplementationPlanAnalyzerService } from './task-management/implementation-plan/implementation-plan-analyzer.service';
-import { ImplementationPlanBuilderService } from './task-management/implementation-plan/implementation-plan-builder.service';
-import { ImplementationPlanService } from './task-management/implementation-plan/implementation-plan.service';
+import { ImplementationPlanModule } from './task-management/implementation-plan/implementation-plan.module';
+import { ImplementationPlanViewModule } from './task-management/implementation-plan/view/implementation-plan-view.module';
 
 // Workflow Analytics Domain
 import { WorkflowAnalyticsCalculatorService } from './workflow-analytics/workflow-analytics/workflow-analytics-calculator.service';
@@ -45,13 +44,18 @@ import { RoleMetricsCalculatorService } from './workflow-analytics/role-performa
 import { RolePerformanceService } from './workflow-analytics/role-performance/role-performance.service';
 
 // Dashboard Domain - Now using InteractiveDashboardModule
-import { ImplementationPlanGeneratorService } from './task-management/implementation-plan/implementation-plan-generator.service';
 import { DelegationFlowGeneratorService } from './workflow-analytics/delegation-flow/delegation-flow-generator.service';
 import { RolePerformanceGeneratorService } from './workflow-analytics/role-performance/role-performance-generator.service';
 import { WorkflowAnalyticsGeneratorService } from './workflow-analytics/workflow-analytics/workflow-analytics-generator.service';
 
 @Module({
-  imports: [PrismaModule, InteractiveDashboardModule, TaskDetailViewModule],
+  imports: [
+    PrismaModule,
+    InteractiveDashboardModule,
+    TaskDetailViewModule,
+    ImplementationPlanModule,
+    ImplementationPlanViewModule,
+  ],
   providers: [
     // === SHARED SERVICES ===
     ReportDataService,
@@ -67,10 +71,7 @@ import { WorkflowAnalyticsGeneratorService } from './workflow-analytics/workflow
     TaskDetailBuilderService,
     TaskProgressAnalyzerService,
     TaskQualityAnalyzerService,
-    ImplementationPlanService,
-    ImplementationPlanBuilderService,
-    ImplementationPlanAnalyzerService,
-    ImplementationPlanGeneratorService,
+    // Implementation Plan services provided by ImplementationPlanModule
 
     // === WORKFLOW ANALYTICS DOMAIN ===
     WorkflowAnalyticsService,
@@ -104,7 +105,7 @@ import { WorkflowAnalyticsGeneratorService } from './workflow-analytics/workflow
 
     // Domain services for direct access
     TaskDetailService,
-    ImplementationPlanService,
+    // ImplementationPlanService available through ImplementationPlanModule
     WorkflowAnalyticsService,
     DelegationFlowService,
     RolePerformanceService,
