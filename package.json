@@ -70,7 +70,9 @@
     "test:mcp": "ts-node test/test-mcp-integration.ts",
     "test:task-detail": "ts-node test/test-task-detail-integration.ts",
     "test:task-detail-with-delegations": "ts-node test/test-task-detail-with-delegations.ts",
-    "test:implementation-plan": "ts-node test/test-implementation-plan.ts"
+    "test:implementation-plan": "ts-node test/test-implementation-plan.ts",
+    "migrate-rules": "ts-node scripts/migrate-rules.ts",
+    "rollback-rules": "ts-node scripts/rollback-rules.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.4",

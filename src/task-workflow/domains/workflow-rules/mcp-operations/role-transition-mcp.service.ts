@@ -466,7 +466,7 @@ Task ID: ${input.taskId}`,
 
 **History Summary:**
 • Total Transitions: ${history.length}
-• Unique Roles: ${new Set(history.map((h) => h.fromMode as string)).size}
+• Unique Roles: ${new Set(history.map((h) => h.fromMode)).size}
 • Latest Transition: ${history[0]?.delegationTimestamp.toISOString() || 'None'}
 
 **Recent Transitions:**
