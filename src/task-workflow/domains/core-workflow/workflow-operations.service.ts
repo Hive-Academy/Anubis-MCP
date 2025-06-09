@@ -5,7 +5,6 @@ import {
   WorkflowOperationsSchema,
   WorkflowOperationsInput,
 } from './schemas/workflow-operations.schema';
-import { Role } from '../reporting/shared/types/report-data.types';
 
 /**
  * Workflow Operations Service
@@ -196,7 +195,7 @@ Role-based workflow transitions and delegation management.
   }
 
   private async handleCompletion(input: WorkflowOperationsInput): Promise<any> {
-    const { taskId, fromRole, completionData, toRole } = input;
+    const { taskId, fromRole, completionData } = input;
 
     if (!completionData) {
       throw new Error('Completion data is required for completion');
@@ -220,6 +219,7 @@ Role-based workflow transitions and delegation management.
         where: { taskId },
         data: {
           status: 'completed',
+          currentMode: 'boomerang', // Task returns to boomerang when completed
           completionDate: new Date(),
         },
       });
@@ -229,7 +229,7 @@ Role-based workflow transitions and delegation management.
         data: {
           taskId,
           fromMode: fromRole,
-          toMode: toRole as Role,
+          toMode: 'boomerang', // Completion always transitions to boomerang
           reason: `Task completed: ${completionData.summary}`,
           transitionTimestamp: new Date(),
         },

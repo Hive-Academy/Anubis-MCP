@@ -6,12 +6,12 @@
  */
 
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './src/app.module';
-import { PrismaService } from './src/prisma/prisma.service';
-import { ImplementationPlanService } from './src/task-workflow/domains/reporting/task-management/implementation-plan/implementation-plan.service';
-import { ReportDataService } from './src/task-workflow/domains/reporting/shared/report-data.service';
-import { ImplementationPlanBuilderService } from './src/task-workflow/domains/reporting/task-management/implementation-plan/implementation-plan-builder.service';
-import { ImplementationPlanAnalyzerService } from './src/task-workflow/domains/reporting/task-management/implementation-plan/implementation-plan-analyzer.service';
+import { AppModule } from '../src/app.module';
+import { PrismaService } from '../src/prisma/prisma.service';
+import { ImplementationPlanService } from '../src/task-workflow/domains/reporting/task-management/implementation-plan/implementation-plan.service';
+import { ReportDataService } from '../src/task-workflow/domains/reporting/shared/report-data.service';
+import { ImplementationPlanBuilderService } from '../src/task-workflow/domains/reporting/task-management/implementation-plan/implementation-plan-builder.service';
+import { ImplementationPlanAnalyzerService } from '../src/task-workflow/domains/reporting/task-management/implementation-plan/implementation-plan-analyzer.service';
 import * as fs from 'fs';
 import * as path from 'path';
 
