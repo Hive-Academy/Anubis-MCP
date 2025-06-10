@@ -1,7 +1,7 @@
 ---
 description: 
-globs: src/**/*.ts
-alwaysApply: false
+globs: 
+alwaysApply: true
 ---
 # Core Software Development Principles & TypeScript Best Practices
 

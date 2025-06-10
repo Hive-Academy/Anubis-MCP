@@ -1,0 +1,107 @@
+{
+  "roleTransitions": [
+    {
+      "fromRoleId": "architect",
+      "toRoleId": "senior-developer",
+      "transitionName": "architect_to_senior_developer",
+      "conditions": {
+        "implementationPlanComplete": true,
+        "strategicBatchesCreated": true,
+        "qualityGatesDefined": true,
+        "architecturalGuidanceProvided": true
+      },
+      "requirements": {
+        "comprehensiveImplementationPlan": true,
+        "strategicBatchOrganization": true,
+        "qualityConstraintsEstablished": true,
+        "solidPrinciplesEnforced": true,
+        "technicalDecisionsDocumented": true
+      },
+      "validationRules": {
+        "implementationPlanComplete": "Implementation plan must include strategic batch design with 3-8 subtasks",
+        "qualityStandardsEstablished": "Quality gates and validation criteria must be measurable",
+        "solidComplianceVerified": "SOLID principles compliance must be verified for all design decisions",
+        "strategicGuidanceProvided": "Each subtask must include comprehensive strategic guidance"
+      },
+      "handoffGuidance": {
+        "implementationContext": [
+          "Strategic architecture designed with Clean Architecture principles",
+          "SOLID principles enforced throughout with specific compliance guidance",
+          "Implementation plan organized in strategic batches with dependencies",
+          "Quality constraints and success criteria established for each subtask"
+        ],
+        "technicalGuidance": [
+          "Architectural context and implementation specifics for each subtask",
+          "Pattern compliance requirements with existing MCP analysis",
+          "Error handling and performance targets with baseline metrics",
+          "Integration strategy with existing architectural patterns"
+        ],
+        "qualityRequirements": [
+          "Test coverage requirements with minimum 80% coverage targets",
+          "Performance targets based on MCP baseline metrics",
+          "Security requirements with input validation and authentication",
+          "Documentation standards with inline JSDoc and API specifications"
+        ]
+      },
+      "contextPreservation": {
+        "architecturalDecisions": "Complete architectural design with SOLID principles compliance",
+        "implementationPlan": "Strategic batch organization with comprehensive subtask guidance",
+        "qualityStandards": "Quality gates and validation criteria with measurable targets",
+        "technicalGuidance": "Detailed implementation guidance with architectural context",
+        "performanceTargets": "Performance requirements based on established baselines",
+        "securityRequirements": "Security implementation requirements and validation methods"
+      },
+      "isActive": true
+    },
+    {
+      "fromRoleId": "architect",
+      "toRoleId": "boomerang",
+      "transitionName": "architect_to_boomerang_escalation",
+      "conditions": {
+        "architecturalBlockage": true,
+        "strategicDecisionRequired": true,
+        "resourceConstraintsIdentified": true,
+        "escalationJustified": true
+      },
+      "requirements": {
+        "blockageDocumented": true,
+        "alternativeOptionsExplored": true,
+        "resourceRequirementsAnalyzed": true,
+        "strategicRecommendationsProvided": true
+      },
+      "validationRules": {
+        "escalationJustified": "Clear justification for escalation with architectural reasoning",
+        "alternativesExhausted": "All reasonable architectural alternatives must have been explored",
+        "strategicContextComplete": "Complete strategic context must be preserved for decision making",
+        "recommendationsProvided": "Architectural recommendations must be provided for strategic consideration"
+      },
+      "handoffGuidance": {
+        "escalationContext": [
+          "Clear description of architectural blockage or strategic limitation",
+          "Alternative architectural approaches explored with trade-off analysis",
+          "Resource requirements and constraints affecting implementation",
+          "Strategic decision points requiring boomerang strategic input"
+        ],
+        "strategicOptions": [
+          "Available architectural paths with complexity and risk assessment",
+          "Resource allocation requirements for different approaches",
+          "Timeline implications of architectural decisions",
+          "Risk assessment of proceeding with current vs alternative architectures"
+        ],
+        "architecturalRecommendations": [
+          "Preferred architectural approach with evidence-based rationale",
+          "Alternative architectures with detailed trade-off analysis",
+          "Implementation complexity assessment for each option",
+          "Strategic guidance for architectural decision making"
+        ]
+      },
+      "contextPreservation": {
+        "architecturalProgress": "All architectural work completed to date with design decisions",
+        "blockageAnalysis": "Detailed analysis of architectural limitations and constraints",
+        "alternativeArchitectures": "Explored architectural alternatives with feasibility assessment",
+        "strategicRecommendations": "Architectural recommendations for strategic consideration"
+      },
+      "isActive": true
+    }
+  ]
+}

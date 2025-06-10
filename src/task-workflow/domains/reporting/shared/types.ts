@@ -274,9 +274,9 @@ export interface DelegationFlowTemplateData {
   };
   delegations: Array<{
     id: number;
-    fromRole: string;
-    toRole: string;
-    delegatedAt: string;
+    fromMode: string;
+    toMode: string;
+    delegationTimestamp: string;
     duration: number;
     success?: boolean | null;
   }>;
@@ -292,14 +292,14 @@ export interface DelegationFlowTemplateData {
     efficiency: number;
   }>;
   commonPaths: Array<{
-    fromRole: string;
-    toRole: string;
+    fromMode: string;
+    toMode: string;
     count: number;
     percentage: number;
   }>;
   escalationPatterns: Array<{
-    fromRole: string;
-    toRole: string;
+    fromMode: string;
+    toMode: string;
     count: number;
     reason: string;
   }>;
@@ -313,8 +313,8 @@ export interface DelegationFlowTemplateData {
     delayCount: number;
   }>;
   fastTransitions: Array<{
-    fromRole: string;
-    toRole: string;
+    fromMode: string;
+    toMode: string;
     averageTime: number;
   }>;
   optimizationTips: Array<{

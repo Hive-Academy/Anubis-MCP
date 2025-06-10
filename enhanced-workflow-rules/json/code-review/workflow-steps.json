@@ -1,0 +1,433 @@
+{
+  "workflowSteps": [
+    {
+      "name": "context_acquisition",
+      "displayName": "MCP Context Acquisition",
+      "description": "Retrieve comprehensive implementation context including evidence and quality metrics",
+      "sequenceNumber": 1,
+      "isRequired": true,
+      "estimatedTime": "5-10 minutes",
+      "stepType": "ACTION",
+      "behavioralContext": {
+        "approachMethodology": "Comprehensive context acquisition with implementation evidence integration",
+        "qualityStandards": [
+          "Include implementation evidence and quality metrics",
+          "Integrate testing results and performance data",
+          "Validate strategic alignment and compliance verification"
+        ],
+        "decisionCriteria": [
+          "Implementation evidence available with quality metrics",
+          "Testing results and coverage data accessible",
+          "Strategic guidance compliance verifiable"
+        ]
+      },
+      "approachGuidance": {
+        "executionSteps": [
+          "Execute service call to retrieve comprehensive implementation context",
+          "Validate implementation evidence includes quality metrics",
+          "Review testing results and performance validation data",
+          "Understand strategic guidance compliance and quality constraints"
+        ],
+        "contextValidation": [
+          "Verify implementation evidence is comprehensive and current",
+          "Confirm quality metrics include testing and performance data",
+          "Validate strategic guidance compliance is documented"
+        ]
+      },
+      "qualityChecklist": [
+        "Implementation context includes comprehensive evidence and quality metrics",
+        "Testing results and coverage data provide complete validation picture",
+        "Strategic guidance compliance and quality constraints are verifiable",
+        "Performance data and security validation results are accessible"
+      ],
+      "conditions": [],
+      "actions": [
+        {
+          "name": "acquire_implementation_context",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "TaskOperations",
+            "operation": "get",
+            "parameters": {
+              "taskId": "{{taskId}}",
+              "includeLevel": "comprehensive",
+              "includeAnalysis": true,
+              "includeComments": true
+            }
+          }
+        }
+      ],
+      "triggerReport": false
+    },
+    {
+      "name": "implementation_analysis",
+      "displayName": "Implementation Analysis & Quality Assessment",
+      "description": "Analyze implementation completeness and technical excellence with MCP standards",
+      "sequenceNumber": 2,
+      "isRequired": true,
+      "estimatedTime": "15-20 minutes",
+      "stepType": "VALIDATION",
+      "behavioralContext": {
+        "approachMethodology": "MCP-integrated quality assessment with comprehensive implementation analysis",
+        "qualityStandards": [
+          "Validate implementation completeness against strategic guidance",
+          "Assess technical excellence with SOLID principles compliance",
+          "Verify architectural alignment with MCP context patterns"
+        ],
+        "decisionCriteria": [
+          "Implementation meets all strategic guidance requirements",
+          "Technical excellence standards satisfied with evidence",
+          "Architectural compliance verified against MCP patterns"
+        ]
+      },
+      "approachGuidance": {
+        "executionSteps": [
+          "Analyze implementation completeness against strategic guidance",
+          "Evaluate technical excellence with SOLID principles validation",
+          "Assess architectural alignment with MCP context patterns",
+          "Validate code quality against established standards"
+        ],
+        "qualityAssessment": [
+          "Batch completion validation against MCP organization",
+          "Subtask validation against success criteria",
+          "Strategic compliance verification with evidence",
+          "Quality constraints satisfaction with metrics"
+        ]
+      },
+      "qualityChecklist": [
+        "Implementation completeness validated against all strategic guidance",
+        "Technical excellence assessed with SOLID principles compliance",
+        "Architectural alignment verified with MCP context patterns",
+        "Code quality evaluated against established standards and metrics"
+      ],
+      "conditions": [
+        {
+          "name": "context_acquired",
+          "conditionType": "previous_step_completed",
+          "logic": { "requiredStep": "context_acquisition" }
+        }
+      ],
+      "actions": [
+        {
+          "name": "analyze_implementation_quality",
+          "actionType": "IMPLEMENTATION_ANALYSIS",
+          "actionData": {
+            "analysisType": "comprehensive_quality_assessment",
+            "standardsValidation": "mcp_strategic_guidance",
+            "complianceCheck": "solid_principles_architectural"
+          }
+        }
+      ],
+      "triggerReport": false
+    },
+    {
+      "name": "testing_validation",
+      "displayName": "Comprehensive Testing Validation",
+      "description": "Validate testing coverage, quality, and acceptance criteria with evidence",
+      "sequenceNumber": 3,
+      "isRequired": true,
+      "estimatedTime": "20-25 minutes",
+      "stepType": "VALIDATION",
+      "behavioralContext": {
+        "approachMethodology": "Comprehensive testing validation with coverage and evidence verification",
+        "qualityStandards": [
+          "Validate testing coverage exceeds quality constraint targets",
+          "Verify acceptance criteria with documented evidence",
+          "Assess testing quality with meaningful assertions and scenarios"
+        ],
+        "decisionCriteria": [
+          "Testing coverage meets or exceeds established targets",
+          "Acceptance criteria validated with comprehensive evidence",
+          "Testing quality satisfies strategic guidance requirements"
+        ]
+      },
+      "approachGuidance": {
+        "executionSteps": [
+          "Validate unit test coverage against quality constraint targets",
+          "Verify integration testing covers all workflows and scenarios",
+          "Assess acceptance criteria validation with documented evidence",
+          "Evaluate testing quality with meaningful assertions and coverage"
+        ],
+        "testingValidation": [
+          "Unit test coverage verification with percentage targets",
+          "Integration testing validation with workflow coverage",
+          "Performance testing assessment with baseline validation",
+          "Security testing verification with vulnerability assessment"
+        ]
+      },
+      "qualityChecklist": [
+        "Unit test coverage exceeds quality constraint targets with meaningful tests",
+        "Integration testing validates all workflows and acceptance criteria",
+        "Performance testing meets strategic guidance targets with evidence",
+        "Security testing validates all requirements with vulnerability assessment"
+      ],
+      "conditions": [
+        {
+          "name": "implementation_analyzed",
+          "conditionType": "previous_step_completed",
+          "logic": { "requiredStep": "implementation_analysis" }
+        }
+      ],
+      "actions": [
+        {
+          "name": "validate_comprehensive_testing",
+          "actionType": "TESTING_VALIDATION",
+          "actionData": {
+            "validationType": "comprehensive_coverage_assessment",
+            "coverageTargets": "quality_constraints_validation",
+            "acceptanceCriteria": "evidence_based_verification"
+          }
+        }
+      ],
+      "triggerReport": false
+    },
+    {
+      "name": "security_performance_review",
+      "displayName": "Security & Performance Review",
+      "description": "Review security implementation and performance validation against baselines",
+      "sequenceNumber": 4,
+      "isRequired": true,
+      "estimatedTime": "15-20 minutes",
+      "stepType": "VALIDATION",
+      "behavioralContext": {
+        "approachMethodology": "Security and performance validation with baseline requirements assessment",
+        "qualityStandards": [
+          "Validate security implementation against quality constraints",
+          "Verify performance targets with baseline validation",
+          "Assess vulnerability protection with comprehensive security review"
+        ],
+        "decisionCriteria": [
+          "Security requirements satisfied with vulnerability protection",
+          "Performance targets achieved with baseline validation",
+          "Security and performance evidence documented comprehensively"
+        ]
+      },
+      "approachGuidance": {
+        "executionSteps": [
+          "Review security implementation against quality constraints",
+          "Validate performance targets with baseline comparisons",
+          "Assess input validation and authentication implementation",
+          "Evaluate error handling and information disclosure protection"
+        ],
+        "securityPerformanceValidation": [
+          "Input validation and authentication verification",
+          "Data protection and secure handling assessment",
+          "Performance response times and efficiency validation",
+          "Scalability and resource utilization evaluation"
+        ]
+      },
+      "qualityChecklist": [
+        "Security implementation validates all quality constraint requirements",
+        "Performance targets achieved with documented baseline comparisons",
+        "Input validation and authentication properly implemented",
+        "Error handling protects against information disclosure vulnerabilities"
+      ],
+      "conditions": [
+        {
+          "name": "testing_validated",
+          "conditionType": "previous_step_completed",
+          "logic": { "requiredStep": "testing_validation" }
+        }
+      ],
+      "actions": [
+        {
+          "name": "review_security_performance",
+          "actionType": "SECURITY_PERFORMANCE_REVIEW",
+          "actionData": {
+            "reviewType": "comprehensive_security_performance",
+            "securityValidation": "quality_constraints_compliance",
+            "performanceBaseline": "strategic_guidance_targets"
+          }
+        }
+      ],
+      "triggerReport": false
+    },
+    {
+      "name": "evidence_collection",
+      "displayName": "Evidence Collection & Quality Metrics",
+      "description": "Collect comprehensive evidence and validate quality metrics with documentation",
+      "sequenceNumber": 5,
+      "isRequired": true,
+      "estimatedTime": "10-15 minutes",
+      "stepType": "ACTION",
+      "behavioralContext": {
+        "approachMethodology": "Evidence-based quality metrics validation with comprehensive documentation",
+        "qualityStandards": [
+          "Document all implementation evidence with quality metrics",
+          "Validate quality metrics against strategic guidance standards",
+          "Collect comprehensive evidence for review decision support"
+        ],
+        "decisionCriteria": [
+          "Evidence collection comprehensive and well-documented",
+          "Quality metrics validated against all established standards",
+          "Documentation supports informed review decision making"
+        ]
+      },
+      "approachGuidance": {
+        "executionSteps": [
+          "Document all implementation files and strategic guidance compliance",
+          "Collect testing results and performance metrics with validation",
+          "Validate security testing results and vulnerability assessments",
+          "Compile comprehensive evidence for review decision support"
+        ],
+        "evidenceDocumentation": [
+          "Implementation files with strategic guidance compliance",
+          "Test results with coverage and quality validation",
+          "Performance metrics with baseline comparisons",
+          "Security validation with vulnerability assessment results"
+        ]
+      },
+      "qualityChecklist": [
+        "Implementation evidence documented with strategic guidance compliance",
+        "Testing results collected with comprehensive coverage validation",
+        "Performance metrics validated with baseline comparisons and targets",
+        "Security evidence compiled with vulnerability assessment documentation"
+      ],
+      "conditions": [
+        {
+          "name": "security_performance_reviewed",
+          "conditionType": "previous_step_completed",
+          "logic": { "requiredStep": "security_performance_review" }
+        }
+      ],
+      "actions": [
+        {
+          "name": "collect_quality_evidence",
+          "actionType": "EVIDENCE_COLLECTION",
+          "actionData": {
+            "collectionType": "comprehensive_quality_metrics",
+            "evidenceScope": "implementation_testing_performance_security",
+            "documentationLevel": "review_decision_support"
+          }
+        }
+      ],
+      "triggerReport": false
+    },
+    {
+      "name": "review_decision",
+      "displayName": "Review Decision & Final Assessment",
+      "description": "Make final review decision with comprehensive assessment and evidence documentation",
+      "sequenceNumber": 6,
+      "isRequired": true,
+      "estimatedTime": "15-20 minutes",
+      "stepType": "DECISION",
+      "behavioralContext": {
+        "approachMethodology": "Evidence-based review decision with comprehensive quality assessment",
+        "qualityStandards": [
+          "Make review decision based on comprehensive evidence and quality metrics",
+          "Document review assessment with detailed rationale and evidence",
+          "Provide clear guidance for approval, conditional approval, or rejection"
+        ],
+        "decisionCriteria": [
+          "Review decision supported by comprehensive evidence and analysis",
+          "Quality assessment documented with detailed rationale",
+          "Decision guidance clear and actionable for workflow continuation"
+        ]
+      },
+      "approachGuidance": {
+        "executionSteps": [
+          "Evaluate all evidence against approval criteria matrix",
+          "Make review decision based on quality standards and evidence",
+          "Document comprehensive review assessment with rationale",
+          "Provide clear guidance for workflow continuation or improvement"
+        ],
+        "decisionMatrix": [
+          "Approval: All criteria met with comprehensive evidence",
+          "Conditional Approval: Minor issues with clear resolution path",
+          "Needs Changes: Specific improvements required with guidance",
+          "Rejection: Major issues requiring significant rework"
+        ]
+      },
+      "qualityChecklist": [
+        "Review decision based on comprehensive evidence and quality assessment",
+        "Assessment documented with detailed rationale and supporting evidence",
+        "Decision guidance provides clear direction for workflow continuation",
+        "Quality validation complete with production readiness assessment"
+      ],
+      "conditions": [
+        {
+          "name": "evidence_collected",
+          "conditionType": "previous_step_completed",
+          "logic": { "requiredStep": "evidence_collection" }
+        }
+      ],
+      "actions": [
+        {
+          "name": "make_review_decision",
+          "actionType": "REVIEW_DECISION",
+          "actionData": {
+            "decisionType": "comprehensive_quality_assessment",
+            "evidenceBasis": "collected_quality_metrics",
+            "assessmentLevel": "production_readiness"
+          }
+        }
+      ],
+      "triggerReport": true,
+      "reportType": "review_decision",
+      "reportTemplate": "code_review_final_assessment"
+    },
+    {
+      "name": "workflow_completion",
+      "displayName": "Workflow Completion & Transition",
+      "description": "Complete review workflow and execute appropriate transition based on decision",
+      "sequenceNumber": 7,
+      "isRequired": true,
+      "estimatedTime": "5-10 minutes",
+      "stepType": "ACTION",
+      "behavioralContext": {
+        "approachMethodology": "Workflow completion with appropriate transition execution",
+        "qualityStandards": [
+          "Execute workflow transition based on review decision",
+          "Preserve comprehensive context for receiving role or completion",
+          "Document final assessment with production readiness status"
+        ],
+        "decisionCriteria": [
+          "Workflow transition appropriate for review decision outcome",
+          "Context preservation comprehensive for receiving role",
+          "Final documentation complete with production readiness assessment"
+        ]
+      },
+      "approachGuidance": {
+        "executionSteps": [
+          "Execute workflow transition based on review decision outcome",
+          "Preserve comprehensive context for receiving role or completion",
+          "Document final assessment with production readiness status",
+          "Complete workflow with appropriate status and evidence"
+        ],
+        "transitionOptions": [
+          "Approve: Complete workflow with production readiness confirmation",
+          "Conditional Approval: Complete with minor improvement recommendations",
+          "Needs Changes: Delegate back to senior developer with specific guidance",
+          "Redesign Required: Escalate to architect with comprehensive assessment"
+        ]
+      },
+      "qualityChecklist": [
+        "Workflow transition executed appropriately for review decision outcome",
+        "Context preservation comprehensive for receiving role or completion",
+        "Final assessment documented with production readiness status",
+        "Workflow completion includes all evidence and quality validation"
+      ],
+      "conditions": [
+        {
+          "name": "review_decision_made",
+          "conditionType": "previous_step_completed",
+          "logic": { "requiredStep": "review_decision" }
+        }
+      ],
+      "actions": [
+        {
+          "name": "complete_review_workflow",
+          "actionType": "WORKFLOW_COMPLETION",
+          "actionData": {
+            "completionType": "review_decision_based",
+            "transitionExecution": "decision_appropriate",
+            "contextPreservation": "comprehensive_handoff"
+          }
+        }
+      ],
+      "triggerReport": true,
+      "reportType": "workflow_completion",
+      "reportTemplate": "code_review_workflow_completion"
+    }
+  ]
+}

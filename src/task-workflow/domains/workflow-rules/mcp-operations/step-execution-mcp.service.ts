@@ -283,8 +283,8 @@ Task ID: ${input.id}`,
       );
 
       const nextStep = await this.stepExecutionService.getNextAvailableStep(
-        String(input.id),
         input.roleId,
+        String(input.id),
       );
 
       if (!nextStep) {

@@ -1,0 +1,285 @@
+{
+  "workflowSteps": [
+    {
+      "name": "mcp_context_acquisition",
+      "displayName": "MCP Context Acquisition",
+      "description": "Retrieve comprehensive task context and implementation evidence from MCP",
+      "sequenceNumber": 1,
+      "isRequired": true,
+      "estimatedTime": "5 minutes",
+      "stepType": "ACTION",
+      "behavioralContext": {
+        "approach": "Comprehensive context acquisition with implementation evidence",
+        "principles": [
+          "Retrieve all implementation evidence and validation results",
+          "Verify quality gates and acceptance criteria satisfaction",
+          "Collect performance metrics and security compliance data",
+          "Ensure complete context for deployment decisions"
+        ],
+        "methodology": "Evidence-based context acquisition with comprehensive validation"
+      },
+      "approachGuidance": {
+        "stepByStep": [
+          "Query task context with comprehensive implementation evidence",
+          "Retrieve code review results and quality validation",
+          "Collect performance benchmarks and testing results",
+          "Validate security compliance and acceptance criteria"
+        ]
+      },
+      "qualityChecklist": [
+        "All implementation evidence retrieved and validated",
+        "Quality constraints satisfaction confirmed",
+        "Performance targets achievement verified",
+        "Security requirements compliance documented"
+      ],
+      "conditions": [],
+      "actions": [
+        {
+          "name": "retrieve_task_context",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "operation": "query_task_context",
+            "parameters": {
+              "includeLevel": "comprehensive",
+              "includeAnalysis": true,
+              "includeComments": true
+            }
+          }
+        }
+      ],
+      "triggerReport": false
+    },
+    {
+      "name": "final_integration_validation",
+      "displayName": "Final Integration Validation",
+      "description": "Comprehensive validation of integration readiness and production deployment prerequisites",
+      "sequenceNumber": 2,
+      "isRequired": true,
+      "estimatedTime": "15 minutes",
+      "stepType": "VALIDATION",
+      "behavioralContext": {
+        "approach": "Comprehensive integration readiness validation",
+        "principles": [
+          "Validate all quality gates and acceptance criteria",
+          "Verify production readiness and deployment prerequisites",
+          "Confirm security compliance and performance targets",
+          "Ensure comprehensive testing and documentation"
+        ],
+        "methodology": "Multi-layer validation with evidence-based assessment"
+      },
+      "approachGuidance": {
+        "stepByStep": [
+          "Validate integration readiness against comprehensive checklist",
+          "Assess production deployment readiness",
+          "Verify quality assurance and testing completion",
+          "Confirm security compliance and performance validation"
+        ]
+      },
+      "qualityChecklist": [
+        "All integration prerequisites satisfied",
+        "Production readiness confirmed",
+        "Quality standards met with evidence",
+        "Performance targets achieved"
+      ],
+      "conditions": [
+        {
+          "name": "context_acquired",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "stepName": "mcp_context_acquisition",
+            "status": "completed"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "name": "validate_integration_readiness",
+          "actionType": "VALIDATION",
+          "actionData": {
+            "validationType": "integration_readiness",
+            "criteria": [
+              "Code review approval status",
+              "Testing coverage and results",
+              "Quality gates satisfaction",
+              "Performance benchmarks",
+              "Security compliance"
+            ]
+          }
+        }
+      ],
+      "triggerReport": true,
+      "reportType": "integration_validation",
+      "reportTemplate": "integration_readiness_report"
+    },
+    {
+      "name": "git_operations_execution",
+      "displayName": "Git Operations Execution",
+      "description": "Execute git operations including branch management, rebase, and pull request creation",
+      "sequenceNumber": 3,
+      "isRequired": true,
+      "estimatedTime": "20 minutes",
+      "stepType": "ACTION",
+      "behavioralContext": {
+        "approach": "Comprehensive git operations with clean history",
+        "principles": [
+          "Ensure clean working directory and proper branch management",
+          "Execute rebase operations with testing validation",
+          "Create comprehensive pull requests with MCP evidence",
+          "Maintain clean git history and proper documentation"
+        ],
+        "methodology": "Git operations with comprehensive validation and documentation"
+      },
+      "approachGuidance": {
+        "stepByStep": [
+          "Verify clean working directory and fetch latest changes",
+          "Execute rebase operations with testing validation",
+          "Create pull request with comprehensive MCP evidence",
+          "Validate git operations completion and deployment readiness"
+        ]
+      },
+      "qualityChecklist": [
+        "All tests passing after rebase",
+        "Production build successful",
+        "Pull request created with comprehensive documentation",
+        "Git history clean and properly formatted"
+      ],
+      "conditions": [
+        {
+          "name": "integration_validated",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "stepName": "final_integration_validation",
+            "status": "completed"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "name": "execute_git_operations",
+          "actionType": "COMMAND",
+          "actionData": {
+            "command": "git",
+            "args": ["status", "--porcelain"],
+            "description": "Verify clean working directory"
+          }
+        }
+      ],
+      "triggerReport": false
+    },
+    {
+      "name": "documentation_updates",
+      "displayName": "Documentation Updates",
+      "description": "Update memory bank files and technical documentation with implementation evidence",
+      "sequenceNumber": 4,
+      "isRequired": true,
+      "estimatedTime": "25 minutes",
+      "stepType": "ACTION",
+      "behavioralContext": {
+        "approach": "Comprehensive documentation updates with implementation evidence",
+        "principles": [
+          "Update memory bank files with implementation context",
+          "Enhance technical documentation with architectural patterns",
+          "Document deployment procedures and monitoring setup",
+          "Preserve knowledge for organizational learning"
+        ],
+        "methodology": "Evidence-based documentation with comprehensive context preservation"
+      },
+      "approachGuidance": {
+        "stepByStep": [
+          "Update memory bank files with implementation evidence",
+          "Enhance technical documentation with new patterns",
+          "Document deployment procedures and monitoring",
+          "Validate documentation completeness and accuracy"
+        ]
+      },
+      "qualityChecklist": [
+        "Memory bank files updated with implementation evidence",
+        "Technical documentation enhanced with new patterns",
+        "Deployment procedures documented with monitoring setup",
+        "Knowledge preserved for future reference and maintenance"
+      ],
+      "conditions": [
+        {
+          "name": "git_operations_completed",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "stepName": "git_operations_execution",
+            "status": "completed"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "name": "update_memory_bank",
+          "actionType": "FILE_OPERATION",
+          "actionData": {
+            "operation": "update",
+            "files": [
+              "ProjectOverview.md",
+              "TechnicalArchitecture.md",
+              "DeveloperGuide.md"
+            ]
+          }
+        }
+      ],
+      "triggerReport": false
+    },
+    {
+      "name": "user_delivery_coordination",
+      "displayName": "User Delivery Coordination",
+      "description": "Coordinate final delivery with success metrics and monitoring procedures",
+      "sequenceNumber": 5,
+      "isRequired": true,
+      "estimatedTime": "15 minutes",
+      "stepType": "ACTION",
+      "behavioralContext": {
+        "approach": "User-centric delivery with comprehensive handoff",
+        "principles": [
+          "Provide clear delivery documentation with evidence",
+          "Define success metrics and monitoring procedures",
+          "Coordinate handoff with actionable next steps",
+          "Ensure comprehensive knowledge transfer"
+        ],
+        "methodology": "Evidence-based delivery with comprehensive user support"
+      },
+      "approachGuidance": {
+        "stepByStep": [
+          "Prepare comprehensive delivery documentation",
+          "Define success metrics and monitoring procedures",
+          "Coordinate user handoff with actionable steps",
+          "Complete workflow with evidence collection"
+        ]
+      },
+      "qualityChecklist": [
+        "Comprehensive delivery document prepared with evidence",
+        "Success metrics defined with monitoring procedures",
+        "User handoff completed with actionable next steps",
+        "Knowledge assets preserved for future reference"
+      ],
+      "conditions": [
+        {
+          "name": "documentation_updated",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "stepName": "documentation_updates",
+            "status": "completed"
+          }
+        }
+      ],
+      "actions": [
+        {
+          "name": "prepare_delivery_document",
+          "actionType": "REPORT_GENERATION",
+          "actionData": {
+            "reportType": "delivery_summary",
+            "includeEvidence": true,
+            "includeMetrics": true
+          }
+        }
+      ],
+      "triggerReport": true,
+      "reportType": "delivery_summary",
+      "reportTemplate": "user_delivery_report"
+    }
+  ]
+}

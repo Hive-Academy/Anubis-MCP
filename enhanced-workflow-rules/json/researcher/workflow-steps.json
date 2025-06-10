@@ -1,0 +1,496 @@
+{
+  "workflowSteps": [
+    {
+      "name": "mcp_context_acquisition",
+      "displayName": "MCP Context Acquisition",
+      "description": "Retrieve comprehensive task context via internal service orchestration",
+      "sequenceNumber": 1,
+      "isRequired": true,
+      "estimatedTime": "2-3 minutes",
+      "stepType": "ACTION",
+      "behavioralContext": {
+        "approach": "Service-orchestrated context acquisition with comprehensive analysis inclusion",
+        "principles": [
+          "Use TaskOperations service for complete task context",
+          "Include existing codebase analysis and architectural context",
+          "Retrieve business and technical requirements",
+          "Access stored research reports and comments"
+        ],
+        "methodology": "Comprehensive context retrieval through internal service orchestration"
+      },
+      "approachGuidance": {
+        "stepByStep": [
+          "Use TaskOperations.get with comprehensive inclusion flags",
+          "Retrieve existing codebase analysis and architectural findings",
+          "Access technology stack and implementation context",
+          "Get quality assessment and performance baselines",
+          "Review previous research reports and comments"
+        ]
+      },
+      "qualityChecklist": [
+        "Complete task context retrieved including requirements",
+        "Existing codebase analysis accessed and reviewed",
+        "Technology stack and architectural context available",
+        "Quality assessment and performance baselines identified",
+        "Previous research and comments reviewed"
+      ],
+      "conditions": [],
+      "actions": [
+        {
+          "name": "get_comprehensive_task_context",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "TaskOperations",
+            "operation": "get",
+            "parameters": {
+              "includeLevel": "comprehensive",
+              "includeAnalysis": true,
+              "includeComments": true,
+              "includeCodebaseAnalysis": true,
+              "includeArchitecturalContext": true
+            }
+          },
+          "sequenceOrder": 1
+        }
+      ],
+      "triggerReport": false
+    },
+    {
+      "name": "enhanced_research_scope_definition",
+      "displayName": "Enhanced Research Scope Definition",
+      "description": "Define research scope based on MCP context analysis and identified knowledge gaps",
+      "sequenceNumber": 2,
+      "isRequired": true,
+      "estimatedTime": "5-8 minutes",
+      "stepType": "ANALYSIS",
+      "behavioralContext": {
+        "approach": "MCP-informed research analysis matrix with gap identification",
+        "principles": [
+          "Extract research requirements from MCP task context",
+          "Identify knowledge gaps through MCP problem analysis",
+          "Prioritize research based on business and technical constraints",
+          "Align research scope with existing architectural context"
+        ],
+        "methodology": "Systematic gap analysis with MCP context integration"
+      },
+      "approachGuidance": {
+        "stepByStep": [
+          "Extract business context and technical constraints from MCP",
+          "Analyze current architecture from stored codebase analysis",
+          "Identify technology stack and existing dependencies",
+          "Determine knowledge gaps through MCP problem identification",
+          "Prioritize research areas based on criticality and impact"
+        ]
+      },
+      "qualityChecklist": [
+        "Research requirements extracted from MCP context",
+        "Knowledge gaps identified and prioritized",
+        "Research scope aligned with technical constraints",
+        "Existing knowledge base properly assessed",
+        "Research priorities clearly defined"
+      ],
+      "conditions": [
+        {
+          "name": "mcp_context_available",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "check": "step_completed",
+            "parameters": {
+              "stepName": "mcp_context_acquisition"
+            }
+          },
+          "isRequired": true
+        }
+      ],
+      "actions": [
+        {
+          "name": "analyze_research_requirements",
+          "actionType": "VALIDATION",
+          "actionData": {
+            "validationType": "research_scope_analysis",
+            "criteria": {
+              "businessContext": "{{businessRequirements}}",
+              "technicalConstraints": "{{technicalRequirements}}",
+              "currentArchitecture": "{{architectureFindings}}",
+              "technologyStack": "{{technologyStack}}",
+              "knowledgeGaps": "{{problemsIdentified}}"
+            }
+          },
+          "sequenceOrder": 1
+        },
+        {
+          "name": "prioritize_research_areas",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "ResearchOperations",
+            "operation": "create_research",
+            "parameters": {
+              "researchType": "scope_definition",
+              "researchData": {
+                "highPriorityAreas": "{{critical_knowledge_gaps}}",
+                "mediumPriorityAreas": "{{enhancement_opportunities}}",
+                "lowPriorityAreas": "{{future_considerations}}",
+                "researchMethodology": "{{research_approach}}"
+              }
+            }
+          },
+          "sequenceOrder": 2
+        }
+      ],
+      "triggerReport": false
+    },
+    {
+      "name": "comprehensive_information_gathering",
+      "displayName": "Comprehensive Information Gathering and Analysis",
+      "description": "Execute systematic research methodology with MCP integration and evidence collection",
+      "sequenceNumber": 3,
+      "isRequired": true,
+      "estimatedTime": "15-25 minutes",
+      "stepType": "ACTION",
+      "behavioralContext": {
+        "approach": "Systematic research methodology with MCP-guided validation",
+        "principles": [
+          "Compare requirements against MCP codebase analysis findings",
+          "Verify compatibility with existing technology stack",
+          "Benchmark against current performance baseline",
+          "Evaluate security implications within current context"
+        ],
+        "methodology": "Evidence collection with authoritative source validation"
+      },
+      "approachGuidance": {
+        "stepByStep": [
+          "Execute gap analysis comparing requirements to MCP findings",
+          "Validate technology compatibility with existing stack",
+          "Research performance benchmarks against current baseline",
+          "Analyze security implications within current framework",
+          "Investigate integration requirements with existing points",
+          "Collect evidence from authoritative sources"
+        ]
+      },
+      "qualityChecklist": [
+        "Gap analysis completed against MCP context",
+        "Technology compatibility validated",
+        "Performance benchmarks researched and documented",
+        "Security implications thoroughly analyzed",
+        "Integration requirements validated",
+        "Evidence collected from authoritative sources"
+      ],
+      "conditions": [
+        {
+          "name": "research_scope_defined",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "check": "step_completed",
+            "parameters": {
+              "stepName": "enhanced_research_scope_definition"
+            }
+          },
+          "isRequired": true
+        }
+      ],
+      "actions": [
+        {
+          "name": "execute_gap_analysis",
+          "actionType": "VALIDATION",
+          "actionData": {
+            "validationType": "gap_analysis",
+            "criteria": {
+              "mcpFindings": "{{codebaseAnalysis}}",
+              "requirements": "{{taskRequirements}}",
+              "technologyStack": "{{currentTechStack}}",
+              "performanceBaseline": "{{currentPerformanceBaseline}}"
+            }
+          },
+          "sequenceOrder": 1
+        },
+        {
+          "name": "research_technical_solutions",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "ResearchOperations",
+            "operation": "update_research",
+            "parameters": {
+              "researchPhase": "information_gathering",
+              "researchData": {
+                "technicalValidation": "{{technology_compatibility_results}}",
+                "performanceBenchmarks": "{{performance_research_results}}",
+                "securityAnalysis": "{{security_implications_analysis}}",
+                "integrationRequirements": "{{integration_research_results}}",
+                "evidenceCollection": "{{authoritative_sources_evidence}}"
+              }
+            }
+          },
+          "sequenceOrder": 2
+        }
+      ],
+      "triggerReport": false
+    },
+    {
+      "name": "enhanced_evidence_synthesis",
+      "displayName": "Enhanced Evidence Synthesis and Analysis",
+      "description": "Synthesize research findings with MCP alignment and create decision support matrix",
+      "sequenceNumber": 4,
+      "isRequired": true,
+      "estimatedTime": "10-15 minutes",
+      "stepType": "ANALYSIS",
+      "behavioralContext": {
+        "approach": "MCP-integrated findings analysis with comprehensive decision support",
+        "principles": [
+          "Align findings with existing MCP architectural context",
+          "Assess performance impact on current baseline",
+          "Evaluate security enhancements within current framework",
+          "Validate integration compatibility with existing points"
+        ],
+        "methodology": "Evidence synthesis with risk-benefit analysis"
+      },
+      "approachGuidance": {
+        "stepByStep": [
+          "Synthesize findings with MCP architectural alignment",
+          "Assess technical feasibility within current constraints",
+          "Evaluate performance impact on existing baseline",
+          "Analyze security implications and enhancements",
+          "Create comprehensive decision support matrix",
+          "Develop risk-benefit analysis with mitigation strategies"
+        ]
+      },
+      "qualityChecklist": [
+        "Findings synthesized with MCP alignment",
+        "Technical feasibility properly assessed",
+        "Performance impact analyzed against baseline",
+        "Security implications thoroughly evaluated",
+        "Decision support matrix created",
+        "Risk-benefit analysis completed"
+      ],
+      "conditions": [
+        {
+          "name": "information_gathering_completed",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "check": "step_completed",
+            "parameters": {
+              "stepName": "comprehensive_information_gathering"
+            }
+          },
+          "isRequired": true
+        }
+      ],
+      "actions": [
+        {
+          "name": "synthesize_research_findings",
+          "actionType": "VALIDATION",
+          "actionData": {
+            "validationType": "findings_synthesis",
+            "criteria": {
+              "mcpAlignment": "{{architectural_compatibility}}",
+              "performanceImpact": "{{performance_analysis}}",
+              "securityImplications": "{{security_enhancement_analysis}}",
+              "integrationRequirements": "{{integration_compatibility}}",
+              "implementationComplexity": "{{complexity_assessment}}"
+            }
+          },
+          "sequenceOrder": 1
+        },
+        {
+          "name": "create_decision_support_matrix",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "ResearchOperations",
+            "operation": "update_research",
+            "parameters": {
+              "researchPhase": "evidence_synthesis",
+              "researchData": {
+                "findingsSynthesis": "{{synthesized_findings}}",
+                "recommendationFramework": "{{recommendation_matrix}}",
+                "solutionEvaluation": "{{solution_evaluation_criteria}}",
+                "riskBenefitAnalysis": "{{risk_benefit_assessment}}"
+              }
+            }
+          },
+          "sequenceOrder": 2
+        }
+      ],
+      "triggerReport": false
+    },
+    {
+      "name": "comprehensive_research_report_generation",
+      "displayName": "Comprehensive Research Report Generation",
+      "description": "Generate detailed research report with recommendations and implementation guidance",
+      "sequenceNumber": 5,
+      "isRequired": true,
+      "estimatedTime": "8-12 minutes",
+      "stepType": "REPORTING",
+      "behavioralContext": {
+        "approach": "Comprehensive research report creation with MCP integration",
+        "principles": [
+          "Document all findings with evidence-based recommendations",
+          "Provide implementation guidance within current constraints",
+          "Include risk mitigation strategies and contingency plans",
+          "Ensure MCP compatibility and architectural alignment"
+        ],
+        "methodology": "Structured report generation with strategic context"
+      },
+      "approachGuidance": {
+        "stepByStep": [
+          "Create comprehensive research report structure",
+          "Document findings with evidence-based analysis",
+          "Provide detailed recommendations with justification",
+          "Include implementation guidance and timeline",
+          "Document risk mitigation and contingency plans",
+          "Ensure MCP integration and compatibility"
+        ]
+      },
+      "qualityChecklist": [
+        "Comprehensive research report created",
+        "Findings documented with evidence",
+        "Recommendations provided with justification",
+        "Implementation guidance included",
+        "Risk mitigation strategies documented",
+        "MCP integration and compatibility ensured"
+      ],
+      "conditions": [
+        {
+          "name": "evidence_synthesis_completed",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "check": "step_completed",
+            "parameters": {
+              "stepName": "enhanced_evidence_synthesis"
+            }
+          },
+          "isRequired": true
+        }
+      ],
+      "actions": [
+        {
+          "name": "generate_comprehensive_report",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "ResearchOperations",
+            "operation": "create_research",
+            "parameters": {
+              "reportType": "comprehensive_technical_research",
+              "researchData": {
+                "title": "Comprehensive Technical Research Analysis",
+                "executiveSummary": "{{research_executive_summary}}",
+                "researchMethodology": "{{research_methodology_details}}",
+                "findings": "{{comprehensive_findings}}",
+                "recommendations": "{{detailed_recommendations}}",
+                "implementationGuidance": "{{implementation_strategy}}",
+                "riskMitigation": "{{risk_mitigation_framework}}",
+                "mcpIntegration": "{{mcp_compatibility_analysis}}"
+              }
+            }
+          },
+          "sequenceOrder": 1
+        },
+        {
+          "name": "add_research_commentary",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "ResearchOperations",
+            "operation": "add_comment",
+            "parameters": {
+              "commentData": {
+                "content": "Research analysis complete with comprehensive technical validation",
+                "author": "researcher",
+                "analysisType": "comprehensive_technical_research",
+                "keyInsights": "{{key_research_insights}}",
+                "implementationReadiness": "{{implementation_readiness_assessment}}",
+                "nextSteps": "{{recommended_next_steps}}"
+              }
+            }
+          },
+          "sequenceOrder": 2
+        }
+      ],
+      "triggerReport": true,
+      "reportType": "research_completion",
+      "reportTemplate": "comprehensive_research_report"
+    },
+    {
+      "name": "research_completion_and_delegation",
+      "displayName": "Research Completion and Workflow Delegation",
+      "description": "Complete research phase and delegate to appropriate next role with context preservation",
+      "sequenceNumber": 6,
+      "isRequired": true,
+      "estimatedTime": "3-5 minutes",
+      "stepType": "DELEGATION",
+      "behavioralContext": {
+        "approach": "Service-orchestrated delegation with comprehensive context preservation",
+        "principles": [
+          "Use WorkflowOperations service for delegation",
+          "Preserve complete research context and findings",
+          "Provide clear handoff message with strategic context",
+          "Ensure implementation readiness assessment"
+        ],
+        "methodology": "Context-preserving delegation with strategic guidance"
+      },
+      "approachGuidance": {
+        "stepByStep": [
+          "Prepare comprehensive delegation context",
+          "Determine appropriate target role based on findings",
+          "Use WorkflowOperations service for delegation",
+          "Provide detailed handoff message with research summary",
+          "Ensure context preservation for next role"
+        ]
+      },
+      "qualityChecklist": [
+        "Delegation context comprehensively prepared",
+        "Target role appropriately determined",
+        "Delegation executed through WorkflowOperations",
+        "Handoff message detailed and informative",
+        "Context preservation ensured"
+      ],
+      "conditions": [
+        {
+          "name": "research_report_completed",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "check": "step_completed",
+            "parameters": {
+              "stepName": "comprehensive_research_report_generation"
+            }
+          },
+          "isRequired": true
+        }
+      ],
+      "actions": [
+        {
+          "name": "prepare_delegation_context",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "TaskOperations",
+            "operation": "get",
+            "parameters": {
+              "includeResearchFindings": true,
+              "includeRecommendations": true,
+              "includeImplementationGuidance": true,
+              "includeRiskAssessment": true
+            }
+          },
+          "sequenceOrder": 1
+        },
+        {
+          "name": "execute_workflow_delegation",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "WorkflowOperations",
+            "operation": "delegate",
+            "parameters": {
+              "fromRole": "researcher",
+              "toRole": "{{target_role}}",
+              "delegationMessage": "{{research_completion_message}}",
+              "researchSummary": "{{research_summary_context}}",
+              "strategicContext": "{{strategic_implementation_context}}",
+              "preserveContext": true
+            }
+          },
+          "sequenceOrder": 2
+        }
+      ],
+      "triggerReport": true,
+      "reportType": "delegation",
+      "reportTemplate": "research_delegation"
+    }
+  ]
+}

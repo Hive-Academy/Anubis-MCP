@@ -1,0 +1,394 @@
+{
+  "roleTransitions": [
+    {
+      "fromRoleId": "boomerang",
+      "toRoleId": "researcher",
+      "transitionName": "boomerang_to_research",
+      "conditions": {
+        "knowledgeGapsIdentified": true,
+        "researchRequired": true,
+        "technicalUncertainty": true,
+        "evidenceInsufficient": true
+      },
+      "requirements": {
+        "taskContextComplete": true,
+        "researchQuestionsFormulated": true,
+        "currentStateVerified": true,
+        "strategicDecisionMade": true
+      },
+      "validationRules": {
+        "mustHaveCompletedSteps": [
+          "internal_service_context_acquisition",
+          "current_state_verification_protocol",
+          "strategic_decision_making"
+        ],
+        "mustHaveEvidence": [
+          "verification_results",
+          "knowledge_gaps",
+          "research_questions"
+        ],
+        "qualityGates": [
+          "context_completeness_check",
+          "research_scope_validation"
+        ]
+      },
+      "handoffGuidance": {
+        "contextToPreserve": [
+          "task_context",
+          "verification_evidence", 
+          "strategic_decisions",
+          "identified_knowledge_gaps",
+          "research_questions"
+        ],
+        "handoffMessage": "Research required for informed strategic decisions. Context and evidence provided for targeted investigation.",
+        "expectedDeliverables": [
+          "research_findings",
+          "technical_recommendations",
+          "risk_assessment",
+          "implementation_guidance"
+        ]
+      },
+      "contextPreservation": {
+        "taskData": "complete_task_context",
+        "verificationEvidence": "current_state_verification_results",
+        "strategicContext": "strategic_analysis_and_decisions",
+        "qualityRequirements": "quality_standards_and_constraints"
+      },
+      "isActive": true
+    },
+    {
+      "fromRoleId": "boomerang", 
+      "toRoleId": "architect",
+      "transitionName": "boomerang_to_architecture",
+      "conditions": {
+        "complexityHigh": true,
+        "architecturalDecisionsRequired": true,
+        "systemDesignNeeded": true,
+        "implementationPlanRequired": true
+      },
+      "requirements": {
+        "taskContextComplete": true,
+        "currentStateVerified": true,
+        "complexityAssessed": true,
+        "strategicDirectionSet": true
+      },
+      "validationRules": {
+        "mustHaveCompletedSteps": [
+          "internal_service_context_acquisition",
+          "current_state_verification_protocol", 
+          "enhanced_task_setup",
+          "strategic_decision_making"
+        ],
+        "mustHaveEvidence": [
+          "verification_results",
+          "complexity_assessment",
+          "architectural_requirements"
+        ],
+        "qualityGates": [
+          "context_completeness_check",
+          "architectural_scope_validation"
+        ]
+      },
+      "handoffGuidance": {
+        "contextToPreserve": [
+          "task_context",
+          "verification_evidence",
+          "strategic_decisions", 
+          "complexity_assessment",
+          "architectural_requirements"
+        ],
+        "handoffMessage": "Architectural design required for complex implementation. Full context and evidence provided for comprehensive planning.",
+        "expectedDeliverables": [
+          "implementation_plan",
+          "architectural_decisions",
+          "technical_specifications",
+          "quality_constraints"
+        ]
+      },
+      "contextPreservation": {
+        "taskData": "complete_task_context",
+        "verificationEvidence": "current_state_verification_results",
+        "strategicContext": "strategic_analysis_and_decisions",
+        "complexityAnalysis": "complexity_assessment_results"
+      },
+      "isActive": true
+    },
+    {
+      "fromRoleId": "boomerang",
+      "toRoleId": "senior-developer", 
+      "transitionName": "boomerang_to_implementation",
+      "conditions": {
+        "implementationReady": true,
+        "requirementsClear": true,
+        "complexityManageable": true,
+        "noArchitecturalUncertainty": true
+      },
+      "requirements": {
+        "taskContextComplete": true,
+        "currentStateVerified": true,
+        "implementationPlanExists": true,
+        "qualityStandardsDefined": true
+      },
+      "validationRules": {
+        "mustHaveCompletedSteps": [
+          "internal_service_context_acquisition",
+          "current_state_verification_protocol",
+          "enhanced_task_setup",
+          "strategic_decision_making"
+        ],
+        "mustHaveEvidence": [
+          "verification_results",
+          "implementation_plan",
+          "quality_requirements"
+        ],
+        "qualityGates": [
+          "implementation_readiness_check",
+          "quality_standards_validation"
+        ]
+      },
+      "handoffGuidance": {
+        "contextToPreserve": [
+          "task_context",
+          "verification_evidence",
+          "implementation_plan",
+          "quality_standards",
+          "acceptance_criteria"
+        ],
+        "handoffMessage": "Implementation ready with clear requirements and plan. Full context provided for quality execution.",
+        "expectedDeliverables": [
+          "implemented_solution",
+          "test_coverage",
+          "documentation",
+          "quality_validation"
+        ]
+      },
+      "contextPreservation": {
+        "taskData": "complete_task_context",
+        "verificationEvidence": "current_state_verification_results",
+        "implementationPlan": "detailed_implementation_plan",
+        "qualityRequirements": "quality_standards_and_constraints"
+      },
+      "isActive": true
+    },
+    {
+      "fromRoleId": "researcher",
+      "toRoleId": "boomerang",
+      "transitionName": "research_to_boomerang",
+      "conditions": {
+        "researchComplete": true,
+        "findingsDocumented": true,
+        "recommendationsProvided": true,
+        "strategicGuidanceNeeded": true
+      },
+      "requirements": {
+        "researchDeliverables": true,
+        "technicalRecommendations": true,
+        "riskAssessment": true,
+        "implementationGuidance": true
+      },
+      "validationRules": {
+        "mustHaveCompletedSteps": [
+          "research_execution",
+          "findings_analysis",
+          "recommendations_formulation"
+        ],
+        "mustHaveEvidence": [
+          "research_findings",
+          "technical_analysis",
+          "recommendations"
+        ],
+        "qualityGates": [
+          "research_completeness_check",
+          "recommendations_quality_validation"
+        ]
+      },
+      "handoffGuidance": {
+        "contextToPreserve": [
+          "original_task_context",
+          "research_findings",
+          "technical_recommendations",
+          "risk_assessment",
+          "implementation_guidance"
+        ],
+        "handoffMessage": "Research complete with findings and recommendations. Strategic coordination needed for next steps.",
+        "expectedDeliverables": [
+          "strategic_decision",
+          "role_delegation",
+          "implementation_coordination"
+        ]
+      },
+      "contextPreservation": {
+        "originalContext": "preserved_task_context",
+        "researchResults": "complete_research_findings",
+        "recommendations": "technical_recommendations_and_guidance",
+        "riskAnalysis": "risk_assessment_results"
+      },
+      "isActive": true
+    },
+    {
+      "fromRoleId": "architect",
+      "toRoleId": "boomerang",
+      "transitionName": "architecture_to_boomerang", 
+      "conditions": {
+        "architecturalDesignComplete": true,
+        "implementationPlanReady": true,
+        "technicalDecisionsMade": true,
+        "coordinationNeeded": true
+      },
+      "requirements": {
+        "implementationPlan": true,
+        "architecturalDecisions": true,
+        "technicalSpecifications": true,
+        "qualityConstraints": true
+      },
+      "validationRules": {
+        "mustHaveCompletedSteps": [
+          "architectural_analysis",
+          "implementation_planning",
+          "technical_decisions"
+        ],
+        "mustHaveEvidence": [
+          "implementation_plan",
+          "architectural_decisions",
+          "technical_specifications"
+        ],
+        "qualityGates": [
+          "plan_completeness_check",
+          "architectural_quality_validation"
+        ]
+      },
+      "handoffGuidance": {
+        "contextToPreserve": [
+          "original_task_context",
+          "implementation_plan",
+          "architectural_decisions",
+          "technical_specifications",
+          "quality_constraints"
+        ],
+        "handoffMessage": "Architectural design complete with implementation plan. Strategic coordination needed for execution.",
+        "expectedDeliverables": [
+          "implementation_coordination",
+          "role_delegation",
+          "quality_oversight"
+        ]
+      },
+      "contextPreservation": {
+        "originalContext": "preserved_task_context",
+        "architecturalWork": "complete_architectural_design",
+        "implementationPlan": "detailed_implementation_plan",
+        "qualityFramework": "quality_constraints_and_standards"
+      },
+      "isActive": true
+    },
+    {
+      "fromRoleId": "senior-developer",
+      "toRoleId": "boomerang",
+      "transitionName": "implementation_to_boomerang",
+      "conditions": {
+        "implementationComplete": true,
+        "qualityValidated": true,
+        "testingComplete": true,
+        "deliveryCoordinationNeeded": true
+      },
+      "requirements": {
+        "implementedSolution": true,
+        "testCoverage": true,
+        "qualityValidation": true,
+        "documentation": true
+      },
+      "validationRules": {
+        "mustHaveCompletedSteps": [
+          "solution_implementation",
+          "testing_execution",
+          "quality_validation"
+        ],
+        "mustHaveEvidence": [
+          "implemented_solution",
+          "test_results",
+          "quality_metrics"
+        ],
+        "qualityGates": [
+          "implementation_completeness_check",
+          "quality_standards_validation"
+        ]
+      },
+      "handoffGuidance": {
+        "contextToPreserve": [
+          "original_task_context",
+          "implemented_solution",
+          "test_results",
+          "quality_validation",
+          "documentation"
+        ],
+        "handoffMessage": "Implementation complete with quality validation. Final delivery coordination needed.",
+        "expectedDeliverables": [
+          "delivery_coordination",
+          "final_validation",
+          "completion_documentation"
+        ]
+      },
+      "contextPreservation": {
+        "originalContext": "preserved_task_context",
+        "implementationResults": "complete_implementation_package",
+        "qualityEvidence": "quality_validation_results",
+        "deliveryPackage": "final_delivery_artifacts"
+      },
+      "isActive": true
+    },
+    {
+      "fromRoleId": "code-review",
+      "toRoleId": "boomerang",
+      "transitionName": "review_to_boomerang",
+      "conditions": {
+        "reviewComplete": true,
+        "qualityApproved": true,
+        "acceptanceCriteriaValidated": true,
+        "finalCoordinationNeeded": true
+      },
+      "requirements": {
+        "reviewResults": true,
+        "qualityApproval": true,
+        "acceptanceValidation": true,
+        "completionEvidence": true
+      },
+      "validationRules": {
+        "mustHaveCompletedSteps": [
+          "quality_review",
+          "acceptance_validation",
+          "completion_verification"
+        ],
+        "mustHaveEvidence": [
+          "review_results",
+          "quality_approval",
+          "acceptance_evidence"
+        ],
+        "qualityGates": [
+          "review_completeness_check",
+          "final_quality_validation"
+        ]
+      },
+      "handoffGuidance": {
+        "contextToPreserve": [
+          "original_task_context",
+          "review_results",
+          "quality_approval",
+          "acceptance_validation",
+          "completion_evidence"
+        ],
+        "handoffMessage": "Quality review complete with approval. Final delivery coordination and closure needed.",
+        "expectedDeliverables": [
+          "final_delivery",
+          "task_closure",
+          "completion_documentation"
+        ]
+      },
+      "contextPreservation": {
+        "originalContext": "preserved_task_context",
+        "reviewResults": "complete_review_package",
+        "qualityEvidence": "final_quality_validation",
+        "completionPackage": "task_completion_artifacts"
+      },
+      "isActive": true
+    }
+  ]
+}

@@ -35,8 +35,8 @@ export interface InteractiveDashboardData {
       successRate: number;
     }>;
     delegationFlow: Array<{
-      fromRole: string;
-      toRole: string;
+      fromMode: string;
+      toMode: string;
       count: number;
       successRate: number;
     }>;
@@ -56,8 +56,8 @@ export interface InteractiveDashboardData {
     }>;
     recentDelegations: Array<{
       taskName: string;
-      fromRole: string;
-      toRole: string;
+      fromMode: string;
+      toMode: string;
       timestamp: string;
       success?: boolean;
     }>;
@@ -164,6 +164,8 @@ export class InteractiveDashboardService {
           })),
           recentDelegations: recentActivity.recentDelegations.map((d) => ({
             ...d,
+            fromMode: d.fromRole,
+            toMode: d.toRole,
             success: d.success || false,
           })),
         },
@@ -224,8 +226,8 @@ export class InteractiveDashboardService {
         (delegation, index): DelegationSummary => ({
           id: index + 1,
           taskId: delegation.taskName || 'unknown',
-          fromMode: delegation.fromRole as any,
-          toMode: delegation.toRole as any,
+          fromMode: delegation.fromMode as any,
+          toMode: delegation.toMode as any,
           delegationTimestamp: delegation.timestamp,
           success: delegation.success || false,
           duration: 0, // Calculate from timestamps if available

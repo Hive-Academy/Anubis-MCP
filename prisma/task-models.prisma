@@ -27,6 +27,7 @@ model Task {
   comments              Comment[]
   workflowTransitions   WorkflowTransition[]
   codebaseAnalysis      CodebaseAnalysis?
+  workflowExecutions    WorkflowExecution[]
 
   @@index([status])
   @@index([owner])

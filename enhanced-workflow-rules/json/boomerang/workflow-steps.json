@@ -1,0 +1,545 @@
+{
+  "workflowSteps": [
+    {
+      "name": "internal_service_context_acquisition",
+      "displayName": "Internal Service Context Acquisition",
+      "description": "Acquire context through internal service orchestration instead of direct MCP calls",
+      "sequenceNumber": 1,
+      "isRequired": true,
+      "estimatedTime": "2-3 minutes",
+      "stepType": "ACTION",
+      "behavioralContext": {
+        "approach": "Use internal service orchestration to acquire all necessary context",
+        "principles": [
+          "Leverage CoreServiceOrchestrator for all task operations",
+          "Use TaskOperations service for task queries and management",
+          "Ensure proper service call validation and error handling"
+        ],
+        "methodology": "Service-driven context acquisition with proper orchestration"
+      },
+      "approachGuidance": {
+        "stepByStep": [
+          "Use CoreServiceOrchestrator.executeServiceCall() for task operations",
+          "Query active tasks through TaskOperations.executeTaskOperation()",
+          "Retrieve task context through internal service calls",
+          "Validate service responses and handle errors appropriately"
+        ]
+      },
+      "qualityChecklist": [
+        "Service calls properly orchestrated through CoreServiceOrchestrator",
+        "Task context successfully retrieved",
+        "Error handling implemented for service failures",
+        "Context data validated and complete"
+      ],
+      "conditions": [],
+      "actions": [
+        {
+          "name": "query_active_tasks",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "TaskOperations",
+            "operation": "list",
+            "parameters": {
+              "queryType": "current_assignments",
+              "status": "in-progress"
+            }
+          },
+          "sequenceOrder": 1
+        },
+        {
+          "name": "get_task_context",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "TaskOperations",
+            "operation": "get",
+            "parameters": {
+              "includeContext": true,
+              "includeSubtasks": true,
+              "includeBatches": true
+            }
+          },
+          "sequenceOrder": 2
+        }
+      ],
+      "triggerReport": false
+    },
+    {
+      "name": "git_integration_verification",
+      "displayName": "MANDATORY: Git Integration Verification",
+      "description": "CRITICAL: Verify clean git state and create feature branch before task creation. STOP workflow if any step fails.",
+      "sequenceNumber": 2,
+      "isRequired": true,
+      "estimatedTime": "2-3 minutes",
+      "stepType": "VALIDATION",
+      "behavioralContext": {
+        "approach": "Mandatory git state verification and branch creation",
+        "principles": [
+          "NEVER proceed with dirty git state",
+          "Always create feature branch for new work",
+          "Follow strict git workflow protocols",
+          "STOP workflow immediately if git operations fail"
+        ],
+        "methodology": "Git-first workflow with mandatory verification"
+      },
+      "approachGuidance": {
+        "stepByStep": [
+          "Execute 'git status --porcelain' to verify clean state",
+          "STOP if any uncommitted changes detected",
+          "Create feature branch with format: feature/TSK-{timestamp}-{slug}",
+          "Verify branch creation with 'git branch --show-current'",
+          "Document branch name for task context"
+        ]
+      },
+      "qualityChecklist": [
+        "Git status is completely clean (no uncommitted changes)",
+        "Feature branch created successfully",
+        "Branch name follows naming convention",
+        "Current branch verified and documented",
+        "Git operations completed without errors"
+      ],
+      "conditions": [
+        {
+          "name": "git_available",
+          "conditionType": "CUSTOM_LOGIC",
+          "logic": {
+            "check": "command_available",
+            "parameters": {
+              "command": "git",
+              "requiredVersion": "2.0.0"
+            }
+          },
+          "isRequired": true
+        }
+      ],
+      "actions": [
+        {
+          "name": "verify_clean_git_state",
+          "actionType": "COMMAND",
+          "actionData": {
+            "command": "git",
+            "args": ["status", "--porcelain"],
+            "expectedOutput": "",
+            "failOnNonEmpty": true,
+            "errorMessage": "CRITICAL: Git state is not clean. Commit or stash changes before proceeding."
+          },
+          "sequenceOrder": 1
+        },
+        {
+          "name": "create_feature_branch",
+          "actionType": "COMMAND",
+          "actionData": {
+            "command": "git",
+            "args": [
+              "checkout",
+              "-b",
+              "feature/TSK-{{timestamp}}-{{task_slug}}"
+            ],
+            "timeout": 10000,
+            "errorMessage": "CRITICAL: Failed to create feature branch."
+          },
+          "sequenceOrder": 2
+        },
+        {
+          "name": "verify_branch_creation",
+          "actionType": "COMMAND",
+          "actionData": {
+            "command": "git",
+            "args": ["branch", "--show-current"],
+            "captureOutput": true,
+            "validateOutput": "feature/TSK-",
+            "errorMessage": "CRITICAL: Branch creation verification failed."
+          },
+          "sequenceOrder": 3
+        },
+        {
+          "name": "document_branch_context",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "TaskOperations",
+            "operation": "update",
+            "parameters": {
+              "updateType": "git_context",
+              "gitData": {
+                "branchName": "{{current_branch}}",
+                "branchCreated": "{{timestamp}}",
+                "gitStatus": "clean"
+              }
+            }
+          },
+          "sequenceOrder": 4
+        }
+      ],
+      "triggerReport": false
+    },
+    {
+      "name": "current_state_verification_protocol",
+      "displayName": "MANDATORY: Current State Verification Protocol",
+      "description": "BEFORE making strategic decisions, MUST execute functional verification through testing",
+      "sequenceNumber": 3,
+      "isRequired": true,
+      "estimatedTime": "5-10 minutes",
+      "stepType": "VALIDATION",
+      "behavioralContext": {
+        "approach": "Mandatory functional testing before any strategic decisions",
+        "principles": [
+          "Never make assumptions about current system state",
+          "Always test actual functionality before decisions",
+          "Document all verification evidence",
+          "Use evidence to guide strategic choices"
+        ],
+        "methodology": "Test-driven verification with evidence collection"
+      },
+      "approachGuidance": {
+        "stepByStep": [
+          "Identify key assumptions about current implementation",
+          "Design functional tests to verify assumptions",
+          "Execute tests and document results",
+          "Collect evidence of current capabilities and limitations",
+          "Use evidence to inform strategic decisions"
+        ]
+      },
+      "qualityChecklist": [
+        "All key assumptions identified and listed",
+        "Functional tests designed and executed",
+        "Test results documented with evidence",
+        "Current state accurately assessed",
+        "Evidence collected for strategic decision making"
+      ],
+      "conditions": [
+        {
+          "name": "strategic_decision_required",
+          "conditionType": "CONTEXT_CHECK",
+          "logic": {
+            "check": "task_requires_strategic_decision",
+            "parameters": {
+              "decisionTypes": [
+                "architecture",
+                "implementation",
+                "delegation",
+                "escalation"
+              ]
+            }
+          },
+          "isRequired": true
+        }
+      ],
+      "actions": [
+        {
+          "name": "identify_assumptions",
+          "actionType": "VALIDATION",
+          "actionData": {
+            "validationType": "assumption_identification",
+            "criteria": {
+              "categories": [
+                "current_implementation",
+                "system_capabilities",
+                "integration_points",
+                "data_flow"
+              ]
+            }
+          },
+          "sequenceOrder": 1
+        },
+        {
+          "name": "execute_functional_tests",
+          "actionType": "COMMAND",
+          "actionData": {
+            "command": "npm",
+            "args": ["test", "--", "--testNamePattern=functional"],
+            "allowFailure": true,
+            "timeout": 60000
+          },
+          "sequenceOrder": 2
+        },
+        {
+          "name": "document_verification_evidence",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "TaskOperations",
+            "operation": "update",
+            "parameters": {
+              "updateType": "verification_evidence",
+              "evidenceData": {
+                "verificationResults": "{{test_results}}",
+                "currentCapabilities": "{{capabilities_assessment}}",
+                "limitations": "{{identified_limitations}}"
+              }
+            }
+          },
+          "sequenceOrder": 3
+        }
+      ],
+      "triggerReport": true,
+      "reportType": "verification_evidence",
+      "reportTemplate": "current_state_verification"
+    },
+    {
+      "name": "enhanced_task_setup",
+      "displayName": "Enhanced Task Setup (Initial or Escalation)",
+      "description": "Comprehensive task initialization with evidence-based analysis using internal services",
+      "sequenceNumber": 4,
+      "isRequired": true,
+      "estimatedTime": "10-15 minutes",
+      "stepType": "ACTION",
+      "behavioralContext": {
+        "approach": "Service-orchestrated task setup with comprehensive analysis",
+        "principles": [
+          "Use internal services for all task operations",
+          "Ensure complete task context and metadata",
+          "Leverage planning services for subtask creation",
+          "Maintain evidence-based approach"
+        ],
+        "methodology": "Service-driven task initialization with proper orchestration"
+      },
+      "approachGuidance": {
+        "stepByStep": [
+          "Use TaskOperations service to create or update task",
+          "Leverage PlanningOperations for implementation planning",
+          "Use SubtaskOperations for subtask management",
+          "Ensure proper service orchestration and error handling"
+        ]
+      },
+      "qualityChecklist": [
+        "Task properly created/updated through TaskOperations service",
+        "Implementation plan created through PlanningOperations",
+        "Subtasks properly managed through SubtaskOperations",
+        "All service calls properly orchestrated",
+        "Error handling implemented for service failures"
+      ],
+      "conditions": [
+        {
+          "name": "task_setup_required",
+          "conditionType": "CONTEXT_CHECK",
+          "logic": {
+            "check": "needs_task_setup",
+            "parameters": {
+              "scenarios": ["new_task", "escalation", "context_update"]
+            }
+          },
+          "isRequired": true
+        }
+      ],
+      "actions": [
+        {
+          "name": "create_or_update_task",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "TaskOperations",
+            "operation": "create",
+            "parameters": {
+              "taskData": {
+                "name": "{{task_name}}",
+                "description": "{{task_description}}",
+                "businessRequirements": "{{business_requirements}}",
+                "technicalRequirements": "{{technical_requirements}}",
+                "acceptanceCriteria": "{{acceptance_criteria}}",
+                "priority": "{{priority}}"
+              },
+              "includeContext": true
+            }
+          },
+          "sequenceOrder": 1
+        },
+        {
+          "name": "create_implementation_plan",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "PlanningOperations",
+            "operation": "create_plan",
+            "parameters": {
+              "planData": {
+                "taskId": "{{task_id}}",
+                "planType": "implementation",
+                "analysisData": "{{verification_evidence}}"
+              }
+            }
+          },
+          "sequenceOrder": 2
+        },
+        {
+          "name": "setup_subtask_structure",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "PlanningOperations",
+            "operation": "create_subtasks",
+            "parameters": {
+              "taskId": "{{task_id}}",
+              "subtaskData": "{{implementation_plan_subtasks}}"
+            }
+          },
+          "sequenceOrder": 3
+        }
+      ],
+      "triggerReport": true,
+      "reportType": "task_creation",
+      "reportTemplate": "enhanced_task_setup"
+    },
+    {
+      "name": "strategic_decision_making",
+      "displayName": "Evidence-Based Strategic Decision Making",
+      "description": "Make strategic decisions based on verification evidence and current context",
+      "sequenceNumber": 5,
+      "isRequired": true,
+      "estimatedTime": "5-8 minutes",
+      "stepType": "DECISION",
+      "behavioralContext": {
+        "approach": "Evidence-based strategic analysis with service-driven execution",
+        "principles": [
+          "Base all decisions on verification evidence",
+          "Consider workflow efficiency and quality",
+          "Use appropriate services for decision implementation",
+          "Document decision rationale"
+        ],
+        "methodology": "Strategic analysis with service orchestration"
+      },
+      "approachGuidance": {
+        "stepByStep": [
+          "Analyze verification evidence and current context",
+          "Evaluate strategic options and their implications",
+          "Make evidence-based decision on next steps",
+          "Use appropriate services to implement decision",
+          "Document decision rationale and evidence"
+        ]
+      },
+      "qualityChecklist": [
+        "Decision based on verification evidence",
+        "Strategic options properly evaluated",
+        "Decision rationale documented",
+        "Implementation through appropriate services",
+        "Quality implications considered"
+      ],
+      "conditions": [
+        {
+          "name": "verification_completed",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "check": "step_completed",
+            "parameters": {
+              "stepName": "current_state_verification_protocol"
+            }
+          },
+          "isRequired": true
+        }
+      ],
+      "actions": [
+        {
+          "name": "analyze_strategic_options",
+          "actionType": "VALIDATION",
+          "actionData": {
+            "validationType": "strategic_analysis",
+            "criteria": {
+              "evidenceBase": "{{verification_evidence}}",
+              "options": [
+                "continue_implementation",
+                "delegate_to_specialist",
+                "escalate_complexity",
+                "research_required"
+              ]
+            }
+          },
+          "sequenceOrder": 1
+        },
+        {
+          "name": "document_strategic_decision",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "TaskOperations",
+            "operation": "update",
+            "parameters": {
+              "updateType": "strategic_decision",
+              "decisionData": {
+                "decision": "{{strategic_decision}}",
+                "rationale": "{{decision_rationale}}",
+                "evidence": "{{supporting_evidence}}",
+                "nextSteps": "{{planned_next_steps}}"
+              }
+            }
+          },
+          "sequenceOrder": 2
+        }
+      ],
+      "triggerReport": false
+    },
+    {
+      "name": "intelligent_role_delegation",
+      "displayName": "Intelligent Role Delegation",
+      "description": "Delegate to appropriate role based on strategic decision and context",
+      "sequenceNumber": 6,
+      "isRequired": true,
+      "estimatedTime": "3-5 minutes",
+      "stepType": "DELEGATION",
+      "behavioralContext": {
+        "approach": "Service-orchestrated role delegation with context preservation",
+        "principles": [
+          "Use WorkflowOperations service for delegation",
+          "Ensure complete context handoff",
+          "Select appropriate role based on task requirements",
+          "Maintain workflow continuity"
+        ],
+        "methodology": "Service-driven delegation with proper orchestration"
+      },
+      "approachGuidance": {
+        "stepByStep": [
+          "Determine appropriate target role based on strategic decision",
+          "Prepare comprehensive handoff context",
+          "Use WorkflowOperations service to execute delegation",
+          "Ensure proper context preservation and handoff documentation"
+        ]
+      },
+      "qualityChecklist": [
+        "Target role appropriately selected",
+        "Handoff context comprehensive and complete",
+        "Delegation executed through WorkflowOperations service",
+        "Context preservation ensured",
+        "Handoff documentation complete"
+      ],
+      "conditions": [
+        {
+          "name": "strategic_decision_made",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "check": "step_completed",
+            "parameters": {
+              "stepName": "strategic_decision_making"
+            }
+          },
+          "isRequired": true
+        }
+      ],
+      "actions": [
+        {
+          "name": "prepare_delegation_context",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "TaskOperations",
+            "operation": "get",
+            "parameters": {
+              "includeFullContext": true,
+              "includeEvidence": true,
+              "includeDecisions": true
+            }
+          },
+          "sequenceOrder": 1
+        },
+        {
+          "name": "execute_role_delegation",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "WorkflowOperations",
+            "operation": "delegate",
+            "parameters": {
+              "targetRole": "{{target_role}}",
+              "handoffContext": "{{delegation_context}}",
+              "preserveContext": true,
+              "delegationReason": "{{strategic_decision}}"
+            }
+          },
+          "sequenceOrder": 2
+        }
+      ],
+      "triggerReport": true,
+      "reportType": "delegation",
+      "reportTemplate": "role_delegation"
+    }
+  ]
+}

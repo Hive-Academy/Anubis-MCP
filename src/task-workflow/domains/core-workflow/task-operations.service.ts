@@ -1,16 +1,75 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Tool } from '@rekog/mcp-nest';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { TaskOperationsInput } from './schemas/task-operations.schema';
 import {
-  TaskOperationsSchema,
-  TaskOperationsInput,
-} from './schemas/task-operations.schema';
+  Task,
+  TaskDescription,
+  CodebaseAnalysis,
+  Prisma,
+} from 'generated/prisma';
+
+// Type-safe interfaces for service operations
+export interface TaskOperationResult {
+  success: boolean;
+  data?: TaskWithRelations | TaskWithRelations[] | TaskListResult;
+  error?: {
+    message: string;
+    code: string;
+    operation: string;
+  };
+  metadata?: {
+    operation: string;
+    id: string | number;
+    responseTime: number;
+  };
+}
+
+export interface TaskWithRelations extends Task {
+  taskDescription?: TaskDescription | null;
+  codebaseAnalysis?: CodebaseAnalysis | null;
+  implementationPlans?: Prisma.ImplementationPlanGetPayload<
+    Record<string, never>
+  >[];
+  subtasks?: Prisma.SubtaskGetPayload<Record<string, never>>[];
+  delegationRecords?: Prisma.DelegationRecordGetPayload<
+    Record<string, never>
+  >[];
+  researchReports?: Prisma.ResearchReportGetPayload<Record<string, never>>[];
+  codeReviews?: Prisma.CodeReviewGetPayload<Record<string, never>>[];
+  completionReports?: Prisma.CompletionReportGetPayload<
+    Record<string, never>
+  >[];
+  comments?: Prisma.CommentGetPayload<Record<string, never>>[];
+  workflowTransitions?: Prisma.WorkflowTransitionGetPayload<
+    Record<string, never>
+  >[];
+  workflowExecutions?: Prisma.WorkflowExecutionGetPayload<
+    Record<string, never>
+  >[];
+}
+
+export interface TaskListResult {
+  tasks: TaskWithRelations[];
+  count: number;
+  filters: {
+    status?: string;
+    priority?: string;
+    slug?: string;
+  };
+}
 
 /**
- * Task Operations Service
+ * Task Operations Service (Internal)
  *
- * Focused service for Task, TaskDescription, and CodebaseAnalysis operations.
- * Eliminates universal tool complexity with clear, obvious parameters.
+ * Provides core task lifecycle management as internal service.
+ * Now called by workflow-rules MCP tools instead of being exposed directly.
+ *
+ * SOLID Principles Applied:
+ * - Single Responsibility: Focused on task CRUD operations only
+ * - Open/Closed: Extensible through input schema without modifying core logic
+ * - Liskov Substitution: Consistent interface for all task operations
+ * - Interface Segregation: Clean separation of concerns with focused methods
+ * - Dependency Inversion: Depends on PrismaService abstraction
  */
 @Injectable()
 export class TaskOperationsService {
@@ -18,32 +77,13 @@ export class TaskOperationsService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  @Tool({
-    name: 'task_operations',
-    description: `
-Task lifecycle management with clear, focused operations.
-
-**Operations:**
-- create: Create new task with optional description and analysis (taskId auto-generated)
-- update: Update task details, status, or related data  
-- get: Retrieve task with description and optional analysis
-- list: List tasks with filtering options
-
-**Key Features:**
-- Pre-configured relationships (always includes description when requested)
-- Clear parameter requirements (no complex schema guessing)
-- Business rule validation for status transitions
-- Integrated codebase analysis management
-- Auto-generated unique taskId (no need to provide taskId for create operations)
-
-**Examples:**
-- Create task: { operation: "create", taskData: { name: "Fix auth bug", priority: "High" } }
-- Update status: { operation: "update", taskId: "TSK-001", taskData: { status: "in-progress" } }
-- Get full context: { operation: "get", taskId: "TSK-001", includeDescription: true, includeAnalysis: true }
-`,
-    parameters: TaskOperationsSchema,
-  })
-  async executeTaskOperation(input: TaskOperationsInput): Promise<any> {
+  /**
+   * Execute task operation as internal service
+   * Returns type-safe data without MCP wrapping
+   */
+  async executeTaskOperation(
+    input: TaskOperationsInput,
+  ): Promise<TaskOperationResult> {
     const startTime = performance.now();
 
     try {
@@ -85,52 +125,35 @@ Task lifecycle management with clear, focused operations.
         },
       );
 
+      // Return type-safe data for internal service use
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                success: true,
-                data: result,
-                metadata: {
-                  operation: input.operation,
-                  id: input.id ?? 'unknown',
-                  responseTime: Math.round(responseTime),
-                },
-              },
-              null,
-              2,
-            ),
-          },
-        ],
-      } as const;
+        success: true,
+        data: result,
+        metadata: {
+          operation: input.operation,
+          id: input.id ?? 'unknown',
+          responseTime: Math.round(responseTime),
+        },
+      };
     } catch (error: any) {
       this.logger.error(`Task operation failed:`, error);
 
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                success: false,
-                error: {
-                  message: error.message,
-                  code: 'TASK_OPERATION_FAILED',
-                  operation: input.operation,
-                },
-              },
-              null,
-              2,
-            ),
-          },
-        ],
+        success: false,
+        error: {
+          message: error.message,
+          code: 'TASK_OPERATION_FAILED',
+          operation: input.operation,
+        },
       };
     }
   }
 
-  private async createTask(input: TaskOperationsInput): Promise<any> {
+  private async createTask(input: TaskOperationsInput): Promise<{
+    task: Task;
+    taskDescription: TaskDescription | null;
+    codebaseAnalysis: CodebaseAnalysis | null;
+  }> {
     const { taskData, description, codebaseAnalysis } = input;
 
     if (!taskData?.name) {
@@ -144,45 +167,43 @@ Task lifecycle management with clear, focused operations.
         this.generateSlugFromName(taskData.name!),
       );
 
-      // Create the task - let Prisma auto-generate taskId
+      // Create the task with proper Prisma types
       const task = await tx.task.create({
         data: {
-          // Remove taskId - let Prisma auto-generate it
           name: taskData.name!,
           slug,
           status: taskData.status || 'not-started',
           priority: taskData.priority || 'Medium',
           dependencies: taskData.dependencies || [],
           gitBranch: taskData.gitBranch,
-          createdAt: new Date(),
           owner: 'boomerang',
           currentMode: 'boomerang',
-        },
+        } satisfies Prisma.TaskCreateInput,
       });
 
       // Use the auto-generated taskId for related records
       const taskId = task.id;
 
       // Create task description if provided
-      let taskDescription = null;
+      let taskDescription: TaskDescription | null = null;
       if (description) {
         taskDescription = await tx.taskDescription.create({
           data: {
-            taskId,
+            task: { connect: { id: taskId } },
             description: description.description || '',
             businessRequirements: description.businessRequirements || '',
             technicalRequirements: description.technicalRequirements || '',
             acceptanceCriteria: description.acceptanceCriteria || [],
-          },
+          } satisfies Prisma.TaskDescriptionCreateInput,
         });
       }
 
       // Create codebase analysis if provided
-      let analysis = null;
+      let analysis: CodebaseAnalysis | null = null;
       if (codebaseAnalysis) {
         analysis = await tx.codebaseAnalysis.create({
           data: {
-            taskId,
+            task: { connect: { id: taskId } },
             architectureFindings: codebaseAnalysis.architectureFindings || {},
             problemsIdentified: codebaseAnalysis.problemsIdentified || {},
             implementationContext: codebaseAnalysis.implementationContext || {},
@@ -191,7 +212,7 @@ Task lifecycle management with clear, focused operations.
             filesCovered: codebaseAnalysis.filesCovered || [],
             technologyStack: codebaseAnalysis.technologyStack || {},
             analyzedBy: codebaseAnalysis.analyzedBy || 'system',
-          },
+          } satisfies Prisma.CodebaseAnalysisCreateInput,
         });
       }
 
@@ -201,7 +222,11 @@ Task lifecycle management with clear, focused operations.
     return result;
   }
 
-  private async updateTask(input: TaskOperationsInput): Promise<any> {
+  private async updateTask(input: TaskOperationsInput): Promise<{
+    task: Task | null;
+    taskDescription: TaskDescription | null;
+    codebaseAnalysis: CodebaseAnalysis | null;
+  }> {
     const { id, taskData, description, codebaseAnalysis } = input;
 
     if (!id) {
@@ -209,44 +234,45 @@ Task lifecycle management with clear, focused operations.
     }
 
     const result = await this.prisma.$transaction(async (tx) => {
-      let task = null;
-      let taskDescription = null;
-      let analysis = null;
+      let task: Task | null = null;
+      let taskDescription: TaskDescription | null = null;
+      let analysis: CodebaseAnalysis | null = null;
 
       // Update task if data provided
       if (taskData) {
+        const updateData: Prisma.TaskUpdateInput = {};
+
+        if (taskData.name) updateData.name = taskData.name;
+        if (taskData.status) updateData.status = taskData.status;
+        if (taskData.priority) updateData.priority = taskData.priority;
+        if (taskData.dependencies)
+          updateData.dependencies = taskData.dependencies;
+        if (taskData.gitBranch) updateData.gitBranch = taskData.gitBranch;
+
         task = await tx.task.update({
           where: { id },
-          data: {
-            ...(taskData.name && { name: taskData.name }),
-            ...(taskData.status && { status: taskData.status }),
-            ...(taskData.priority && { priority: taskData.priority }),
-            ...(taskData.dependencies && {
-              dependencies: taskData.dependencies,
-            }),
-            ...(taskData.gitBranch && { gitBranch: taskData.gitBranch }),
-          },
+          data: updateData,
         });
       }
 
       // Update task description if provided
       if (description) {
+        const descriptionData: Prisma.TaskDescriptionUpsertArgs['update'] = {};
+
+        if (description.description)
+          descriptionData.description = description.description;
+        if (description.businessRequirements)
+          descriptionData.businessRequirements =
+            description.businessRequirements;
+        if (description.technicalRequirements)
+          descriptionData.technicalRequirements =
+            description.technicalRequirements;
+        if (description.acceptanceCriteria)
+          descriptionData.acceptanceCriteria = description.acceptanceCriteria;
+
         taskDescription = await tx.taskDescription.upsert({
           where: { taskId: id },
-          update: {
-            ...(description.description && {
-              description: description.description,
-            }),
-            ...(description.businessRequirements && {
-              businessRequirements: description.businessRequirements,
-            }),
-            ...(description.technicalRequirements && {
-              technicalRequirements: description.technicalRequirements,
-            }),
-            ...(description.acceptanceCriteria && {
-              acceptanceCriteria: description.acceptanceCriteria,
-            }),
-          },
+          update: descriptionData,
           create: {
             taskId: id,
             description: description.description || '',
@@ -259,34 +285,30 @@ Task lifecycle management with clear, focused operations.
 
       // Update codebase analysis if provided
       if (codebaseAnalysis) {
+        const analysisData: Prisma.CodebaseAnalysisUpsertArgs['update'] = {};
+
+        if (codebaseAnalysis.architectureFindings)
+          analysisData.architectureFindings =
+            codebaseAnalysis.architectureFindings;
+        if (codebaseAnalysis.problemsIdentified)
+          analysisData.problemsIdentified = codebaseAnalysis.problemsIdentified;
+        if (codebaseAnalysis.implementationContext)
+          analysisData.implementationContext =
+            codebaseAnalysis.implementationContext;
+        if (codebaseAnalysis.integrationPoints)
+          analysisData.integrationPoints = codebaseAnalysis.integrationPoints;
+        if (codebaseAnalysis.qualityAssessment)
+          analysisData.qualityAssessment = codebaseAnalysis.qualityAssessment;
+        if (codebaseAnalysis.filesCovered)
+          analysisData.filesCovered = codebaseAnalysis.filesCovered;
+        if (codebaseAnalysis.technologyStack)
+          analysisData.technologyStack = codebaseAnalysis.technologyStack;
+        if (codebaseAnalysis.analyzedBy)
+          analysisData.analyzedBy = codebaseAnalysis.analyzedBy;
+
         analysis = await tx.codebaseAnalysis.upsert({
           where: { taskId: id },
-          update: {
-            ...(codebaseAnalysis.architectureFindings && {
-              architectureFindings: codebaseAnalysis.architectureFindings,
-            }),
-            ...(codebaseAnalysis.problemsIdentified && {
-              problemsIdentified: codebaseAnalysis.problemsIdentified,
-            }),
-            ...(codebaseAnalysis.implementationContext && {
-              implementationContext: codebaseAnalysis.implementationContext,
-            }),
-            ...(codebaseAnalysis.integrationPoints && {
-              integrationPoints: codebaseAnalysis.integrationPoints,
-            }),
-            ...(codebaseAnalysis.qualityAssessment && {
-              qualityAssessment: codebaseAnalysis.qualityAssessment,
-            }),
-            ...(codebaseAnalysis.filesCovered && {
-              filesCovered: codebaseAnalysis.filesCovered,
-            }),
-            ...(codebaseAnalysis.technologyStack && {
-              technologyStack: codebaseAnalysis.technologyStack,
-            }),
-            ...(codebaseAnalysis.analyzedBy && {
-              analyzedBy: codebaseAnalysis.analyzedBy,
-            }),
-          },
+          update: analysisData,
           create: {
             taskId: id,
             architectureFindings: codebaseAnalysis.architectureFindings || {},
@@ -307,14 +329,16 @@ Task lifecycle management with clear, focused operations.
     return result;
   }
 
-  private async getTask(input: TaskOperationsInput): Promise<any> {
+  private async getTask(
+    input: TaskOperationsInput,
+  ): Promise<TaskWithRelations> {
     const { id, slug, includeDescription, includeAnalysis } = input;
 
     if (!id && !slug) {
       throw new Error('Either Task ID or Task Slug is required for retrieval');
     }
 
-    const include: any = {};
+    const include: Prisma.TaskInclude = {};
     if (includeDescription) {
       include.taskDescription = true;
     }
@@ -334,14 +358,14 @@ Task lifecycle management with clear, focused operations.
       throw new Error(`Task not found: ${slug || id}`);
     }
 
-    return task;
+    return task as TaskWithRelations;
   }
 
-  private async listTasks(input: TaskOperationsInput): Promise<any> {
+  private async listTasks(input: TaskOperationsInput): Promise<TaskListResult> {
     const { status, priority, slug, includeDescription, includeAnalysis } =
       input;
 
-    const where: any = {};
+    const where: Prisma.TaskWhereInput = {};
     if (status) where.status = status;
     if (priority) where.priority = priority;
     if (slug) {
@@ -349,7 +373,7 @@ Task lifecycle management with clear, focused operations.
       where.slug = { contains: slug };
     }
 
-    const include: any = {};
+    const include: Prisma.TaskInclude = {};
     if (includeDescription) {
       include.taskDescription = true;
     }
@@ -364,7 +388,7 @@ Task lifecycle management with clear, focused operations.
     });
 
     return {
-      tasks,
+      tasks: tasks as TaskWithRelations[],
       count: tasks.length,
       filters: { status, priority, slug },
     };

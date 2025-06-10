@@ -1,16 +1,60 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Tool } from '@rekog/mcp-nest';
 import { PrismaService } from '../../../prisma/prisma.service';
-import {
-  PlanningOperationsSchema,
-  PlanningOperationsInput,
-} from './schemas/planning-operations.schema';
+import { PlanningOperationsInput } from './schemas/planning-operations.schema';
+import { ImplementationPlan, Subtask, Prisma } from 'generated/prisma';
+
+// Type-safe interfaces for planning operations
+export interface PlanningOperationResult {
+  success: boolean;
+  data?: PlanWithSubtasks | Subtask[] | SubtaskBatchResult;
+  error?: {
+    message: string;
+    code: string;
+    operation: string;
+  };
+  metadata?: {
+    operation: string;
+    taskId?: number;
+    planId?: number;
+    batchId?: string;
+    responseTime: number;
+  };
+}
+
+export interface SubtaskBatchResult {
+  subtasks: Subtask[];
+  batchId: string;
+  batchTitle: string;
+  count: number;
+  created?: number;
+  updated?: number;
+  totalSubtasks?: number;
+  completed?: number;
+  inProgress?: number;
+  notStarted?: number;
+}
+
+export interface PlanWithSubtasks extends ImplementationPlan {
+  subtasks?: Subtask[];
+  batches?: Array<{
+    batchId: string;
+    batchTitle: string;
+    subtasks: Subtask[];
+  }>;
+}
 
 /**
- * Planning Operations Service
+ * Planning Operations Service (Internal)
  *
- * Focused service for ImplementationPlan and Subtask batch operations.
- * Eliminates complex batch parameter decisions with clear, obvious interfaces.
+ * Internal service for implementation planning and batch subtask management.
+ * No longer exposed as MCP tool - used by workflow-rules MCP interface.
+ *
+ * SOLID Principles Applied:
+ * - Single Responsibility: Focused on planning and subtask operations only
+ * - Open/Closed: Extensible through input schema without modifying core logic
+ * - Liskov Substitution: Consistent interface for all planning operations
+ * - Interface Segregation: Clean separation of planning concerns
+ * - Dependency Inversion: Depends on PrismaService abstraction
  */
 @Injectable()
 export class PlanningOperationsService {
@@ -18,37 +62,9 @@ export class PlanningOperationsService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  @Tool({
-    name: 'planning_operations',
-    description: `
-Implementation planning and batch subtask management.
-
-**Operations:**
-- create_plan: Create implementation plan for a task
-- update_plan: Update existing implementation plan
-- get_plan: Retrieve plan with subtasks
-- create_subtasks: Create batch of subtasks for a plan
-- update_batch: Update all subtasks in a batch
-- get_batch: Retrieve all subtasks for a specific batch
-
-**Key Features:**
-- Automatic batch management (group subtasks by batchId)
-- Sequential numbering for subtasks
-- Clear plan-to-subtask relationships
-- Batch status updates (update entire batches at once)
-
-**Subtask Creation Requirements:**
-- REQUIRED: name, description, sequenceNumber
-- OPTIONAL: status (defaults to 'not-started' if not provided)
-
-**Examples:**
-- Create plan: { operation: "create_plan", taskId: "TSK-001", planData: { overview: "Auth implementation", approach: "JWT-based" } }
-- Create batch: { operation: "create_subtasks", taskId: "TSK-001", batchData: { batchId: "B001", subtasks: [{ name: "Task", description: "Desc", sequenceNumber: 1 }] } }
-- Update batch: { operation: "update_batch", taskId: "TSK-001", batchId: "B001", newStatus: "completed" }
-`,
-    parameters: PlanningOperationsSchema,
-  })
-  async executePlanningOperation(input: PlanningOperationsInput): Promise<any> {
+  async executePlanningOperation(
+    input: PlanningOperationsInput,
+  ): Promise<PlanningOperationResult> {
     const startTime = performance.now();
 
     try {
@@ -57,7 +73,11 @@ Implementation planning and batch subtask management.
         batchId: input.batchId,
       });
 
-      let result: any;
+      let result:
+        | ImplementationPlan
+        | Subtask[]
+        | SubtaskBatchResult
+        | PlanWithSubtasks;
 
       switch (input.operation) {
         case 'create_plan':
@@ -85,52 +105,32 @@ Implementation planning and batch subtask management.
       const responseTime = performance.now() - startTime;
 
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                success: true,
-                data: result,
-                metadata: {
-                  operation: input.operation,
-                  taskId: input.taskId,
-                  batchId: input.batchId,
-                  responseTime: Math.round(responseTime),
-                },
-              },
-              null,
-              2,
-            ),
-          },
-        ],
-      } as const;
+        success: true,
+        data: result,
+        metadata: {
+          operation: input.operation,
+          taskId: input.taskId,
+          batchId: input.batchId,
+          responseTime: Math.round(responseTime),
+        },
+      };
     } catch (error: any) {
       this.logger.error(`Planning operation failed:`, error);
 
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                success: false,
-                error: {
-                  message: error.message,
-                  code: 'PLANNING_OPERATION_FAILED',
-                  operation: input.operation,
-                },
-              },
-              null,
-              2,
-            ),
-          },
-        ],
+        success: false,
+        error: {
+          message: error.message,
+          code: 'PLANNING_OPERATION_FAILED',
+          operation: input.operation,
+        },
       };
     }
   }
 
-  private async createPlan(input: PlanningOperationsInput): Promise<any> {
+  private async createPlan(
+    input: PlanningOperationsInput,
+  ): Promise<PlanWithSubtasks> {
     const { taskId, planData } = input;
 
     if (!planData) {
@@ -139,7 +139,7 @@ Implementation planning and batch subtask management.
 
     const plan = await this.prisma.implementationPlan.create({
       data: {
-        taskId,
+        task: { connect: { id: taskId } },
         overview: planData.overview || '',
         approach: planData.approach || '',
         technicalDecisions: planData.technicalDecisions || {},
@@ -179,7 +179,7 @@ Implementation planning and batch subtask management.
         ...(planData.antiPatternPrevention && {
           antiPatternPrevention: planData.antiPatternPrevention,
         }),
-      },
+      } satisfies Prisma.ImplementationPlanCreateInput,
       include: {
         subtasks: {
           orderBy: { sequenceNumber: 'asc' },
@@ -190,14 +190,16 @@ Implementation planning and batch subtask management.
     return plan;
   }
 
-  private async updatePlan(input: PlanningOperationsInput): Promise<any> {
+  private async updatePlan(
+    input: PlanningOperationsInput,
+  ): Promise<PlanWithSubtasks> {
     const { taskId, planData, planId } = input;
 
     if (!planData) {
       throw new Error('Plan data is required for update');
     }
 
-    let plan;
+    let plan: PlanWithSubtasks;
     if (planId) {
       plan = await this.prisma.implementationPlan.update({
         where: { id: planId },
@@ -319,7 +321,9 @@ Implementation planning and batch subtask management.
     return plan;
   }
 
-  private async getPlan(input: PlanningOperationsInput): Promise<any> {
+  private async getPlan(
+    input: PlanningOperationsInput,
+  ): Promise<PlanWithSubtasks> {
     const { taskId, planId, includeBatches } = input;
 
     const whereClause = planId ? { id: planId } : { taskId };
@@ -367,7 +371,9 @@ Implementation planning and batch subtask management.
     return plan;
   }
 
-  private async createSubtasks(input: PlanningOperationsInput): Promise<any> {
+  private async createSubtasks(
+    input: PlanningOperationsInput,
+  ): Promise<SubtaskBatchResult> {
     const { taskId, batchData } = input;
 
     if (!batchData?.batchId || !batchData.subtasks) {
@@ -424,12 +430,16 @@ Implementation planning and batch subtask management.
 
     return {
       created: result.count,
+      count: createdSubtasks.length,
       batchId: batchData.batchId,
+      batchTitle: batchData.batchTitle || 'Untitled Batch',
       subtasks: createdSubtasks,
     };
   }
 
-  private async updateBatch(input: PlanningOperationsInput): Promise<any> {
+  private async updateBatch(
+    input: PlanningOperationsInput,
+  ): Promise<SubtaskBatchResult> {
     const { taskId, batchId, newStatus } = input;
 
     if (!batchId) {
@@ -465,13 +475,16 @@ Implementation planning and batch subtask management.
 
     return {
       updated: result.count,
+      count: updatedSubtasks.length,
       batchId,
-      newStatus,
+      batchTitle: updatedSubtasks[0]?.batchTitle || 'Untitled Batch',
       subtasks: updatedSubtasks,
     };
   }
 
-  private async getBatch(input: PlanningOperationsInput): Promise<any> {
+  private async getBatch(
+    input: PlanningOperationsInput,
+  ): Promise<SubtaskBatchResult> {
     const { taskId, batchId } = input;
 
     if (!batchId) {
@@ -503,6 +516,7 @@ Implementation planning and batch subtask management.
 
     return {
       ...batchSummary,
+      count: subtasks.length,
       subtasks,
     };
   }

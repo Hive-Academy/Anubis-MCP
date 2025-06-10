@@ -62,10 +62,10 @@ export class WorkflowAnalyticsCalculatorService {
 
     const roleTransitions = Object.entries(transitionStats).map(
       ([transition, stats]) => {
-        const [fromRole, toRole] = transition.split(' → ');
+        const [fromMode, toMode] = transition.split(' → ');
         return {
-          fromRole,
-          toRole,
+          fromMode,
+          toMode,
           count: stats.total,
           successRate:
             Math.round((stats.successful / stats.total) * 100 * 10) / 10,

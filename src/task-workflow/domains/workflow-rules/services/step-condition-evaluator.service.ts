@@ -9,6 +9,19 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
+// Configuration interfaces to eliminate hardcoding
+export interface ConditionEvaluatorConfig {
+  gitCommandTimeout: number;
+  defaultFileEncoding: BufferEncoding;
+  allowedExpressionPattern: RegExp;
+  maxQueryResultCount: number;
+  gitCommands: {
+    getCurrentBranch: string;
+    getStatus: string;
+    getUntrackedFiles: string;
+  };
+}
+
 export interface ConditionValidationResult {
   isValid: boolean;
   errors: string[];
@@ -19,7 +32,35 @@ export interface ConditionValidationResult {
 export class StepConditionEvaluator {
   private readonly logger = new Logger(StepConditionEvaluator.name);
 
+  // Configuration with sensible defaults
+  private readonly config: ConditionEvaluatorConfig = {
+    gitCommandTimeout: 10000,
+    defaultFileEncoding: 'utf8',
+    allowedExpressionPattern: /^[\w\s"'.\-+*/()=!<>&|]+$/,
+    maxQueryResultCount: 1000,
+    gitCommands: {
+      getCurrentBranch: 'git rev-parse --abbrev-ref HEAD',
+      getStatus: 'git status --porcelain',
+      getUntrackedFiles: 'git ls-files --others --exclude-standard',
+    },
+  };
+
   constructor(private prisma: PrismaService) {}
+
+  /**
+   * Update condition evaluator configuration
+   */
+  updateConfig(config: Partial<ConditionEvaluatorConfig>): void {
+    Object.assign(this.config, config);
+    this.logger.log('Condition evaluator configuration updated');
+  }
+
+  /**
+   * Get current configuration
+   */
+  getConfig(): ConditionEvaluatorConfig {
+    return { ...this.config };
+  }
 
   /**
    * Validate all conditions for a step
@@ -342,22 +383,22 @@ export class StepConditionEvaluator {
   private async getGitStatus(context: StepExecutionContext): Promise<any> {
     try {
       const workingDir = context.projectPath || process.cwd();
+      const execOptions = {
+        cwd: workingDir,
+        timeout: this.config.gitCommandTimeout,
+      };
 
       // Get current branch
       const { stdout: branchOutput } = await execAsync(
-        'git rev-parse --abbrev-ref HEAD',
-        {
-          cwd: workingDir,
-        },
+        this.config.gitCommands.getCurrentBranch,
+        execOptions,
       );
       const currentBranch = branchOutput.trim();
 
       // Get status
       const { stdout: statusOutput } = await execAsync(
-        'git status --porcelain',
-        {
-          cwd: workingDir,
-        },
+        this.config.gitCommands.getStatus,
+        execOptions,
       );
 
       const hasUncommittedChanges = statusOutput.trim().length > 0;
@@ -365,10 +406,8 @@ export class StepConditionEvaluator {
 
       // Get untracked files
       const { stdout: untrackedOutput } = await execAsync(
-        'git ls-files --others --exclude-standard',
-        {
-          cwd: workingDir,
-        },
+        this.config.gitCommands.getUntrackedFiles,
+        execOptions,
       );
       const hasUntrackedFiles = untrackedOutput.trim().length > 0;
 
@@ -434,25 +473,46 @@ export class StepConditionEvaluator {
     // Simple expression evaluator for basic boolean logic
     // Supports: parameter comparisons, basic operators
     try {
-      // Replace parameter references with actual values
-      let processedExpression = expression;
-
-      for (const [key, value] of Object.entries(parameters)) {
-        const regex = new RegExp(`\\b${key}\\b`, 'g');
-        const replacement =
-          typeof value === 'string' ? `"${value}"` : String(value);
-        processedExpression = processedExpression.replace(regex, replacement);
-      }
-
       // Basic validation - only allow safe operations
-      const allowedPattern = /^[\w\s"'.\-+*/()=!<>&|]+$/;
-      if (!allowedPattern.test(processedExpression)) {
+      if (!this.config.allowedExpressionPattern.test(expression)) {
         throw new Error('Expression contains unsafe characters');
       }
 
-      // For now, return true for any valid expression
-      // In a real implementation, you'd use a proper expression parser
-      return true;
+      // Safe evaluation using predefined patterns instead of dynamic evaluation
+      // This avoids security risks of eval() or Function constructor
+
+      // Check for simple equality patterns
+      const equalityMatch = expression.match(
+        /^(\w+)\s*==\s*['"]?([^'"]+)['"]?$/,
+      );
+      if (equalityMatch) {
+        const [, paramName, expectedValue] = equalityMatch;
+        return String(parameters[paramName]) === expectedValue;
+      }
+
+      // Check for simple inequality patterns
+      const inequalityMatch = expression.match(
+        /^(\w+)\s*!=\s*['"]?([^'"]+)['"]?$/,
+      );
+      if (inequalityMatch) {
+        const [, paramName, expectedValue] = inequalityMatch;
+        return String(parameters[paramName]) !== expectedValue;
+      }
+
+      // Check for existence patterns
+      const existsMatch = expression.match(/^(\w+)\s*exists$/);
+      if (existsMatch) {
+        const [, paramName] = existsMatch;
+        return (
+          parameters[paramName] !== undefined && parameters[paramName] !== null
+        );
+      }
+
+      // For complex expressions, log warning and return safe default
+      this.logger.warn(
+        `Complex expression not supported: ${expression}. Returning false for safety.`,
+      );
+      return false;
     } catch (error) {
       this.logger.warn(`Failed to evaluate expression: ${expression}`, error);
       return false;
@@ -465,15 +525,60 @@ export class StepConditionEvaluator {
     parameters: any,
   ): Promise<{ isValid: boolean; reason?: string; details?: any }> {
     try {
-      // Execute raw query with parameters
-      const result = await this.prisma.$queryRawUnsafe(
-        query,
-        ...Object.values(parameters),
-      );
+      // Security: Only allow SELECT queries to prevent data modification
+      const trimmedQuery = query.trim().toLowerCase();
+      if (!trimmedQuery.startsWith('select')) {
+        return {
+          isValid: false,
+          reason: 'Only SELECT queries are allowed for security reasons',
+          details: { query, parameters },
+        };
+      }
 
-      const isValid = Array.isArray(result)
-        ? result.length > 0
-        : Boolean(result);
+      // Security: Validate query doesn't contain dangerous patterns
+      const dangerousPatterns = [
+        /drop\s+table/i,
+        /delete\s+from/i,
+        /update\s+\w+\s+set/i,
+        /insert\s+into/i,
+        /create\s+table/i,
+        /alter\s+table/i,
+        /exec\s*\(/i,
+        /execute\s*\(/i,
+      ];
+
+      for (const pattern of dangerousPatterns) {
+        if (pattern.test(query)) {
+          return {
+            isValid: false,
+            reason: 'Query contains potentially dangerous operations',
+            details: { query, parameters },
+          };
+        }
+      }
+
+      // Execute query with parameter validation
+      const paramValues = Object.values(parameters);
+      if (paramValues.length > 10) {
+        return {
+          isValid: false,
+          reason: 'Too many parameters (max 10 allowed)',
+          details: { query, parameters },
+        };
+      }
+
+      const result = await this.prisma.$queryRawUnsafe(query, ...paramValues);
+
+      // Limit result size for performance
+      const resultArray = Array.isArray(result) ? result : [result];
+      if (resultArray.length > this.config.maxQueryResultCount) {
+        this.logger.warn(
+          `Query returned ${resultArray.length} results, truncating to ${this.config.maxQueryResultCount}`,
+        );
+        resultArray.splice(this.config.maxQueryResultCount);
+      }
+
+      const isValid = resultArray.length > 0;
 
       return {
         isValid,
@@ -483,7 +588,7 @@ export class StepConditionEvaluator {
         details: {
           query,
           parameters,
-          resultCount: Array.isArray(result) ? result.length : 1,
+          resultCount: resultArray.length,
         },
       };
     } catch (error) {
@@ -501,7 +606,11 @@ export class StepConditionEvaluator {
     parameters: any,
   ): Promise<{ isValid: boolean; reason?: string; details?: any }> {
     try {
-      const { filePath, pattern, encoding = 'utf8' } = parameters;
+      const {
+        filePath,
+        pattern,
+        encoding = this.config.defaultFileEncoding,
+      } = parameters;
       const resolvedPath = this.resolveProjectPath(filePath, context);
 
       const content = await fs.readFile(

@@ -1,16 +1,48 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Tool } from '@rekog/mcp-nest';
 import { PrismaService } from '../../../prisma/prisma.service';
-import {
-  ResearchOperationsSchema,
-  ResearchOperationsInput,
-} from './schemas/research-operations.schema';
+import { ResearchOperationsInput } from './schemas/research-operations.schema';
+import { ResearchReport, Comment, Prisma } from 'generated/prisma';
+
+// Type-safe interfaces for research operations
+export interface ResearchOperationResult {
+  success: boolean;
+  data?: ResearchReport | Comment | ResearchWithComments | CommentSummary;
+  error?: {
+    message: string;
+    code: string;
+    operation: string;
+  };
+  metadata?: {
+    operation: string;
+    taskId: number;
+    responseTime: number;
+  };
+}
+
+export interface ResearchWithComments extends ResearchReport {
+  comments: Comment[];
+}
+
+export interface CommentSummary {
+  summary: {
+    total: number;
+    byType: Record<string, number>;
+  };
+  comments: Comment[];
+}
 
 /**
- * Research Operations Service
+ * Research Operations Service (Internal)
  *
- * Focused service for research reports and comment management.
- * Clear operations for knowledge gathering and communication.
+ * Internal service for research reports and communication management.
+ * No longer exposed as MCP tool - used by workflow-rules MCP interface.
+ *
+ * SOLID Principles Applied:
+ * - Single Responsibility: Focused on research and communication operations only
+ * - Open/Closed: Extensible through input schema without modifying core logic
+ * - Liskov Substitution: Consistent interface for all research operations
+ * - Interface Segregation: Clean separation of research concerns
+ * - Dependency Inversion: Depends on PrismaService abstraction
  */
 @Injectable()
 export class ResearchOperationsService {
@@ -18,32 +50,9 @@ export class ResearchOperationsService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  @Tool({
-    name: 'research_operations',
-    description: `
-Research reports and communication management.
-
-**Operations:**
-- create_research: Create research report with findings and recommendations
-- update_research: Update existing research report
-- get_research: Retrieve research report with optional comments
-- add_comment: Add contextual comment to task
-- get_comments: Retrieve comments filtered by type
-
-**Key Features:**
-- Technology options and implementation approaches tracking
-- Risk assessment and resource requirements
-- Contextual comments (general, technical, business, clarification)
-- Researcher attribution and findings organization
-
-**Examples:**
-- Create research: { operation: "create_research", taskId: "TSK-001", researchData: { findings: "JWT is best option", researchedBy: "researcher" } }
-- Add comment: { operation: "add_comment", taskId: "TSK-001", commentData: { content: "Consider security implications", contextType: "technical" } }
-- Get research: { operation: "get_research", taskId: "TSK-001", includeComments: true }
-`,
-    parameters: ResearchOperationsSchema,
-  })
-  async executeResearchOperation(input: ResearchOperationsInput): Promise<any> {
+  async executeResearchOperation(
+    input: ResearchOperationsInput,
+  ): Promise<ResearchOperationResult> {
     const startTime = performance.now();
 
     try {
@@ -51,7 +60,11 @@ Research reports and communication management.
         taskId: input.taskId,
       });
 
-      let result: any;
+      let result:
+        | ResearchReport
+        | Comment
+        | ResearchWithComments
+        | CommentSummary;
 
       switch (input.operation) {
         case 'create_research':
@@ -76,51 +89,31 @@ Research reports and communication management.
       const responseTime = performance.now() - startTime;
 
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                success: true,
-                data: result,
-                metadata: {
-                  operation: input.operation,
-                  taskId: input.taskId,
-                  responseTime: Math.round(responseTime),
-                },
-              },
-              null,
-              2,
-            ),
-          },
-        ],
+        success: true,
+        data: result,
+        metadata: {
+          operation: input.operation,
+          taskId: input.taskId,
+          responseTime: Math.round(responseTime),
+        },
       };
     } catch (error: any) {
       this.logger.error(`Research operation failed:`, error);
 
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                success: false,
-                error: {
-                  message: error.message,
-                  code: 'RESEARCH_OPERATION_FAILED',
-                  operation: input.operation,
-                },
-              },
-              null,
-              2,
-            ),
-          },
-        ],
+        success: false,
+        error: {
+          message: error.message,
+          code: 'RESEARCH_OPERATION_FAILED',
+          operation: input.operation,
+        },
       };
     }
   }
 
-  private async createResearch(input: ResearchOperationsInput): Promise<any> {
+  private async createResearch(
+    input: ResearchOperationsInput,
+  ): Promise<ResearchReport> {
     const { taskId, researchData } = input;
 
     if (!researchData) {
@@ -129,19 +122,21 @@ Research reports and communication management.
 
     const research = await this.prisma.researchReport.create({
       data: {
-        taskId,
+        task: { connect: { id: taskId } },
         title: researchData.title || 'Research Report',
         summary: researchData.summary || '',
         findings: researchData.findings,
         recommendations: researchData.recommendations || '',
         references: researchData.references || [],
-      },
+      } satisfies Prisma.ResearchReportCreateInput,
     });
 
     return research;
   }
 
-  private async updateResearch(input: ResearchOperationsInput): Promise<any> {
+  private async updateResearch(
+    input: ResearchOperationsInput,
+  ): Promise<ResearchReport> {
     const { taskId, researchData } = input;
 
     if (!researchData) {
@@ -157,25 +152,27 @@ Research reports and communication management.
       throw new Error(`Research report not found for task ${taskId}`);
     }
 
+    const updateData: Prisma.ResearchReportUpdateInput = {};
+
+    if (researchData.title) updateData.title = researchData.title;
+    if (researchData.summary) updateData.summary = researchData.summary;
+    if (researchData.findings) updateData.findings = researchData.findings;
+    if (researchData.recommendations)
+      updateData.recommendations = researchData.recommendations;
+    if (researchData.references)
+      updateData.references = researchData.references;
+
     const research = await this.prisma.researchReport.update({
       where: { id: existingResearch.id },
-      data: {
-        ...(researchData.title && { title: researchData.title }),
-        ...(researchData.summary && { summary: researchData.summary }),
-        ...(researchData.findings && { findings: researchData.findings }),
-        ...(researchData.recommendations && {
-          recommendations: researchData.recommendations,
-        }),
-        ...(researchData.references && {
-          references: researchData.references,
-        }),
-      },
+      data: updateData,
     });
 
     return research;
   }
 
-  private async getResearch(input: ResearchOperationsInput): Promise<any> {
+  private async getResearch(
+    input: ResearchOperationsInput,
+  ): Promise<ResearchReport | ResearchWithComments> {
     const { taskId, includeComments } = input;
 
     const research = await this.prisma.researchReport.findFirst({
@@ -196,13 +193,13 @@ Research reports and communication management.
       return {
         ...research,
         comments,
-      };
+      } as ResearchWithComments;
     }
 
     return research;
   }
 
-  private async addComment(input: ResearchOperationsInput): Promise<any> {
+  private async addComment(input: ResearchOperationsInput): Promise<Comment> {
     const { taskId, commentData } = input;
 
     if (!commentData) {
@@ -211,19 +208,21 @@ Research reports and communication management.
 
     const comment = await this.prisma.comment.create({
       data: {
-        taskId,
+        task: { connect: { id: taskId } },
         content: commentData.content,
         mode: commentData.author || 'system', // Map author to mode field
-      },
+      } satisfies Prisma.CommentCreateInput,
     });
 
     return comment;
   }
 
-  private async getComments(input: ResearchOperationsInput): Promise<any> {
+  private async getComments(
+    input: ResearchOperationsInput,
+  ): Promise<CommentSummary> {
     const { taskId, commentType } = input;
 
-    const where: any = { taskId };
+    const where: Prisma.CommentWhereInput = { taskId };
     if (commentType) {
       where.mode = commentType; // Map contextType to mode field
     }

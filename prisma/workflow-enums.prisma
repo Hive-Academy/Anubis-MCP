@@ -96,3 +96,9 @@ enum ProcessingStatus {
   FAILED
   RETRY_NEEDED
 }
+
+enum WorkflowExecutionMode {
+  GUIDED    // Step-by-step guided execution with user interaction
+  AUTOMATED // Fully automated execution without user intervention
+  HYBRID    // Mix of automated and guided steps based on context
+}

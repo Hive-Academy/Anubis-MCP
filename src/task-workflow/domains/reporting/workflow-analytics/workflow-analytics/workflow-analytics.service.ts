@@ -28,8 +28,8 @@ export interface WorkflowAnalyticsData {
   };
   delegationAnalytics: {
     roleTransitions: Array<{
-      fromRole: string;
-      toRole: string;
+      fromMode: string;
+      toMode: string;
       count: number;
       successRate: number;
     }>;

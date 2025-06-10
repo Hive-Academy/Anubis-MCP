@@ -1,0 +1,443 @@
+{
+  "workflowSteps": [
+    {
+      "name": "context_acquisition",
+      "displayName": "MCP Context Acquisition",
+      "description": "Retrieve comprehensive implementation context including architectural guidance and verified analysis",
+      "sequenceNumber": 1,
+      "isRequired": true,
+      "estimatedTime": "5-10 minutes",
+      "stepType": "ACTION",
+      "behavioralContext": {
+        "approachMethodology": "Comprehensive context acquisition with implementation plan integration",
+        "qualityStandards": [
+          "Include implementation plans with strategic guidance",
+          "Integrate boomerang's verified codebase analysis",
+          "Validate architectural guidance and quality constraints"
+        ],
+        "decisionCriteria": [
+          "Implementation plan available with strategic guidance",
+          "Verified codebase analysis accessible",
+          "Quality constraints and success criteria understood"
+        ]
+      },
+      "approachGuidance": {
+        "executionSteps": [
+          "Execute service call to retrieve complete implementation context",
+          "Validate implementation plans include strategic guidance",
+          "Review verified codebase analysis and architectural patterns",
+          "Understand quality constraints and performance targets"
+        ],
+        "contextValidation": [
+          "Verify implementation plan includes strategic batch organization",
+          "Confirm architectural guidance provides implementation specifics",
+          "Validate quality constraints are measurable and achievable"
+        ]
+      },
+      "qualityChecklist": [
+        "Implementation context includes strategic guidance and quality constraints",
+        "Verified codebase analysis provides architectural patterns and standards",
+        "Quality targets and performance requirements are clearly defined",
+        "Success criteria for each subtask are understood and achievable"
+      ],
+      "conditions": [],
+      "actions": [
+        {
+          "name": "acquire_implementation_context",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "TaskOperations",
+            "operation": "get",
+            "parameters": {
+              "taskId": "{{taskId}}",
+              "includeLevel": "full",
+              "includePlans": true,
+              "includeSubtasks": true
+            }
+          }
+        }
+      ],
+      "triggerReport": false
+    },
+    {
+      "name": "implementation_strategy_setup",
+      "displayName": "Implementation Strategy Setup",
+      "description": "Analyze implementation plan and setup development environment with verified context",
+      "sequenceNumber": 2,
+      "isRequired": true,
+      "estimatedTime": "10-15 minutes",
+      "stepType": "ACTION",
+      "behavioralContext": {
+        "approachMethodology": "Strategic implementation setup with verified context validation",
+        "qualityStandards": [
+          "Use verified patterns and architectural guidance",
+          "Setup development environment following confirmed technology stack",
+          "Validate implementation readiness against strategic guidance"
+        ],
+        "decisionCriteria": [
+          "Development environment properly configured",
+          "Implementation strategy aligned with architectural guidance",
+          "Quality standards and testing approach understood"
+        ]
+      },
+      "approachGuidance": {
+        "executionSteps": [
+          "Analyze implementation plan and strategic guidance",
+          "Setup development environment using verified technology stack",
+          "Validate development setup against confirmed patterns",
+          "Prepare implementation workflow following strategic guidance"
+        ],
+        "environmentSetup": [
+          "Verify git branch matches task requirements",
+          "Install dependencies using confirmed technology stack",
+          "Validate development server and test suite functionality",
+          "Confirm project structure matches verified analysis"
+        ]
+      },
+      "qualityChecklist": [
+        "Development environment configured with verified technology stack",
+        "Implementation strategy aligned with architectural guidance",
+        "Quality standards and testing approach clearly understood",
+        "Development workflow prepared following strategic guidance"
+      ],
+      "conditions": [
+        {
+          "name": "context_acquired",
+          "conditionType": "previous_step_completed",
+          "logic": { "requiredStep": "context_acquisition" }
+        }
+      ],
+      "actions": [
+        {
+          "name": "setup_implementation_strategy",
+          "actionType": "IMPLEMENTATION_SETUP",
+          "actionData": {
+            "setupType": "development_environment",
+            "verifiedContext": "mcp_codebase_analysis",
+            "strategicGuidance": "architectural_implementation_plan"
+          }
+        }
+      ],
+      "triggerReport": false
+    },
+    {
+      "name": "batch_implementation_execution",
+      "displayName": "Batch Implementation Execution",
+      "description": "Execute implementation for current batch following strategic guidance and SOLID principles",
+      "sequenceNumber": 3,
+      "isRequired": true,
+      "estimatedTime": "60-120 minutes",
+      "stepType": "ACTION",
+      "behavioralContext": {
+        "approachMethodology": "SOLID principles-driven implementation with strategic guidance compliance",
+        "qualityStandards": [
+          "Follow SOLID principles in all implementation decisions",
+          "Implement comprehensive error handling and input validation",
+          "Meet performance targets and quality constraints",
+          "Maintain pattern adherence with verified architectural consistency"
+        ],
+        "decisionCriteria": [
+          "Implementation follows strategic guidance and architectural patterns",
+          "SOLID principles compliance maintained throughout development",
+          "Quality constraints and performance targets achieved"
+        ]
+      },
+      "approachGuidance": {
+        "executionSteps": [
+          "Implement core functionality following strategic guidance",
+          "Apply SOLID principles and verified patterns consistently",
+          "Implement comprehensive error handling and input validation",
+          "Optimize performance within established baseline requirements"
+        ],
+        "implementationPrinciples": [
+          "Single Responsibility: Each class/service has one clear purpose",
+          "Open/Closed: Extensible through composition, not modification",
+          "Liskov Substitution: Derived classes substitutable for base classes",
+          "Interface Segregation: Focused interfaces with specific responsibilities",
+          "Dependency Inversion: Depend on abstractions, not concretions"
+        ]
+      },
+      "qualityChecklist": [
+        "Implementation follows strategic guidance and architectural context",
+        "SOLID principles compliance verified for all code components",
+        "Error handling and input validation implemented comprehensively",
+        "Performance targets met within established baseline requirements"
+      ],
+      "conditions": [
+        {
+          "name": "strategy_setup_complete",
+          "conditionType": "previous_step_completed",
+          "logic": { "requiredStep": "implementation_strategy_setup" }
+        }
+      ],
+      "actions": [
+        {
+          "name": "execute_batch_implementation",
+          "actionType": "IMPLEMENTATION_EXECUTION",
+          "actionData": {
+            "implementationType": "batch_execution",
+            "guidanceSource": "strategic_architectural_guidance",
+            "qualityStandards": "solid_principles_compliance"
+          }
+        }
+      ],
+      "triggerReport": false
+    },
+    {
+      "name": "comprehensive_testing",
+      "displayName": "Comprehensive Testing Implementation",
+      "description": "Implement comprehensive testing strategy with coverage targets and quality validation",
+      "sequenceNumber": 4,
+      "isRequired": true,
+      "estimatedTime": "30-45 minutes",
+      "stepType": "VALIDATION",
+      "behavioralContext": {
+        "approachMethodology": "Comprehensive testing with coverage targets and quality validation",
+        "qualityStandards": [
+          "Achieve minimum test coverage targets from quality constraints",
+          "Implement unit, integration, and manual validation testing",
+          "Test all success criteria and error scenarios comprehensively",
+          "Validate performance and security requirements"
+        ],
+        "decisionCriteria": [
+          "Test coverage meets or exceeds established targets",
+          "All success criteria validated with comprehensive testing",
+          "Performance and security requirements verified"
+        ]
+      },
+      "approachGuidance": {
+        "executionSteps": [
+          "Implement unit tests with comprehensive coverage",
+          "Create integration tests for service interactions",
+          "Execute manual validation against success criteria",
+          "Validate performance and security requirements"
+        ],
+        "testingStrategy": [
+          "Unit Tests: Happy path, edge cases, error scenarios with mocks",
+          "Integration Tests: Service interactions, repository layer, API endpoints",
+          "Manual Validation: Success criteria, user workflows, error scenarios",
+          "Performance Testing: Response times, resource usage, optimization"
+        ]
+      },
+      "qualityChecklist": [
+        "Unit tests achieve minimum coverage targets with meaningful assertions",
+        "Integration tests validate service interactions and data flow",
+        "Manual validation confirms all success criteria are met",
+        "Performance and security requirements verified and documented"
+      ],
+      "conditions": [
+        {
+          "name": "implementation_complete",
+          "conditionType": "previous_step_completed",
+          "logic": { "requiredStep": "batch_implementation_execution" }
+        }
+      ],
+      "actions": [
+        {
+          "name": "implement_comprehensive_testing",
+          "actionType": "TESTING_IMPLEMENTATION",
+          "actionData": {
+            "testingType": "comprehensive_coverage",
+            "coverageTargets": "quality_constraints_minimum",
+            "validationScope": "success_criteria_complete"
+          }
+        }
+      ],
+      "triggerReport": false
+    },
+    {
+      "name": "quality_validation",
+      "displayName": "Quality Validation & Code Review",
+      "description": "Validate code quality against established standards and strategic guidance",
+      "sequenceNumber": 5,
+      "isRequired": true,
+      "estimatedTime": "15-20 minutes",
+      "stepType": "VALIDATION",
+      "behavioralContext": {
+        "approachMethodology": "Comprehensive quality validation with standards compliance",
+        "qualityStandards": [
+          "Validate SOLID principles compliance in all code components",
+          "Verify performance targets and security requirements",
+          "Confirm pattern adherence with verified architectural consistency",
+          "Validate documentation and maintainability standards"
+        ],
+        "decisionCriteria": [
+          "Code quality meets all established standards",
+          "SOLID principles compliance verified",
+          "Performance and security requirements satisfied"
+        ]
+      },
+      "approachGuidance": {
+        "executionSteps": [
+          "Validate SOLID principles compliance throughout codebase",
+          "Verify performance targets and optimization requirements",
+          "Confirm security implementation and input validation",
+          "Validate pattern adherence and architectural consistency"
+        ],
+        "qualityValidation": [
+          "Clean Code: Implementation specifics and coding standards",
+          "Performance: Target achievement and optimization validation",
+          "Security: Requirements implementation and pattern compliance",
+          "Maintainability: Pattern compliance and architectural consistency"
+        ]
+      },
+      "qualityChecklist": [
+        "SOLID principles compliance verified for all code components",
+        "Performance targets achieved within established baseline requirements",
+        "Security requirements implemented following verified patterns",
+        "Pattern adherence maintained with architectural consistency"
+      ],
+      "conditions": [
+        {
+          "name": "testing_complete",
+          "conditionType": "previous_step_completed",
+          "logic": { "requiredStep": "comprehensive_testing" }
+        }
+      ],
+      "actions": [
+        {
+          "name": "validate_code_quality",
+          "actionType": "QUALITY_VALIDATION",
+          "actionData": {
+            "validationType": "comprehensive_standards",
+            "complianceCheck": "solid_principles_verification",
+            "performanceValidation": "baseline_requirements"
+          }
+        }
+      ],
+      "triggerReport": false
+    },
+    {
+      "name": "batch_status_update",
+      "displayName": "Batch Status Update & Progress Tracking",
+      "description": "Update batch status and track implementation progress with evidence documentation",
+      "sequenceNumber": 6,
+      "isRequired": true,
+      "estimatedTime": "10-15 minutes",
+      "stepType": "ACTION",
+      "behavioralContext": {
+        "approachMethodology": "Evidence-based status updates with comprehensive progress tracking",
+        "qualityStandards": [
+          "Document implementation evidence and quality validation results",
+          "Update batch status with completion criteria verification",
+          "Track progress against strategic guidance and success criteria",
+          "Prepare context for next batch or role transition"
+        ],
+        "decisionCriteria": [
+          "Batch status accurately reflects implementation completion",
+          "Evidence documented for quality validation and compliance",
+          "Progress tracked against all success criteria"
+        ]
+      },
+      "approachGuidance": {
+        "executionSteps": [
+          "Document implementation evidence and quality validation",
+          "Update batch status with completion criteria verification",
+          "Track progress against strategic guidance requirements",
+          "Prepare comprehensive context for workflow continuation"
+        ],
+        "statusTracking": [
+          "Functionality: All subtasks meet success criteria",
+          "Testing: Coverage targets achieved with quality validation",
+          "Quality: Code follows strategic guidance and verified standards",
+          "Integration: Compatible with verified architectural requirements"
+        ]
+      },
+      "qualityChecklist": [
+        "Implementation evidence documented with quality validation results",
+        "Batch status updated with accurate completion criteria verification",
+        "Progress tracked against all strategic guidance requirements",
+        "Context prepared for seamless workflow continuation"
+      ],
+      "conditions": [
+        {
+          "name": "quality_validated",
+          "conditionType": "previous_step_completed",
+          "logic": { "requiredStep": "quality_validation" }
+        }
+      ],
+      "actions": [
+        {
+          "name": "update_batch_status",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "PlanningOperations",
+            "operation": "update_batch",
+            "parameters": {
+              "taskId": "{{taskId}}",
+              "batchId": "{{currentBatchId}}",
+              "statusData": "{{implementationStatusData}}"
+            }
+          }
+        }
+      ],
+      "triggerReport": true,
+      "reportType": "implementation_progress",
+      "reportTemplate": "senior_developer_batch_completion"
+    },
+    {
+      "name": "workflow_transition_decision",
+      "displayName": "Workflow Transition Decision",
+      "description": "Determine next workflow step: continue with next batch, delegate to code review, or escalate",
+      "sequenceNumber": 7,
+      "isRequired": true,
+      "estimatedTime": "5-10 minutes",
+      "stepType": "DECISION",
+      "behavioralContext": {
+        "approachMethodology": "Strategic decision making for workflow continuation",
+        "qualityStandards": [
+          "Evaluate implementation completeness against strategic guidance",
+          "Assess readiness for code review or next batch continuation",
+          "Determine escalation needs based on implementation complexity",
+          "Ensure proper context preservation for workflow transitions"
+        ],
+        "decisionCriteria": [
+          "Implementation status evaluated against strategic requirements",
+          "Workflow transition decision based on completion criteria",
+          "Context properly preserved for receiving role or next batch"
+        ]
+      },
+      "approachGuidance": {
+        "executionSteps": [
+          "Evaluate implementation completeness against strategic guidance",
+          "Assess batch completion status and quality validation",
+          "Determine appropriate workflow transition based on criteria",
+          "Execute transition with comprehensive context preservation"
+        ],
+        "transitionCriteria": [
+          "Continue Next Batch: More batches pending with clear guidance",
+          "Delegate to Code Review: All batches complete, ready for quality review",
+          "Escalate to Architect: Complex decisions or guidance clarification needed",
+          "Escalate to Boomerang: Requirement issues or scope changes identified"
+        ]
+      },
+      "qualityChecklist": [
+        "Implementation completeness evaluated against all strategic requirements",
+        "Workflow transition decision based on established completion criteria",
+        "Context preservation ensures seamless handoff to receiving role",
+        "Transition executed with comprehensive documentation and evidence"
+      ],
+      "conditions": [
+        {
+          "name": "status_updated",
+          "conditionType": "previous_step_completed",
+          "logic": { "requiredStep": "batch_status_update" }
+        }
+      ],
+      "actions": [
+        {
+          "name": "execute_workflow_transition",
+          "actionType": "WORKFLOW_TRANSITION",
+          "actionData": {
+            "transitionType": "implementation_completion",
+            "decisionCriteria": "strategic_guidance_completion",
+            "contextPreservation": "comprehensive_handoff"
+          }
+        }
+      ],
+      "triggerReport": true,
+      "reportType": "workflow_transition",
+      "reportTemplate": "senior_developer_transition_decision"
+    }
+  ]
+}

@@ -239,10 +239,10 @@ export class DashboardDataAggregatorService {
 
     return Object.entries(flowStats)
       .map(([flow, stats]) => {
-        const [fromRole, toRole] = flow.split(' → ');
+        const [fromMode, toMode] = flow.split(' → ');
         return {
-          fromRole,
-          toRole,
+          fromMode,
+          toMode,
           count: stats.total,
           successRate:
             Math.round((stats.successful / stats.total) * 100 * 10) / 10,

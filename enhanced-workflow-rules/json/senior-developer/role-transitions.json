@@ -1,0 +1,159 @@
+{
+  "roleTransitions": [
+    {
+      "fromRoleId": "senior-developer",
+      "toRoleId": "code-review",
+      "transitionName": "senior_developer_to_code_review",
+      "conditions": {
+        "implementationComplete": true,
+        "allBatchesFinished": true,
+        "qualityValidationPassed": true,
+        "testingComplete": true
+      },
+      "requirements": {
+        "comprehensiveImplementation": true,
+        "qualityStandardsMet": true,
+        "testCoverageAchieved": true,
+        "performanceTargetsMet": true,
+        "securityRequirementsImplemented": true
+      },
+      "validationRules": {
+        "implementationComplete": "All batches must be completed with quality validation",
+        "qualityStandardsMet": "Code must meet all established quality standards and SOLID principles",
+        "testCoverageAchieved": "Test coverage must meet or exceed minimum targets",
+        "performanceTargetsMet": "Performance requirements must be achieved within baseline metrics"
+      },
+      "handoffGuidance": {
+        "implementationDeliverables": [
+          "Complete implementation following strategic guidance and architectural patterns",
+          "Comprehensive testing with coverage targets achieved",
+          "Quality validation results with SOLID principles compliance",
+          "Performance optimization within established baseline requirements"
+        ],
+        "qualityEvidence": [
+          "Test coverage reports with detailed coverage metrics",
+          "Performance validation results with baseline comparisons",
+          "Security implementation validation with pattern compliance",
+          "Code quality assessment with SOLID principles verification"
+        ],
+        "reviewRequirements": [
+          "Comprehensive quality review against established standards",
+          "Acceptance criteria validation with evidence documentation",
+          "Performance and security verification with baseline validation",
+          "Final approval for production readiness assessment"
+        ]
+      },
+      "contextPreservation": {
+        "implementationResults": "Complete implementation with quality validation and testing results",
+        "qualityEvidence": "Comprehensive quality validation evidence and compliance verification",
+        "performanceMetrics": "Performance validation results with baseline comparisons",
+        "securityValidation": "Security implementation validation with pattern compliance",
+        "testingResults": "Test coverage and validation results with detailed metrics",
+        "architecturalCompliance": "Architectural pattern compliance and SOLID principles verification"
+      },
+      "isActive": true
+    },
+    {
+      "fromRoleId": "senior-developer",
+      "toRoleId": "architect",
+      "transitionName": "senior_developer_to_architect_consultation",
+      "conditions": {
+        "architecturalGuidanceNeeded": true,
+        "implementationComplexityHigh": true,
+        "designDecisionRequired": true,
+        "patternClarificationNeeded": true
+      },
+      "requirements": {
+        "implementationContextProvided": true,
+        "specificQuestionsFormulated": true,
+        "currentProgressDocumented": true,
+        "architecturalSupportRequested": true
+      },
+      "validationRules": {
+        "contextComplete": "Complete implementation context must be provided for architectural guidance",
+        "questionsSpecific": "Specific architectural questions must be clearly formulated",
+        "progressDocumented": "Current implementation progress must be documented with evidence",
+        "supportScopeDefinied": "Scope of architectural support needed must be clearly defined"
+      },
+      "handoffGuidance": {
+        "implementationContext": [
+          "Current implementation progress with completed and pending work",
+          "Specific architectural challenges or design decisions needed",
+          "Integration points and compatibility requirements with existing systems",
+          "Performance or quality concerns requiring architectural input"
+        ],
+        "architecturalQuestions": [
+          "Specific design patterns or architectural decisions needed",
+          "Integration strategy clarification with existing systems",
+          "Performance optimization guidance for current implementation",
+          "Quality standards interpretation and implementation guidance"
+        ],
+        "supportExpectations": [
+          "Type of architectural guidance needed (design, patterns, integration)",
+          "Timeline for architectural input and decision making",
+          "Level of detail required for implementation guidance",
+          "Ongoing support requirements for implementation completion"
+        ]
+      },
+      "contextPreservation": {
+        "implementationProgress": "Current implementation status with completed and pending work",
+        "architecturalChallenges": "Specific architectural challenges requiring expert input",
+        "designDecisions": "Design decisions needed with context and constraints",
+        "qualityRequirements": "Quality standards and performance requirements context",
+        "implementationEvidence": "Evidence of current implementation quality and compliance"
+      },
+      "isActive": true
+    },
+    {
+      "fromRoleId": "senior-developer",
+      "toRoleId": "boomerang",
+      "transitionName": "senior_developer_to_boomerang_escalation",
+      "conditions": {
+        "requirementIssuesIdentified": true,
+        "scopeChangesDiscovered": true,
+        "businessLogicUnclear": true,
+        "strategicDecisionRequired": true
+      },
+      "requirements": {
+        "issuesDocumented": true,
+        "implementationContextProvided": true,
+        "alternativesExplored": true,
+        "strategicInputRequested": true
+      },
+      "validationRules": {
+        "issuesWellDocumented": "Requirement issues must be clearly documented with examples",
+        "contextComplete": "Complete implementation context must be provided",
+        "alternativesExplored": "Alternative approaches must have been explored",
+        "strategicInputJustified": "Need for strategic input must be clearly justified"
+      },
+      "handoffGuidance": {
+        "requirementIssues": [
+          "Clear description of requirement conflicts or ambiguities",
+          "Specific examples of business logic unclear or contradictory",
+          "Scope changes discovered during implementation",
+          "Impact assessment of identified issues on implementation"
+        ],
+        "implementationContext": [
+          "Current implementation progress with completed work",
+          "Implementation challenges related to requirement issues",
+          "Alternative approaches explored and their limitations",
+          "Strategic decisions needed for implementation continuation"
+        ],
+        "strategicNeeds": [
+          "Strategic clarification needed for requirement resolution",
+          "Business logic clarification required for implementation",
+          "Scope change approval and impact assessment",
+          "Strategic guidance for implementation approach adjustment"
+        ]
+      },
+      "contextPreservation": {
+        "implementationProgress": "Current implementation status with completed work",
+        "requirementIssues": "Documented requirement conflicts and ambiguities",
+        "businessLogicChallenges": "Business logic clarification needs with examples",
+        "scopeChangeImpact": "Scope changes discovered with impact assessment",
+        "strategicDecisionNeeds": "Strategic decisions required for implementation continuation"
+      },
+      "isActive": true
+    }
+  ]
+}

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-
 import { Injectable, Logger } from '@nestjs/common';
 import {
   ProjectBehavioralProfile,
@@ -8,6 +6,40 @@ import {
   WorkflowStep,
 } from 'generated/prisma';
 import { PrismaService } from '../../../../prisma/prisma.service';
+
+// Configuration interfaces to eliminate hardcoding
+export interface GuidanceConfig {
+  defaults: {
+    patternConfidence: number;
+    patternUsage: string;
+    estimatedTime: string;
+  };
+  patternDetection: {
+    requiredPatternKeywords: string[];
+    antiPatternKeywords: string[];
+  };
+  performance: {
+    maxPatternsReturned: number;
+    queryTimeoutMs: number;
+  };
+}
+
+// Type-safe interfaces for JSON fields
+export interface RoleCapabilities {
+  qualityReminders?: string[];
+  [key: string]: any;
+}
+
+export interface QualityStandards {
+  reminders?: string[];
+  [key: string]: any;
+}
+
+export interface PatternImplementation {
+  antiPatterns?: string[];
+  complianceChecks?: any[];
+  [key: string]: any;
+}
 
 export interface WorkflowGuidance {
   currentRole: {
@@ -64,7 +96,51 @@ export interface StepExecutionContext {
 export class WorkflowGuidanceService {
   private readonly logger = new Logger(WorkflowGuidanceService.name);
 
+  // Configuration with sensible defaults
+  private readonly config: GuidanceConfig = {
+    defaults: {
+      patternConfidence: 0.8,
+      patternUsage: 'general',
+      estimatedTime: '15 minutes',
+    },
+    patternDetection: {
+      requiredPatternKeywords: ['required', 'mandatory', 'must', 'essential'],
+      antiPatternKeywords: ['avoid', 'anti', 'forbidden', 'prohibited'],
+    },
+    performance: {
+      maxPatternsReturned: 50,
+      queryTimeoutMs: 5000,
+    },
+  };
+
   constructor(private prisma: PrismaService) {}
+
+  /**
+   * Update guidance configuration
+   */
+  updateConfig(config: Partial<GuidanceConfig>): void {
+    if (config.defaults) {
+      Object.assign(this.config.defaults, config.defaults);
+    }
+    if (config.patternDetection) {
+      Object.assign(this.config.patternDetection, config.patternDetection);
+    }
+    if (config.performance) {
+      Object.assign(this.config.performance, config.performance);
+    }
+    this.logger.log('Guidance configuration updated');
+  }
+
+  /**
+   * Get current configuration
+   */
+  getConfig(): GuidanceConfig {
+    return {
+      defaults: { ...this.config.defaults },
+      patternDetection: { ...this.config.patternDetection },
+      performance: { ...this.config.performance },
+    };
+  }
 
   /**
    * Get comprehensive workflow guidance for a role in a specific context
@@ -128,7 +204,8 @@ export class WorkflowGuidanceService {
               displayName: currentStep.displayName,
               description: currentStep.description,
               stepType: currentStep.stepType,
-              estimatedTime: currentStep.estimatedTime ?? '',
+              estimatedTime:
+                currentStep.estimatedTime ?? this.config.defaults.estimatedTime,
               behavioralContext: currentStep.behavioralContext,
               approachGuidance: currentStep.approachGuidance,
               qualityChecklist: currentStep.qualityChecklist,
@@ -182,7 +259,7 @@ export class WorkflowGuidanceService {
     });
   }
 
-  private getCurrentStep(
+  private async getCurrentStep(
     roleId: string,
     context: StepExecutionContext,
   ): Promise<WorkflowStep | null> {
@@ -193,7 +270,19 @@ export class WorkflowGuidanceService {
       });
     }
 
-    // Otherwise, get the next step in sequence for this role
+    // Get current step from workflow execution
+    const execution = await this.prisma.workflowExecution.findFirst({
+      where: { taskId: context.taskId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (execution?.currentStepId) {
+      return this.prisma.workflowStep.findUnique({
+        where: { id: execution.currentStepId },
+      });
+    }
+
+    // Fallback: get the first step in sequence for this role
     return this.prisma.workflowStep.findFirst({
       where: { roleId },
       orderBy: { sequenceNumber: 'asc' },
@@ -231,8 +320,8 @@ export class WorkflowGuidanceService {
       where: { id: roleId },
     });
 
-    // Type cast JSON field to access properties
-    const capabilities = role?.capabilities as any;
+    // Type-safe access to JSON field
+    const capabilities = role?.capabilities as RoleCapabilities;
     if (
       capabilities?.qualityReminders &&
       Array.isArray(capabilities.qualityReminders)
@@ -247,8 +336,9 @@ export class WorkflowGuidanceService {
           where: { projectContextId },
         });
 
-      // Type cast JSON field to access properties
-      const qualityStandards = projectProfile?.qualityStandards as any;
+      // Type-safe access to JSON field
+      const qualityStandards =
+        projectProfile?.qualityStandards as QualityStandards;
       if (
         qualityStandards?.reminders &&
         Array.isArray(qualityStandards.reminders)
@@ -284,21 +374,25 @@ export class WorkflowGuidanceService {
         where: { projectContextId },
       });
 
-      // Use description field instead of missing fields
+      // Use configurable keywords for pattern detection
       enforcement.requiredPatterns = patterns
-        .filter((p) => p.description.includes('required'))
+        .filter((p) =>
+          this.config.patternDetection.requiredPatternKeywords.some((keyword) =>
+            p.description.toLowerCase().includes(keyword.toLowerCase()),
+          ),
+        )
         .map((p) => p.patternName);
 
-      // Use implementation field for anti-patterns
+      // Use implementation field for anti-patterns with type safety
       enforcement.antiPatterns = patterns.flatMap((p) => {
-        const impl = p.implementation as any;
+        const impl = p.implementation as PatternImplementation;
         return impl?.antiPatterns || [];
       });
 
-      // Use implementation field for compliance checks
+      // Use implementation field for compliance checks with type safety
       enforcement.complianceChecks = patterns
         .map((p) => {
-          const impl = p.implementation as any;
+          const impl = p.implementation as PatternImplementation;
           return impl?.complianceChecks;
         })
         .filter(Boolean);
@@ -310,14 +404,15 @@ export class WorkflowGuidanceService {
   private async getProjectPatterns(projectContextId: number): Promise<any[]> {
     const patterns = await this.prisma.projectPattern.findMany({
       where: { projectContextId },
+      take: this.config.performance.maxPatternsReturned,
     });
 
     return patterns.map((pattern) => ({
       name: pattern.patternName,
       type: pattern.patternType,
-      description: pattern.description, // Use existing field
-      usage: 'general', // Default value since field doesn't exist
-      confidence: 0.8, // Default value since field doesn't exist
+      description: pattern.description,
+      usage: this.config.defaults.patternUsage,
+      confidence: this.config.defaults.patternConfidence,
     }));
   }
 }

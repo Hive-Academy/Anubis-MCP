@@ -26,6 +26,9 @@ model WorkflowRole {
   // Project-specific profiles
   behavioralProfiles ProjectBehavioralProfile[]
   
+  // Workflow execution tracking
+  activeExecutions WorkflowExecution[]
+  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
@@ -70,6 +73,9 @@ model WorkflowStep {
   
   // Progress tracking for reporting
   stepProgress    WorkflowStepProgress[]
+  
+  // Workflow execution tracking
+  activeExecutions WorkflowExecution[]
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -207,4 +213,47 @@ model WorkflowStepProgress {
   @@index([status])
   @@index([reportGenerated])
   @@map("workflow_step_progress")
+}
+
+// Workflow execution state management - orchestrates rule-driven workflow execution
+model WorkflowExecution {
+  id              String   @id @default(cuid())
+  taskId          Int      // Link to current task
+  currentRoleId   String   // Active role
+  currentStepId   String?  // Current step being executed
+  executionState  Json     // Current workflow state
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  
+  // Automatic task management
+  autoCreatedTask Boolean  @default(false)
+  taskCreationData Json?   // Data used to create task
+  
+  // Progress tracking
+  stepsCompleted  Int      @default(0)
+  totalSteps      Int?
+  progressPercentage Float @default(0)
+  
+  // Execution metadata
+  executionMode   WorkflowExecutionMode @default(GUIDED) // GUIDED, AUTOMATED, HYBRID
+  executionContext Json?   // Additional context for execution
+  
+  // Error handling and recovery
+  lastError       Json?    // Last error encountered
+  recoveryAttempts Int     @default(0)
+  maxRecoveryAttempts Int  @default(3)
+  
+  // Relationships
+  task            Task @relation(fields: [taskId], references: [id])
+  currentRole     WorkflowRole @relation(fields: [currentRoleId], references: [id])
+  currentStep     WorkflowStep? @relation(fields: [currentStepId], references: [id])
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([taskId])
+  @@index([currentRoleId])
+  @@index([currentStepId])
+  @@index([progressPercentage])
+  @@map("workflow_executions")
 }

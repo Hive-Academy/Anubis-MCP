@@ -1,12 +1,30 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { StepAction } from 'generated/prisma';
 import { StepExecutionContext } from './workflow-guidance.service';
+import {
+  CoreServiceOrchestrator,
+  ServiceCallResult,
+} from './core-service-orchestrator.service';
+import { PrismaService } from '../../../../prisma/prisma.service';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 
 const execAsync = promisify(exec);
+
+// Configuration interfaces
+export interface ActionExecutorConfig {
+  defaultCommandTimeout: number;
+  maxCommandTimeout: number;
+  defaultFileEncoding: BufferEncoding;
+  allowedCommands: string[];
+  blockedCommands: string[];
+  gitCommands: {
+    status: string;
+    statusClean: string;
+  };
+}
 
 export interface ActionExecutionResult {
   success: boolean;
@@ -15,9 +33,74 @@ export interface ActionExecutionResult {
   duration?: number;
 }
 
+/**
+ * StepActionExecutor - Clean MCP-Compliant Action Execution Service
+ *
+ * This service provides action execution capabilities following MCP principles:
+ * - Server provides tools and data access
+ * - AI agents provide intelligence and decision-making
+ * - No hardcoded generation logic (removed ~800 lines of violations)
+ * - Simple template substitution for basic variables only
+ * - Complex data generation delegated to AI agents
+ */
 @Injectable()
 export class StepActionExecutor {
   private readonly logger = new Logger(StepActionExecutor.name);
+
+  // Configuration with sensible defaults
+  private readonly config: ActionExecutorConfig = {
+    defaultCommandTimeout: 30000,
+    maxCommandTimeout: 300000, // 5 minutes max
+    defaultFileEncoding: 'utf8',
+    allowedCommands: [
+      'npm',
+      'yarn',
+      'git',
+      'node',
+      'tsc',
+      'eslint',
+      'prettier',
+      'jest',
+      'docker',
+      'kubectl',
+    ],
+    blockedCommands: [
+      'rm -rf /',
+      'sudo',
+      'su',
+      'chmod 777',
+      'dd',
+      'mkfs',
+      'fdisk',
+      'format',
+      'del /f /s /q',
+      'rmdir /s /q',
+    ],
+    gitCommands: {
+      status: 'git status --porcelain',
+      statusClean: 'git status --porcelain',
+    },
+  };
+
+  constructor(
+    private readonly coreOrchestrator: CoreServiceOrchestrator,
+    private readonly prisma: PrismaService,
+  ) {}
+
+  /**
+   * Update action executor configuration
+   */
+  updateConfig(config: Partial<ActionExecutorConfig>): void {
+    Object.assign(this.config, config);
+    this.logger.log('Action executor configuration updated');
+  }
+
+  /**
+   * Get current configuration
+   */
+  getConfig(): ActionExecutorConfig {
+    return { ...this.config };
+  }
 
   /**
    * Execute all actions for a step in sequence
@@ -70,7 +153,7 @@ export class StepActionExecutor {
           result = await this.executeCommand(action.actionData, context);
           break;
         case 'MCP_CALL':
-          result = await this.executeMcpCall(action.actionData, context);
+          result = await this.executeServiceCall(action.actionData, context);
           break;
         case 'VALIDATION':
           result = await this.executeValidation(action.actionData, context);
@@ -80,12 +163,6 @@ export class StepActionExecutor {
           break;
         case 'FILE_OPERATION':
           result = await this.executeFileOperation(action.actionData, context);
-          break;
-        case 'REPORT_GENERATION':
-          result = await this.executeReportGeneration(
-            action.actionData,
-            context,
-          );
           break;
         default:
           this.logger.warn(
@@ -119,125 +196,305 @@ export class StepActionExecutor {
       command,
       args = [],
       workingDirectory,
-      timeout = 30000,
+      timeout = this.config.defaultCommandTimeout,
       allowFailure = false,
     } = actionData;
 
     try {
-      const workingDir =
-        workingDirectory || context.projectPath || process.cwd();
-      const fullCommand = `${command} ${args.join(' ')}`;
+      // Security validation
+      const securityCheck = this.validateCommandSecurity(command, args);
+      if (!securityCheck.isValid) {
+        return {
+          success: false,
+          message: `Command blocked for security reasons: ${securityCheck.reason}`,
+          data: { command, args, securityReason: securityCheck.reason },
+        };
+      }
 
-      this.logger.debug(`Executing command: ${fullCommand} in ${workingDir}`);
+      // Build full command
+      const fullCommand = [command, ...args].join(' ');
 
-      const { stdout, stderr } = await execAsync(fullCommand, {
-        cwd: workingDir,
-        timeout,
-      });
+      // Execute command
+      const options = {
+        timeout: Math.min(timeout, this.config.maxCommandTimeout),
+        cwd: workingDirectory || context.projectPath || process.cwd(),
+        encoding: this.config.defaultFileEncoding,
+      };
+
+      const { stdout, stderr } = await execAsync(fullCommand, options);
+
+      const isSuccess = allowFailure || stderr.length === 0;
 
       return {
-        success: true,
-        message: `Command executed successfully: ${command}`,
+        success: isSuccess,
+        message: isSuccess
+          ? 'Command executed successfully'
+          : `Command failed: ${stderr}`,
         data: {
-          command,
-          args,
-          workingDirectory: workingDir,
-          exitCode: 0,
-          stdout: stdout.trim(),
-          stderr: stderr.trim(),
+          stdout: stdout?.toString() || '',
+          stderr: stderr?.toString() || '',
+          command: fullCommand,
+          workingDirectory: options.cwd,
         },
       };
-    } catch (error: any) {
-      const isFailureAllowed = allowFailure && error.code !== 'TIMEOUT';
+    } catch (error) {
+      const errorMessage = `Command execution failed: ${error.message}`;
+      this.logger.error(errorMessage, { command, args, error });
+
+      if (allowFailure) {
+        return {
+          success: true,
+          message: 'Command failed but failure is allowed',
+          data: { error: error.message, command, args },
+        };
+      }
 
       return {
-        success: isFailureAllowed,
-        message: isFailureAllowed
-          ? `Command failed but failure is allowed: ${command}`
-          : `Command execution failed: ${error.message}`,
-        data: {
-          command,
-          args,
-          error: error.message,
-          exitCode: error.code,
-          stdout: error.stdout || '',
-          stderr: error.stderr || '',
-        },
+        success: false,
+        message: errorMessage,
+        data: { error: error.message, command, args },
       };
     }
   }
 
-  private executeMcpCall(
+  private async executeServiceCall(
     actionData: any,
-    _context: StepExecutionContext,
+    context: StepExecutionContext,
   ): Promise<ActionExecutionResult> {
-    const { toolName, parameters, expectedResult } = actionData;
-
     try {
-      this.logger.debug(
-        `Making MCP tool call: ${toolName} with parameters:`,
+      const { serviceName, operation, parameters = {} } = actionData;
+
+      if (!serviceName || !operation) {
+        return {
+          success: false,
+          message: 'Service call requires serviceName and operation',
+          data: { actionData },
+        };
+      }
+
+      // Simple template variable substitution for basic variables only
+      const substitutedParams = await this.substituteBasicVariables(
         parameters,
+        context,
       );
 
-      // For now, we'll log the MCP call since we can't actually make the call
-      // In a real implementation, this would use the MCP client to make the call
-      this.logger.log(`MCP Call: ${toolName}`, { parameters, expectedResult });
+      this.logger.debug(
+        `Calling service: ${serviceName}.${operation}`,
+        substitutedParams,
+      );
 
-      return Promise.resolve({
-        success: true,
-        message: `MCP call logged: ${toolName}`,
-        data: {
-          toolName,
-          parameters,
-          note: 'MCP call was logged - actual execution would require MCP client integration',
-        },
-      });
+      const result: ServiceCallResult =
+        await this.coreOrchestrator.executeServiceCall(
+          serviceName,
+          operation,
+          substitutedParams,
+        );
+
+      return {
+        success: result.success,
+        message:
+          result.error ||
+          (result.success ? 'Service call successful' : 'Service call failed'),
+        data: result.data,
+      };
     } catch (error) {
-      return Promise.resolve({
+      this.logger.error('Service call execution failed:', error);
+      return {
         success: false,
-        message: `MCP call failed: ${error.message}`,
-        data: { toolName, parameters, error: error.message },
-      });
+        message: `Service call failed: ${error.message}`,
+        data: { error: error.message, actionData },
+      };
     }
+  }
+
+  /**
+   * Basic template variable substitution - only handles simple variables, not complex generation
+   * Complex data generation should be handled by AI agent, not MCP server
+   *
+   * MCP PRINCIPLE: Server provides tools/context, AI agent provides intelligence
+   */
+  private async substituteBasicVariables(
+    parameters: any,
+    context: StepExecutionContext,
+  ): Promise<any> {
+    if (!parameters || typeof parameters !== 'object') {
+      return parameters;
+    }
+
+    const substituted = JSON.parse(JSON.stringify(parameters));
+    await this.recursiveBasicSubstitution(substituted, context);
+    return substituted;
+  }
+
+  private async recursiveBasicSubstitution(
+    obj: any,
+    context: StepExecutionContext,
+  ): Promise<void> {
+    if (obj === null || obj === undefined) return;
+
+    if (Array.isArray(obj)) {
+      for (let i = 0; i < obj.length; i++) {
+        if (typeof obj[i] === 'string') {
+          obj[i] = this.substituteBasicString(obj[i], context);
+        } else if (typeof obj[i] === 'object') {
+          await this.recursiveBasicSubstitution(obj[i], context);
+        }
+      }
+    } else if (typeof obj === 'object') {
+      for (const [key, value] of Object.entries(obj)) {
+        if (typeof value === 'string') {
+          obj[key] = this.substituteBasicString(value, context);
+        } else if (typeof value === 'object') {
+          await this.recursiveBasicSubstitution(value, context);
+        }
+      }
+    }
+  }
+
+  /**
+   * Substitute only basic template variables and provide guidance for complex data
+   * This follows MCP principles: server provides tools/context, AI agent provides intelligence
+   *
+   * REMOVED: ~800 lines of hardcoded generation logic that violated MCP principles
+   * ADDED: Simple guidance placeholders that instruct AI agents on what to do
+   */
+  private substituteBasicString(
+    str: string,
+    context: StepExecutionContext,
+  ): string {
+    if (typeof str !== 'string') return str;
+
+    let result = str;
+
+    // Basic variables that can be substituted directly
+    const basicVariables: Record<string, string | number> = {
+      '{{taskId}}': context.taskId?.toString() || 'TASK_ID_NOT_AVAILABLE',
+      '{{roleId}}': context.roleId || 'ROLE_ID_NOT_AVAILABLE',
+      '{{stepId}}': context.stepId || 'STEP_ID_NOT_AVAILABLE',
+      '{{projectPath}}': context.projectPath || process.cwd(),
+      '{{timestamp}}': new Date().toISOString(),
+    };
+
+    // Replace basic variables
+    for (const [placeholder, value] of Object.entries(basicVariables)) {
+      result = result.replace(
+        new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g'),
+        value.toString(),
+      );
+    }
+
+    // Handle complex data placeholders - provide guidance instead of generation
+    // This is the correct MCP approach: server guides, AI agent generates
+    const complexDataGuidance = {
+      '{{implementationPlanData}}': {
+        instruction:
+          'AI_AGENT_INSTRUCTION: Use MCP tools to analyze codebase, gather requirements, and generate implementation plan. Then store the plan using task-manager tools.',
+        suggestedTools: ['codebase_search', 'read_file', 'task_operations'],
+        context: {
+          taskId: context.taskId,
+          currentRoleId: context.roleId,
+          step: 'implementation-plan-creation',
+        },
+        example:
+          'Use codebase_search to understand architecture, read_file for specific components, then create plan with your AI intelligence',
+      },
+      '{{strategicBatchData}}': {
+        instruction:
+          'AI_AGENT_INSTRUCTION: Analyze task requirements and create strategic subtask batches. Use your intelligence to break down the work logically.',
+        suggestedTools: ['query_task_context', 'batch_subtask_operations'],
+        context: {
+          taskId: context.taskId,
+          currentRoleId: context.roleId,
+          step: 'strategic-batch-creation',
+        },
+        example:
+          'Query task context, analyze requirements, then use batch_subtask_operations to create logical work batches',
+      },
+      '{{planApproach}}': {
+        instruction:
+          'AI_AGENT_INSTRUCTION: Analyze task and generate implementation approach based on codebase analysis and requirements.',
+        example:
+          'Provide high-level implementation strategy considering architecture patterns and constraints',
+      },
+      '{{technicalDecisions}}': {
+        instruction:
+          'AI_AGENT_INSTRUCTION: Make technical decisions based on codebase architecture and task requirements.',
+        example:
+          'Decide on technologies, patterns, and approaches based on analysis',
+      },
+      '{{filesToModify}}': {
+        instruction:
+          'AI_AGENT_INSTRUCTION: Use codebase analysis to identify files that need modification.',
+        example:
+          'List specific files that will be created or modified for this implementation',
+      },
+      '{{strategicGuidance}}': {
+        instruction:
+          'AI_AGENT_INSTRUCTION: Provide strategic guidance based on project context and requirements.',
+        example:
+          'High-level strategy and considerations for the implementation',
+      },
+    };
+
+    // Replace complex data placeholders with AI agent guidance
+    for (const [placeholder, guidance] of Object.entries(complexDataGuidance)) {
+      if (result.includes(placeholder)) {
+        result = result.replace(
+          new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g'),
+          JSON.stringify(guidance, null, 2),
+        );
+      }
+    }
+
+    return result;
   }
 
   private async executeValidation(
     actionData: any,
     context: StepExecutionContext,
   ): Promise<ActionExecutionResult> {
-    const { validationType, criteria, failOnError = true } = actionData;
-
     try {
-      this.logger.debug(`Performing validation: ${validationType}`);
+      const {
+        validationType,
+        criteria,
+        continueOnFailure = false,
+      } = actionData;
 
-      const validationPassed = await this.performValidation(
+      if (!validationType) {
+        return {
+          success: false,
+          message: 'Validation requires validationType',
+          data: { actionData },
+        };
+      }
+
+      const isValid = await this.performValidation(
         validationType,
         criteria,
         context,
       );
 
-      if (!validationPassed && failOnError) {
+      if (!isValid && !continueOnFailure) {
         return {
           success: false,
           message: `Validation failed: ${validationType}`,
-          data: { validationType, criteria, result: 'failed' },
+          data: { validationType, criteria, result: isValid },
         };
       }
 
       return {
         success: true,
-        message: `Validation completed: ${validationType}`,
-        data: {
-          validationType,
-          criteria,
-          result: validationPassed ? 'passed' : 'warning',
-        },
+        message: isValid
+          ? 'Validation passed'
+          : 'Validation failed but continuing',
+        data: { validationType, criteria, result: isValid },
       };
     } catch (error) {
+      this.logger.error('Validation execution failed:', error);
       return {
         success: false,
         message: `Validation error: ${error.message}`,
-        data: { validationType, criteria, error: error.message },
+        data: { error: error.message, actionData },
       };
     }
   }
@@ -246,164 +503,181 @@ export class StepActionExecutor {
     actionData: any,
     _context: StepExecutionContext,
   ): ActionExecutionResult {
-    const { message, level = 'info', displayDuration = 5000 } = actionData;
+    const { message, level = 'info', data } = actionData;
 
-    try {
-      // Log the reminder with appropriate level
-      switch (level.toLowerCase()) {
-        case 'error':
-          this.logger.error(`REMINDER: ${message}`);
-          break;
-        case 'warn':
-        case 'warning':
-          this.logger.warn(`REMINDER: ${message}`);
-          break;
-        case 'debug':
-          this.logger.debug(`REMINDER: ${message}`);
-          break;
-        default:
-          this.logger.log(`REMINDER: ${message}`);
-      }
-
-      return {
-        success: true,
-        message: `Reminder displayed: ${message}`,
-        data: { message, level, displayDuration },
-      };
-    } catch (error) {
+    if (!message) {
       return {
         success: false,
-        message: `Reminder display failed: ${error.message}`,
-        data: { message, level, error: error.message },
+        message: 'Reminder requires a message',
+        data: { actionData },
       };
     }
+
+    // Log the reminder based on level
+    switch (level) {
+      case 'error':
+        this.logger.error(`REMINDER: ${message}`, data);
+        break;
+      case 'warn':
+        this.logger.warn(`REMINDER: ${message}`, data);
+        break;
+      case 'debug':
+        this.logger.debug(`REMINDER: ${message}`, data);
+        break;
+      default:
+        this.logger.log(`REMINDER: ${message}`, data);
+    }
+
+    return {
+      success: true,
+      message: `Reminder logged: ${message}`,
+      data: { level, message, data },
+    };
   }
 
   private async executeFileOperation(
     actionData: any,
     context: StepExecutionContext,
   ): Promise<ActionExecutionResult> {
-    const {
-      operation,
-      filePath,
-      content,
-      backup = false,
-      encoding = 'utf8',
-    } = actionData;
-
     try {
-      const resolvedPath = this.resolveProjectPath(filePath, context);
+      const {
+        operation,
+        filePath,
+        content,
+        createDirectories = true,
+      } = actionData;
 
-      this.logger.debug(
-        `Performing file operation: ${operation} on ${resolvedPath}`,
-      );
-
-      // Create backup if requested
-      if (backup && (await this.fileExists(resolvedPath))) {
-        const backupPath = `${resolvedPath}.backup.${Date.now()}`;
-        await fs.copyFile(resolvedPath, backupPath);
-        this.logger.debug(`Created backup: ${backupPath}`);
+      if (!operation || !filePath) {
+        return {
+          success: false,
+          message: 'File operation requires operation and filePath',
+          data: { actionData },
+        };
       }
+
+      const resolvedPath = this.resolveProjectPath(filePath, context);
 
       switch (operation) {
         case 'create':
-          await this.ensureDirectoryExists(path.dirname(resolvedPath));
-          await fs.writeFile(resolvedPath, content, encoding);
-          break;
-        case 'update':
-          if (!(await this.fileExists(resolvedPath))) {
-            throw new Error(`File does not exist: ${resolvedPath}`);
+        case 'write':
+          if (createDirectories) {
+            await this.ensureDirectoryExists(path.dirname(resolvedPath));
           }
-          await fs.writeFile(resolvedPath, content, encoding);
-          break;
-        case 'append':
-          await fs.appendFile(resolvedPath, content, encoding);
-          break;
+          await fs.writeFile(
+            resolvedPath,
+            content || '',
+            this.config.defaultFileEncoding,
+          );
+          return {
+            success: true,
+            message: `File ${operation}d successfully`,
+            data: { filePath: resolvedPath, operation, content },
+          };
+
+        case 'read': {
+          const fileContent = await fs.readFile(
+            resolvedPath,
+            this.config.defaultFileEncoding,
+          );
+          return {
+            success: true,
+            message: 'File read successfully',
+            data: { filePath: resolvedPath, content: fileContent },
+          };
+        }
+
         case 'delete':
           await fs.unlink(resolvedPath);
-          break;
-        case 'copy': {
-          const { destinationPath } = actionData;
-          if (!destinationPath) {
-            throw new Error('Destination path required for copy operation');
-          }
-          const resolvedDestination = this.resolveProjectPath(
-            destinationPath,
-            context,
-          );
-          await this.ensureDirectoryExists(path.dirname(resolvedDestination));
-          await fs.copyFile(resolvedPath, resolvedDestination);
-          break;
-        }
-        default:
-          throw new Error(`Unknown file operation: ${operation}`);
-      }
+          return {
+            success: true,
+            message: 'File deleted successfully',
+            data: { filePath: resolvedPath },
+          };
 
-      return {
-        success: true,
-        message: `File operation completed: ${operation} on ${filePath}`,
-        data: { operation, filePath: resolvedPath, backup },
-      };
+        case 'exists': {
+          const exists = await this.fileExists(resolvedPath);
+          return {
+            success: true,
+            message: `File ${exists ? 'exists' : 'does not exist'}`,
+            data: { filePath: resolvedPath, exists },
+          };
+        }
+
+        default:
+          return {
+            success: false,
+            message: `Unknown file operation: ${operation}`,
+            data: { operation, filePath: resolvedPath },
+          };
+      }
     } catch (error) {
+      this.logger.error('File operation failed:', error);
       return {
         success: false,
         message: `File operation failed: ${error.message}`,
-        data: { operation, filePath, error: error.message },
+        data: { error: error.message, actionData },
       };
     }
   }
-
-  private async executeReportGeneration(
-    actionData: any,
-    context: StepExecutionContext,
-  ): Promise<ActionExecutionResult> {
-    const { reportType, template, outputPath, includeData = [] } = actionData;
-
-    try {
-      this.logger.debug(
-        `Generating report: ${reportType} using template ${template}`,
-      );
-
-      // For now, we'll create a simple report file
-      // In a real implementation, this would use a proper report generation system
-      const resolvedOutputPath = this.resolveProjectPath(outputPath, context);
-
-      const reportContent = this.generateReportContent(
-        reportType,
-        template,
-        includeData,
-        context,
-      );
-
-      await this.ensureDirectoryExists(path.dirname(resolvedOutputPath));
-      await fs.writeFile(resolvedOutputPath, reportContent, 'utf8');
-
-      return {
-        success: true,
-        message: `Report generated successfully: ${reportType}`,
-        data: {
-          reportType,
-          template,
-          outputPath: resolvedOutputPath,
-          includeData,
-          generatedAt: new Date().toISOString(),
-        },
-      };
-    } catch (error) {
-      return {
-        success: false,
-        message: `Report generation failed: ${error.message}`,
-        data: { reportType, template, error: error.message },
-      };
-    }
-  }
-
-  // Helper methods
 
   private isCriticalAction(action: StepAction): boolean {
-    // Determine if an action is critical based on its configuration
-    const actionData = action.actionData as any;
-    return actionData?.critical === true || action.actionType === 'VALIDATION';
+    // Consider an action critical if it has specific markers or is a validation
+    return (
+      action.actionType === 'VALIDATION' ||
+      action.name.toLowerCase().includes('critical') ||
+      action.name.toLowerCase().includes('required')
+    );
+  }
+
+  private validateCommandSecurity(
+    command: string,
+    args: string[],
+  ): { isValid: boolean; reason?: string } {
+    // Check if command is in blocked list
+    const fullCommand = [command, ...args].join(' ').toLowerCase();
+    for (const blockedCmd of this.config.blockedCommands) {
+      if (fullCommand.includes(blockedCmd.toLowerCase())) {
+        return {
+          isValid: false,
+          reason: `Command contains blocked pattern: ${blockedCmd}`,
+        };
+      }
+    }
+
+    // Check if command is in allowed list (if not empty)
+    if (this.config.allowedCommands.length > 0) {
+      const isAllowed = this.config.allowedCommands.some((allowedCmd) =>
+        command.toLowerCase().startsWith(allowedCmd.toLowerCase()),
+      );
+      if (!isAllowed) {
+        return {
+          isValid: false,
+          reason: `Command not in allowed list: ${command}`,
+        };
+      }
+    }
+
+    // Additional security checks
+    const dangerousPatterns = [
+      />\s*\/dev\/null/,
+      /&\s*$/,
+      /;\s*rm/,
+      /\|\s*sh/,
+      /\|\s*bash/,
+      /`.*`/,
+      /\$\(.*\)/,
+    ];
+
+    for (const pattern of dangerousPatterns) {
+      if (pattern.test(fullCommand)) {
+        return {
+          isValid: false,
+          reason: `Command contains dangerous pattern: ${pattern.source}`,
+        };
+      }
+    }
+
+    return { isValid: true };
   }
 
   private async performValidation(
@@ -411,120 +685,24 @@ export class StepActionExecutor {
     criteria: any,
     context: StepExecutionContext,
   ): Promise<boolean> {
-    try {
-      switch (validationType) {
-        case 'code_quality':
-          return this.validateCodeQuality(criteria, context);
-        case 'test_coverage':
-          return this.validateTestCoverage(criteria, context);
-        case 'security_scan':
-          return this.validateSecurity(criteria, context);
-        case 'performance_check':
-          return this.validatePerformance(criteria, context);
-        case 'file_exists':
-          return this.validateFileExists(criteria, context);
-        case 'git_status':
-          return this.validateGitStatus(criteria, context);
-        default:
-          this.logger.warn(`Unknown validation type: ${validationType}`);
-          return true; // Unknown validation types pass by default
-      }
-    } catch (error) {
-      this.logger.error(`Validation error for ${validationType}:`, error);
-      return false;
+    switch (validationType) {
+      case 'file_exists':
+        return await this.validateFileExists(criteria, context);
+      case 'git_status':
+        return await this.validateGitStatus(criteria, context);
+      default:
+        this.logger.warn(`Unknown validation type: ${validationType}`);
+        return false;
     }
-  }
-
-  private async validateCodeQuality(
-    criteria: any,
-    context: StepExecutionContext,
-  ): Promise<boolean> {
-    try {
-      const { lintCommand = 'npm run lint', workingDirectory } = criteria;
-      const workingDir =
-        workingDirectory || context.projectPath || process.cwd();
-
-      const { stderr } = await execAsync(lintCommand, {
-        cwd: workingDir,
-      });
-
-      // If lint command succeeds without errors, code quality is good
-      return stderr.trim().length === 0;
-    } catch (error) {
-      this.logger.debug('Code quality check failed:', error);
-      return false;
-    }
-  }
-
-  private async validateTestCoverage(
-    criteria: any,
-    context: StepExecutionContext,
-  ): Promise<boolean> {
-    try {
-      const {
-        minimumCoverage = 80,
-        testCommand = 'npm test',
-        workingDirectory,
-      } = criteria;
-      const workingDir =
-        workingDirectory || context.projectPath || process.cwd();
-
-      // Run test command and check coverage
-      const { stdout } = await execAsync(testCommand, { cwd: workingDir });
-
-      // Look for coverage percentage in output (simplified)
-      const coverageMatch = stdout.match(/(\d+(?:\.\d+)?)%/);
-      if (coverageMatch) {
-        const coverage = parseFloat(coverageMatch[1]);
-        return coverage >= minimumCoverage;
-      }
-
-      return true; // If we can't parse coverage, assume it passes
-    } catch (error) {
-      this.logger.debug('Test coverage check failed:', error);
-      return false;
-    }
-  }
-
-  private validateSecurity(
-    _criteria: any,
-    _context: StepExecutionContext,
-  ): boolean {
-    // Placeholder for security validation
-    // In a real implementation, this would run security scanners
-    this.logger.debug('Security validation - placeholder implementation');
-    return true;
-  }
-
-  private validatePerformance(
-    _criteria: any,
-    _context: StepExecutionContext,
-  ): boolean {
-    // Placeholder for performance validation
-    // In a real implementation, this would run performance tests
-    this.logger.debug('Performance validation - placeholder implementation');
-    return true;
   }
 
   private async validateFileExists(
     criteria: any,
     context: StepExecutionContext,
   ): Promise<boolean> {
-    try {
-      const { files = [] } = criteria;
-
-      for (const file of files) {
-        const resolvedPath = this.resolveProjectPath(file, context);
-        if (!(await this.fileExists(resolvedPath))) {
-          return false;
-        }
-      }
-
-      return true;
-    } catch (error) {
-      this.logger.debug('File exists validation failed:', error);
-      return false;
-    }
+    const { filePath } = criteria;
+    const resolvedPath = this.resolveProjectPath(filePath, context);
+    return await this.fileExists(resolvedPath);
   }
 
   private async validateGitStatus(
@@ -532,19 +710,21 @@ export class StepActionExecutor {
     context: StepExecutionContext,
   ): Promise<boolean> {
     try {
-      const { requireCleanWorkingTree = false } = criteria;
-      const workingDir = context.projectPath || process.cwd();
+      const { expectedStatus = 'clean' } = criteria;
+      const { stdout } = await execAsync(this.config.gitCommands.status, {
+        cwd: context.projectPath || process.cwd(),
+      });
 
-      if (requireCleanWorkingTree) {
-        const { stdout } = await execAsync('git status --porcelain', {
-          cwd: workingDir,
-        });
-        return stdout.trim().length === 0;
+      switch (expectedStatus) {
+        case 'clean':
+          return stdout.trim() === '';
+        case 'dirty':
+          return stdout.trim() !== '';
+        default:
+          return stdout.includes(expectedStatus);
       }
-
-      return true;
     } catch (error) {
-      this.logger.debug('Git status validation failed:', error);
+      this.logger.error('Git status validation failed:', error);
       return false;
     }
   }
@@ -556,9 +736,7 @@ export class StepActionExecutor {
     if (path.isAbsolute(filePath)) {
       return filePath;
     }
-
-    const projectRoot = context.projectPath || process.cwd();
-    return path.resolve(projectRoot, filePath);
+    return path.join(context.projectPath || process.cwd(), filePath);
   }
 
   private async fileExists(filePath: string): Promise<boolean> {
@@ -573,45 +751,11 @@ export class StepActionExecutor {
   private async ensureDirectoryExists(dirPath: string): Promise<void> {
     try {
       await fs.mkdir(dirPath, { recursive: true });
-    } catch (error: any) {
-      // Ignore error if directory already exists
+    } catch (error) {
+      // Directory might already exist, which is fine
       if (error.code !== 'EEXIST') {
         throw error;
       }
     }
-  }
-
-  private generateReportContent(
-    reportType: string,
-    template: string,
-    includeData: any[],
-    context: StepExecutionContext,
-  ): string {
-    const timestamp = new Date().toISOString();
-
-    return `# ${reportType} Report
-
-Generated: ${timestamp}
-Template: ${template}
-Task ID: ${context.taskId}
-Role: ${context.roleId}
-
-## Report Data
-
-${includeData
-  .map(
-    (data, index) => `### Data ${index + 1}
-${JSON.stringify(data, null, 2)}`,
-  )
-  .join('\n\n')}
-
-## Context
-
-Project Path: ${context.projectPath || 'Not specified'}
-Step ID: ${context.stepId || 'Not specified'}
-
----
-Generated by Workflow Rules Engine
-`;
   }
 }
