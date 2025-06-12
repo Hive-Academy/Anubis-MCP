@@ -186,34 +186,7 @@ export class EnvelopeBuilderService {
   ): BootstrapEnvelope {
     // ✅ DEDUPLICATION: Clean bootstrap result to remove duplicates
     const cleanedBootstrapResult = {
-      ...bootstrapResult,
-      // Remove task duplication from workflowExecution
-      workflowExecution: bootstrapResult.workflowExecution
-        ? {
-            ...bootstrapResult.workflowExecution,
-            task: undefined, // REMOVED: Use bootstrapResult.task instead
-          }
-        : bootstrapResult.workflowExecution,
-      // Simplify enhancedContext - remove duplicate summaries
-      enhancedContext: bootstrapResult.enhancedContext
-        ? {
-            bootstrapDuration:
-              bootstrapResult.enhancedContext.bootstrapDuration || 0,
-            initialRole:
-              bootstrapResult.enhancedContext.initialRole || 'unknown',
-            executionMode:
-              bootstrapResult.enhancedContext.executionMode || 'GUIDED',
-            enhancedValidation:
-              bootstrapResult.enhancedContext.enhancedValidation || false,
-            enhancedProgress:
-              bootstrapResult.enhancedContext.enhancedProgress || false,
-            enhancedInputs:
-              bootstrapResult.enhancedContext.enhancedInputs || false,
-            enhancedGuidance:
-              bootstrapResult.enhancedContext.enhancedGuidance || false,
-            // REMOVED: taskCreated, workflowExecutionCreated (duplicates)
-          }
-        : bootstrapResult.enhancedContext,
+      ...bootstrapResult.enhancedContext,
     };
 
     const envelope: BootstrapEnvelope = {
@@ -246,7 +219,7 @@ export class EnvelopeBuilderService {
     operation: string,
     taskId: number,
     executionResult: any,
-    workflowGuidance: any,
+    _workflowGuidance: any,
   ): WorkflowExecutionEnvelope {
     // Handle different operation types and their result structures
     let executionData: any;
@@ -269,45 +242,14 @@ export class EnvelopeBuilderService {
           // REMOVED: Duplicate role data, progress data (use summary instead)
         },
       };
-    } else if (operation === 'get_execution') {
+    } else {
       // ✅ RESTORED: For get_execution, executionResult contains a single execution
       const execution = executionResult.execution || executionResult;
 
       executionData = {
-        executionId: execution.id || 'unknown',
-        currentRole: execution.currentRole?.name || 'unknown',
-        status: execution.completedAt ? 'completed' : 'active',
-        // ✅ RESTORED: Include comprehensive execution details
         execution: execution,
-        progress: {
-          currentStepProgress: execution.progressPercentage || 0,
-          stepsCompleted: execution.stepsCompleted || 0,
-          totalSteps: execution.totalSteps || 0,
-          executionMode: execution.executionMode || 'GUIDED',
-        },
-      };
-    } else {
-      // ✅ RESTORED: For other operations (create, update, complete), handle comprehensively
-      executionData = {
-        executionId:
-          executionResult.id || executionResult.executionId || 'unknown',
-        currentRole:
-          executionResult.currentRole?.name ||
-          workflowGuidance?.currentRole?.name ||
-          'unknown',
-        status: executionResult.status || 'completed',
-        // ✅ RESTORED: Include comprehensive step and progress data
-        activeSteps: executionResult.activeSteps || [],
-        progress: {
-          currentStepProgress: 0,
-          roleProgress: 0,
-          overallProgress: 0,
-          completedSteps: 0,
-          totalSteps: 0,
-        },
       };
     }
-
     const envelope: WorkflowExecutionEnvelope = {
       type: 'workflow-execution',
       timestamp: new Date().toISOString(),
