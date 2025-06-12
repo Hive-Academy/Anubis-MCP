@@ -10,6 +10,7 @@ import { ResearchOperationsService } from './research-operations.service';
 @Module({
   imports: [PrismaModule],
   providers: [
+    // Internal operation services (no longer MCP tools)
     TaskOperationsService,
     PlanningOperationsService,
     IndividualSubtaskOperationsService,
@@ -18,6 +19,7 @@ import { ResearchOperationsService } from './research-operations.service';
     ResearchOperationsService,
   ],
   exports: [
+    // Internal operation services (exported for workflow-rules MCP interface)
     TaskOperationsService,
     PlanningOperationsService,
     IndividualSubtaskOperationsService,

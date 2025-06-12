@@ -21,8 +21,8 @@ interface WorkflowAnalyticsData {
   };
   delegationAnalytics: {
     roleTransitions: Array<{
-      fromRole: string;
-      toRole: string;
+      fromMode: string;
+      toMode: string;
       count: number;
       successRate: number;
     }>;
@@ -270,7 +270,7 @@ export class WorkflowAnalyticsGeneratorService {
                       .map(
                         (transition) => `
                         <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-700">${transition.fromRole} → ${transition.toRole}</span>
+                            <span class="text-sm text-gray-700">${transition.fromMode} → ${transition.toMode}</span>
                             <div class="text-sm">
                                 <span class="text-blue-600 font-medium">${transition.count}</span>
                                 <span class="text-gray-500 mx-1">|</span>

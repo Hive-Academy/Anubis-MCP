@@ -263,7 +263,7 @@ batch_subtask_operations({
 ```bash
 # Git operations using verified branch from boomerang's setup
 TASK_BRANCH="${mcpTaskContext.gitBranch}"  # From boomerang's MCP task data
-TASK_SLUG="${mcpTaskContext.taskSlug}"     # From verified MCP context
+TASK_SLUG="${mcpTaskContext.slug}"     # From verified MCP context
 
 # 1. MANDATORY: Check current Git status
 git status
@@ -313,10 +313,10 @@ IF (all implementations complete per strategic plan) → Delegate to code-review
 workflow_operations({
   operation: 'delegate',
   taskId: taskId,
-  taskSlug: taskSlug,
+  slug: slug,
   fromRole: 'senior-developer',
   toRole: 'code-review',
-  message: `Implementation complete for [${taskSlug}]. All implementations completed following strategic guidance and verified patterns from boomerang's comprehensive MCP analysis. Repository pattern with clean abstractions per verified architectural context, service layer with business logic separation per strategic guidance, comprehensive error handling and security implementation per confirmed quality constraints. Ready for final quality validation and integration approval.`,
+  message: `Implementation complete for [${slug}]. All implementations completed following strategic guidance and verified patterns from boomerang's comprehensive MCP analysis. Repository pattern with clean abstractions per verified architectural context, service layer with business logic separation per strategic guidance, comprehensive error handling and security implementation per confirmed quality constraints. Ready for final quality validation and integration approval.`,
   implementationSummary: {
     verifiedContext: {
       boomerangAnalysis:
@@ -437,7 +437,7 @@ const functionalVerification =
 
 ### Human-Readable Communication with Verified Context
 
-- Use taskSlug from verified MCP context alongside taskId for clarity
+- Use slug from verified MCP context alongside taskId for clarity
 - Reference specific verified analysis sections from boomerang's MCP investigation
 - Provide direct references to confirmed patterns and strategic guidance compliance
 - Enhance delegation messages with verified implementation evidence and git context
@@ -468,7 +468,7 @@ ESCALATION REQUIRED (Delegate to Architect with verified evidence):
 workflow_operations({
   operation: 'escalate',
   taskId: taskId,
-  taskSlug: taskSlug,
+  slug: slug,
   fromRole: 'senior-developer',
   toRole: 'architect',
   escalationData: {
@@ -644,7 +644,7 @@ npm run dev               # Verify development server
 npm run test              # Verify test suite running
 
 # MCP context validation
-echo "Working on Task: ${taskId} (${taskSlug})"
+echo "Working on Task: ${taskId} (${slug})"
 echo "Current Batch: ${batchId} - ${batchTitle}"
 echo "Subtasks in batch: ${subtaskCount}"
 ```
@@ -801,10 +801,10 @@ IF (all batches complete per MCP plan) → Delegate to code-review for comprehen
 workflow_operations({
   operation: 'delegate',
   taskId: taskId,
-  taskSlug: taskSlug,
+  slug: slug,
   fromRole: 'senior-developer',
   toRole: 'code-review',
-  message: `Implementation complete for [${taskSlug}]. All batches implemented following MCP strategic guidance with comprehensive testing and quality validation. Repository pattern with clean abstractions per MCP architectural context, service layer with business logic separation per strategic guidance, comprehensive error handling and security implementation per quality constraints. Ready for final quality validation and integration approval.`,
+  message: `Implementation complete for [${slug}]. All batches implemented following MCP strategic guidance with comprehensive testing and quality validation. Repository pattern with clean abstractions per MCP architectural context, service layer with business logic separation per strategic guidance, comprehensive error handling and security implementation per quality constraints. Ready for final quality validation and integration approval.`,
   implementationSummary: {
     batchesCompleted:
       'Foundation: Entity models and repositories per MCP strategic guidance, Business Logic: Service implementations per architectural context, Integration: API endpoints and middleware per quality constraints, Quality: Comprehensive testing and documentation per success criteria',
@@ -860,7 +860,7 @@ ESCALATION REQUIRED (Delegate to Architect with MCP evidence):
 workflow_operations({
   operation: 'escalate',
   taskId: taskId,
-  taskSlug: taskSlug,
+  slug: slug,
   fromRole: 'senior-developer',
   toRole: 'architect',
   escalationData: {
@@ -1043,7 +1043,7 @@ const successCriteria =
 
 ### Human-Readable Communication with MCP Context
 
-- Use taskSlug alongside taskId for clarity in all communications
+- Use slug alongside taskId for clarity in all communications
 - Reference specific MCP strategic guidance in implementation notes
 - Provide direct references to MCP batch organization and subtask context
 - Enhance delegation messages with MCP compliance validation status

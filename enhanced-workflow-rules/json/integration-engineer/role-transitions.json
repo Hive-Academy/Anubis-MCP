@@ -1,0 +1,221 @@
+{
+  "roleTransitions": [
+    {
+      "fromRoleId": "code-review",
+      "toRoleId": "integration-engineer",
+      "transitionName": "code_review_to_integration_engineer",
+      "conditions": {
+        "reviewCompleted": true,
+        "qualityGatesPassed": true,
+        "acceptanceCriteriaVerified": true,
+        "productionReady": true
+      },
+      "requirements": {
+        "comprehensiveReview": true,
+        "qualityValidationComplete": true,
+        "securityReviewApproved": true,
+        "performanceValidated": true
+      },
+      "validationRules": {
+        "acceptanceCriteriaVerified": "All acceptance criteria verified with evidence",
+        "qualityGatesPassed": "All quality gates passed with documentation",
+        "productionReady": "Production readiness confirmed by code review",
+        "securityApproved": "Security review completed and approved"
+      },
+      "handoffGuidance": {
+        "contextToProvide": [
+          "Complete review approval with quality validation evidence",
+          "Acceptance criteria verification with concrete evidence",
+          "Quality metrics and compliance confirmation",
+          "Security review results and approvals",
+          "Performance validation and optimization results",
+          "Production deployment readiness assessment"
+        ],
+        "integrationFocus": [
+          "Final integration validation and deployment readiness",
+          "Git operations and pull request creation with evidence",
+          "Documentation updates with implementation context",
+          "User delivery coordination with success metrics",
+          "Post-deployment monitoring and validation procedures"
+        ],
+        "deploymentPreparation": [
+          "Verify all quality gates satisfied with evidence",
+          "Prepare comprehensive pull request documentation",
+          "Update memory bank files with implementation evidence",
+          "Coordinate user handoff with monitoring procedures",
+          "Establish rollback strategy and operational support"
+        ]
+      },
+      "contextPreservation": {
+        "reviewResults": "Complete review approval with quality validation evidence",
+        "qualityEvidence": "Comprehensive quality validation evidence and compliance verification",
+        "acceptanceCriteriaEvidence": "Acceptance criteria verification with concrete evidence",
+        "securityApproval": "Security review approval and compliance confirmation",
+        "productionReadiness": "Production deployment readiness assessment with evidence"
+      },
+      "isActive": true
+    },
+    {
+      "fromRoleId": "boomerang",
+      "toRoleId": "integration-engineer",
+      "transitionName": "boomerang_to_integration_engineer_direct",
+      "conditions": {
+        "implementationComplete": true,
+        "directIntegrationRequested": true,
+        "qualityValidated": true,
+        "deliverableReady": true
+      },
+      "requirements": {
+        "comprehensiveImplementation": true,
+        "qualityStandardsMet": true,
+        "deliverablePackageReady": true,
+        "timelineConstraintsMet": true
+      },
+      "validationRules": {
+        "deliverableReady": "Deliverable ready for integration and deployment",
+        "qualityValidated": "Quality validation completed with evidence",
+        "implementationComplete": "Implementation completed and ready for integration",
+        "directIntegrationJustified": "Direct integration explicitly requested by Boomerang"
+      },
+      "handoffGuidance": {
+        "contextToProvide": [
+          "Complete project context and business requirements",
+          "Implementation completion confirmation with evidence",
+          "Quality validation results and metrics",
+          "Acceptance criteria mapping and verification status",
+          "Timeline constraints and delivery expectations"
+        ],
+        "integrationScope": [
+          "Comprehensive final validation and readiness assessment",
+          "Git operations with complete evidence documentation",
+          "Memory bank updates with implementation context",
+          "User delivery with success metrics and monitoring",
+          "Knowledge preservation for organizational learning"
+        ],
+        "deliveryExpectations": [
+          "Production-ready deployment with comprehensive validation",
+          "Complete documentation with implementation evidence",
+          "User handoff with actionable next steps",
+          "Monitoring and support procedures established",
+          "Knowledge assets preserved for future reference"
+        ]
+      },
+      "contextPreservation": {
+        "projectContext": "Complete project context and business requirements",
+        "implementationEvidence": "Implementation completion confirmation with evidence",
+        "qualityValidation": "Quality validation results and metrics",
+        "acceptanceCriteriaMapping": "Acceptance criteria mapping and verification status",
+        "deliveryExpectations": "Timeline constraints and delivery expectations"
+      },
+      "isActive": true
+    },
+    {
+      "fromRoleId": "integration-engineer",
+      "toRoleId": "boomerang",
+      "transitionName": "integration_engineer_to_boomerang_completion",
+      "conditions": {
+        "userDeliveryComplete": true,
+        "deploymentSuccessful": true,
+        "monitoringEstablished": true,
+        "knowledgePreserved": true
+      },
+      "requirements": {
+        "comprehensiveDelivery": true,
+        "productionValidated": true,
+        "documentationComplete": true,
+        "operationalSupport": true
+      },
+      "validationRules": {
+        "userDeliveryComplete": "User delivery completed with comprehensive documentation",
+        "monitoringEstablished": "Post-deployment monitoring established and active",
+        "deploymentSuccessful": "Production deployment successful with validation",
+        "knowledgePreserved": "Knowledge assets preserved with implementation evidence"
+      },
+      "handoffGuidance": {
+        "contextToProvide": [
+          "Complete deployment success confirmation with metrics",
+          "User delivery documentation with success criteria",
+          "Post-deployment monitoring results and baselines",
+          "Knowledge assets preserved with implementation evidence",
+          "Operational support procedures established"
+        ],
+        "projectClosure": [
+          "Final project validation and success confirmation",
+          "Stakeholder communication with delivery evidence",
+          "Lessons learned documentation and knowledge sharing",
+          "Future enhancement planning based on implementation",
+          "Organizational learning integration and process improvement"
+        ],
+        "successMetrics": [
+          "All acceptance criteria satisfied with evidence",
+          "Production deployment successful with monitoring",
+          "User adoption and satisfaction metrics established",
+          "Knowledge preservation completed for future reference",
+          "Process improvements identified and documented"
+        ]
+      },
+      "contextPreservation": {
+        "deploymentResults": "Complete deployment success confirmation with metrics",
+        "userDeliveryEvidence": "User delivery documentation with success criteria",
+        "monitoringBaselines": "Post-deployment monitoring results and baselines",
+        "knowledgeAssets": "Knowledge assets preserved with implementation evidence",
+        "operationalProcedures": "Operational support procedures established"
+      },
+      "isActive": true
+    },
+    {
+      "fromRoleId": "integration-engineer",
+      "toRoleId": "senior-developer",
+      "transitionName": "integration_engineer_to_senior_developer_rollback",
+      "conditions": {
+        "deploymentIssues": true,
+        "rollbackRequired": true,
+        "technicalProblemsIdentified": true,
+        "implementationFixesNeeded": true
+      },
+      "requirements": {
+        "issuesDocumented": true,
+        "rollbackPlanCreated": true,
+        "fixRequirementsDefinied": true,
+        "timelineEstablished": true
+      },
+      "validationRules": {
+        "deploymentIssuesDocumented": "Deployment issues must be clearly documented with evidence",
+        "rollbackPlanComplete": "Rollback plan must be complete with step-by-step procedures",
+        "fixRequirementsClear": "Fix requirements must be clearly defined with acceptance criteria",
+        "timelineRealistic": "Timeline for fixes must be realistic and achievable"
+      },
+      "handoffGuidance": {
+        "issueContext": [
+          "Detailed deployment issues with root cause analysis",
+          "Impact assessment of identified problems",
+          "Rollback procedures and current system state",
+          "Fix requirements with specific technical guidance",
+          "Timeline constraints for issue resolution"
+        ],
+        "fixGuidance": [
+          "Address deployment-specific issues identified",
+          "Maintain system stability during fix implementation",
+          "Test fixes in staging environment before deployment",
+          "Document all changes made during fix process",
+          "Verify fixes against deployment requirements"
+        ],
+        "qualityExpectations": [
+          "All deployment issues must be resolved",
+          "No regression in existing functionality",
+          "Deployment process must be validated",
+          "Documentation updated to reflect changes",
+          "Integration testing completed successfully"
+        ]
+      },
+      "contextPreservation": {
+        "deploymentIssues": "Detailed deployment issues with root cause analysis",
+        "rollbackProcedures": "Rollback procedures and current system state",
+        "fixRequirements": "Fix requirements with specific technical guidance",
+        "impactAssessment": "Impact assessment of identified problems",
+        "timelineConstraints": "Timeline constraints for issue resolution"
+      },
+      "isActive": true
+    }
+  ]
+}

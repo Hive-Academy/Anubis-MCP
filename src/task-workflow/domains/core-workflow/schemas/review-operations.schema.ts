@@ -10,7 +10,7 @@ export const ReviewOperationsSchema = z.object({
     'get_completion',
   ]),
 
-  taskId: z.string(),
+  taskId: z.number(),
 
   // For code review operations
   reviewData: z

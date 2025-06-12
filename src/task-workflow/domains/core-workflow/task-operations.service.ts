@@ -1,16 +1,75 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Tool } from '@rekog/mcp-nest';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { TaskOperationsInput } from './schemas/task-operations.schema';
 import {
-  TaskOperationsSchema,
-  TaskOperationsInput,
-} from './schemas/task-operations.schema';
+  Task,
+  TaskDescription,
+  CodebaseAnalysis,
+  Prisma,
+} from 'generated/prisma';
+
+// Type-safe interfaces for service operations
+export interface TaskOperationResult {
+  success: boolean;
+  data?: TaskWithRelations | TaskWithRelations[] | TaskListResult;
+  error?: {
+    message: string;
+    code: string;
+    operation: string;
+  };
+  metadata?: {
+    operation: string;
+    id: string | number;
+    responseTime: number;
+  };
+}
+
+export interface TaskWithRelations extends Task {
+  taskDescription?: TaskDescription | null;
+  codebaseAnalysis?: CodebaseAnalysis | null;
+  implementationPlans?: Prisma.ImplementationPlanGetPayload<
+    Record<string, never>
+  >[];
+  subtasks?: Prisma.SubtaskGetPayload<Record<string, never>>[];
+  delegationRecords?: Prisma.DelegationRecordGetPayload<
+    Record<string, never>
+  >[];
+  researchReports?: Prisma.ResearchReportGetPayload<Record<string, never>>[];
+  codeReviews?: Prisma.CodeReviewGetPayload<Record<string, never>>[];
+  completionReports?: Prisma.CompletionReportGetPayload<
+    Record<string, never>
+  >[];
+  comments?: Prisma.CommentGetPayload<Record<string, never>>[];
+  workflowTransitions?: Prisma.WorkflowTransitionGetPayload<
+    Record<string, never>
+  >[];
+  workflowExecutions?: Prisma.WorkflowExecutionGetPayload<
+    Record<string, never>
+  >[];
+}
+
+export interface TaskListResult {
+  tasks: TaskWithRelations[];
+  count: number;
+  filters: {
+    status?: string;
+    priority?: string;
+    slug?: string;
+  };
+}
 
 /**
- * Task Operations Service
+ * Task Operations Service (Internal)
  *
- * Focused service for Task, TaskDescription, and CodebaseAnalysis operations.
- * Eliminates universal tool complexity with clear, obvious parameters.
+ * Provides core task lifecycle management as internal service.
+ * Now called by workflow-rules MCP tools instead of being exposed directly.
+ *
+ * SOLID Principles Applied:
+ * - Single Responsibility: Focused on task CRUD operations only
+ * - Open/Closed: Extensible through input schema without modifying core logic
+ * - Liskov Substitution: Consistent interface for all task operations
+ * - Interface Segregation: Clean separation of concerns with focused methods
+ * - Dependency Inversion: Depends on PrismaService abstraction
  */
 @Injectable()
 export class TaskOperationsService {
@@ -18,37 +77,18 @@ export class TaskOperationsService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  @Tool({
-    name: 'task_operations',
-    description: `
-Task lifecycle management with clear, focused operations.
-
-**Operations:**
-- create: Create new task with optional description and analysis (taskId auto-generated)
-- update: Update task details, status, or related data  
-- get: Retrieve task with description and optional analysis
-- list: List tasks with filtering options
-
-**Key Features:**
-- Pre-configured relationships (always includes description when requested)
-- Clear parameter requirements (no complex schema guessing)
-- Business rule validation for status transitions
-- Integrated codebase analysis management
-- Auto-generated unique taskId (no need to provide taskId for create operations)
-
-**Examples:**
-- Create task: { operation: "create", taskData: { name: "Fix auth bug", priority: "High" } }
-- Update status: { operation: "update", taskId: "TSK-001", taskData: { status: "in-progress" } }
-- Get full context: { operation: "get", taskId: "TSK-001", includeDescription: true, includeAnalysis: true }
-`,
-    parameters: TaskOperationsSchema,
-  })
-  async executeTaskOperation(input: TaskOperationsInput): Promise<any> {
+  /**
+   * Execute task operation as internal service
+   * Returns type-safe data without MCP wrapping
+   */
+  async executeTaskOperation(
+    input: TaskOperationsInput,
+  ): Promise<TaskOperationResult> {
     const startTime = performance.now();
 
     try {
       this.logger.debug(`Task Operation: ${input.operation}`, {
-        taskId: input.taskId ?? 'unknown',
+        id: input.id ?? 'unknown',
         operation: input.operation,
       });
 
@@ -80,57 +120,38 @@ Task lifecycle management with clear, focused operations.
         `Task operation completed in ${responseTime.toFixed(2)}ms`,
         {
           operation: input.operation,
-          taskId: input.taskId ?? 'unknown',
+          id: input.id ?? 'unknown',
           responseTime,
         },
       );
 
+      // Return type-safe data for internal service use
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                success: true,
-                data: result,
-                metadata: {
-                  operation: input.operation,
-                  taskId: input.taskId ?? 'unknown',
-                  responseTime: Math.round(responseTime),
-                },
-              },
-              null,
-              2,
-            ),
-          },
-        ],
-      } as const;
+        success: true,
+        data: result,
+        metadata: {
+          operation: input.operation,
+          id: input.id ?? 'unknown',
+          responseTime: Math.round(responseTime),
+        },
+      };
     } catch (error: any) {
       this.logger.error(`Task operation failed:`, error);
 
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                success: false,
-                error: {
-                  message: error.message,
-                  code: 'TASK_OPERATION_FAILED',
-                  operation: input.operation,
-                },
-              },
-              null,
-              2,
-            ),
-          },
-        ],
+        success: false,
+        error: {
+          message: error.message,
+          code: 'TASK_OPERATION_FAILED',
+          operation: input.operation,
+        },
       };
     }
   }
 
-  private async createTask(input: TaskOperationsInput): Promise<any> {
+  private async createTask(
+    input: TaskOperationsInput,
+  ): Promise<TaskWithRelations> {
     const { taskData, description, codebaseAnalysis } = input;
 
     if (!taskData?.name) {
@@ -140,49 +161,47 @@ Task lifecycle management with clear, focused operations.
     // Create task with description in transaction
     const result = await this.prisma.$transaction(async (tx) => {
       // Generate unique slug from task name
-      const taskSlug = await this.ensureUniqueSlug(
+      const slug = await this.ensureUniqueSlug(
         this.generateSlugFromName(taskData.name!),
       );
 
-      // Create the task - let Prisma auto-generate taskId
+      // Create the task with proper Prisma types
       const task = await tx.task.create({
         data: {
-          // Remove taskId - let Prisma auto-generate it
           name: taskData.name!,
-          taskSlug,
+          slug,
           status: taskData.status || 'not-started',
           priority: taskData.priority || 'Medium',
           dependencies: taskData.dependencies || [],
           gitBranch: taskData.gitBranch,
-          creationDate: new Date(),
           owner: 'boomerang',
           currentMode: 'boomerang',
-        },
+        } satisfies Prisma.TaskCreateInput,
       });
 
       // Use the auto-generated taskId for related records
-      const taskId = task.taskId;
+      const taskId = task.id;
 
       // Create task description if provided
-      let taskDescription = null;
+      let taskDescription: TaskDescription | null = null;
       if (description) {
         taskDescription = await tx.taskDescription.create({
           data: {
-            taskId,
+            task: { connect: { id: taskId } },
             description: description.description || '',
             businessRequirements: description.businessRequirements || '',
             technicalRequirements: description.technicalRequirements || '',
             acceptanceCriteria: description.acceptanceCriteria || [],
-          },
+          } satisfies Prisma.TaskDescriptionCreateInput,
         });
       }
 
       // Create codebase analysis if provided
-      let analysis = null;
+      let analysis: CodebaseAnalysis | null = null;
       if (codebaseAnalysis) {
         analysis = await tx.codebaseAnalysis.create({
           data: {
-            taskId,
+            task: { connect: { id: taskId } },
             architectureFindings: codebaseAnalysis.architectureFindings || {},
             problemsIdentified: codebaseAnalysis.problemsIdentified || {},
             implementationContext: codebaseAnalysis.implementationContext || {},
@@ -191,64 +210,72 @@ Task lifecycle management with clear, focused operations.
             filesCovered: codebaseAnalysis.filesCovered || [],
             technologyStack: codebaseAnalysis.technologyStack || {},
             analyzedBy: codebaseAnalysis.analyzedBy || 'system',
-          },
+          } satisfies Prisma.CodebaseAnalysisCreateInput,
         });
       }
 
-      return { task, taskDescription, codebaseAnalysis: analysis };
+      // Return as TaskWithRelations for consistent interface
+      return {
+        ...task,
+        taskDescription,
+        codebaseAnalysis: analysis,
+      } as TaskWithRelations;
     });
 
     return result;
   }
 
-  private async updateTask(input: TaskOperationsInput): Promise<any> {
-    const { taskId, taskData, description, codebaseAnalysis } = input;
+  private async updateTask(
+    input: TaskOperationsInput,
+  ): Promise<TaskWithRelations> {
+    const { id, taskData, description, codebaseAnalysis } = input;
 
-    if (!taskId) {
+    if (!id) {
       throw new Error('Task ID is required for updates');
     }
 
     const result = await this.prisma.$transaction(async (tx) => {
-      let task = null;
-      let taskDescription = null;
-      let analysis = null;
+      let task: Task | null = null;
+      let taskDescription: TaskDescription | null = null;
+      let analysis: CodebaseAnalysis | null = null;
 
       // Update task if data provided
       if (taskData) {
+        const updateData: Prisma.TaskUpdateInput = {};
+
+        if (taskData.name) updateData.name = taskData.name;
+        if (taskData.status) updateData.status = taskData.status;
+        if (taskData.priority) updateData.priority = taskData.priority;
+        if (taskData.dependencies)
+          updateData.dependencies = taskData.dependencies;
+        if (taskData.gitBranch) updateData.gitBranch = taskData.gitBranch;
+
         task = await tx.task.update({
-          where: { taskId },
-          data: {
-            ...(taskData.name && { name: taskData.name }),
-            ...(taskData.status && { status: taskData.status }),
-            ...(taskData.priority && { priority: taskData.priority }),
-            ...(taskData.dependencies && {
-              dependencies: taskData.dependencies,
-            }),
-            ...(taskData.gitBranch && { gitBranch: taskData.gitBranch }),
-          },
+          where: { id },
+          data: updateData,
         });
       }
 
       // Update task description if provided
       if (description) {
+        const descriptionData: Prisma.TaskDescriptionUpsertArgs['update'] = {};
+
+        if (description.description)
+          descriptionData.description = description.description;
+        if (description.businessRequirements)
+          descriptionData.businessRequirements =
+            description.businessRequirements;
+        if (description.technicalRequirements)
+          descriptionData.technicalRequirements =
+            description.technicalRequirements;
+        if (description.acceptanceCriteria)
+          descriptionData.acceptanceCriteria = description.acceptanceCriteria;
+
         taskDescription = await tx.taskDescription.upsert({
-          where: { taskId },
-          update: {
-            ...(description.description && {
-              description: description.description,
-            }),
-            ...(description.businessRequirements && {
-              businessRequirements: description.businessRequirements,
-            }),
-            ...(description.technicalRequirements && {
-              technicalRequirements: description.technicalRequirements,
-            }),
-            ...(description.acceptanceCriteria && {
-              acceptanceCriteria: description.acceptanceCriteria,
-            }),
-          },
+          where: { taskId: id },
+          update: descriptionData,
           create: {
-            taskId,
+            taskId: id,
             description: description.description || '',
             businessRequirements: description.businessRequirements || '',
             technicalRequirements: description.technicalRequirements || '',
@@ -259,36 +286,32 @@ Task lifecycle management with clear, focused operations.
 
       // Update codebase analysis if provided
       if (codebaseAnalysis) {
+        const analysisData: Prisma.CodebaseAnalysisUpsertArgs['update'] = {};
+
+        if (codebaseAnalysis.architectureFindings)
+          analysisData.architectureFindings =
+            codebaseAnalysis.architectureFindings;
+        if (codebaseAnalysis.problemsIdentified)
+          analysisData.problemsIdentified = codebaseAnalysis.problemsIdentified;
+        if (codebaseAnalysis.implementationContext)
+          analysisData.implementationContext =
+            codebaseAnalysis.implementationContext;
+        if (codebaseAnalysis.integrationPoints)
+          analysisData.integrationPoints = codebaseAnalysis.integrationPoints;
+        if (codebaseAnalysis.qualityAssessment)
+          analysisData.qualityAssessment = codebaseAnalysis.qualityAssessment;
+        if (codebaseAnalysis.filesCovered)
+          analysisData.filesCovered = codebaseAnalysis.filesCovered;
+        if (codebaseAnalysis.technologyStack)
+          analysisData.technologyStack = codebaseAnalysis.technologyStack;
+        if (codebaseAnalysis.analyzedBy)
+          analysisData.analyzedBy = codebaseAnalysis.analyzedBy;
+
         analysis = await tx.codebaseAnalysis.upsert({
-          where: { taskId },
-          update: {
-            ...(codebaseAnalysis.architectureFindings && {
-              architectureFindings: codebaseAnalysis.architectureFindings,
-            }),
-            ...(codebaseAnalysis.problemsIdentified && {
-              problemsIdentified: codebaseAnalysis.problemsIdentified,
-            }),
-            ...(codebaseAnalysis.implementationContext && {
-              implementationContext: codebaseAnalysis.implementationContext,
-            }),
-            ...(codebaseAnalysis.integrationPoints && {
-              integrationPoints: codebaseAnalysis.integrationPoints,
-            }),
-            ...(codebaseAnalysis.qualityAssessment && {
-              qualityAssessment: codebaseAnalysis.qualityAssessment,
-            }),
-            ...(codebaseAnalysis.filesCovered && {
-              filesCovered: codebaseAnalysis.filesCovered,
-            }),
-            ...(codebaseAnalysis.technologyStack && {
-              technologyStack: codebaseAnalysis.technologyStack,
-            }),
-            ...(codebaseAnalysis.analyzedBy && {
-              analyzedBy: codebaseAnalysis.analyzedBy,
-            }),
-          },
+          where: { taskId: id },
+          update: analysisData,
           create: {
-            taskId,
+            taskId: id,
             architectureFindings: codebaseAnalysis.architectureFindings || {},
             problemsIdentified: codebaseAnalysis.problemsIdentified || {},
             implementationContext: codebaseAnalysis.implementationContext || {},
@@ -301,20 +324,35 @@ Task lifecycle management with clear, focused operations.
         });
       }
 
-      return { task, taskDescription, codebaseAnalysis: analysis };
+      // If no task data was provided, fetch the current task
+      if (!task) {
+        task = await tx.task.findUnique({ where: { id } });
+        if (!task) {
+          throw new Error(`Task with id ${id} not found`);
+        }
+      }
+
+      // Return as TaskWithRelations for consistent interface
+      return {
+        ...task,
+        taskDescription,
+        codebaseAnalysis: analysis,
+      } as TaskWithRelations;
     });
 
     return result;
   }
 
-  private async getTask(input: TaskOperationsInput): Promise<any> {
-    const { taskId, taskSlug, includeDescription, includeAnalysis } = input;
+  private async getTask(
+    input: TaskOperationsInput,
+  ): Promise<TaskWithRelations> {
+    const { id, slug, includeDescription, includeAnalysis } = input;
 
-    if (!taskId && !taskSlug) {
+    if (!id && !slug) {
       throw new Error('Either Task ID or Task Slug is required for retrieval');
     }
 
-    const include: any = {};
+    const include: Prisma.TaskInclude = {};
     if (includeDescription) {
       include.taskDescription = true;
     }
@@ -322,8 +360,8 @@ Task lifecycle management with clear, focused operations.
       include.codebaseAnalysis = true;
     }
 
-    // Use taskSlug first, fallback to taskId
-    const whereClause = taskSlug ? { taskSlug } : { taskId };
+    // Use slug first, fallback to taskId
+    const whereClause = slug ? { slug } : { id };
 
     const task = await this.prisma.task.findFirst({
       where: whereClause,
@@ -331,25 +369,25 @@ Task lifecycle management with clear, focused operations.
     });
 
     if (!task) {
-      throw new Error(`Task not found: ${taskSlug || taskId}`);
+      throw new Error(`Task not found: ${slug || id}`);
     }
 
-    return task;
+    return task as TaskWithRelations;
   }
 
-  private async listTasks(input: TaskOperationsInput): Promise<any> {
-    const { status, priority, taskSlug, includeDescription, includeAnalysis } =
+  private async listTasks(input: TaskOperationsInput): Promise<TaskListResult> {
+    const { status, priority, slug, includeDescription, includeAnalysis } =
       input;
 
-    const where: any = {};
+    const where: Prisma.TaskWhereInput = {};
     if (status) where.status = status;
     if (priority) where.priority = priority;
-    if (taskSlug) {
+    if (slug) {
       // Support partial slug matching (contains the slug pattern)
-      where.taskSlug = { contains: taskSlug };
+      where.slug = { contains: slug };
     }
 
-    const include: any = {};
+    const include: Prisma.TaskInclude = {};
     if (includeDescription) {
       include.taskDescription = true;
     }
@@ -360,13 +398,13 @@ Task lifecycle management with clear, focused operations.
     const tasks = await this.prisma.task.findMany({
       where,
       include,
-      orderBy: { creationDate: 'desc' },
+      orderBy: { createdAt: 'desc' },
     });
 
     return {
-      tasks,
+      tasks: tasks as TaskWithRelations[],
       count: tasks.length,
-      filters: { status, priority, taskSlug },
+      filters: { status, priority, slug },
     };
   }
 
@@ -388,7 +426,7 @@ Task lifecycle management with clear, focused operations.
    */
   private async ensureUniqueSlug(
     baseSlug: string,
-    excludeTaskId?: string,
+    excludeTaskId?: number,
   ): Promise<string> {
     let slug = baseSlug;
     let counter = 1;
@@ -406,12 +444,12 @@ Task lifecycle management with clear, focused operations.
    */
   private async isSlugTaken(
     slug: string,
-    excludeTaskId?: string,
+    excludeTaskId?: number,
   ): Promise<boolean> {
     const existingTask = await this.prisma.task.findFirst({
       where: {
-        taskSlug: slug,
-        ...(excludeTaskId && { taskId: { not: excludeTaskId } }),
+        slug: slug,
+        ...(excludeTaskId && { id: { not: excludeTaskId } }),
       },
     });
 

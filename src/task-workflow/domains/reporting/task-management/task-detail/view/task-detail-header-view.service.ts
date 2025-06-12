@@ -50,14 +50,14 @@ export class TaskDetailHeaderViewService {
                         <div class="flex items-center space-x-4 text-white text-opacity-90">
                             <span class="flex items-center">
                                 <i class="fas fa-hashtag mr-2"></i>
-                                ${this.escapeHtml(task.taskId)}
+                                ${this.escapeHtml(task.id.toString())}
                             </span>
                             ${
-                              task.taskSlug
+                              task.slug
                                 ? `
                             <span class="flex items-center">
                                 <i class="fas fa-link mr-2"></i>
-                                ${this.escapeHtml(task.taskSlug)}
+                                ${this.escapeHtml(task.slug)}
                             </span>
                             `
                                 : ''

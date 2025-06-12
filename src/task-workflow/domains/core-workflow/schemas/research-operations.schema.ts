@@ -10,7 +10,7 @@ export const ResearchOperationsSchema = z.object({
     'get_comments',
   ]),
 
-  taskId: z.string(),
+  taskId: z.number(),
 
   // For research operations
   researchData: z

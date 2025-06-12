@@ -53,7 +53,7 @@ export class ImplementationPlanService {
     try {
       // Fetch comprehensive task data with implementation plans and subtasks
       const taskData: TaskWithRelations | null =
-        await this.reportDataService.getTask(taskId);
+        await this.reportDataService.getTask(parseInt(taskId));
 
       if (!taskData) {
         return this.generateNotFoundPage(taskId);
@@ -148,14 +148,14 @@ export class ImplementationPlanService {
 
     return {
       task: {
-        taskId: taskInfo.taskId || '',
+        taskId: String(taskInfo.taskId) || '',
         name: taskInfo.name || 'Unknown Task',
-        taskSlug: taskInfo.taskSlug || '',
+        slug: taskInfo.slug || '',
         status: (taskInfo.status as TaskStatus) || 'not-started',
         priority: (taskInfo.priority as Priority) || 'Medium',
         owner: taskInfo.owner || 'Unknown',
         currentMode: (taskData.currentMode as Role) || 'boomerang',
-        createdAt: taskData.creationDate.toISOString(),
+        createdAt: taskData.createdAt.toISOString(),
         completedAt: taskData.completionDate?.toISOString(),
         gitBranch: taskData.gitBranch || '',
       },

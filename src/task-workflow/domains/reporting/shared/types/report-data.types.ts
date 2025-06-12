@@ -43,7 +43,7 @@ export interface ReportMetadata {
   generatedBy: string;
   reportType: string;
   taskId?: string;
-  taskSlug?: string;
+  slug?: string;
 }
 
 /**
@@ -77,9 +77,9 @@ export interface FilterOptions {
 // ============================================================================
 
 export interface TaskSummary {
-  taskId: string;
+  id: number;
   name: string;
-  taskSlug?: string;
+  slug?: string;
   status: TaskStatus;
   priority: Priority;
   owner: string;
@@ -133,7 +133,7 @@ export interface InteractiveDashboardData {
 export interface SimpleTaskInfo {
   taskId: string;
   name: string;
-  taskSlug?: string;
+  slug?: string;
   status: TaskStatus;
   priority: Priority;
   owner: string;
@@ -199,9 +199,9 @@ export interface CodebaseAnalysis {
 
 export interface TaskDetailData {
   task: {
-    taskId: string;
+    id: number;
     name: string;
-    taskSlug?: string;
+    slug?: string;
     status: TaskStatus;
     priority: Priority;
     owner: string;
@@ -238,7 +238,7 @@ export interface ImplementationPlanData {
   task: {
     taskId: string;
     name: string;
-    taskSlug?: string;
+    slug?: string;
     status: TaskStatus;
     priority: Priority;
   };
@@ -261,7 +261,7 @@ export interface ImplementationPlanReportData {
   task: {
     taskId: string;
     name: string;
-    taskSlug?: string;
+    slug?: string;
     status: TaskStatus;
     priority: Priority;
     owner: string;
@@ -351,9 +351,9 @@ import { FormattedDelegationData, FormattedWorkflowData } from '../types';
 
 export interface DelegationFlowData {
   task: {
-    taskId: string;
+    id: number;
     name: string;
-    taskSlug?: string | null;
+    slug?: string | null;
     status: string;
     currentOwner: string | null;
     totalDelegations: number;

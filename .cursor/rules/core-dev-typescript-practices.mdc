@@ -1,7 +1,7 @@
 ---
 description: 
-globs: src/**/*.ts
-alwaysApply: false
+globs: 
+alwaysApply: true
 ---
 # Core Software Development Principles & TypeScript Best Practices
 
@@ -220,4 +220,6 @@ Write reusable code working over various types.
    - **Example:** `function identity<T>(arg: T): T { return arg; }`
 
 By adhering to these principles and practices, development efforts can yield more robust, maintainable, and understandable software.
+
+
 

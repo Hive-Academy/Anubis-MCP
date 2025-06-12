@@ -1,0 +1,104 @@
+// ===== WORKFLOW SYSTEM ENUMS =====
+// All enums used throughout the workflow system
+
+// Enhanced enums for workflow rules system
+enum RoleType {
+  WORKFLOW      // Standard workflow roles (boomerang, architect, etc.)
+  SPECIALIST    // Specialized roles (researcher, integration-engineer)
+  QUALITY_GATE  // Quality control roles (code-review)
+}
+
+enum StepType {
+  VALIDATION    // Validate current state or requirements
+  ACTION        // Perform an action (git, file operations, etc.)
+  DECISION      // Make a decision based on context
+  DELEGATION    // Hand off to another role
+  ANALYSIS      // Analyze code, requirements, or context
+  REPORTING     // Generate reports or documentation
+}
+
+enum ConditionType {
+  CONTEXT_CHECK     // Check task or system context
+  FILE_EXISTS       // Check if files exist
+  TASK_STATUS       // Check task status or properties
+  GIT_STATUS        // Check git repository status
+  PREVIOUS_STEP_COMPLETED // Check if previous step was completed
+  CUSTOM_LOGIC      // Custom evaluation logic
+}
+
+enum ActionType {
+  COMMAND           // Execute shell command
+  MCP_CALL          // Call MCP tool
+  VALIDATION        // Validate something
+  REMINDER          // Show reminder to user
+  FILE_OPERATION    // File system operation
+  REPORT_GENERATION // Generate a report
+}
+
+enum StepProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  SKIPPED
+  FAILED
+}
+
+enum ProjectType {
+  MONOREPO
+  MICROSERVICES
+  SINGLE_APP
+  LIBRARY
+  PLUGIN
+  FRAMEWORK
+  CLI_TOOL
+  API_SERVICE
+  FRONTEND_APP
+  FULLSTACK_APP
+}
+
+enum PatternType {
+  ARCHITECTURAL
+  CODE_STYLE
+  TESTING
+  DEPLOYMENT
+  SECURITY
+  PERFORMANCE
+  DATA_ACCESS
+  ERROR_HANDLING
+  VALIDATION
+  DOCUMENTATION
+}
+
+// Enums for Project Onboarding System
+enum OnboardingStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  NEEDS_UPDATE
+}
+
+enum AnalysisRequestType {
+  INITIAL_ANALYSIS
+  ARCHITECTURE_DEEP_DIVE
+  CODE_PATTERN_ANALYSIS
+  QUALITY_ASSESSMENT
+  INTEGRATION_ANALYSIS
+  ROLE_CONTEXT_GENERATION
+  PATTERN_EXTRACTION
+  TECHNICAL_DEBT_ANALYSIS
+}
+
+enum ProcessingStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  RETRY_NEEDED
+}
+
+enum WorkflowExecutionMode {
+  GUIDED    // Step-by-step guided execution with user interaction
+  AUTOMATED // Fully automated execution without user intervention
+  HYBRID    // Mix of automated and guided steps based on context
+}

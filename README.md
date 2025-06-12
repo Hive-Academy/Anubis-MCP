@@ -1,35 +1,110 @@
-# MCP Workflow Manager
+# 🎯 MCP Workflow-Manager: AI-Guided Development Intelligence
 
-A comprehensive **Model Context Protocol (MCP) server** for AI workflow automation and task management. Built with [NestJS](https://nestjs.com/), [Prisma](https://www.prisma.io/), and [`@rekog/mcp-nest`](https://www.npmjs.com/package/@rekog/mcp-nest) for production-ready reliability.
+**Transform chaotic development into organized, quality-driven workflows with MCP-compliant AI guidance.**
 
-## ✨ Key Features
+A revolutionary **Model Context Protocol (MCP) server** that provides intelligent workflow guidance for AI agents in software development. Built with NestJS + Prisma, this system follows MCP protocol standards correctly by providing guidance instead of executing commands.
 
-- **🔄 Role-Based Workflow**: Structured AI coordination (Boomerang, Researcher, Architect, Developer, Code Review)
-- **📊 Task Management**: Complete task lifecycle with status tracking and delegation
-- **🎯 Implementation Planning**: Batch-based subtask organization and execution
-- **📈 Analytics & Reporting**: Comprehensive workflow analytics and progress monitoring
-- **🔒 Project Isolation**: Automatic database separation for multi-project workflows
-- **🚀 Zero Setup**: Just add to MCP config - no manual installation required
-- **📦 Self-Contained NPX Package**: Automatic dependency management with no external requirements
-- **🔧 Environment-Aware**: Adapts behavior for NPX, global, and local installations
+## 🏆 **MAJOR ACHIEVEMENT: MCP PROTOCOL COMPLIANCE**
 
-## 🚀 Quick Setup Guide
+**✅ BREAKTHROUGH**: We've achieved full MCP protocol compliance by eliminating all execution violations and establishing a true guidance-only architecture.
 
-### **Streamlined Database Configuration** ✨
+### **🎯 What Makes This Special**
 
-**Zero Configuration Required!** Each project automatically gets its own isolated database:
+- **✅ MCP Compliant**: Server provides guidance, AI agents execute locally
+- **✅ Zero Execution Violations**: No server-side command execution
+- **✅ Intelligent Guidance**: Context-aware recommendations for AI agents
+- **✅ Clean Architecture**: Proper separation between guidance and execution
 
+## 🚀 **BUSINESS VALUE**
+
+### **For Development Teams**
+
+- **🎯 Structured Workflows**: Transform chaotic development into organized processes
+- **📈 Quality Assurance**: Built-in quality gates and validation criteria
+- **⚡ Faster Delivery**: AI-guided development with intelligent recommendations
+- **📊 Analytics**: Comprehensive tracking and performance insights
+
+### **For AI Agents**
+
+- **🧠 Intelligent Guidance**: Context-aware step-by-step instructions
+- **🔧 Tool Recommendations**: Suggested tools for each development task
+- **✅ Success Criteria**: Clear validation requirements for each step
+- **📋 Progress Tracking**: Comprehensive workflow state management
+
+### **For Organizations**
+
+- **🏗️ Scalable Architecture**: MCP-compliant design for enterprise use
+- **🔒 Security**: No server-side execution reduces security risks
+- **📈 ROI**: Faster development cycles with higher quality output
+- **🎯 Standardization**: Consistent development practices across teams
+
+## 🎯 **HOW IT WORKS: MCP GUIDANCE ARCHITECTURE**
+
+### **1. AI Agent Requests Guidance**
+
+```javascript
+// AI agent calls MCP server for guidance
+get_step_guidance({
+  taskId: 123,
+  roleId: 'senior-developer',
+  stepId: 'implementation-setup',
+});
 ```
-project-a/data/workflow.db  ← Project A's data
-project-b/data/workflow.db  ← Project B's data
-project-c/data/workflow.db  ← Project C's data
-```
 
-### **NPX Setup (Recommended)**
-
-**One command, automatic project isolation:**
+### **2. MCP Server Provides Intelligent Guidance**
 
 ```json
+{
+  "success": true,
+  "guidance": {
+    "description": "Set up implementation environment with proper structure",
+    "expectedOutput": "Clean project structure with all dependencies configured",
+    "suggestedTools": ["codebase_search", "read_file", "edit_file"],
+    "localExecution": {
+      "commands": [
+        "Analyze existing project structure",
+        "Install required dependencies",
+        "Configure development environment"
+      ],
+      "aiIntelligence": "Apply senior developer expertise to create optimal setup"
+    },
+    "successCriteria": [
+      "All dependencies installed and configured",
+      "Project structure follows best practices",
+      "Development environment ready for implementation"
+    ]
+  }
+}
+```
+
+### **3. AI Agent Executes Locally**
+
+- AI agent receives structured guidance
+- Uses its own tools (codebase_search, read_file, edit_file, etc.)
+- Executes commands locally in the development environment
+- Reports results back to MCP server
+
+### **4. Progress Tracking & Analytics**
+
+```javascript
+// AI agent reports completion
+report_step_completion({
+  taskId: 123,
+  stepId: 'implementation-setup',
+  result: 'success',
+  executionData: {
+    /* results */
+  },
+  executionTime: 1500,
+});
+```
+
+## 🚀 **QUICK START**
+
+### NPX Setup (Recommended)
+
+```json
+// Add to your MCP client config (Cursor, Claude Desktop, etc.)
 {
   "mcpServers": {
     "workflow-manager": {
@@ -40,14 +115,14 @@ project-c/data/workflow.db  ← Project C's data
 }
 ```
 
-✅ **Automatic project detection**  
-✅ **Database created in `./data/workflow.db`**  
-✅ **Migrations applied safely**  
-✅ **Zero setup required**
+**Benefits:**
 
-### **Docker Setup**
+- ✅ Zero installation required
+- ✅ Automatic dependency management
+- ✅ Always latest version
+- ✅ Project isolation
 
-**Project isolation via volume mounts:**
+### Docker Setup
 
 ```json
 {
@@ -56,10 +131,10 @@ project-c/data/workflow.db  ← Project C's data
       "command": "docker",
       "args": [
         "run",
-        "--rm",
         "-i",
         "-v",
-        "D:/projects/your-project/data:/app/data",
+        "project-workflow:/app/data",
+        "--rm",
         "hiveacademy/mcp-workflow-manager"
       ]
     }
@@ -67,105 +142,147 @@ project-c/data/workflow.db  ← Project C's data
 }
 ```
 
-**Replace `D:/projects/your-project/` with your actual project path**
+## 🎭 **AI ROLE SPECIALIZATIONS**
 
-✅ **Instant startup** (pre-deployed migrations)  
-✅ **Project isolation** via different volume mounts  
-✅ **Consistent across platforms**
+Our system provides specialized guidance for different development roles:
 
-### **How Project Isolation Works**
+| Role                    | Purpose                      | Guidance Focus                            |
+| ----------------------- | ---------------------------- | ----------------------------------------- |
+| **🎯 Boomerang**        | Strategic orchestration      | Project analysis, coordination, delivery  |
+| **🔍 Researcher**       | Evidence-based investigation | Technology research, feasibility analysis |
+| **🏗️ Architect**        | Technical design & planning  | System architecture, design patterns      |
+| **👨‍💻 Senior Developer** | Implementation excellence    | Code development, SOLID principles        |
+| **✅ Code Review**      | Quality assurance            | Testing, validation, acceptance criteria  |
 
-**NPX:** Automatic detection
+## 🔧 **MCP TOOL ARCHITECTURE**
 
-```bash
-cd /path/to/project-a && npx @hive-academy/mcp-workflow-manager
-# Database: /path/to/project-a/data/workflow.db
+### **Core Workflow Tools (8 Tools)**
 
-cd /path/to/project-b && npx @hive-academy/mcp-workflow-manager
-# Database: /path/to/project-b/data/workflow.db
+- `bootstrap_workflow` - Initialize new workflows with task creation
+- `get_workflow_guidance` - Get role-specific behavioral context
+- `get_step_guidance` - Get specific guidance for step execution
+- `report_step_completion` - Report AI execution results back to server
+- `get_next_available_step` - Get AI-powered next step recommendations
+- `get_step_progress` - Get step execution history and analytics
+- `workflow_execution_operations` - Complete execution lifecycle management
+
+### **Analytics & Reporting Tools (3 Tools)**
+
+- `generate_workflow_report` - Interactive HTML dashboards with Chart.js
+- `get_report_status` - Monitor report generation progress
+- `cleanup_report` - Clean up report files
+
+## 💡 **BEST PRACTICES FOR AI AGENTS**
+
+### **MCP-Compliant Development**
+
+- ✅ **DO**: Request guidance from MCP server
+- ✅ **DO**: Execute commands locally using your own tools
+- ✅ **DO**: Report results back to MCP server
+- ✅ **DO**: Follow structured guidance recommendations
+- ❌ **DON'T**: Expect MCP server to execute commands
+- ❌ **DON'T**: Skip guidance requests for complex tasks
+
+### **Quality Standards**
+
+- **Evidence-Based Development**: Validate all changes with testing
+- **SOLID Principles**: Follow clean code practices
+- **Documentation**: Maintain comprehensive project documentation
+- **Progress Tracking**: Report completion status for analytics
+
+## 📊 **INTERACTIVE ANALYTICS**
+
+Generate beautiful HTML dashboards with:
+
+- **📈 Real-time Progress Tracking**: Visual workflow progress indicators
+- **🎯 Role Performance Metrics**: Efficiency and quality analytics
+- **✅ Quality Gate Monitoring**: Compliance and validation tracking
+- **📊 Interactive Charts**: Chart.js visualizations with filtering
+- **📱 Mobile Responsive**: Modern Tailwind CSS design
+
+## 🏗️ **TECHNICAL ARCHITECTURE**
+
+### **MCP-Compliant Design**
+
+```
+AI Agent ←→ MCP Protocol ←→ Guidance Server
+    ↓                           ↓
+Local Execution            Intelligent Guidance
+    ↓                           ↓
+Own Tools                  Database-Driven Rules
 ```
 
-**Docker:** Volume mount isolation
+### **Technology Stack**
 
-```bash
-# Project A
-docker run -v "/path/to/project-a/data:/app/data" hiveacademy/mcp-workflow-manager
+- **Backend**: NestJS with TypeScript
+- **Database**: Prisma ORM (SQLite/PostgreSQL)
+- **MCP Integration**: @rekog/mcp-nest
+- **Validation**: Zod schemas
+- **Reports**: Direct HTML generation with Chart.js
+- **Transport**: STDIO, SSE, HTTP support
 
-# Project B
-docker run -v "/path/to/project-b/data:/app/data" hiveacademy/mcp-workflow-manager
+### **Key Architectural Principles**
+
+- **Guidance-Only**: No server-side execution
+- **Intelligence**: Context-aware recommendations
+- **Scalability**: Database-driven workflow rules
+- **Quality**: Built-in validation and tracking
+
+## 🎯 **PROJECT ISOLATION**
+
+### NPX (Automatic)
+
+Each project gets its own database automatically:
+
+```
+/project-a/workflow.db
+/project-b/workflow.db
+/project-c/workflow.db
 ```
 
-## 🛠️ Available MCP Tools (Enhanced)
+### Docker (Manual)
 
-### Core Workflow Management (6 tools)
+Configure volume names for project isolation:
 
-- **`task_operations`** - Enhanced task lifecycle management with codebase analysis and evidence tracking
-- **`planning_operations`** - Implementation planning and batch subtask management with strategic guidance
-- **`individual_subtask_operations`** - **NEW**: Individual subtask management with evidence collection and dependency tracking
-- **`workflow_operations`** - Role-based delegation and workflow transitions with enhanced context preservation
-- **`review_operations`** - Code review and completion report management with comprehensive evidence tracking
-- **`research_operations`** - Research reports and communication management with evidence-based findings
+```json
+// Project A
+"args": ["run", "-i", "-v", "project-a-workflow:/app/data", "--rm", "..."]
+```
 
-### Query & Analytics (3 tools)
+## 🚀 **DEVELOPMENT STATUS**
 
-- **`query_task_context`** - Comprehensive task context retrieval with **performance caching** (25-75% token savings)
-- **`query_workflow_status`** - Delegation and workflow status queries with role-specific filtering
-- **`query_reports`** - Report queries with evidence relationships and comprehensive filtering
+**✅ PRODUCTION READY - MCP COMPLIANT**
 
-### Batch Operations (2 tools)
+- **✅ Architecture**: MCP-compliant guidance-only design
+- **✅ Performance**: Optimized with intelligent caching
+- **✅ Quality**: Comprehensive testing and validation
+- **✅ Compliance**: Zero execution violations
+- **✅ Documentation**: Complete system instructions
 
-- **`batch_subtask_operations`** - Enhanced bulk subtask management with progress tracking and evidence collection
-- **`batch_status_updates`** - Cross-entity status synchronization with data consistency validation
+## 📚 **DOCUMENTATION**
 
-### Reporting & Analytics (3 tools)
+- **MCP Architecture Fix**: `docs/MCP_ARCHITECTURE_FIX.md`
+- **Technical Architecture**: `memory-bank/TechnicalArchitecture.md`
+- **Developer Guide**: `memory-bank/DeveloperGuide.md`
+- **Project Overview**: `memory-bank/ProjectOverview.md`
 
-- **`generate_workflow_report`** - Comprehensive workflow analytics and reports with interactive dashboards
-- **`get_report_status`** - Report generation status tracking
-- **`cleanup_report`** - Report file management
+## 🤝 **CONTRIBUTING**
 
-### 🚀 Performance Features (Latest Updates)
+This project follows MCP protocol standards and clean architecture principles:
 
-- **Two-Layer Caching System**: MCP response cache + database query cache for optimal performance
-- **Token Optimization**: 25-75% reduction in token usage through intelligent caching strategies
-- **STDIO-Compatible Monitoring**: File-based performance logging that doesn't interfere with MCP protocol
-- **Enhanced Evidence Collection**: Comprehensive tracking and validation throughout workflow lifecycle
-- **Individual Subtask Operations**: Detailed subtask management with dependency tracking and strategic guidance
+- **MCP Compliance**: Guidance-only, no execution
+- **SOLID Principles**: Clean, maintainable code
+- **Domain-Driven Design**: Clear domain boundaries
+- **Evidence-Based Development**: Comprehensive testing
 
-## 🔄 Workflow Roles
+## 📄 **LICENSE**
 
-The system implements a structured workflow with specialized AI roles:
-
-1. **🪃 Boomerang** - Task intake, analysis, and final delivery
-2. **🔬 Researcher** - Information gathering and research
-3. **🏛️ Architect** - Technical planning and design
-4. **👨‍💻 Senior Developer** - Code implementation
-5. **🔍 Code Review** - Quality assurance and testing
-
-## ✅ Verification
-
-After adding the configuration:
-
-1. **Restart your MCP client**
-2. **Check for workflow tools** in your MCP client
-3. **Create a test task** to verify everything works
-
-You should see 10+ workflow management tools available!
-
-## 📚 Documentation
-
-- **[Complete Setup Guide](docs/DEPLOYMENT_GUIDE.md)** - Detailed setup instructions
-- **[Docker Hub](https://hub.docker.com/r/hiveacademy/mcp-workflow-manager)** - Production Docker images
-- **[Technical Architecture](memory-bank/TechnicalArchitecture.md)** - System design details
-- **[Developer Guide](memory-bank/DeveloperGuide.md)** - Development best practices
-
-## 🤝 Contributing
-
-We welcome contributions! See our [GitHub repository](https://github.com/Hive-Academy/Workflow_Manager_MCP) for details.
-
-## 📄 License
-
-MIT License - see [LICENSE](https://github.com/Hive-Academy/Workflow_Manager_MCP/blob/main/LICENSE) file.
+MIT License - see LICENSE file for details.
 
 ---
 
-**Built with ❤️ for the AI development community by Hive Academy**
+## 🎯 **THE BOTTOM LINE**
+
+**This MCP server transforms AI development by providing intelligent guidance instead of trying to execute commands itself. It's the difference between a GPS that gives you directions (correct) vs. a GPS that tries to drive your car (wrong).**
+
+**Result**: Faster, higher-quality development with proper MCP protocol compliance and clean separation of concerns.

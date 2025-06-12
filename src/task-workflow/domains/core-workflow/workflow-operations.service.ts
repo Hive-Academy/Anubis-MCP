@@ -1,16 +1,36 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Tool } from '@rekog/mcp-nest';
 import { PrismaService } from '../../../prisma/prisma.service';
-import {
-  WorkflowOperationsSchema,
-  WorkflowOperationsInput,
-} from './schemas/workflow-operations.schema';
+import { WorkflowOperationsInput } from './schemas/workflow-operations.schema';
+import { DelegationRecord, WorkflowTransition, Prisma } from 'generated/prisma';
+
+// Type-safe interfaces for workflow operations
+export interface WorkflowOperationResult {
+  success: boolean;
+  data?: DelegationRecord | WorkflowTransition | DelegationRecord[];
+  error?: {
+    message: string;
+    code: string;
+    operation: string;
+  };
+  metadata?: {
+    operation: string;
+    taskId?: number;
+    responseTime: number;
+  };
+}
 
 /**
- * Workflow Operations Service
+ * Workflow Operations Service (Internal)
  *
- * Focused service for role transitions and delegation management.
- * Clear, obvious operations with built-in business rule validation.
+ * Internal service for workflow delegation and state management.
+ * No longer exposed as MCP tool - used by workflow-rules MCP interface.
+ *
+ * SOLID Principles Applied:
+ * - Single Responsibility: Focused on workflow state transitions only
+ * - Open/Closed: Extensible through input schema without modifying core logic
+ * - Liskov Substitution: Consistent interface for all workflow operations
+ * - Interface Segregation: Clean separation of workflow concerns
+ * - Dependency Inversion: Depends on PrismaService abstraction
  */
 @Injectable()
 export class WorkflowOperationsService {
@@ -18,57 +38,31 @@ export class WorkflowOperationsService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  @Tool({
-    name: 'workflow_operations',
-    description: `
-Role-based workflow transitions and delegation management.
-
-**Operations:**
-- delegate: Hand off task from one role to another
-- complete: Mark task as completed with evidence
-- escalate: Escalate issues or blockers to previous role
-- transition: Change task status with role validation
-
-**Key Features:**
-- Built-in business rule validation (prevents invalid transitions)
-- Automatic delegation record creation
-- Role-based authorization (validates current ownership)
-- Workflow transition logging
-
-**Examples:**
-- Delegate: { operation: "delegate", taskId: "TSK-001", fromRole: "architect", toRole: "senior-developer", message: "Plan ready" }
-- Complete: { operation: "complete", taskId: "TSK-001", fromRole: "senior-developer", completionData: { summary: "Auth implemented" } }
-- Escalate: { operation: "escalate", taskId: "TSK-001", fromRole: "senior-developer", toRole: "architect", escalationData: { reason: "Blocker found" } }
-`,
-    parameters: WorkflowOperationsSchema,
-  })
-  async executeWorkflowOperation(input: WorkflowOperationsInput): Promise<any> {
+  async executeWorkflowOperation(
+    input: WorkflowOperationsInput,
+  ): Promise<WorkflowOperationResult> {
     const startTime = performance.now();
 
     try {
       this.logger.debug(`Workflow Operation: ${input.operation}`, {
         taskId: input.taskId,
-        fromRole: input.fromRole,
-        toRole: input.toRole,
+        operation: input.operation,
       });
 
-      // Validate task ownership
-      await this.validateTaskOwnership(input.taskId, input.fromRole);
-
-      let result: any;
+      let result: DelegationRecord | WorkflowTransition | DelegationRecord[];
 
       switch (input.operation) {
         case 'delegate':
-          result = await this.handleDelegation(input);
+          result = await this.delegateTask(input);
           break;
         case 'complete':
-          result = await this.handleCompletion(input);
+          result = await this.completeTask(input);
           break;
         case 'escalate':
-          result = await this.handleEscalation(input);
+          result = await this.escalateTask(input);
           break;
         case 'transition':
-          result = await this.handleTransition(input);
+          result = await this.transitionTask(input);
           break;
         default:
           throw new Error(`Unknown operation: ${String(input.operation)}`);
@@ -77,242 +71,162 @@ Role-based workflow transitions and delegation management.
       const responseTime = performance.now() - startTime;
 
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                success: true,
-                data: result,
-                metadata: {
-                  operation: input.operation,
-                  taskId: input.taskId,
-                  transition: result.transition,
-                  responseTime: Math.round(responseTime),
-                },
-              },
-              null,
-              2,
-            ),
-          },
-        ],
+        success: true,
+        data: result,
+        metadata: {
+          operation: input.operation,
+          taskId: input.taskId,
+          responseTime: Math.round(responseTime),
+        },
       };
     } catch (error: any) {
       this.logger.error(`Workflow operation failed:`, error);
 
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                success: false,
-                error: {
-                  message: error.message,
-                  code: 'WORKFLOW_OPERATION_FAILED',
-                  operation: input.operation,
-                },
-              },
-              null,
-              2,
-            ),
-          },
-        ],
+        success: false,
+        error: {
+          message: error.message,
+          code: 'WORKFLOW_OPERATION_FAILED',
+          operation: input.operation,
+        },
       };
     }
   }
 
-  private async validateTaskOwnership(
-    taskId: string,
-    fromRole: string,
-  ): Promise<void> {
-    const task = await this.prisma.task.findUnique({
-      where: { taskId },
-    });
-
-    if (!task) {
-      throw new Error(`Task ${taskId} not found`);
-    }
-
-    if (task.currentMode !== fromRole) {
-      throw new Error(
-        `Cannot operate from ${fromRole}: task is currently owned by ${task.currentMode}`,
-      );
-    }
-
-    if (task.status === 'completed') {
-      throw new Error('Cannot modify completed tasks');
-    }
-
-    if (task.status === 'cancelled') {
-      throw new Error('Cannot modify cancelled tasks');
-    }
-  }
-
-  private async handleDelegation(input: WorkflowOperationsInput): Promise<any> {
+  private async delegateTask(
+    input: WorkflowOperationsInput,
+  ): Promise<DelegationRecord> {
     const { taskId, fromRole, toRole, message } = input;
 
-    if (!toRole) {
-      throw new Error('Target role is required for delegation');
+    if (!fromRole || !toRole) {
+      throw new Error('Both fromRole and toRole are required for delegation');
     }
 
+    // Create delegation record and update task in transaction
     const result = await this.prisma.$transaction(async (tx) => {
       // Create delegation record
-      const delegation = await tx.delegationRecord.create({
+      const delegationRecord = await tx.delegationRecord.create({
         data: {
-          taskId,
+          task: { connect: { id: taskId } },
           fromMode: fromRole,
           toMode: toRole,
-          delegationTimestamp: new Date(),
-          success: true,
-        },
+          message: message || '',
+        } satisfies Prisma.DelegationRecordCreateInput,
       });
 
-      // Update task
-      const task = await tx.task.update({
-        where: { taskId },
+      // Update task current mode and increment redelegation count
+      await tx.task.update({
+        where: { id: taskId },
         data: {
           currentMode: toRole,
-          status: input.newStatus || 'in-progress',
+          owner: toRole,
+          redelegationCount: { increment: 1 },
         },
       });
 
-      // Create workflow transition
-      await tx.workflowTransition.create({
-        data: {
-          taskId,
-          fromMode: fromRole,
-          toMode: toRole,
-          reason: message || `Delegated from ${fromRole} to ${toRole}`,
-          transitionTimestamp: new Date(),
-        },
-      });
-
-      return { delegation, task, transition: 'delegation_completed' };
+      return delegationRecord;
     });
 
     return result;
   }
 
-  private async handleCompletion(input: WorkflowOperationsInput): Promise<any> {
+  private async completeTask(
+    input: WorkflowOperationsInput,
+  ): Promise<WorkflowTransition> {
     const { taskId, fromRole, completionData } = input;
 
     if (!completionData) {
-      throw new Error('Completion data is required for completion');
+      throw new Error('Completion data is required for task completion');
     }
 
+    // Create workflow transition and update task status
     const result = await this.prisma.$transaction(async (tx) => {
-      // Create completion report
-      const completionReport = await tx.completionReport.create({
+      // Create workflow transition record
+      const transition = await tx.workflowTransition.create({
         data: {
-          taskId,
-          summary: completionData.summary,
-          filesModified: completionData.filesModified || [],
-          acceptanceCriteriaVerification:
-            completionData.acceptanceCriteriaVerification || {},
-          delegationSummary: `Task completed by ${fromRole}`,
-        },
+          task: { connect: { id: taskId } },
+          fromMode: fromRole,
+          toMode: 'completed',
+          reason: `Task completed: ${completionData.summary}`,
+        } satisfies Prisma.WorkflowTransitionCreateInput,
       });
 
-      // Update task
-      const task = await tx.task.update({
-        where: { taskId },
+      // Update task status to completed
+      await tx.task.update({
+        where: { id: taskId },
         data: {
           status: 'completed',
-          currentMode: 'boomerang', // Task returns to boomerang when completed
           completionDate: new Date(),
         },
       });
 
-      // Create workflow transition
-      await tx.workflowTransition.create({
-        data: {
-          taskId,
-          fromMode: fromRole,
-          toMode: 'boomerang', // Completion always transitions to boomerang
-          reason: `Task completed: ${completionData.summary}`,
-          transitionTimestamp: new Date(),
-        },
-      });
-
-      return { completionReport, task, transition: 'completion_recorded' };
+      return transition;
     });
 
     return result;
   }
 
-  private async handleEscalation(input: WorkflowOperationsInput): Promise<any> {
-    const { taskId, fromRole, toRole, escalationData } = input;
+  private async escalateTask(
+    input: WorkflowOperationsInput,
+  ): Promise<WorkflowTransition> {
+    const { taskId, fromRole, escalationData } = input;
 
-    if (!toRole || !escalationData) {
-      throw new Error('Target role and escalation data are required');
+    if (!escalationData) {
+      throw new Error('Escalation data is required for task escalation');
     }
 
-    const result = await this.prisma.$transaction(async (tx) => {
-      // Create escalation delegation record
-      const delegation = await tx.delegationRecord.create({
-        data: {
-          taskId,
-          fromMode: fromRole,
-          toMode: toRole,
-          delegationTimestamp: new Date(),
-          rejectionReason: escalationData.reason,
-          success: true,
-        },
-      });
-
-      // Update task
-      const task = await tx.task.update({
-        where: { taskId },
-        data: {
-          currentMode: toRole,
-          status: input.newStatus || 'needs-changes',
-        },
-      });
-
-      // Create workflow transition
-      await tx.workflowTransition.create({
-        data: {
-          taskId,
-          fromMode: fromRole,
-          toMode: toRole,
-          reason: `Escalated: ${escalationData.reason}`,
-          transitionTimestamp: new Date(),
-        },
-      });
-
-      return { delegation, task, transition: 'escalation_completed' };
+    // Create workflow transition for escalation
+    const transition = await this.prisma.workflowTransition.create({
+      data: {
+        task: { connect: { id: taskId } },
+        fromMode: fromRole,
+        toMode: 'escalated',
+        reason: `Escalation: ${escalationData.reason}`,
+      } satisfies Prisma.WorkflowTransitionCreateInput,
     });
 
-    return result;
+    return transition;
   }
 
-  private async handleTransition(input: WorkflowOperationsInput): Promise<any> {
+  private async transitionTask(
+    input: WorkflowOperationsInput,
+  ): Promise<WorkflowTransition> {
     const { taskId, fromRole, toRole, newStatus, message } = input;
 
-    const result = await this.prisma.$transaction(async (tx) => {
-      // Update task
-      const updateData: any = {};
-      if (toRole) updateData.currentMode = toRole;
-      if (newStatus) updateData.status = newStatus;
+    if (!newStatus) {
+      throw new Error('New status is required for task transition');
+    }
 
-      const task = await tx.task.update({
-        where: { taskId },
+    // Create workflow transition and update task
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Create workflow transition record
+      const transition = await tx.workflowTransition.create({
+        data: {
+          task: { connect: { id: taskId } },
+          fromMode: fromRole,
+          toMode: toRole || fromRole,
+          reason: message || `Status changed to ${newStatus}`,
+        } satisfies Prisma.WorkflowTransitionCreateInput,
+      });
+
+      // Update task status
+      const updateData: Prisma.TaskUpdateInput = { status: newStatus };
+
+      if (newStatus === 'completed') {
+        updateData.completionDate = new Date();
+      }
+
+      if (toRole) {
+        updateData.currentMode = toRole;
+        updateData.owner = toRole;
+      }
+
+      await tx.task.update({
+        where: { id: taskId },
         data: updateData,
       });
 
-      // Create workflow transition
-      await tx.workflowTransition.create({
-        data: {
-          taskId,
-          fromMode: fromRole,
-          toMode: toRole || fromRole,
-          reason: message || `Status transition to ${newStatus || 'updated'}`,
-          transitionTimestamp: new Date(),
-        },
-      });
-
-      return { task, transition: 'status_transition_completed' };
+      return transition;
     });
 
     return result;

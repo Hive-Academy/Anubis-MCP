@@ -1,16 +1,48 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Tool } from '@rekog/mcp-nest';
 import { PrismaService } from '../../../prisma/prisma.service';
-import {
-  ReviewOperationsSchema,
-  ReviewOperationsInput,
-} from './schemas/review-operations.schema';
+import { ReviewOperationsInput } from './schemas/review-operations.schema';
+import { CodeReview, CompletionReport, Prisma } from 'generated/prisma';
+
+// Type-safe interfaces for review operations
+export interface ReviewOperationResult {
+  success: boolean;
+  data?: CodeReview | CompletionReport | ReviewSummary | CompletionSummary;
+  error?: {
+    message: string;
+    code: string;
+    operation: string;
+  };
+  metadata?: {
+    operation: string;
+    taskId: number;
+    responseTime: number;
+  };
+}
+
+export interface ReviewSummary {
+  taskId: number;
+  status: string;
+  summary: string;
+}
+
+export interface CompletionSummary {
+  taskId: number;
+  summary: string;
+  createdAt: Date;
+}
 
 /**
- * Review Operations Service
+ * Review Operations Service (Internal)
  *
- * Focused service for code review and completion report management.
- * Clear operations for quality assurance workflow.
+ * Internal service for code review and completion report management.
+ * No longer exposed as MCP tool - used by workflow-rules MCP interface.
+ *
+ * SOLID Principles Applied:
+ * - Single Responsibility: Focused on review and completion operations only
+ * - Open/Closed: Extensible through input schema without modifying core logic
+ * - Liskov Substitution: Consistent interface for all review operations
+ * - Interface Segregation: Clean separation of review concerns
+ * - Dependency Inversion: Depends on PrismaService abstraction
  */
 @Injectable()
 export class ReviewOperationsService {
@@ -18,32 +50,9 @@ export class ReviewOperationsService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  @Tool({
-    name: 'review_operations',
-    description: `
-Code review and completion report management.
-
-**Operations:**
-- create_review: Create code review with quality assessment
-- update_review: Update existing code review status and findings
-- get_review: Retrieve code review details
-- create_completion: Create task completion report
-- get_completion: Retrieve completion report
-
-**Key Features:**
-- Quality rating scale (1-10)
-- Security and performance assessment
-- Issue tracking and recommendations
-- Completion report with evidence
-
-**Examples:**
-- Create review: { operation: "create_review", taskId: "TSK-001", reviewData: { status: "APPROVED", summary: "Good quality" } }
-- Get review: { operation: "get_review", taskId: "TSK-001", includeDetails: true }
-- Create completion: { operation: "create_completion", taskId: "TSK-001", completionData: { summary: "Task complete" } }
-`,
-    parameters: ReviewOperationsSchema,
-  })
-  async executeReviewOperation(input: ReviewOperationsInput): Promise<any> {
+  async executeReviewOperation(
+    input: ReviewOperationsInput,
+  ): Promise<ReviewOperationResult> {
     const startTime = performance.now();
 
     try {
@@ -51,7 +60,11 @@ Code review and completion report management.
         taskId: input.taskId,
       });
 
-      let result: any;
+      let result:
+        | CodeReview
+        | CompletionReport
+        | ReviewSummary
+        | CompletionSummary;
 
       switch (input.operation) {
         case 'create_review':
@@ -70,59 +83,37 @@ Code review and completion report management.
           result = await this.getCompletion(input);
           break;
         default:
-          throw new Error(
-            `Unknown operation: ${String((input as any).operation)}`,
-          );
+          throw new Error(`Unknown operation: ${String(input.operation)}`);
       }
 
       const responseTime = performance.now() - startTime;
 
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                success: true,
-                data: result,
-                metadata: {
-                  operation: input.operation,
-                  taskId: input.taskId,
-                  responseTime: Math.round(responseTime),
-                },
-              },
-              null,
-              2,
-            ),
-          },
-        ],
+        success: true,
+        data: result,
+        metadata: {
+          operation: input.operation,
+          taskId: input.taskId,
+          responseTime: Math.round(responseTime),
+        },
       };
     } catch (error: any) {
       this.logger.error(`Review operation failed:`, error);
 
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                success: false,
-                error: {
-                  message: error.message,
-                  code: 'REVIEW_OPERATION_FAILED',
-                  operation: input.operation,
-                },
-              },
-              null,
-              2,
-            ),
-          },
-        ],
+        success: false,
+        error: {
+          message: error.message,
+          code: 'REVIEW_OPERATION_FAILED',
+          operation: input.operation,
+        },
       };
     }
   }
 
-  private async createReview(input: ReviewOperationsInput): Promise<any> {
+  private async createReview(
+    input: ReviewOperationsInput,
+  ): Promise<CodeReview> {
     const { taskId, reviewData } = input;
 
     if (!reviewData) {
@@ -131,7 +122,7 @@ Code review and completion report management.
 
     const review = await this.prisma.codeReview.create({
       data: {
-        taskId,
+        task: { connect: { id: taskId } },
         status: reviewData.status,
         summary: reviewData.summary,
         strengths: reviewData.strengths || '',
@@ -140,13 +131,15 @@ Code review and completion report management.
           reviewData.acceptanceCriteriaVerification || {},
         manualTestingResults: reviewData.manualTestingResults || '',
         requiredChanges: reviewData.requiredChanges || null,
-      },
+      } satisfies Prisma.CodeReviewCreateInput,
     });
 
     return review;
   }
 
-  private async updateReview(input: ReviewOperationsInput): Promise<any> {
+  private async updateReview(
+    input: ReviewOperationsInput,
+  ): Promise<CodeReview> {
     const { taskId, reviewData } = input;
 
     if (!reviewData) {
@@ -162,30 +155,34 @@ Code review and completion report management.
       throw new Error(`Code review not found for task ${taskId}`);
     }
 
+    const updateData: Prisma.CodeReviewUpdateInput = {};
+
+    if (reviewData.status) updateData.status = reviewData.status;
+    if (reviewData.summary) updateData.summary = reviewData.summary;
+    if (reviewData.strengths) updateData.strengths = reviewData.strengths;
+    if (reviewData.issues) updateData.issues = reviewData.issues;
+    if (reviewData.acceptanceCriteriaVerification) {
+      updateData.acceptanceCriteriaVerification =
+        reviewData.acceptanceCriteriaVerification;
+    }
+    if (reviewData.manualTestingResults) {
+      updateData.manualTestingResults = reviewData.manualTestingResults;
+    }
+    if (reviewData.requiredChanges) {
+      updateData.requiredChanges = reviewData.requiredChanges;
+    }
+
     const review = await this.prisma.codeReview.update({
       where: { id: existingReview.id },
-      data: {
-        ...(reviewData.status && { status: reviewData.status }),
-        ...(reviewData.summary && { summary: reviewData.summary }),
-        ...(reviewData.strengths && { strengths: reviewData.strengths }),
-        ...(reviewData.issues && { issues: reviewData.issues }),
-        ...(reviewData.acceptanceCriteriaVerification && {
-          acceptanceCriteriaVerification:
-            reviewData.acceptanceCriteriaVerification,
-        }),
-        ...(reviewData.manualTestingResults && {
-          manualTestingResults: reviewData.manualTestingResults,
-        }),
-        ...(reviewData.requiredChanges && {
-          requiredChanges: reviewData.requiredChanges,
-        }),
-      },
+      data: updateData,
     });
 
     return review;
   }
 
-  private async getReview(input: ReviewOperationsInput): Promise<any> {
+  private async getReview(
+    input: ReviewOperationsInput,
+  ): Promise<CodeReview | ReviewSummary> {
     const { taskId, includeDetails } = input;
 
     const review = await this.prisma.codeReview.findFirst({
@@ -202,13 +199,15 @@ Code review and completion report management.
         taskId: review.taskId,
         status: review.status,
         summary: review.summary,
-      };
+      } as ReviewSummary;
     }
 
     return review;
   }
 
-  private async createCompletion(input: ReviewOperationsInput): Promise<any> {
+  private async createCompletion(
+    input: ReviewOperationsInput,
+  ): Promise<CompletionReport> {
     const { taskId, completionData } = input;
 
     if (!completionData) {
@@ -217,19 +216,21 @@ Code review and completion report management.
 
     const completion = await this.prisma.completionReport.create({
       data: {
-        taskId,
+        task: { connect: { id: taskId } },
         summary: completionData.summary,
         filesModified: completionData.filesModified || [],
         acceptanceCriteriaVerification:
           completionData.acceptanceCriteriaVerification || {},
         delegationSummary: completionData.delegationSummary || '',
-      },
+      } satisfies Prisma.CompletionReportCreateInput,
     });
 
     return completion;
   }
 
-  private async getCompletion(input: ReviewOperationsInput): Promise<any> {
+  private async getCompletion(
+    input: ReviewOperationsInput,
+  ): Promise<CompletionReport | CompletionSummary> {
     const { taskId, includeDetails } = input;
 
     const completion = await this.prisma.completionReport.findFirst({
@@ -246,7 +247,7 @@ Code review and completion report management.
         taskId: completion.taskId,
         summary: completion.summary,
         createdAt: completion.createdAt,
-      };
+      } as CompletionSummary;
     }
 
     return completion;

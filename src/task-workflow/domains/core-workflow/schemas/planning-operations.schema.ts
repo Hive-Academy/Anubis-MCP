@@ -11,7 +11,7 @@ export const PlanningOperationsSchema = z.object({
     'get_batch',
   ]),
 
-  taskId: z.string(),
+  taskId: z.number(),
 
   // For implementation plan operations
   planData: z

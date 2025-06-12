@@ -30,7 +30,7 @@ import { ReportMetadata } from './types/report-data.types';
 export interface IReportDataService {
   // Task data retrieval
   getTasks(filters?: ReportFilters): Promise<TaskWithRelations[]>;
-  getTask(taskId: string): Promise<TaskWithRelations | null>;
+  getTask(taskId: number): Promise<TaskWithRelations | null>;
 
   // Delegation and workflow data
   getDelegationRecords(
@@ -42,9 +42,9 @@ export interface IReportDataService {
 
   // Implementation data
   getImplementationPlans(
-    taskId: string,
+    taskId: number,
   ): Promise<ImplementationPlanWithRelations[]>;
-  getSubtasks(taskId: string): Promise<SubtaskWithRelations[]>;
+  getSubtasks(taskId: number): Promise<SubtaskWithRelations[]>;
 
   // Aggregated statistics
   getAggregatedStats(filters?: ReportFilters): Promise<{

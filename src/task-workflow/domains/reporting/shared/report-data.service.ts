@@ -33,9 +33,7 @@ export class ReportDataService implements IReportDataService {
         include: {
           delegationRecords: {
             include: {
-              subtask: {
-                select: { id: true, name: true },
-              },
+              task: true,
             },
             orderBy: { delegationTimestamp: 'asc' },
           },
@@ -53,7 +51,7 @@ export class ReportDataService implements IReportDataService {
           codebaseAnalysis: true,
           taskDescription: true,
         },
-        orderBy: { creationDate: 'desc' },
+        orderBy: { createdAt: 'desc' },
       });
 
       return tasks as TaskWithRelations[];
@@ -66,14 +64,14 @@ export class ReportDataService implements IReportDataService {
   /**
    * Get single task with relations
    */
-  async getTask(taskId: string): Promise<TaskWithRelations | null> {
+  async getTask(taskId: number): Promise<TaskWithRelations | null> {
     try {
       return (await this.prisma.task.findUnique({
-        where: { taskId },
+        where: { id: taskId },
         include: {
           delegationRecords: {
             include: {
-              subtask: {
+              task: {
                 select: { id: true, name: true },
               },
             },
@@ -112,11 +110,8 @@ export class ReportDataService implements IReportDataService {
       return (await this.prisma.delegationRecord.findMany({
         where,
         include: {
-          subtask: {
-            select: { id: true, name: true },
-          },
           task: {
-            select: { taskId: true, name: true, taskSlug: true },
+            select: { id: true, name: true, slug: true },
           },
         },
         orderBy: { delegationTimestamp: 'desc' },
@@ -140,7 +135,7 @@ export class ReportDataService implements IReportDataService {
         where,
         include: {
           task: {
-            select: { taskId: true, name: true, taskSlug: true },
+            select: { id: true, name: true, slug: true },
           },
         },
         orderBy: { transitionTimestamp: 'desc' },
@@ -157,7 +152,7 @@ export class ReportDataService implements IReportDataService {
    * Get implementation plans with relations
    */
   async getImplementationPlans(
-    taskId: string,
+    taskId: number,
   ): Promise<ImplementationPlanWithRelations[]> {
     try {
       return (await this.prisma.implementationPlan.findMany({
@@ -180,7 +175,7 @@ export class ReportDataService implements IReportDataService {
   /**
    * Get subtasks for a specific task
    */
-  async getSubtasks(taskId: string): Promise<SubtaskWithRelations[]> {
+  async getSubtasks(taskId: number): Promise<SubtaskWithRelations[]> {
     try {
       // First get implementation plan IDs for this task
       const implementationPlans = await this.prisma.implementationPlan.findMany(
@@ -190,14 +185,14 @@ export class ReportDataService implements IReportDataService {
         },
       );
 
-      const planIds = implementationPlans.map((plan) => plan.id);
+      const planIds = implementationPlans.map((plan) => plan?.id);
 
       return (await this.prisma.subtask.findMany({
         where: {
           planId: { in: planIds },
         },
         include: {
-          plan: { select: { id: true, overview: true } },
+          implementationPlan: { select: { id: true, overview: true } },
         },
         orderBy: { sequenceNumber: 'asc' },
       })) as SubtaskWithRelations[];
@@ -239,7 +234,7 @@ export class ReportDataService implements IReportDataService {
         select: {
           status: true,
           priority: true,
-          creationDate: true,
+          createdAt: true,
           completionDate: true,
         },
       });
@@ -254,37 +249,38 @@ export class ReportDataService implements IReportDataService {
       const delegations = await this.prisma.delegationRecord.findMany({
         where: this.buildDelegationWhereClause(filters),
         select: {
-          success: true,
           toMode: true,
           delegationTimestamp: true,
-          completionTimestamp: true,
+          fromMode: true,
+          message: true,
+          taskId: true,
         },
       });
 
       const delegationStats = {
         total: delegations.length,
-        successful: delegations.filter((d) => d.success === true).length,
-        failed: delegations.filter((d) => d.success === false).length,
+        successful: delegations.filter((d) => d.toMode === 'completed').length,
+        failed: delegations.filter((d) => d.toMode === 'needs-changes').length,
         byRole: this.groupByField(delegations, 'toMode'),
       };
 
       // Performance statistics
       const completedTasks = tasks.filter((t) => t.completionDate);
       const completedDelegations = delegations.filter(
-        (d) => d.completionTimestamp,
+        (d) => d.delegationTimestamp,
       );
 
       const performanceStats = {
         averageTaskDuration: this.calculateAverageDuration(
           completedTasks.map((t) => ({
-            start: t.creationDate,
+            start: t.createdAt,
             end: t.completionDate!,
           })),
         ),
         averageDelegationDuration: this.calculateAverageDuration(
           completedDelegations.map((d) => ({
             start: d.delegationTimestamp,
-            end: d.completionTimestamp!,
+            end: d.delegationTimestamp,
           })),
         ),
         completionRate:

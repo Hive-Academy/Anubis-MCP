@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const WorkflowOperationsSchema = z.object({
   operation: z.enum(['delegate', 'complete', 'escalate', 'transition']),
 
-  taskId: z.string(),
+  taskId: z.number(),
   fromRole: z.enum([
     'boomerang',
     'researcher',

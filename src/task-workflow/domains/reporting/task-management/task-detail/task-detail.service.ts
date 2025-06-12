@@ -24,29 +24,30 @@ export class TaskDetailService {
       this.logger.log(`Generating task detail report for ${taskId}`);
 
       // Get comprehensive task data from database
-      const task = await this.dataService.getTask(taskId);
+      const task = await this.dataService.getTask(parseInt(taskId));
       if (!task) {
         throw new Error(`Task ${taskId} not found`);
       }
 
       const delegations = await this.dataService.getDelegationRecords({
-        taskId,
+        taskId: parseInt(taskId),
       });
-      const implementationPlans =
-        await this.dataService.getImplementationPlans(taskId);
-      const subtasks = await this.dataService.getSubtasks(taskId);
+      const implementationPlans = await this.dataService.getImplementationPlans(
+        parseInt(taskId),
+      );
+      const subtasks = await this.dataService.getSubtasks(parseInt(taskId));
 
       // Transform database data to type-safe TaskDetailData structure
       const taskDetailData: TaskDetailData = {
         task: {
-          taskId: task.taskId,
+          id: task.id,
           name: task.name,
-          taskSlug: task.taskSlug || undefined,
+          slug: task.slug || undefined,
           status: task.status as any,
           priority: task.priority as any,
           owner: task.owner || 'Unassigned',
           currentMode: 'senior-developer', // Default mode
-          createdAt: task.creationDate.toISOString(),
+          createdAt: task.createdAt.toISOString(),
           completedAt: task.completionDate?.toISOString(),
           gitBranch: undefined, // Not in current schema
         },
@@ -108,7 +109,7 @@ export class TaskDetailService {
           : undefined,
         delegationHistory: delegations.map((delegation) => ({
           id: delegation.id,
-          taskId: delegation.taskId,
+          taskId: String(delegation.taskId),
           fromMode: delegation.fromMode as any,
           toMode: delegation.toMode as any,
           delegationTimestamp: delegation.delegationTimestamp.toISOString(),

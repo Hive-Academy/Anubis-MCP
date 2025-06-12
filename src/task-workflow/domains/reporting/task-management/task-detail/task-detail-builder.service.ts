@@ -41,7 +41,7 @@ export class TaskDetailBuilderService {
         ? this.buildCodebaseAnalysis(task.codebaseAnalysis)
         : undefined,
       delegationHistory: this.buildDelegationHistory(delegations, task.name),
-      metadata: this.buildMetadata(task.taskId),
+      metadata: this.buildMetadata(String(task.id)),
     };
   }
 
@@ -50,14 +50,14 @@ export class TaskDetailBuilderService {
    */
   private buildTaskInfo(task: TaskWithRelations): TaskDetailData['task'] {
     return {
-      taskId: task.taskId,
+      id: task.id,
       name: task.name,
-      taskSlug: task.taskSlug || undefined,
+      slug: task.slug || undefined,
       status: task.status as any,
       priority: task.priority as any,
       owner: task.owner || 'Unassigned',
       currentMode: 'senior-developer', // Default mode
-      createdAt: task.creationDate.toISOString(),
+      createdAt: task.createdAt.toISOString(),
       completedAt: task.completionDate?.toISOString(),
       gitBranch: undefined, // Not in current schema
     };
@@ -152,7 +152,7 @@ export class TaskDetailBuilderService {
   ): TaskDetailData['delegationHistory'] {
     return delegations.map((delegation) => ({
       id: delegation.id,
-      taskId: delegation.taskId,
+      taskId: String(delegation.taskId),
       fromMode: delegation.fromMode as any,
       toMode: delegation.toMode as any,
       delegationTimestamp: delegation.delegationTimestamp.toISOString(),

@@ -1,420 +1,536 @@
-# Developer Guide
+# Developer Guide - Rule-Driven MCP Workflow System
 
-This guide provides essential information for developers working on this project, including setup, coding standards, architectural patterns, and best practices. With the adoption of NestJS, Prisma, and `@rekog/mcp-nest`, this guide has been updated to reflect these technologies and the new NPX self-contained package architecture.
+## **🚀 ARCHITECTURE TRANSFORMATION COMPLETE (December 2024)**
 
-## 1. Development Setup
+This guide documents the **rule-driven MCP workflow system** after our major architectural transformation from task-centric to workflow-first paradigm.
 
-### 1.1. Prerequisites
+### **🎯 Paradigm Shift Overview**
 
-- Node.js 18+ (ESM support recommended)
-- npm 8+ or yarn
-- TypeScript 5.8+
-- Cursor IDE (or your preferred IDE with strong TypeScript support)
-- Docker (for local database instances if not using a cloud provider)
+**Before (Task-Centric):**
+- AI agents manually loaded 6+ role-specific rule files
+- Complex rule management and context switching
+- Tasks drove workflow execution
+- Static markdown-based rules
 
-### 1.2. Initial Project Installation
+**After (Rule-Driven - ✅ COMPLETE):**
+- AI agents load single `000-workflow-core.md` file
+- Database-driven rule execution through MCP
+- Workflows drive task management internally
+- Embedded intelligence in every MCP response
 
+## **1. Getting Started with Rule-Driven Workflow**
+
+### **For AI Agents (Cursor/Claude)**
+
+**Single File Setup:**
+```markdown
+1. Load: enhanced-workflow-rules/000-workflow-core.md
+2. Connect: MCP server running on your system
+3. Execute: Workflow intelligence is now embedded in all responses
+```
+
+**Key Behavioral Changes:**
+- **Automatic Context**: MCP provides comprehensive context without manual conversation parsing
+- **Embedded Guidance**: Every response includes next-step recommendations
+- **Quality Enforcement**: Built-in quality gates and pattern enforcement
+- **Role Transitions**: Seamless delegation with context preservation
+
+### **For Developers**
+
+**Architecture Understanding:**
 ```bash
-npm install
+# The workflow rules are now database-driven
+src/task-workflow/domains/workflow-rules/  # Rule management system
+enhanced-workflow-rules/000-workflow-core.md # Single agent file
+enhanced-workflow-rules/[100-600]*.md     # Migrated to database
 ```
 
-### 1.3. Setting up NestJS, Prisma, and @rekog/mcp-nest
+## **2. MCP Tool Architecture (10 Domain-Based Tools)**
 
-- NestJS provides the application structure and DI system.
-- Prisma is used for all database operations (see `prisma/schema.prisma`).
-- `@rekog/mcp-nest` exposes MCP tools as decorated service methods.
-- Zod is used for all tool parameter validation.
+### **Core Workflow Domain (5 Tools)**
 
-### 1.4. NPX Package Development
+#### **task_operations** - Enhanced Task Lifecycle
+```typescript
+// Create task with comprehensive context
+{
+  operation: "create",
+  taskData: { name, priority, status },
+  description: { businessRequirements, technicalRequirements, acceptanceCriteria },
+  codebaseAnalysis: { architectureFindings, implementationContext, qualityAssessment }
+}
 
-The project includes a sophisticated CLI dependency management system for NPX distribution:
+// Get task with smart context loading
+{
+  operation: "get", 
+  taskId: "TSK-123",
+  includeDescription: true,
+  includeAnalysis: true
+}
+```
 
-**Key Files:**
+#### **planning_operations** - Batch-Based Implementation Planning
+```typescript
+// Create implementation plan
+{
+  operation: "create_plan",
+  taskId: "TSK-123", 
+  planData: { overview, approach, technicalDecisions, filesToModify }
+}
 
-- `src/cli.ts`: Main CLI entry point with environment-aware initialization
-- `src/utils/dependency-manager.ts`: Centralized dependency management utility
-- `scripts/test-clean-system.js`: Comprehensive clean system testing framework
-- `package.json`: Enhanced with intelligent postinstall scripts
+// Create batch of subtasks
+{
+  operation: "create_subtasks",
+  taskId: "TSK-123",
+  batchData: { 
+    batchId: "B001", 
+    batchTitle: "Authentication Core",
+    subtasks: [{ name, description, sequenceNumber }]
+  }
+}
+```
 
-**Development Commands:**
+#### **workflow_operations** - Role-Based Transitions
+```typescript
+// Delegate with context preservation
+{
+  operation: "delegate",
+  taskId: "TSK-123",
+  fromRole: "architect", 
+  toRole: "senior-developer",
+  message: "Implementation plan ready"
+}
 
+// Strategic escalation
+{
+  operation: "escalate",
+  taskId: "TSK-123",
+  fromRole: "senior-developer",
+  toRole: "architect", 
+  escalationData: { reason, severity, blockers }
+}
+```
+
+#### **review_operations** - Quality Gates & Evidence
+```typescript
+// Create comprehensive code review
+{
+  operation: "create_review",
+  taskId: "TSK-123",
+  reviewData: { 
+    status: "APPROVED|APPROVED_WITH_RESERVATIONS|NEEDS_CHANGES",
+    summary, strengths, issues,
+    acceptanceCriteriaVerification: {},
+    manualTestingResults
+  }
+}
+```
+
+#### **research_operations** - Evidence-Based Research
+```typescript
+// Create research with evidence
+{
+  operation: "create_research", 
+  taskId: "TSK-123",
+  researchData: { 
+    findings, recommendations, references,
+    title, summary
+  }
+}
+```
+
+### **Query Optimization Domain (3 Tools)**
+
+#### **query_task_context** - Smart Context Retrieval
+```typescript
+// Comprehensive context in single call
+{
+  taskId: "TSK-123",
+  includeLevel: "comprehensive|full|basic",
+  includeAnalysis: true,
+  includeComments: true,
+  batchId: "B001" // Optional batch filtering
+}
+```
+
+#### **query_workflow_status** - Workflow Intelligence
+```typescript
+// Get delegation history and transitions
+{
+  taskId: "TSK-123", 
+  queryType: "delegation_history|workflow_transitions|current_assignments",
+  currentRole: "senior-developer",
+  includeDelegations: true
+}
+```
+
+#### **query_reports** - Evidence & Documentation
+```typescript
+// Get all reports with evidence
+{
+  taskId: "TSK-123",
+  reportTypes: ["research", "code_review", "completion"],
+  mode: "evidence_focused",
+  includeComments: true
+}
+```
+
+### **Batch Operations Domain (2 Tools)**
+
+#### **batch_subtask_operations** - Bulk Management
+```typescript
+// Complete entire batch with evidence
+{
+  operation: "complete_batch",
+  taskId: "TSK-123", 
+  batchId: "B001",
+  completionData: { 
+    summary, filesModified, implementationNotes 
+  }
+}
+
+// Get batch progress summary
+{
+  operation: "get_batch_summary",
+  taskId: "TSK-123",
+  batchId: "B001"
+}
+```
+
+#### **batch_status_updates** - Cross-Entity Sync
+```typescript
+// Sync task status based on subtask completion
+{
+  operation: "sync_task_status",
+  taskId: "TSK-123",
+  checkConsistency: true,
+  autoRepair: false
+}
+
+// Validate consistency across entities
+{
+  operation: "validate_consistency", 
+  taskId: "TSK-123",
+  includeDetails: true
+}
+```
+
+## **3. Workflow Role Implementation**
+
+### **Role-Specific Behavioral Patterns**
+
+Each role now receives **embedded guidance** through MCP responses:
+
+#### **🎯 Boomerang Role**
+- **Focus**: Efficient task intake and final delivery
+- **MCP Integration**: Comprehensive initial analysis storage
+- **Quality Gates**: Memory bank validation, current state verification
+- **Next Steps**: Automatic research necessity evaluation
+
+#### **🔍 Researcher Role** 
+- **Focus**: Evidence-based investigation and recommendations
+- **MCP Integration**: Research findings with evidence tracking
+- **Quality Gates**: Systematic investigation validation
+- **Next Steps**: Actionable insights for architecture decisions
+
+#### **🏗️ Architect Role**
+- **Focus**: Technical design and implementation planning
+- **MCP Integration**: Batch-based organization with strategic guidance
+- **Quality Gates**: Technical excellence and pattern consistency
+- **Next Steps**: Detailed executable plans for development
+
+#### **👨‍💻 Senior Developer Role**
+- **Focus**: Implementation with technical excellence
+- **MCP Integration**: Complete batch implementation with evidence
+- **Quality Gates**: SOLID principles, testing, integration validation
+- **Next Steps**: Production-ready code delivery
+
+#### **✅ Code Review Role**
+- **Focus**: Quality assurance through comprehensive validation
+- **MCP Integration**: Manual testing, security, performance assessment
+- **Quality Gates**: Acceptance criteria verification
+- **Next Steps**: Implementation approval or strategic redelegation
+
+### **Strategic Redelegation Framework**
+
+**CRITICAL**: Complex issues flow through architect analysis:
+
+```
+Code Review Finds Complex Issue
+        ↓
+Architect Analysis & Strategic Solution Design  
+        ↓
+Enhanced Implementation Plan with Specific Guidance
+        ↓
+Senior Developer Implements Strategic Solution
+        ↓
+Code Review Validates Strategic Implementation
+```
+
+**Simple vs Complex Fix Decision Matrix:**
+- **Simple**: Missing imports, typos, linting → Direct fix
+- **Complex**: Missing methods, architecture violations → Strategic redelegation
+
+## **4. Database Schema & Business Logic**
+
+### **Core Entities**
+
+```typescript
+// Task with comprehensive context
+model Task {
+  id: Int
+  name: String
+  status: TaskStatus
+  priority: TaskPriority
+  
+  // Enhanced relationships
+  description?: TaskDescription
+  codebaseAnalysis?: CodebaseAnalysis
+  implementationPlans: ImplementationPlan[]
+  subtasks: Subtask[]
+  delegations: WorkflowDelegation[]
+  reviews: CodeReview[]
+  research: ResearchReport[]
+}
+
+// Batch-organized subtasks
+model Subtask {
+  id: Int
+  name: String
+  description: String
+  batchId: String          // Batch organization
+  sequenceNumber: Int      // Order within batch
+  status: SubtaskStatus
+  
+  // Evidence tracking
+  completionEvidence?: Json
+  strategicGuidance?: Json
+  acceptanceCriteria: String[]
+}
+
+// Workflow intelligence
+model WorkflowDelegation {
+  id: Int
+  taskId: Int
+  fromRole: WorkflowRole
+  toRole: WorkflowRole
+  message?: String
+  
+  // Enhanced context preservation
+  delegationContext?: Json
+  strategicGuidance?: Json
+  escalationData?: Json
+}
+```
+
+### **Status Values & Workflow States**
+
+```typescript
+// Task/Subtask Status Flow
+"not-started" → "in-progress" → "needs-review" → "completed"
+                              ↘ "needs-changes" ↗
+                              ↘ "paused" 
+                              ↘ "cancelled"
+
+// Review Status Flow  
+"APPROVED" | "APPROVED_WITH_RESERVATIONS" | "NEEDS_CHANGES"
+
+// Role Flow
+"boomerang" → "researcher" → "architect" → "senior-developer" → "code-review"
+```
+
+## **5. Quality Standards & Evidence Tracking**
+
+### **Mandatory Quality Gates**
+
+**Memory Bank Analysis (All Roles):**
+- Verify ProjectOverview.md, TechnicalArchitecture.md, DeveloperGuide.md
+- Extract relevant context for current task
+- Store analysis in MCP for downstream access
+
+**Current State Verification (All Roles):**
+- Identify key assumptions about implementation state
+- Test current functionality using available tools
+- Verify claims through hands-on investigation
+- Document evidence with concrete findings
+
+**Technical Excellence (Development Roles):**
+- SOLID Principles compliance
+- Design pattern application
+- Clean code practices
+- Comprehensive error handling
+- Security validation
+
+**Testing Requirements (All Implementation):**
+- Unit testing with 80%+ coverage
+- Integration testing for component interactions
+- Manual testing against acceptance criteria
+- Performance and security validation
+
+### **Evidence-Based Completion**
+
+Every completion requires:
+```typescript
+{
+  acceptanceCriteriaVerification: {
+    "Criterion 1": "Evidence of completion with specifics",
+    "Criterion 2": "Evidence of completion with specifics"
+  },
+  implementationEvidence: {
+    filesModified: ["file1.ts", "file2.ts"],
+    testResults: "Comprehensive test suite results",
+    qualityMetrics: "Code quality and performance metrics"
+  }
+}
+```
+
+## **6. Advanced Patterns & Best Practices**
+
+### **Context Efficiency with MCP**
+
+**Use MCP for Reliable Context:**
+```typescript
+// ALWAYS use MCP - no conversation parsing needed
+const context = await query_task_context({
+  taskId: "TSK-123",
+  includeLevel: "full"  // Default for most operations
+});
+
+// Comprehensive analysis when needed
+const fullContext = await query_task_context({
+  taskId: "TSK-123", 
+  includeLevel: "comprehensive",
+  includeAnalysis: true,
+  includeComments: true
+});
+```
+
+**Strategic Context Preservation:**
+```typescript
+// Enhanced escalation with context
+await workflow_operations({
+  operation: "escalate",
+  escalationData: {
+    reason: "architecture_violation",
+    severity: "high", 
+    contextPreservation: {
+      mcpContext: "Reference to comprehensive context",
+      functionalVerification: "Current state testing evidence",
+      workCompleted: "Implementation status with evidence"
+    }
+  }
+});
+```
+
+### **Error Handling & Recovery**
+
+**Rule Loading (Legacy Check):**
+- Verify `✅ RULES LOADED: [role-name]` markers only for legacy compatibility
+- New system: Rules are database-driven through MCP
+
+**MCP Call Failures:**
+- Verify taskId format (TSK-timestamp) and parameter structure
+- Use exact status values and schema parameters
+- Retry with corrected parameters or escalate
+
+**Git Operation Integration:**
+- Document specific errors with recovery procedures
+- Automated resolution for authentication/conflict issues
+- HALT workflow until git operations successful
+
+## **7. Migration Guide (For Reference)**
+
+### **Old → New Architecture Mapping**
+
+**Rule Management:**
 ```bash
-# Build and test CLI locally
-npm run build
-node dist/cli.js --help
+# Before: Manual file loading
+enhanced-workflow-rules/100-boomerang-role.md     → Database-driven
+enhanced-workflow-rules/200-researcher-role.md    → Database-driven  
+enhanced-workflow-rules/300-architect-role.md     → Database-driven
+enhanced-workflow-rules/400-senior-developer-role.md → Database-driven
+enhanced-workflow-rules/500-code-review-role.md   → Database-driven
 
-# Test clean system functionality
-npm run test:clean-system
-npm run test:clean-system-verbose
-
-# Test NPX package simulation
-npm pack
-npx ./hive-academy-mcp-workflow-manager-*.tgz
+# After: Single agent file
+enhanced-workflow-rules/000-workflow-core.md      → AI Agent Context
 ```
 
-**CLI Development Guidelines:**
-
-1. **Environment Detection**: Always check for NPX vs global vs local installation context
-2. **Graceful Degradation**: Disable optional features if dependencies unavailable
-3. **Automatic Setup**: Handle Prisma client generation and database migrations automatically
-4. **Error Handling**: Provide helpful troubleshooting guidance for common issues
-5. **Performance**: Minimize startup time through conditional dependency loading
-
-**Dependency Management Patterns:**
-
-```typescript
-// Example: Environment-aware dependency checking
-const dependencyManager = new DependencyManager({ verbose: true });
-const status = await dependencyManager.checkDependencies();
-
-if (!status.prismaClientExists) {
-  await dependencyManager.setupPrisma();
-}
-
-if (!status.playwrightBrowsersInstalled && !options.skipPlaywright) {
-  await dependencyManager.setupPlaywright();
-}
+**Tool Evolution:**
+```bash
+# Before: 3 universal tools with complex parameters
+query_data(complexParams) → 3 focused query tools
+mutate_data(complexParams) → 5 focused domain tools  
+workflow_operations(basic) → 2 enhanced workflow tools
 ```
 
-## 2. Project Structure
+**Context Management:**
+```bash
+# Before: Manual conversation parsing
+"Parse previous messages for context" → query_task_context()
 
-- See `memory-bank/TechnicalArchitecture.md` for a detailed architecture diagram and explanation of the overall NestJS architecture.
-- The `TaskWorkflowModule` (located in `src/task-workflow/`) is a key feature module. It is internally structured using a Domain-Driven Design (DDD) approach:
-
-### 2.1. Enhanced MCP Tools Architecture (Latest Updates)
-
-**Status**: ✅ **ENHANCED WITH INDIVIDUAL SUBTASK OPERATIONS & PERFORMANCE MONITORING** (Completed 2025-06-07)
-
-The project now includes 11 enhanced MCP tools with individual subtask operations and performance monitoring:
-
-#### **New Individual Subtask Operations Tool**
-
-**Location**: `src/task-workflow/domains/core-workflow/individual-subtask-operations.service.ts`
-
-**Key Features:**
-
-- **Evidence Collection**: Comprehensive completion evidence with file modifications, testing results, and quality metrics
-- **Dependency Tracking**: Automatic dependency validation and resolution for complex workflows
-- **Strategic Guidance**: Architectural patterns, implementation approaches, and quality requirements per subtask
-- **Technical Specifications**: Framework requirements, testing specifications, and acceptance criteria
-
-**Operations:**
-
-- `create_subtask`: Create individual subtask with detailed specifications
-- `update_subtask`: Update subtask with evidence collection
-- `get_subtask`: Retrieve specific subtask details with evidence
-- `get_next_subtask`: Get next available subtask based on dependencies
-
-#### **Performance Monitoring & Caching System**
-
-**Location**: `src/task-workflow/utils/`
-
-**Core Services:**
-
-- **`PerformanceMonitorService`** (`performance-monitor.service.ts`): STDIO-compatible file-based logging
-- **`MCPCacheService`** (`mcp-cache.service.ts`): Two-layer caching with LRU eviction
-- **`@MCPPerformance` Decorator** (`performance.decorator.ts`): Automatic performance monitoring
-
-**Integration Pattern:**
-
-```typescript
-@Injectable()
-export class ExampleService {
-  constructor(
-    private readonly performanceMonitor: PerformanceMonitorService,
-    private readonly cacheService: MCPCacheService,
-  ) {}
-
-  @MCPPerformance({
-    cacheTTL: 300, // 5 minutes
-    cacheKeyGenerator: (params) => `example-${params.id}`,
-    enableCaching: true,
-  })
-  async exampleOperation(params: any) {
-    // Implementation with automatic caching and monitoring
-  }
-}
+# After: Direct MCP access
+"Comprehensive context in single call" → Embedded intelligence
 ```
 
-**Performance Benefits:**
+## **8. Performance & Optimization**
 
-- **Token Savings**: 25-75% reduction through intelligent caching
-- **Response Times**: Sub-50ms for cached operations
-- **Memory Management**: LRU eviction with configurable limits
-- **STDIO Compatibility**: File-based logging that doesn't interfere with MCP protocol
-  - **`src/task-workflow/domains/`**: This directory contains subdirectories for each domain/feature area (e.g., `crud`, `query`, `state`, `interaction`, `plan`, `reporting`).
-  - Within each domain folder (e.g., `src/task-workflow/domains/crud/`):
-    - **MCP Operation Services** (e.g., `task-crud-operations.service.ts`): These services expose MCP tools using `@Tool` decorators from `@rekog/mcp-nest`. They handle MCP request/response formatting and delegate business logic to core services.
-    - **Core Business Logic Services** (e.g., `task-crud.service.ts`): These services implement the actual business logic for the domain, often interacting with Prisma.
-    - **Schemas** (e.g., in a `schemas/` subdirectory like `task-crud.schema.ts`): Zod schemas define the input parameters for MCP tools and may also define shapes for internal data structures.
-- The old facade (`task-workflow.service.ts`) and utility directories (`mcp-operations/`, `services/`, `schemas/` directly under `src/task-workflow/`) have been removed and their responsibilities redistributed into the new domain structure.
+### **Token Efficiency**
+- **MCP-Optimized Communication**: Comprehensive queries vs multiple calls
+- **Automatic Batch Organization**: Efficient relationship loading
+- **Context Storage**: MCP storage vs conversation repetition
+- **Quality Assurance**: Evidence tracking with audit trails
 
-### 2.1. Advanced Reporting Domain Structure
+### **Query Optimization**
+- Default `includeLevel: "full"` for most operations
+- Use `includeLevel: "comprehensive"` only when full analysis needed
+- Leverage pre-configured relationship loading
+- Focus on completion-driven workflow with evidence tracking
 
-**Status**: ✅ **FULLY RE-ARCHITECTED** (Completed 2025-06-05)
+## **9. Testing & Validation**
 
-The reporting domain (`src/task-workflow/domains/reporting/`) follows a sophisticated feature-based architecture:
+### **MCP Integration Testing**
+```bash
+# Start MCP server
+npm run start:mcp
 
-#### **Shared Services Layer** (KISS Principle Applied)
-
-- **`shared/report-data.service.ts`**: Centralized Prisma queries with optimized includes (200 lines max)
-- **`shared/report-transform.service.ts`**: Data formatting, Chart.js preparation, aggregation logic
-- **`shared/report-render.service.ts`**: HTML generation coordination (NO TEMPLATE ENGINES)
-- **`shared/report-metadata.service.ts`**: Common metadata generation and complexity assessment
-- **`shared/types/`**: TypeScript interfaces and types for type-safe HTML generation
-
-#### **Business Domain Organization**
-
-1. **`workflow-analytics/`**: Delegation flow, role performance, workflow analytics reports
-2. **`task-management/`**: Task detail and implementation plan reports
-3. **`dashboard/`**: Interactive dashboard with focused view generators
-
-#### **Current HTML Generation Architecture (No Template Engines)**
-
-**Enhanced Pattern (Replaces Handlebars):**
-
-```typescript
-// Each report feature follows this focused generator pattern:
-/[report-name]/
-  - [report-name].service.ts        # Main service (150 lines max)
-  - [specific-analyzer].service.ts  # Analytics calculations
-  - [specific-builder].service.ts   # Data building logic
-  /view/                            # Focused view generators (SRP)
-    - html-head.generator.ts        # HTML head with CDN resources
-    - header.generator.ts           # Page header generation
-    - content.generator.ts          # Main content sections
-    - footer.generator.ts           # Page footer
-    - scripts.generator.ts          # Vanilla JavaScript generation
-    - [feature]-generator.service.ts # Coordinator (under 100 lines)
-    - [feature]-view.module.ts      # NestJS module for DI
+# Test with AI agent
+# 1. Load 000-workflow-core.md into agent context
+# 2. Connect to MCP server  
+# 3. Execute workflow commands
+# 4. Verify embedded guidance in responses
 ```
 
-#### **Technology Stack Standards (Updated)**
+### **Database Testing**
+```bash
+# Unit tests for MCP operations
+npm run test
 
-**Server-Side HTML Generation:**
+# Integration tests for workflow flows
+npm run test:e2e
 
-- **Direct TypeScript**: String interpolation for HTML generation (no template engines)
-- **Type Safety**: TypeScript interfaces for all data structures
-- **Security**: Built-in HTML escaping utilities in all generators
-- **Performance**: Direct string concatenation, no template compilation overhead
-
-**Client-Side Interactivity:**
-
-- **Vanilla JavaScript**: Native DOM manipulation and event handling
-- **Chart.js**: Data visualization with responsive charts
-- **No Frameworks**: No Alpine.js, React, or Vue dependencies
-- **CDN Assets**: Tailwind CSS, Chart.js, Font Awesome via CDN
-
-**Enhanced UI/UX Guidelines:**
-
-- **Tailwind CSS**: Utility-first styling with custom CSS classes
-- **Google Fonts**: Inter font family for modern typography
-- **Design System**: Consistent card layouts, status badges, hover effects
-- **Responsive**: Mobile-first design with CSS Grid and Flexbox
-- **Animations**: CSS transitions and Intersection Observer API
-
-#### **Service Development Standards**
-
-**Focused Generator Pattern:**
-
-```typescript
-@Injectable()
-export class ExampleContentGenerator {
-  generateSection(data: TypeSafeData): string {
-    return `
-      <div class="bg-white rounded-xl shadow-lg p-6">
-          <h2 class="text-xl font-semibold">${this.escapeHtml(data.title)}</h2>
-          ${data.items.map((item) => this.generateItem(item)).join('')}
-      </div>`;
-  }
-
-  private generateItem(item: ItemType): string {
-    return `
-      <div class="flex items-center space-x-4 p-3 hover:bg-gray-50">
-          <span class="font-medium">${this.escapeHtml(item.name)}</span>
-          <span class="status-badge status-${item.status}">${item.status}</span>
-      </div>`;
-  }
-
-  private escapeHtml(text: string): string {
-    // HTML escaping implementation
-  }
-}
+# Database consistency tests
+npx prisma studio  # Visual validation
 ```
 
-**Client-Side JavaScript Pattern:**
+## **🎯 Success Validation Checkpoints**
 
-```typescript
-generateScripts(data: ReportData): string {
-  return `
-    <script>
-        // Direct data embedding (secure, no window dependencies)
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeInteractivity();
-            ${this.generateChartInitialization(data.charts)}
-        });
+**Before Any Workflow:**
+□ Memory bank analysis completed with MCP storage
+□ Current state verification with functional testing
+□ Git setup verified with feature branch created
+□ Rule-driven workflow guidance active
 
-        function initializeInteractivity() {
-            // Native event handling
-            document.querySelectorAll('.filterable').forEach(setupFiltering);
-        }
-    </script>`;
-}
-```
+**During Implementation:**
+□ Implementation plan created with batch organization
+□ Technical decisions documented in MCP
+□ Quality standards applied with evidence tracking
+□ Strategic guidance followed with pattern compliance
 
-#### **Key Implementation Principles**
+**Before Completion:**
+□ All acceptance criteria verified with MCP evidence
+□ Code review approval with comprehensive validation
+□ System integration validated through testing
+□ Strategic decisions documented for continuous improvement
 
-1. **Single Responsibility**: Each generator handles one UI section
-2. **Type Safety**: TypeScript interfaces for all data structures
-3. **Security First**: HTML escaping built into all generators
-4. **Performance**: Direct string interpolation, CDN assets, no build step
-5. **Maintainability**: Services under 200 lines, generators under 100 lines
-6. **Testability**: Focused services with clear dependencies
+---
 
-## 3. Coding Standards & Best Practices
-
-- Follow NestJS modularity and DI patterns.
-- Use Prisma's type-safe client and schema-first migrations.
-- All MCP tool parameters must be validated with Zod.
-- See the "Technical Architecture" file for more details.
-
-## 4. Testing
-
-- Unit and integration tests are required for all MCP tools and services.
-- Use Jest and NestJS testing utilities.
-
-## 5. Updating the Memory Bank
-
-- When refactoring or adding tools, update this guide and `TechnicalArchitecture.md`.
-- Ensure all new tools are documented and best practices are followed.
-
-## 6. Deployment
-
-- Build with `npm run build`.
-- Run migrations with `npx prisma migrate deploy`.
-- Start with `npm run start:prod`.
-
-## 7. Support
-
-- For questions, see the project README or contact the maintainers.
-
-## 8. MCP Schema-Database Alignment Guidelines
-
-### 8.1. Schema Maintenance Protocol
-
-**Status**: ✅ **All schemas aligned** with database models (Completed TSK-004 on 2025-05-23)
-**Documentation Status**: ✅ **Comprehensive schema documentation** completed (TSK-005 on 2025-05-25)
-**Reports Architecture Status**: ✅ **Feature-based reports system** completed (TSK-cmbikegx30000mtpo6etx0885 on 2025-06-05)
-
-**Key Principles**:
-
-- **Type Consistency**: All Zod schemas must match exact Prisma model field types (string, int, DateTime, etc.)
-- **Field Alignment**: Schema fields must correspond 1:1 with database columns (no extra fields, no missing required fields)
-- **Relationship Handling**: Foreign key fields properly defined with correct types and constraints
-- **Validation Rules**: Database constraints (unique, nullable, length) reflected in Zod validation
-- **Comprehensive Documentation**: All schema files enhanced with complete field specifications, practical examples, and usage patterns
-
-**Universal Tool Documentation Enhancement (TSK-005)**:
-
-- **850+ lines of comprehensive documentation** added to universal tool schemas
-- **Complete field specifications** for all 10 entities with data types, constraints, and validation rules
-- **65+ practical examples** covering all major query, mutation, and workflow operation patterns
-- **Tool description files** extracted to maintainable TypeScript utility files in `src/task-workflow/domains/universal/descriptions/`
-- **Entity-to-Prisma model mapping** clearly documented for agent efficiency
-- **Performance considerations** and optimization tips included throughout
-
-**Enhanced Schema Files**:
-
-- `universal-query.schema.ts`: Complete entity documentation with filtering, pagination, and aggregation examples
-- `universal-mutation.schema.ts`: Comprehensive CRUD operation examples with batch patterns and relationship management
-- `workflow-operations.schema.ts`: Role-based delegation and state transition documentation with practical scenarios
-- `descriptions/`: Maintainable TypeScript files containing detailed tool descriptions and examples
-
-**Domain Structure**: Schemas organized in 5 domains under `src/task-workflow/domains/`:
-
-- **CORE**: Task, TaskDescription, ImplementationPlan, Subtask operations
-- **TASK**: DelegationRecord, ResearchReport, CodeReview, CompletionReport operations
-- **QUERY**: Search, list, context retrieval with slice support
-- **WORKFLOW**: Role transitions, state management, completion tracking
-- **INTERACTION**: Comments, command processing, user interactions
-- **UNIVERSAL**: Comprehensive universal tools with complete documentation (enhanced in TSK-005)
-
-**Critical Schema Patterns**:
-
-- ID fields: Use `z.number().int()` for autoincrement, `z.string()` for UUID
-- Timestamps: Always `z.date()` for DateTime fields
-- JSON fields: Use `z.any()` or specific object schemas for Prisma Json type
-- Optional fields: Use `.optional()` only for truly nullable database columns
-- Foreign keys: Always include required FK fields with correct types
-
-**Agent Usage Guidelines**:
-
-- **Universal tools** (`query_data`, `mutate_data`, `workflow_operations`) now have comprehensive documentation for efficient usage
-- **Field specifications** eliminate guesswork about available fields and relationships
-- **Practical examples** accelerate implementation with proven patterns
-- **Quick reference** available through tool description files for common operations
-
-### 8.2. Standardized Responses for Unchanged/Not Found/Empty Contexts
-
-Many MCP tools that retrieve context or data have been standardized to return a specific two-part text-based JSON response when the requested context is unchanged, not found, or the data is empty. This helps in reducing ambiguity and allows clients (like AI agents) to efficiently handle these common scenarios.
-
-**Response Format:**
-
-The first part of the response is a human-readable text message, and the second part is a stringified JSON object providing details.
-
-_Example for "Not Found":_
-
-```json
-// Part 1 (Human-readable)
-"No research-report context found for task TSK-001."
-// Part 2 (Stringified JSON details)
-"{\"notFound\":true,\"contextIdentifier\":\"research-report\"}"
-```
-
-_Example for "Unchanged" (typically from `getContextDiff`):_
-
-```json
-// Part 1
-"No changes to task-description context for task TSK-001 since last retrieval."
-// Part 2
-"{\"unchanged\":true,\"contextHash\":\"abcdef123456\",\"contextIdentifier\":\"task-description\"}"
-```
-
-_Example for "Empty" (e.g., an empty list of tasks):_
-
-```json
-// Part 1
-"Task list is empty based on the provided filters."
-// Part 2
-"{\"empty\":true,\"contextIdentifier\":\"task-list\"}"
-```
-
-Key fields in the stringified JSON part:
-
-- `unchanged: true`: Indicates the context slice has not changed since a previous hash was known.
-- `notFound: true`: Indicates the requested data or entity does not exist.
-- `empty: true`: Indicates that a normally list-based result is empty (e.g., no tasks found).
-- `contextHash: "..."`: The hash of the context if it's unchanged (mainly from `getContextDiff`).
-- `contextIdentifier: "..."`: A descriptive kebab-case string identifying the type of context (e.g., `task-status`, `ip-batch-b001`, `research-report`).
-
-### 8.2. Efficient Context Retrieval: Prefer `getContextDiff`
-
-To maximize token efficiency and minimize redundant data transfer, **it is strongly recommended to preferentially use the `mcp:get_context_diff(taskId, lastContextHash, sliceType)` tool when you need to check for updates to a known piece of context or retrieve its current version.**
-
-- **When to use `mcp:get_context_diff`**:
-
-  - You have previously fetched a context slice (e.g., Task Description, Implementation Plan, a specific report).
-  - You have the `lastContextHash` that was returned with that slice.
-  - You want to know if that slice has changed and, if so, get the new version.
-  - `getContextDiff` will efficiently tell you if it's `unchanged` (returning the hash again) or provide the updated content if it has changed.
-
-- **When to use `mcp:get_task_context(taskId, sliceType)`**:
-
-  - You are fetching a specific context slice (e.g., `taskDescription`, `implementationPlan`) for the _first time_ for a given task.
-  - You do not have a `lastContextHash` for that slice.
-  - You explicitly need a full refresh of that slice, regardless of changes.
-
-- **When to use `mcp:get_task_context(taskId)` (without `sliceType`)**:
-  - You need the entire task object's current state (e.g., for initial task loading by Boomerang, which includes status, notes, core description, etc.). This is a more comprehensive, and thus larger, data retrieval.
-
-Refer to the "Context Management" section in `enhanced-workflow-rules/000-workflow-core.md` for further guidance on these principles within the AI agent workflow.
+**🚀 This developer guide represents the completion of our rule-driven architectural transformation. The MCP workflow system now provides embedded intelligence that guides AI agents through complex development workflows with minimal configuration and maximum efficiency.**

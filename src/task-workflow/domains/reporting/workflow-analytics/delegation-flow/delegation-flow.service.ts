@@ -27,7 +27,7 @@ export class DelegationFlowService {
   /**
    * Generate delegation flow report for a specific task
    */
-  async generateReport(taskId: string): Promise<DelegationFlowData> {
+  async generateReport(taskId: number): Promise<DelegationFlowData> {
     try {
       this.logger.log(`Generating delegation flow report for: ${taskId}`);
 
@@ -36,7 +36,7 @@ export class DelegationFlowService {
       if (!task) {
         throw new Error(`Task not found: ${taskId}`);
       }
-      this.logger.log(`Task found: ${task.name} (${task.taskId})`);
+      this.logger.log(`Task found: ${task.name} (${task.id})`);
 
       // Get delegation and workflow data
       const delegationRecords = await this.dataService.getDelegationRecords({
@@ -107,7 +107,7 @@ export class DelegationFlowService {
    * Generate HTML report using dedicated generator service
    */
   async generateHtmlReport(
-    taskId: string,
+    taskId: number,
     _basePath?: string,
   ): Promise<string> {
     const reportData = await this.generateReport(taskId);
@@ -172,9 +172,9 @@ export class DelegationFlowService {
    */
   private formatTaskInfo(task: TaskWithRelations, delegationRecords: any[]) {
     return {
-      taskId: task.taskId,
+      id: task.id,
       name: task.name,
-      taskSlug: task.taskSlug,
+      slug: task.slug,
       status: task.status,
       currentOwner: task.owner || 'Unassigned',
       totalDelegations: delegationRecords.length,
