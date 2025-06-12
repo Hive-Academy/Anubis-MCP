@@ -7,6 +7,8 @@ import {
   WorkflowExecutionInput,
 } from '../services/workflow-execution-operations.service';
 import { createErrorResult } from '../utils/type-safety.utils';
+import { EnvelopeBuilderService } from '../../../utils/envelope-builder';
+import { shouldIncludeDebugInfo } from '../../../config/mcp-response.config';
 
 // Schema for workflow execution operations
 const WorkflowExecutionSchema = z.object({
@@ -66,6 +68,7 @@ export class WorkflowExecutionMcpService {
   constructor(
     private readonly executionOps: WorkflowExecutionOperationsService,
     private readonly workflowGuidance: WorkflowGuidanceService,
+    private readonly envelopeBuilder: EnvelopeBuilderService,
   ) {}
 
   @Tool({
@@ -155,49 +158,75 @@ Workflow execution lifecycle management with state tracking and progress monitor
         },
       );
 
-      return {
+      // 🎯 BUILD WORKFLOW EXECUTION ENVELOPE
+      const envelope = this.envelopeBuilder.buildWorkflowExecutionEnvelope(
+        input.operation,
+        input.taskId,
+        result,
+        workflowGuidance,
+      );
+
+      // Note: responseTime is tracked in the response wrapper, not the envelope metadata
+
+      const response: {
+        content: Array<{ type: 'text'; text: string }>;
+      } = {
         content: [
           {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                success: true,
-                data: result,
-                workflowGuidance,
-                metadata: {
-                  operation: input.operation,
-                  taskId: input.taskId,
-                  responseTime: Math.round(responseTime),
-                  timestamp: new Date().toISOString(),
-                },
-              },
-              null,
-              2,
-            ),
+            type: 'text' as const,
+            text: JSON.stringify(envelope, null, 2),
           },
         ],
       };
+
+      // Add verbose data if requested (FIXED: Eliminated duplication)
+      if (shouldIncludeDebugInfo()) {
+        response.content.push({
+          type: 'text' as const,
+          text: JSON.stringify(
+            {
+              debug: {
+                // ONLY include data NOT in main response
+                processingTime: Math.round(responseTime),
+                internalMetrics: {
+                  operation: input.operation,
+                  timestamp: new Date().toISOString(),
+                },
+                // REMOVED: rawResult, rawGuidance (already in main response)
+              },
+            },
+            null,
+            2,
+          ),
+        });
+      }
+
+      return response;
     } catch (error: unknown) {
       this.logger.error(`Workflow execution failed:`, error);
       const errorResult = createErrorResult(error, 'Workflow execution');
 
+      const errorEnvelope = {
+        taskId: input.taskId,
+        operation: input.operation,
+        success: false,
+        error: {
+          message: errorResult.message,
+          code: 'WORKFLOW_EXECUTION_FAILED',
+          operation: input.operation,
+          taskId: input.taskId,
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          responseTime: Math.round(performance.now() - startTime),
+        },
+      };
+
       return {
         content: [
           {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                success: false,
-                error: {
-                  message: errorResult.message,
-                  code: 'WORKFLOW_EXECUTION_FAILED',
-                  operation: input.operation,
-                  taskId: input.taskId,
-                },
-              },
-              null,
-              2,
-            ),
+            type: 'text' as const,
+            text: JSON.stringify(errorEnvelope, null, 2),
           },
         ],
       };

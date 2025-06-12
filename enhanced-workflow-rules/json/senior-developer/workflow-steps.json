@@ -107,17 +107,25 @@
           "logic": { "requiredStep": "context_acquisition" }
         }
       ],
-      "actions": [
-        {
-          "name": "setup_implementation_strategy",
-          "actionType": "IMPLEMENTATION_SETUP",
-          "actionData": {
-            "setupType": "development_environment",
-            "verifiedContext": "mcp_codebase_analysis",
-            "strategicGuidance": "architectural_implementation_plan"
-          }
-        }
-      ],
+      "guidance": {
+        "description": "Setup development environment and implementation strategy using verified context and architectural guidance",
+        "expectedOutput": "Configured development environment ready for implementation",
+        "suggestedTools": ["run_terminal_cmd", "read_file", "list_dir"],
+        "localExecution": {
+          "commands": [
+            "Verify git branch and project structure",
+            "Install dependencies",
+            "Validate development server setup"
+          ],
+          "aiIntelligence": "Analyze implementation plan and configure optimal development workflow"
+        },
+        "successCriteria": [
+          "Development environment configured with verified technology stack",
+          "Implementation strategy aligned with architectural guidance",
+          "Quality standards and testing approach clearly understood",
+          "Development workflow prepared following strategic guidance"
+        ]
+      },
       "triggerReport": false
     },
     {
@@ -170,17 +178,31 @@
           "logic": { "requiredStep": "implementation_strategy_setup" }
         }
       ],
-      "actions": [
-        {
-          "name": "execute_batch_implementation",
-          "actionType": "IMPLEMENTATION_EXECUTION",
-          "actionData": {
-            "implementationType": "batch_execution",
-            "guidanceSource": "strategic_architectural_guidance",
-            "qualityStandards": "solid_principles_compliance"
-          }
-        }
-      ],
+      "guidance": {
+        "description": "Execute implementation for current batch following SOLID principles and strategic architectural guidance",
+        "expectedOutput": "Implemented functionality meeting quality constraints and performance targets",
+        "suggestedTools": [
+          "edit_file",
+          "read_file",
+          "codebase_search",
+          "run_terminal_cmd"
+        ],
+        "localExecution": {
+          "commands": [
+            "Implement core functionality",
+            "Apply SOLID principles",
+            "Add error handling and validation",
+            "Optimize performance"
+          ],
+          "aiIntelligence": "Apply SOLID principles and architectural patterns while implementing strategic guidance"
+        },
+        "successCriteria": [
+          "Implementation follows strategic guidance and architectural context",
+          "SOLID principles compliance verified for all code components",
+          "Error handling and input validation implemented comprehensively",
+          "Performance targets met within established baseline requirements"
+        ]
+      },
       "triggerReport": false
     },
     {
@@ -232,17 +254,26 @@
           "logic": { "requiredStep": "batch_implementation_execution" }
         }
       ],
-      "actions": [
-        {
-          "name": "implement_comprehensive_testing",
-          "actionType": "TESTING_IMPLEMENTATION",
-          "actionData": {
-            "testingType": "comprehensive_coverage",
-            "coverageTargets": "quality_constraints_minimum",
-            "validationScope": "success_criteria_complete"
-          }
-        }
-      ],
+      "guidance": {
+        "description": "Implement comprehensive testing strategy with coverage targets and quality validation",
+        "expectedOutput": "Complete test suite with unit, integration, and manual validation tests",
+        "suggestedTools": ["edit_file", "run_terminal_cmd", "read_file"],
+        "localExecution": {
+          "commands": [
+            "Create unit tests with comprehensive coverage",
+            "Implement integration tests",
+            "Execute manual validation",
+            "Validate performance requirements"
+          ],
+          "aiIntelligence": "Design and implement comprehensive testing strategy following best practices"
+        },
+        "successCriteria": [
+          "Unit tests achieve minimum coverage targets with meaningful assertions",
+          "Integration tests validate service interactions and data flow",
+          "Manual validation confirms all success criteria are met",
+          "Performance and security requirements verified and documented"
+        ]
+      },
       "triggerReport": false
     },
     {
@@ -294,17 +325,26 @@
           "logic": { "requiredStep": "comprehensive_testing" }
         }
       ],
-      "actions": [
-        {
-          "name": "validate_code_quality",
-          "actionType": "QUALITY_VALIDATION",
-          "actionData": {
-            "validationType": "comprehensive_standards",
-            "complianceCheck": "solid_principles_verification",
-            "performanceValidation": "baseline_requirements"
-          }
-        }
-      ],
+      "guidance": {
+        "description": "Validate code quality against established standards and SOLID principles compliance",
+        "expectedOutput": "Quality validation report with compliance verification and performance analysis",
+        "suggestedTools": ["codebase_search", "read_file", "run_terminal_cmd"],
+        "localExecution": {
+          "commands": [
+            "Validate SOLID principles compliance",
+            "Verify performance targets",
+            "Check security implementation",
+            "Validate architectural consistency"
+          ],
+          "aiIntelligence": "Apply quality assurance expertise to validate code against established standards"
+        },
+        "successCriteria": [
+          "SOLID principles compliance verified for all code components",
+          "Performance targets achieved within established baseline requirements",
+          "Security requirements implemented following verified patterns",
+          "Pattern adherence maintained with architectural consistency"
+        ]
+      },
       "triggerReport": false
     },
     {
@@ -424,17 +464,26 @@
           "logic": { "requiredStep": "batch_status_update" }
         }
       ],
-      "actions": [
-        {
-          "name": "execute_workflow_transition",
-          "actionType": "WORKFLOW_TRANSITION",
-          "actionData": {
-            "transitionType": "implementation_completion",
-            "decisionCriteria": "strategic_guidance_completion",
-            "contextPreservation": "comprehensive_handoff"
-          }
-        }
-      ],
+      "guidance": {
+        "description": "Determine next workflow step based on implementation completeness and strategic requirements",
+        "expectedOutput": "Workflow transition decision with comprehensive context for next role",
+        "suggestedTools": ["read_file", "list_dir"],
+        "localExecution": {
+          "commands": [
+            "Evaluate implementation completeness",
+            "Assess batch completion status",
+            "Determine appropriate transition",
+            "Prepare context for handoff"
+          ],
+          "aiIntelligence": "Apply strategic decision-making to determine optimal workflow continuation"
+        },
+        "successCriteria": [
+          "Implementation completeness evaluated against all strategic requirements",
+          "Workflow transition decision based on established completion criteria",
+          "Context preservation ensures seamless handoff to receiving role",
+          "Transition executed with comprehensive documentation and evidence"
+        ]
+      },
       "triggerReport": true,
       "reportType": "workflow_transition",
       "reportTemplate": "senior_developer_transition_decision"

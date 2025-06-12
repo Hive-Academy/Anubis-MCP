@@ -1,22 +1,60 @@
 # Technical Architecture
 
-## **🚀 RULE-DRIVEN ARCHITECTURE (December 2024)**
+## **🚀 MCP-COMPLIANT GUIDANCE ARCHITECTURE (December 2024)**
 
-**MAJOR MILESTONE: Completed transformation from task-centric to rule-driven MCP system**
+**MAJOR MILESTONE: Achieved full MCP protocol compliance with guidance-only architecture**
 
-The MCP Workflow Manager has been fundamentally transformed to a **rule-driven architecture** where workflow rules lead execution and task management becomes internal implementation detail.
+The MCP Workflow Manager has been fundamentally transformed to a **MCP-compliant guidance architecture** where the server provides intelligent guidance for AI agents to execute locally, eliminating all execution violations and establishing proper separation of concerns.
 
 ### **Architectural Transformation Summary:**
 
-- **✅ Before**: Task-centric approach where tasks drove workflow
-- **✅ After**: Rule-driven approach where workflows drive tasks internally
-- **✅ User Experience**: Workflow-first interface with embedded intelligence
-- **✅ Implementation**: Preserved all business logic while changing interface paradigm
-- **✅ Innovation**: Database-driven workflow guidance replacing static markdown files
+- **✅ Before**: Execution-based MCP server that violated protocol by trying to execute commands
+- **✅ After**: Guidance-only MCP server that provides intelligent guidance for AI agents
+- **✅ User Experience**: AI agents receive structured guidance and execute locally using their tools
+- **✅ Implementation**: Complete removal of execution logic, replaced with intelligent guidance generation
+- **✅ Innovation**: MCP-compliant architecture with embedded workflow intelligence
 
-## 1. Rule-Driven Architecture Overview
+### **🎯 CRITICAL MCP COMPLIANCE ACHIEVEMENT**
 
-The MCP Workflow Manager is built on NestJS, Prisma, and @rekog/mcp-nest with a rule-driven architecture that provides intelligent workflow orchestration, replacing the legacy task-centric approach. This enables workflow-first user experience with automatic task management internally.
+**REVOLUTIONARY BREAKTHROUGH**: We've eliminated all MCP protocol violations and established a true guidance-only architecture that follows MCP standards correctly.
+
+#### **The MCP Compliance Transformation:**
+
+**Before (MCP Violations - WRONG):**
+
+```typescript
+// ❌ WRONG: MCP server trying to execute commands
+async executeWorkflowStep() {
+  const conditionsValid = await this.conditionEvaluator.validateStepConditions();
+  const actionResults = await this.actionExecutor.executeAction();
+  return { success: true, results: actionResults };
+}
+```
+
+**After (MCP Compliant - CORRECT):**
+
+```typescript
+// ✅ CORRECT: MCP server providing guidance for AI execution
+async executeWorkflowStep() {
+  const stepGuidance = this.generateStepGuidance(step, context);
+  return {
+    success: true,
+    guidance: {
+      description: "Execute step using AI intelligence",
+      suggestedTools: ["codebase_search", "read_file", "edit_file"],
+      localExecution: {
+        commands: ["Use AI tools to complete step"],
+        aiIntelligence: "Apply role expertise"
+      },
+      successCriteria: ["Step completed successfully"]
+    }
+  };
+}
+```
+
+## 1. MCP-Compliant Guidance Architecture Overview
+
+The MCP Workflow Manager is built on NestJS, Prisma, and @rekog/mcp-nest with a **guidance-only architecture** that provides intelligent workflow guidance for AI agents to execute locally. This follows MCP protocol standards correctly by separating guidance (MCP server) from execution (AI agent).
 
 ### **Core Architectural Innovation: Database-Driven Workflow Intelligence**
 
@@ -102,48 +140,59 @@ graph TD
 - **Conditional Playwright**: Installs browsers only when report generation needed
 - **Graceful Degradation**: Disables optional features if dependencies unavailable
 
-### **Rule-Driven Architecture Diagram**
+### **MCP-Compliant Guidance Architecture Diagram**
 
 ```mermaid
 graph TD
-    A[Client/Cursor IDE] <-->|MCP Transport| B(NestJS Application)
-    B --> C{Workflow Rules Engine}
-    C --> D[Database-Driven Guidance]
-    C --> E[Context-Aware Intelligence]
-    C --> F[Role-Based Orchestration]
+    A[AI Agent/Cursor IDE] <-->|MCP Protocol| B(MCP Server - NestJS)
+    B --> C{Guidance Generation Engine}
+    C --> D[Database-Driven Intelligence]
+    C --> E[Context-Aware Guidance]
+    C --> F[Role-Based Recommendations]
 
-    D --> G[WorkflowGuidanceService]
+    D --> G[StepGuidanceService]
     E --> G
     F --> G
 
-    G --> H[Embedded Response Intelligence]
-    H --> I{MCP Tool Layer}
-    I --> J[Business Logic Services]
+    G --> H[Structured Guidance Response]
+    H --> I{MCP Tool Layer - Guidance Only}
+    I --> J[Guidance Generation Services]
     J --> K[PrismaService]
     K <--> L[(Workflow Database)]
 
-    subgraph "Rule-Driven Components"
+    subgraph "MCP Compliance Layer"
         direction LR
-        M[WorkflowRule Table]
-        N[WorkflowStep Table]
-        O[RoleTransition Table]
-        P[WorkflowGuidanceGeneratorService]
-        M --> P
-        N --> P
+        M[No Execution Logic]
+        N[Guidance-Only Responses]
+        O[AI Agent Instructions]
+        P[Local Execution Recommendations]
+        M --> N
+        N --> O
         O --> P
-        P --> G
     end
 
-    subgraph "Domain Architecture"
+    subgraph "Guidance Components"
         direction LR
-        Q[Workflow-Rules Domain - 8 tools]
-        R[Core Workflow Domain - 6 tools]
-        S[Query Optimization - 3 tools]
-        T[Batch Operations - 2 tools]
-        Q --> I
-        R --> I
-        S --> I
-        T --> I
+        Q[WorkflowRule Table]
+        R[WorkflowStep Table]
+        S[RoleTransition Table]
+        T[GuidanceGeneratorService]
+        Q --> T
+        R --> T
+        S --> T
+        T --> G
+    end
+
+    subgraph "AI Agent Execution"
+        direction LR
+        U[Receives Guidance]
+        V[Executes Locally]
+        W[Uses Own Tools]
+        X[Reports Back]
+        U --> V
+        V --> W
+        W --> X
+        X --> A
     end
 ```
 
@@ -713,25 +762,31 @@ Our architecture has been thoroughly verified to ensure optimal design, proper s
 - **✅ Services** are correctly exported for dependency injection
 - **✅ Clean separation** between MCP interface and business logic
 
-#### **🔧 PROPER SERVICE ORCHESTRATION**
+#### **🔧 MCP-COMPLIANT GUIDANCE ORCHESTRATION**
 
 ```typescript
-// Verified orchestration flow
-StepActionExecutor(workflow-rules)
+// MCP-compliant guidance flow
+StepGuidanceService(workflow-rules)
     ↓
-CoreServiceOrchestrator(orchestration layer)
+GuidanceGeneratorService(guidance layer)
     ↓
-TaskOperations/Planning/Workflow Services(core-workflow)
+WorkflowRule/Step/Transition Services(database layer)
     ↓
 PrismaService(data layer)
 ```
 
-**Key Orchestration Components:**
+**Key Guidance Components:**
 
-- `CoreServiceOrchestrator`: Coordinates all core-workflow service calls
-- `StepActionExecutor`: Executes step actions using orchestrator
-- `WorkflowGuidanceService`: Provides intelligent role-based guidance
-- `StepExecutionService`: Manages step lifecycle with validation
+- `StepGuidanceService`: Generates intelligent guidance for AI agents
+- `GuidanceGeneratorService`: Creates structured guidance responses
+- `StepExecutionCoreService`: Provides guidance instead of executing
+- `WorkflowGuidanceService`: Delivers role-based behavioral guidance
+
+**🚨 REMOVED EXECUTION COMPONENTS (MCP Violations):**
+
+- ❌ `StepActionExecutor`: Deleted (was trying to execute actions)
+- ❌ `StepConditionEvaluator`: Deleted (was trying to validate conditions)
+- ❌ `CoreServiceOrchestrator`: No longer needed for execution
 
 #### **🎭 CLEAN MCP INTERFACE LAYER**
 
@@ -740,47 +795,52 @@ PrismaService(data layer)
 - **Orchestration Layer**: Coordinates between interface and business logic
 - **No Direct Exposure**: Core-workflow services are internal only
 
-#### **⚡ VERIFIED ACTION EXECUTION FLOW**
+#### **⚡ MCP-COMPLIANT GUIDANCE FLOW**
 
 ```
-1. User calls MCP tool (e.g., WorkflowGuidanceMcpService)
-2. MCP service delegates to WorkflowGuidanceService
-3. WorkflowGuidanceService orchestrates step execution
-4. StepActionExecutor uses CoreServiceOrchestrator
-5. CoreServiceOrchestrator calls appropriate core-workflow service
-6. Core-workflow service performs actual business logic
-7. Results flow back through layers with embedded intelligence
+1. AI Agent calls MCP tool (e.g., get_step_guidance)
+2. MCP service delegates to StepGuidanceService
+3. StepGuidanceService generates intelligent guidance
+4. GuidanceGeneratorService creates structured response
+5. Database-driven workflow rules provide context
+6. Guidance returned to AI agent for local execution
+7. AI agent executes locally using its own tools
+8. AI agent reports results back via report_step_completion
 ```
+
+**🎯 KEY DIFFERENCE: NO EXECUTION BY MCP SERVER**
+
+- ✅ MCP Server: Provides guidance only
+- ✅ AI Agent: Executes commands locally
+- ✅ Clean Separation: Proper MCP protocol compliance
 
 ### **🏗️ VERIFIED ARCHITECTURE LAYERS**
 
 ```
 ┌─────────────────────────────────────────┐
-│           MCP CLIENT INTERFACE          │
-│  • Clean 12-tool API (8 workflow + 4 reporting)
-│  • Embedded workflow intelligence       │
-│  • Role-specific behavioral context     │
+│        AI AGENT INTERFACE               │
+│  • Receives structured guidance         │
+│  • Executes locally using own tools     │
+│  • Reports results back to MCP server   │
 ├─────────────────────────────────────────┤
+│  MCP SERVER - GUIDANCE ONLY             │
 │  WorkflowRulesModule (8 MCP Tools)      │
-│  ├─ WorkflowGuidanceMcpService          │
-│  ├─ StepExecutionMcpService             │
-│  ├─ RoleTransitionMcpService            │
-│  └─ WorkflowExecutionMcpService         │
+│  ├─ get_workflow_guidance               │
+│  ├─ get_step_guidance                   │
+│  ├─ report_step_completion              │
+│  └─ get_next_available_step             │
 ├─────────────────────────────────────────┤
-│       ORCHESTRATION LAYER               │
-│  ├─ CoreServiceOrchestrator             │
-│  ├─ StepActionExecutor                  │
-│  ├─ StepConditionEvaluator              │
-│  └─ Rule-based workflow services        │
+│       GUIDANCE GENERATION LAYER         │
+│  ├─ StepGuidanceService                 │
+│  ├─ GuidanceGeneratorService            │
+│  ├─ StepExecutionCoreService (guidance) │
+│  └─ WorkflowGuidanceService             │
 ├─────────────────────────────────────────┤
-│       BUSINESS LOGIC LAYER              │
-│  CoreWorkflowModule (Internal Services) │
-│  ├─ TaskOperationsService               │
-│  ├─ PlanningOperationsService           │
-│  ├─ WorkflowOperationsService           │
-│  ├─ ReviewOperationsService             │
-│  ├─ ResearchOperationsService           │
-│  └─ IndividualSubtaskOperationsService  │
+│       INTELLIGENCE LAYER                │
+│  ├─ Database-driven workflow rules      │
+│  ├─ Context-aware guidance generation   │
+│  ├─ Role-based behavioral intelligence  │
+│  └─ Progress tracking and analytics     │
 ├─────────────────────────────────────────┤
 │       REPORTING LAYER                   │
 │  ReportingModule (4 MCP Tools)          │
@@ -792,8 +852,14 @@ PrismaService(data layer)
 │            DATA LAYER                   │
 │  ├─ PrismaService (ORM)                 │
 │  ├─ PostgreSQL Database                 │
-│  └─ Dynamic Rule Engine                 │
+│  └─ Workflow Rules Database             │
 └─────────────────────────────────────────┘
+
+🚨 REMOVED LAYERS (MCP Violations):
+❌ Orchestration Layer (was executing commands)
+❌ Business Logic Layer (moved to guidance generation)
+❌ StepActionExecutor (deleted - 700+ lines)
+❌ StepConditionEvaluator (deleted - 710+ lines)
 ```
 
 ### **🎯 ARCHITECTURAL QUALITY GATES**

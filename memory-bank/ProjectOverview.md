@@ -66,12 +66,11 @@ We have successfully completed a fundamental architectural refactor that transfo
 - `get_transition_history` - Transition analytics and optimization insights
 - `workflow_execution_operations` - Execution lifecycle management
 
-#### **📊 Reporting Domain (4 MCP Tools) - ANALYTICS & DASHBOARDS**
+#### **📊 Reporting Domain (3 MCP Tools) - ANALYTICS & DASHBOARDS**
 
 - `generate_workflow_report` - Interactive dashboards with Chart.js visualizations
 - `get_report_status` - Report generation status and progress
 - `cleanup_report` - Report file management and cleanup
-- `report_system_health` - System health monitoring and diagnostics
 
 #### **🔧 Core-Workflow Domain (Internal Services) - NOT EXPOSED**
 

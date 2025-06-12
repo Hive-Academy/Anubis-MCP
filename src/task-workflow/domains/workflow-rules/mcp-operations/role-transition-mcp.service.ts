@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { RoleTransitionService } from '../services/role-transition.service';
+import { EnvelopeBuilderService } from '../../../utils/envelope-builder';
+import { shouldIncludeDebugInfo } from '../../../config/mcp-response.config';
 
 const GetRoleTransitionsInputSchema = z.object({
   fromRoleName: z
@@ -45,7 +47,10 @@ type GetTransitionHistoryInput = z.infer<
 export class RoleTransitionMcpService {
   private readonly logger = new Logger(RoleTransitionMcpService.name);
 
-  constructor(private readonly roleTransitionService: RoleTransitionService) {}
+  constructor(
+    private readonly roleTransitionService: RoleTransitionService,
+    private readonly envelopeBuilder: EnvelopeBuilderService,
+  ) {}
 
   @Tool({
     name: 'get_role_transitions',
@@ -90,89 +95,77 @@ export class RoleTransitionMcpService {
         ),
       ]);
 
-      return {
+      // 🎯 BUILD TRANSITION ENVELOPE (FIXED: Eliminated duplication)
+      const transitionResult = {
+        availableTransitions,
+        recommendedTransitions,
+        // REMOVED: transitions array (eliminates duplication)
+        totalCount: availableTransitions.length + recommendedTransitions.length,
+      };
+
+      const envelopeContext = {
+        taskId: input.taskId,
+        roleId: input.roleId,
+      };
+
+      const envelope = this.envelopeBuilder.buildTransitionEnvelope(
+        transitionResult,
+        envelopeContext,
+      );
+
+      const response = {
         content: [
           {
             type: 'text',
-            text: `🔄 **Role Transition Options for ${input.fromRoleName}**
-
-**Available Transitions (${availableTransitions.length}):**
-${
-  availableTransitions
-    .map(
-      (transition) =>
-        `• ${transition.transitionName}: ${transition.fromRole.displayName} → ${transition.toRole.displayName}`,
-    )
-    .join('\n') || '• No transitions available'
-}
-
-**Recommended Transitions (${recommendedTransitions.length}):**
-${
-  recommendedTransitions
-    .map(
-      (transition, index) =>
-        `${index + 1}. ${transition.transitionName}: ${transition.fromRole.displayName} → ${transition.toRole.displayName}
-   ${transition.handoffGuidance ? `   Guidance: ${JSON.stringify(transition.handoffGuidance)}` : ''}`,
-    )
-    .join('\n') || '• No recommendations available'
-}
-
-**Transition Intelligence:**
-• Context-aware validation
-• Requirement checking
-• Handoff guidance included
-• Progress tracking enabled
-
-🎯 **Use validate_transition to check specific transition requirements**
-🚀 **Use execute_transition to perform the actual role transition**`,
-          },
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                availableTransitions,
-                recommendedTransitions,
-                transitionIntelligence: {
-                  contextAware: true,
-                  requirementValidation: true,
-                  handoffGuidance: true,
-                  progressTracking: true,
-                },
-              },
-              null,
-              2,
-            ),
+            text: JSON.stringify(envelope, null, 2),
           },
         ],
       };
+
+      // Add verbose data if requested (FIXED: Eliminated duplication)
+      if (shouldIncludeDebugInfo()) {
+        response.content.push({
+          type: 'text',
+          text: JSON.stringify(
+            {
+              debug: {
+                // ONLY include data NOT in main response
+                processingTime: Date.now(),
+                totalTransitions: transitionResult.totalCount,
+                // REMOVED: availableTransitions, recommendedTransitions (already in main response)
+              },
+            },
+            null,
+            2,
+          ),
+        });
+      }
+
+      return response;
     } catch (error: any) {
       this.logger.error(
         `Error getting role transitions: ${error.message}`,
         error,
       );
 
+      const errorEnvelope = {
+        taskId: input.taskId,
+        fromRoleName: input.fromRoleName,
+        success: false,
+        error: {
+          message: error.message,
+          code: 'TRANSITION_QUERY_ERROR',
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+        },
+      };
+
       return {
         content: [
           {
-            type: 'text',
-            text: `❌ **Role Transition Query Failed**
-
-Error: ${error.message}
-
-From Role: ${input.fromRoleName}
-Task ID: ${input.taskId}`,
-          },
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                error: error.message,
-                fromRoleName: input.fromRoleName,
-                taskId: input.taskId,
-              },
-              null,
-              2,
-            ),
+            type: 'text' as const,
+            text: JSON.stringify(errorEnvelope, null, 2),
           },
         ],
       };
@@ -216,90 +209,79 @@ Task ID: ${input.taskId}`,
         context,
       );
 
-      const statusIcon = validation.valid ? '✅' : '❌';
+      // 🎯 BUILD VALIDATION ENVELOPE
+      const validationResult = {
+        valid: validation.valid,
+        validation: {
+          status: validation.valid ? 'passed' : 'failed',
+          errors: validation.errors,
+          warnings: validation.warnings || [],
+        },
+        transitionId: input.transitionId,
+      };
 
-      return {
+      const envelopeContext = {
+        taskId: input.taskId,
+        roleId: input.roleId,
+      };
+
+      const envelope = this.envelopeBuilder.buildTransitionEnvelope(
+        validationResult,
+        envelopeContext,
+      );
+
+      const response: {
+        content: Array<{ type: 'text'; text: string }>;
+      } = {
         content: [
           {
-            type: 'text',
-            text: `${statusIcon} **Transition Validation ${validation.valid ? 'Passed' : 'Failed'}**
-
-**Validation Results:**
-• Transition ID: ${input.transitionId}
-• Task ID: ${input.taskId}
-• Status: ${validation.valid ? 'Valid - Ready to execute' : 'Invalid - Requirements not met'}
-
-${
-  validation.errors.length > 0
-    ? `
-**Errors (${validation.errors.length}):**
-${validation.errors.map((error) => `• ${error}`).join('\n')}`
-    : ''
-}
-
-${
-  validation.warnings && validation.warnings.length > 0
-    ? `
-**Warnings (${validation.warnings.length}):**
-${validation.warnings.map((warning) => `• ${warning}`).join('\n')}`
-    : ''
-}
-
-**Validation Intelligence:**
-• Comprehensive requirement checking
-• Quality gate validation
-• Deliverable verification
-• Time-based validations
-
-${
-  validation.valid
-    ? '🚀 **Ready to execute transition!**'
-    : '⚠️ **Please resolve errors before attempting transition**'
-}`,
-          },
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                validation,
-                validationIntelligence: {
-                  requirementChecking: true,
-                  qualityGateValidation: true,
-                  deliverableVerification: true,
-                  timeBasedValidation: true,
-                },
-              },
-              null,
-              2,
-            ),
+            type: 'text' as const,
+            text: JSON.stringify(envelope, null, 2),
           },
         ],
       };
+
+      // Add verbose data if requested (FIXED: Eliminated duplication)
+      if (shouldIncludeDebugInfo()) {
+        response.content.push({
+          type: 'text' as const,
+          text: JSON.stringify(
+            {
+              debug: {
+                // ONLY include data NOT in main response
+                processingTime: Date.now(),
+                validationChecks: validation.errors?.length || 0,
+                // REMOVED: rawValidation (already in main response)
+              },
+            },
+            null,
+            2,
+          ),
+        });
+      }
+
+      return response;
     } catch (error: any) {
       this.logger.error(`Error validating transition: ${error.message}`, error);
+
+      const errorEnvelope = {
+        taskId: input.taskId,
+        transitionId: input.transitionId,
+        valid: false,
+        error: {
+          message: error.message,
+          code: 'VALIDATION_ERROR',
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+        },
+      };
 
       return {
         content: [
           {
-            type: 'text',
-            text: `❌ **Transition Validation Failed**
-
-Error: ${error.message}
-
-Transition ID: ${input.transitionId}
-Task ID: ${input.taskId}`,
-          },
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                error: error.message,
-                transitionId: input.transitionId,
-                taskId: input.taskId,
-              },
-              null,
-              2,
-            ),
+            type: 'text' as const,
+            text: JSON.stringify(errorEnvelope, null, 2),
           },
         ],
       };
@@ -344,86 +326,69 @@ Task ID: ${input.taskId}`,
         input.handoffMessage,
       );
 
-      const statusIcon = result.success ? '✅' : '❌';
+      // 🎯 BUILD EXECUTION ENVELOPE
+      const executionResult = {
+        success: result.success,
+        transitionResult: {
+          status: result.success ? 'completed' : 'failed',
+          message: result.message,
+          newRoleId: result.newRoleId,
+          handoffMessage: input.handoffMessage,
+        },
+        transitionId: input.transitionId,
+      };
 
-      return {
+      const envelopeContext = {
+        taskId: input.taskId,
+        roleId: input.roleId,
+      };
+
+      const envelope = this.envelopeBuilder.buildTransitionEnvelope(
+        executionResult,
+        envelopeContext,
+      );
+
+      const response: {
+        content: Array<{ type: 'text'; text: string }>;
+      } = {
         content: [
           {
-            type: 'text',
-            text: `${statusIcon} **Role Transition ${result.success ? 'Completed' : 'Failed'}**
-
-**Transition Results:**
-• Transition ID: ${input.transitionId}
-• Task ID: ${input.taskId}
-• Status: ${result.success ? 'Successfully executed' : 'Failed to execute'}
-• Message: ${result.message}
-${result.newRoleId ? `• New Role ID: ${result.newRoleId}` : ''}
-
-${
-  input.handoffMessage
-    ? `
-**Handoff Message:**
-"${input.handoffMessage}"`
-    : ''
-}
-
-**Transition Intelligence:**
-• Pre-execution validation performed
-• Progress automatically recorded
-• Task ownership updated
-• Transition history tracked
-• Analytics data captured
-
-${
-  result.success
-    ? '🎯 **Transition completed successfully! Task ownership updated.**'
-    : '⚠️ **Transition failed. Please check requirements and try again.**'
-}`,
-          },
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                transitionResult: result,
-                transitionIntelligence: {
-                  preValidation: true,
-                  progressRecording: true,
-                  ownershipUpdate: true,
-                  historyTracking: true,
-                  analyticsCapture: true,
-                },
-              },
-              null,
-              2,
-            ),
+            type: 'text' as const,
+            text: JSON.stringify(envelope, null, 2),
           },
         ],
       };
+
+      // Add verbose data if requested
+      if (shouldIncludeDebugInfo()) {
+        response.content.push({
+          type: 'text' as const,
+          text: JSON.stringify({ debug: { rawResult: result } }, null, 2),
+        });
+      }
+
+      return response;
     } catch (error: any) {
       this.logger.error(`Error executing transition: ${error.message}`, error);
+
+      const errorEnvelope = {
+        taskId: input.taskId,
+        transitionId: input.transitionId,
+        success: false,
+        error: {
+          message: error.message,
+          code: 'TRANSITION_EXECUTION_ERROR',
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+        },
+      };
 
       return {
         content: [
           {
-            type: 'text',
-            text: `❌ **Role Transition Execution Failed**
-
-Error: ${error.message}
-
-Transition ID: ${input.transitionId}
-Task ID: ${input.taskId}`,
-          },
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                error: error.message,
-                transitionId: input.transitionId,
-                taskId: input.taskId,
-              },
-              null,
-              2,
-            ),
+            type: 'text' as const,
+            text: JSON.stringify(errorEnvelope, null, 2),
           },
         ],
       };
@@ -458,79 +423,75 @@ Task ID: ${input.taskId}`,
         input.taskId,
       );
 
-      return {
+      // 🎯 BUILD HISTORY ENVELOPE
+      const historyResult = {
+        historySummary: {
+          totalTransitions: history.length,
+          uniqueRoles: new Set(history.map((h) => h.fromMode)).size,
+          latestTransition:
+            history[0]?.delegationTimestamp.toISOString() || null,
+        },
+        recentTransitions: history.slice(0, 5).map((h) => ({
+          fromRole: h.fromMode,
+          toRole: h.toMode,
+          timestamp: h.delegationTimestamp.toISOString(),
+          message: h.message,
+        })),
+      };
+
+      const envelopeContext = {
+        taskId: input.taskId,
+        roleId: 'system', // No specific role for history queries
+      };
+
+      const envelope = this.envelopeBuilder.buildTransitionEnvelope(
+        historyResult,
+        envelopeContext,
+      );
+
+      const response: {
+        content: Array<{ type: 'text'; text: string }>;
+      } = {
         content: [
           {
-            type: 'text',
-            text: `📊 **Transition History for Task: ${input.taskId}**
-
-**History Summary:**
-• Total Transitions: ${history.length}
-• Unique Roles: ${new Set(history.map((h) => h.fromMode)).size}
-• Latest Transition: ${history[0]?.delegationTimestamp.toISOString() || 'None'}
-
-**Recent Transitions:**
-${history
-  .slice(0, 5)
-  .map(
-    (h) =>
-      `• ${h.fromMode} → ${h.toMode} (${h.delegationTimestamp.toISOString()})
-   Message: ${h.message}`,
-  )
-  .join('\n')}
-
-**Transition Intelligence:**
-• Complete transition timeline
-• Performance metrics available
-• Role pattern analysis
-• Workflow optimization data
-
-🎯 **Use this data for workflow pattern analysis and optimization**`,
-          },
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                transitionHistory: history,
-                historyIntelligence: {
-                  completeTimeline: true,
-                  performanceMetrics: true,
-                  rolePatterns: true,
-                  optimizationInsights: true,
-                },
-              },
-              null,
-              2,
-            ),
+            type: 'text' as const,
+            text: JSON.stringify(envelope, null, 2),
           },
         ],
       };
+
+      // Add verbose data if requested
+      if (shouldIncludeDebugInfo()) {
+        response.content.push({
+          type: 'text' as const,
+          text: JSON.stringify({ debug: { rawHistory: history } }, null, 2),
+        });
+      }
+
+      return response;
     } catch (error: any) {
       this.logger.error(
         `Error getting transition history: ${error.message}`,
         error,
       );
 
+      const errorEnvelope = {
+        taskId: input.taskId,
+        success: false,
+        error: {
+          message: error.message,
+          code: 'HISTORY_QUERY_ERROR',
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+        },
+      };
+
       return {
         content: [
           {
-            type: 'text',
-            text: `❌ **Transition History Query Failed**
-
-Error: ${error.message}
-
-Task ID: ${input.taskId}`,
-          },
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                error: error.message,
-                taskId: input.taskId,
-              },
-              null,
-              2,
-            ),
+            type: 'text' as const,
+            text: JSON.stringify(errorEnvelope, null, 2),
           },
         ],
       };

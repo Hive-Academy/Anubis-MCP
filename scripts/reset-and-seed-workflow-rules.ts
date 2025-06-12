@@ -293,16 +293,17 @@ async function seedWorkflowSteps() {
         }
 
         // Create step actions
-        for (const action of step.actions) {
-          await prisma.stepAction.create({
-            data: {
-              stepId: createdStep.id,
-              name: action.name,
-              actionType: parseActionType(action.actionType),
-              actionData: action.actionData,
-            },
-          });
-        }
+        if (step.actions && step.actions.length > 0)
+          for (const action of step.actions) {
+            await prisma.stepAction.create({
+              data: {
+                stepId: createdStep.id,
+                name: action.name,
+                actionType: parseActionType(action.actionType),
+                actionData: action.actionData,
+              },
+            });
+          }
 
         console.log(`✅ Created step: ${step.name} for role ${roleName}`);
       } catch (error) {
@@ -372,52 +373,6 @@ async function seedRoleTransitions() {
   }
 }
 
-async function seedServiceOrchestrationProtocols() {
-  console.log('🔧 Seeding service orchestration protocols...');
-
-  for (const roleName of ROLES) {
-    const role = await prisma.workflowRole.findUnique({
-      where: { name: roleName },
-    });
-
-    if (!role) {
-      throw new Error(`Role ${roleName} not found`);
-    }
-
-    const protocolsPath = path.join(
-      JSON_BASE_PATH,
-      roleName,
-      'service-orchestration-protocols.json',
-    );
-    const protocolsData =
-      await loadJsonFile<ServiceOrchestrationProtocols>(protocolsPath);
-
-    try {
-      // Store service orchestration protocols in the capabilities JSON field
-      await prisma.workflowRole.update({
-        where: { id: role.id },
-        data: {
-          capabilities: {
-            ...((role.capabilities as Record<string, any>) || {}),
-            serviceOrchestrationProtocols:
-              protocolsData.serviceOrchestrationProtocols,
-          },
-        },
-      });
-
-      console.log(
-        `✅ Updated service orchestration protocols for role: ${roleName}`,
-      );
-    } catch (error) {
-      console.error(
-        `❌ Error updating service orchestration protocols for role ${roleName}:`,
-        error,
-      );
-      throw error;
-    }
-  }
-}
-
 async function validateSeeding() {
   console.log('🔍 Validating seeded data...');
 
@@ -473,10 +428,6 @@ async function main() {
 
     // Step 4: Seed role transitions
     await seedRoleTransitions();
-    console.log('');
-
-    // Step 5: Seed service orchestration protocols
-    await seedServiceOrchestrationProtocols();
     console.log('');
 
     // Step 6: Validate seeding

@@ -208,20 +208,26 @@
           }
         }
       ],
-      "actions": [
-        {
-          "name": "update_memory_bank",
-          "actionType": "FILE_OPERATION",
-          "actionData": {
-            "operation": "update",
-            "files": [
-              "ProjectOverview.md",
-              "TechnicalArchitecture.md",
-              "DeveloperGuide.md"
-            ]
-          }
-        }
-      ],
+      "guidance": {
+        "description": "Update memory bank files and technical documentation with implementation evidence",
+        "expectedOutput": "Updated documentation files with implementation context and architectural patterns",
+        "suggestedTools": ["edit_file", "read_file", "list_dir"],
+        "localExecution": {
+          "commands": [
+            "Update memory bank files",
+            "Enhance technical documentation",
+            "Document deployment procedures",
+            "Validate documentation completeness"
+          ],
+          "aiIntelligence": "Apply documentation expertise to preserve implementation knowledge and architectural patterns"
+        },
+        "successCriteria": [
+          "Memory bank files updated with implementation evidence",
+          "Technical documentation enhanced with new patterns",
+          "Deployment procedures documented with monitoring setup",
+          "Knowledge preserved for future reference and maintenance"
+        ]
+      },
       "triggerReport": false
     },
     {
@@ -266,17 +272,26 @@
           }
         }
       ],
-      "actions": [
-        {
-          "name": "prepare_delivery_document",
-          "actionType": "REPORT_GENERATION",
-          "actionData": {
-            "reportType": "delivery_summary",
-            "includeEvidence": true,
-            "includeMetrics": true
-          }
-        }
-      ],
+      "guidance": {
+        "description": "Coordinate final delivery with comprehensive documentation and success metrics",
+        "expectedOutput": "Complete delivery documentation with evidence, metrics, and actionable next steps",
+        "suggestedTools": ["edit_file", "create_diagram", "read_file"],
+        "localExecution": {
+          "commands": [
+            "Prepare delivery documentation",
+            "Define success metrics",
+            "Coordinate user handoff",
+            "Complete workflow evidence"
+          ],
+          "aiIntelligence": "Apply delivery coordination expertise to provide comprehensive user handoff with actionable guidance"
+        },
+        "successCriteria": [
+          "Comprehensive delivery document prepared with evidence",
+          "Success metrics defined with monitoring procedures",
+          "User handoff completed with actionable next steps",
+          "Knowledge assets preserved for future reference"
+        ]
+      },
       "triggerReport": true,
       "reportType": "delivery_summary",
       "reportTemplate": "user_delivery_report"

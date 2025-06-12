@@ -2,9 +2,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { WorkflowBootstrapService } from '../services/workflow-bootstrap.service';
+import { EnvelopeBuilderService } from '../../../utils/envelope-builder';
+import { shouldIncludeDebugInfo } from '../../../config/mcp-response.config';
 
+// Simplified schema that aligns with Boomerang workflow steps
 const BootstrapWorkflowInputSchema = z.object({
-  // Task creation data
+  // Core task data (minimal upfront requirements)
   taskName: z.string().min(1).max(200).describe('Name of the task to create'),
   taskDescription: z
     .string()
@@ -27,21 +30,6 @@ const BootstrapWorkflowInputSchema = z.object({
     .optional()
     .describe('Task priority level'),
 
-  // Codebase analysis data (optional)
-  codebaseAnalysis: z
-    .object({
-      architectureFindings: z.any().optional(),
-      problemsIdentified: z.any().optional(),
-      implementationContext: z.any().optional(),
-      integrationPoints: z.any().optional(),
-      qualityAssessment: z.any().optional(),
-      filesCovered: z.array(z.string()).optional(),
-      technologyStack: z.any().optional(),
-      analyzedBy: z.string().optional(),
-    })
-    .optional()
-    .describe('Codebase analysis data'),
-
   // Workflow execution setup
   initialRole: z
     .enum([
@@ -57,6 +45,8 @@ const BootstrapWorkflowInputSchema = z.object({
     .optional()
     .describe('Workflow execution mode'),
   projectPath: z.string().optional().describe('Project path for context'),
+
+  // Simplified execution context for minimal bootstrap
   executionContext: z
     .record(z.any())
     .optional()
@@ -69,33 +59,44 @@ type BootstrapWorkflowInputType = z.infer<typeof BootstrapWorkflowInputSchema>;
 export class WorkflowBootstrapMcpService {
   private readonly logger = new Logger(WorkflowBootstrapMcpService.name);
 
-  constructor(private readonly bootstrapService: WorkflowBootstrapService) {}
+  constructor(
+    private readonly bootstrapService: WorkflowBootstrapService,
+    private readonly envelopeBuilder: EnvelopeBuilderService,
+  ) {}
 
   @Tool({
     name: 'bootstrap_workflow',
-    description: `Bootstrap a complete workflow from scratch with task creation and workflow execution.
+    description: `Bootstrap a workflow from scratch aligned with Boomerang role workflow steps.
 
-**WORKFLOW BOOTSTRAP - COMPLETE INITIALIZATION**
+**WORKFLOW BOOTSTRAP - STEP-ALIGNED INITIALIZATION**
 
-✅ **Task Creation** - Creates new task with full context and metadata
-✅ **Workflow Execution** - Initializes workflow execution for the task
-✅ **Role Setup** - Sets up initial role context and capabilities
-✅ **Initial Guidance** - Provides immediate workflow guidance and next steps
-✅ **Context Integration** - Integrates project context and codebase analysis
+✅ **Minimal Task Creation** - Creates task with essential metadata only
+✅ **Workflow Execution** - Initializes execution for step-by-step workflow
+✅ **Role Setup** - Sets up initial role context (typically boomerang)
+✅ **Step-Aligned Process** - Follows defined workflow steps for proper sequencing
+✅ **First Step Ready** - Prepares for step 1: internal_service_context_acquisition
+
+**ALIGNED WITH BOOMERANG WORKFLOW STEPS:**
+1. **internal_service_context_acquisition** - Context through services
+2. **git_integration_verification** - Git state verification  
+3. **current_state_verification_protocol** - Functional testing
+4. **enhanced_task_setup** - Codebase analysis happens HERE
+5. **strategic_decision_making** - Evidence-based decisions
+6. **intelligent_role_delegation** - Delegate to appropriate role
 
 **KEY FEATURES:**
-• Creates task with description, requirements, and acceptance criteria
-• Sets up workflow execution with proper role assignment
-• Provides immediate workflow guidance for the initial role
-• Integrates codebase analysis and project context
-• Returns next steps and actionable recommendations
+• Creates minimal task with essential requirements only
+• Sets up workflow execution aligned with defined steps
+• Provides guidance for the first workflow step
+• Defers codebase analysis to step 4 as designed
+• Returns proper next steps according to workflow definition
 
 **USAGE:**
-This tool solves the "cold start" problem by creating everything needed for a new workflow:
-- Task with complete metadata
-- Workflow execution with role context
-- Initial guidance and next steps
-- Project integration
+This tool creates the foundation for step-driven workflow execution:
+- Minimal task creation (detailed analysis comes later)
+- Workflow execution with proper step sequencing
+- Initial guidance for step 1
+- Project path context for future steps
 
 **EXAMPLE:**
 \`\`\`json
@@ -121,28 +122,24 @@ This tool solves the "cold start" problem by creating everything needed for a ne
       // Validate input
       const validation = this.bootstrapService.validateBootstrapInput(input);
       if (!validation.valid) {
+        const errorEnvelope = {
+          taskName: input.taskName,
+          success: false,
+          error: {
+            message: 'Bootstrap validation failed',
+            code: 'VALIDATION_FAILED',
+            errors: validation.errors,
+          },
+          meta: {
+            timestamp: new Date().toISOString(),
+          },
+        };
+
         return {
           content: [
             {
-              type: 'text',
-              text: `❌ **Workflow Bootstrap Validation Failed**
-
-**Validation Errors:**
-${validation.errors.map((error) => `• ${error}`).join('\n')}
-
-**Please fix these errors and try again.**`,
-            },
-            {
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  success: false,
-                  errors: validation.errors,
-                  input,
-                },
-                null,
-                2,
-              ),
+              type: 'text' as const,
+              text: JSON.stringify(errorEnvelope, null, 2),
             },
           ],
         };
@@ -151,102 +148,67 @@ ${validation.errors.map((error) => `• ${error}`).join('\n')}
       // Bootstrap the workflow
       const result = await this.bootstrapService.bootstrapWorkflow(input);
 
-      const statusIcon = result.success ? '✅' : '❌';
+      // 🎯 BUILD BOOTSTRAP ENVELOPE
+      const envelope = this.envelopeBuilder.buildBootstrapEnvelope(
+        result,
+        input.projectPath || '/project',
+      );
 
-      return {
+      const response: {
+        content: Array<{ type: 'text'; text: string }>;
+      } = {
         content: [
           {
-            type: 'text',
-            text: `${statusIcon} **Workflow Bootstrap ${result.success ? 'Completed' : 'Failed'}**
-
-**Bootstrap Results:**
-• Task Name: ${input.taskName}
-• Initial Role: ${input.initialRole}
-• Execution Mode: ${input.executionMode || 'GUIDED'}
-• Status: ${result.success ? 'Successfully created' : 'Failed'}
-
-${
-  result.success
-    ? `
-**Created Resources:**
-• Task ID: ${result.task?.id}
-• Task Slug: ${result.task?.slug}
-• Workflow Execution ID: ${result.workflowExecution?.id}
-• Current Role: ${result.workflowExecution?.currentRoleId}
-
-**Initial Guidance:**
-• Current Step: ${result.initialGuidance?.currentStep?.displayName || 'No specific step'}
-• Next Actions: ${result.initialGuidance?.nextActions?.length || 0} actions available
-• Quality Reminders: ${result.initialGuidance?.qualityReminders?.length || 0} reminders
-
-**Next Steps (${result.nextSteps?.length || 0}):**
-${
-  result.nextSteps
-    ?.map(
-      (step, index) => `${index + 1}. ${step.displayName} (${step.stepType})`,
-    )
-    .join('\n') || '• No specific next steps defined'
-}
-
-🎯 **Ready to begin workflow execution!**
-`
-    : `
-**Error Details:**
-${result.message}
-
-⚠️ **Please check the error and try again**
-`
-}`,
-          },
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                bootstrapResult: result,
-                workflowIntelligence: {
-                  taskCreated: result.success,
-                  executionInitialized: result.success,
-                  guidanceProvided: !!result.initialGuidance,
-                  nextStepsAvailable: result.nextSteps?.length > 0,
-                },
-              },
-              null,
-              2,
-            ),
+            type: 'text' as const,
+            text: JSON.stringify(envelope, null, 2),
           },
         ],
       };
+
+      // Add verbose data if requested
+      if (shouldIncludeDebugInfo()) {
+        response.content.push({
+          type: 'text' as const,
+          text: JSON.stringify(
+            {
+              debug: {
+                rawResult: result,
+                input,
+                validation,
+              },
+            },
+            null,
+            2,
+          ),
+        });
+      }
+
+      return response;
     } catch (error: any) {
       this.logger.error(
         `Error bootstrapping workflow: ${error.message}`,
         error,
       );
 
+      const errorEnvelope = {
+        taskName: input.taskName,
+        initialRole: input.initialRole,
+        success: false,
+        error: {
+          message: error.message,
+          code: 'BOOTSTRAP_ERROR',
+          stack: error.stack,
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+        },
+      };
+
       return {
         content: [
           {
-            type: 'text',
-            text: `❌ **Workflow Bootstrap Error**
-
-Error: ${error.message}
-
-Task Name: ${input.taskName}
-Initial Role: ${input.initialRole}
-
-This indicates a system error during bootstrap process.`,
-          },
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                error: error.message,
-                taskName: input.taskName,
-                initialRole: input.initialRole,
-                stack: error.stack,
-              },
-              null,
-              2,
-            ),
+            type: 'text' as const,
+            text: JSON.stringify(errorEnvelope, null, 2),
           },
         ],
       };

@@ -79,17 +79,9 @@ const CleanupReportInputSchema = z.object({
   filename: z.string().describe('Filename of the report to cleanup'),
 });
 
-const HealthCheckInputSchema = z.object({
-  checkBrowser: z
-    .boolean()
-    .default(false)
-    .describe('Browser check is no longer needed (Playwright removed)'),
-});
-
 type GenerateReportInput = z.infer<typeof GenerateReportInputSchema>;
 type GetReportStatusInput = z.infer<typeof GetReportStatusInputSchema>;
 type CleanupReportInput = z.infer<typeof CleanupReportInputSchema>;
-type HealthCheckInput = z.infer<typeof HealthCheckInputSchema>;
 
 interface ReportJobStatus {
   id: string;
@@ -401,117 +393,6 @@ Files are organized in 'workflow-reports/' directory for manual management.`,
 
 The simplified architecture doesn't require extensive cleanup.
 Files are stored in organized folders for easy manual management.`,
-          },
-        ],
-      };
-    }
-  }
-
-  @Tool({
-    name: 'report_system_health',
-    description:
-      'Check the health status of the simplified report generation system.',
-    parameters: HealthCheckInputSchema as ZodSchema<HealthCheckInput>,
-  })
-  async reportSystemHealth(_input: HealthCheckInput): Promise<any> {
-    const startTime = Date.now();
-
-    try {
-      // Test the new simplified system
-      const healthResult = await this.mcpOrchestrator.healthCheck();
-      const responseTime = Date.now() - startTime;
-
-      const healthStatus = {
-        timestamp: new Date().toISOString(),
-        overall: healthResult.healthy ? 'healthy' : 'degraded',
-        components: {
-          simpleReportService: healthResult.services['simple-renderer']
-            ? 'healthy'
-            : 'unhealthy',
-          templateEngine: healthResult.services['template-system']
-            ? 'healthy'
-            : 'unhealthy',
-          dataGeneration: healthResult.services['data-generation']
-            ? 'healthy'
-            : 'unhealthy',
-          prismaConnection: 'healthy', // Assume healthy if we got this far
-        },
-        performance: {
-          responseTimeMs: responseTime,
-          activeJobs: this.reportJobs.size,
-          completedJobs: Array.from(this.reportJobs.values()).filter(
-            (j) => j.status === 'completed',
-          ).length,
-          failedJobs: Array.from(this.reportJobs.values()).filter(
-            (j) => j.status === 'failed',
-          ).length,
-        },
-        architecture: {
-          playwrightRemoved: true,
-          htmlFirst: true,
-          alpineJsEnabled: true,
-          mobileResponsive: true,
-        },
-      };
-
-      const overallIcon = healthStatus.overall === 'healthy' ? '✅' : '⚠️';
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: `${overallIcon} **Simplified Report System Health: ${healthStatus.overall.toUpperCase()}**
-
-🔧 **Core Components:**
-• Simple Report Service: ${healthStatus.components.simpleReportService}
-• Template Engine: ${healthStatus.components.templateEngine}  
-• Data Generation: ${healthStatus.components.dataGeneration}
-• Prisma Connection: ${healthStatus.components.prismaConnection}
-
-⚡ **Performance:**
-• Response Time: ${responseTime}ms
-• Active Jobs: ${healthStatus.performance.activeJobs}
-• Completed Jobs: ${healthStatus.performance.completedJobs}
-• Failed Jobs: ${healthStatus.performance.failedJobs}
-
-🚀 **Architecture Benefits:**
-• ✅ Playwright Dependencies Removed
-• ✅ HTML-First Interactive Reports
-• ✅ Alpine.js Client-Side Reactivity
-• ✅ Mobile Responsive Design
-• ✅ Fast Direct Prisma Queries
-
-${healthResult.message}`,
-          },
-          {
-            type: 'text',
-            text: JSON.stringify(healthStatus, null, 2),
-          },
-        ],
-      };
-    } catch (error: any) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: `❌ **Report System Health Check Failed**
-
-Error: ${error.message}
-Response Time: ${Date.now() - startTime}ms
-
-This indicates a problem with the underlying services.`,
-          },
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                healthy: false,
-                error: error.message,
-                timestamp: new Date().toISOString(),
-              },
-              null,
-              2,
-            ),
           },
         ],
       };

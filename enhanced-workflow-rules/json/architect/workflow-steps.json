@@ -107,17 +107,25 @@
           "logic": { "contextRequired": "task_context_with_analysis" }
         }
       ],
-      "actions": [
-        {
-          "name": "analyze_architectural_patterns",
-          "actionType": "PATTERN_ANALYSIS",
-          "actionData": {
-            "analysisType": "architectural_patterns",
-            "contextSource": "mcp_codebase_analysis",
-            "outputFormat": "pattern_matrix"
-          }
-        }
-      ],
+      "guidance": {
+        "description": "Analyze existing architectural patterns using AI intelligence and codebase analysis tools",
+        "expectedOutput": "Pattern analysis results with architectural recommendations",
+        "suggestedTools": ["codebase_search", "read_file", "grep_search"],
+        "localExecution": {
+          "commands": [
+            "Use codebase_search to find existing patterns",
+            "Analyze code structure with read_file",
+            "Search for specific patterns with grep_search"
+          ],
+          "aiIntelligence": "Apply architectural pattern recognition and SOLID principles analysis"
+        },
+        "successCriteria": [
+          "Existing architectural patterns identified and documented",
+          "Code smells mapped to appropriate refactoring solutions",
+          "SOLID principles compliance verified for proposed design",
+          "Technical debt addressed with strategic improvements"
+        ]
+      },
       "triggerReport": false
     },
     {
@@ -169,17 +177,25 @@
           "logic": { "requiredStep": "pattern_analysis" }
         }
       ],
-      "actions": [
-        {
-          "name": "design_solution_architecture",
-          "actionType": "SOLUTION_DESIGN",
-          "actionData": {
-            "designApproach": "solid_principles_driven",
-            "integrationStrategy": "existing_patterns_compatible",
-            "qualityGates": "comprehensive_validation"
-          }
-        }
-      ],
+      "guidance": {
+        "description": "Design comprehensive solution architecture following SOLID principles and strategic planning",
+        "expectedOutput": "Solution design with technical decisions and quality gates",
+        "suggestedTools": ["edit_file", "create_diagram", "codebase_search"],
+        "localExecution": {
+          "commands": [
+            "Create architectural diagrams",
+            "Document technical decisions",
+            "Design integration strategy"
+          ],
+          "aiIntelligence": "Apply SOLID principles and architectural best practices to solution design"
+        },
+        "successCriteria": [
+          "SOLID principles compliance verified for all design decisions",
+          "Technical decisions documented with evidence-based rationale",
+          "Quality gates defined with measurable validation criteria",
+          "Integration strategy compatible with existing architecture"
+        ]
+      },
       "triggerReport": false
     },
     {
@@ -360,22 +376,25 @@
           "logic": { "requiredStep": "batch_subtask_creation" }
         }
       ],
-      "actions": [
-        {
-          "name": "define_quality_gates",
-          "actionType": "QUALITY_GATE_DEFINITION",
-          "actionData": {
-            "gateTypes": [
-              "code_quality",
-              "performance",
-              "security",
-              "integration"
-            ],
-            "validationCriteria": "measurable_enforceable",
-            "baselineSource": "mcp_performance_metrics"
-          }
-        }
-      ],
+      "guidance": {
+        "description": "Define comprehensive quality gates and validation criteria for all implementation phases",
+        "expectedOutput": "Quality gates with measurable validation criteria and performance targets",
+        "suggestedTools": ["edit_file", "read_file"],
+        "localExecution": {
+          "commands": [
+            "Document quality gates for each phase",
+            "Define measurable validation criteria",
+            "Set performance targets"
+          ],
+          "aiIntelligence": "Apply quality assurance best practices and establish measurable, enforceable standards"
+        },
+        "successCriteria": [
+          "Quality gates defined for all implementation phases",
+          "Validation criteria are measurable and enforceable",
+          "Performance targets based on established baselines",
+          "Security requirements specified with validation methods"
+        ]
+      },
       "triggerReport": false
     },
     {
@@ -426,17 +445,25 @@
           "logic": { "requiredStep": "quality_gate_definition" }
         }
       ],
-      "actions": [
-        {
-          "name": "prepare_delegation_context",
-          "actionType": "DELEGATION_PREPARATION",
-          "actionData": {
-            "contextType": "architectural_guidance",
-            "targetRole": "senior-developer",
-            "documentationLevel": "comprehensive"
-          }
-        }
-      ],
+      "guidance": {
+        "description": "Prepare comprehensive delegation context and documentation for senior developer role transition",
+        "expectedOutput": "Complete delegation context with architectural decisions and implementation guidance",
+        "suggestedTools": ["edit_file", "create_diagram"],
+        "localExecution": {
+          "commands": [
+            "Document architectural decisions with rationale",
+            "Prepare strategic context for implementation",
+            "Create handoff documentation"
+          ],
+          "aiIntelligence": "Synthesize architectural guidance into actionable implementation context"
+        },
+        "successCriteria": [
+          "All architectural decisions documented with rationale",
+          "Strategic context prepared for implementation teams",
+          "Quality requirements clearly communicated",
+          "Handoff documentation comprehensive and actionable"
+        ]
+      },
       "triggerReport": false
     },
     {

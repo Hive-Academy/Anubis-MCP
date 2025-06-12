@@ -6,6 +6,8 @@ import {
   WorkflowStep,
 } from 'generated/prisma';
 import { PrismaService } from '../../../../prisma/prisma.service';
+import { RequiredInputExtractorService } from '../../../utils/envelope-builder/required-input-extractor.service';
+import { ValidationContextBuilderService } from '../../../utils/envelope-builder/validation-context-builder.service';
 
 // Configuration interfaces to eliminate hardcoding
 export interface GuidanceConfig {
@@ -82,6 +84,8 @@ export interface WorkflowGuidance {
     reportType?: string;
     reportTemplate?: string;
   };
+  // ENHANCED: Added required inputs from enhanced envelope-builder services
+  requiredInputs?: any[];
 }
 
 export interface StepExecutionContext {
@@ -113,7 +117,12 @@ export class WorkflowGuidanceService {
     },
   };
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    // Enhanced envelope-builder service dependencies
+    private readonly inputExtractor: RequiredInputExtractorService,
+    private readonly validationBuilder: ValidationContextBuilderService,
+  ) {}
 
   /**
    * Update guidance configuration
@@ -145,6 +154,7 @@ export class WorkflowGuidanceService {
   /**
    * Get comprehensive workflow guidance for a role in a specific context
    * This is the core method that provides intelligent, embedded guidance
+   * ENHANCED: Now uses TYPE-SAFE enhanced envelope-builder services
    */
   async getWorkflowGuidance(
     roleName: string,
@@ -174,24 +184,8 @@ export class WorkflowGuidanceService {
         roleName,
       );
 
-      // Get quality reminders and rule enforcement
-      const qualityReminders = await this.getQualityReminders(
-        role.id,
-        projectContext?.id,
-      );
-      const ruleEnforcement = await this.getRuleEnforcement(
-        role.id,
-        projectContext?.id,
-      );
-
-      // Check if current step should trigger a report
-      const reportingStatus = {
-        shouldTriggerReport: currentStep?.triggerReport || false,
-        reportType: currentStep?.reportType || undefined,
-        reportTemplate: currentStep?.reportTemplate || undefined,
-      };
-
-      return {
+      // Build initial guidance structure
+      const baseGuidance: WorkflowGuidance = {
         currentRole: {
           name: role.name,
           displayName: role.displayName,
@@ -226,10 +220,79 @@ export class WorkflowGuidanceService {
             : [],
           qualityStandards: behavioralProfile?.qualityStandards,
         },
-        qualityReminders,
-        ruleEnforcement,
-        reportingStatus,
+        qualityReminders: [], // Will be enhanced below
+        ruleEnforcement: {
+          // Will be enhanced below
+          requiredPatterns: [],
+          antiPatterns: [],
+          complianceChecks: [],
+        },
+        reportingStatus: {
+          shouldTriggerReport: currentStep?.triggerReport || false,
+          reportType: currentStep?.reportType || undefined,
+          reportTemplate: currentStep?.reportTemplate || undefined,
+        },
+        requiredInputs: [], // Will be enhanced below
       };
+
+      // ENHANCED: Use enhanced envelope-builder services for comprehensive guidance
+      const [validationResult, requiredInputsResult] = await Promise.all([
+        this.validationBuilder.buildValidationContext(
+          baseGuidance,
+          currentStep?.id || null,
+          context.taskId,
+        ),
+        this.inputExtractor.extractRequiredInput(
+          currentStep?.id || null,
+          baseGuidance,
+        ),
+      ]);
+
+      // ENHANCED: Integrate validation and input extraction results into guidance
+      if (validationResult.success && validationResult.context) {
+        const validationContext = validationResult.context;
+
+        // Enhanced quality reminders from validation context
+        baseGuidance.qualityReminders = [
+          ...validationContext.roleSpecificStandards,
+          ...validationContext.stepSpecificCriteria,
+          ...validationContext.projectStandards,
+        ];
+
+        // Enhanced rule enforcement from validation context
+        baseGuidance.ruleEnforcement = {
+          requiredPatterns: validationContext.qualityPatterns.map(
+            (p) => p.name,
+          ),
+          antiPatterns: validationContext.antiPatterns.map((p) => p.name),
+          complianceChecks: validationContext.validationChecks,
+        };
+      } else {
+        // Fallback to traditional methods if enhanced validation fails
+        this.logger.warn(
+          'Enhanced validation failed, falling back to traditional methods',
+        );
+        baseGuidance.qualityReminders = await this.getQualityReminders(
+          role.id,
+          projectContext?.id,
+        );
+        baseGuidance.ruleEnforcement = await this.getRuleEnforcement(
+          role.id,
+          projectContext?.id,
+        );
+      }
+
+      // ENHANCED: Integrate required inputs from input extractor
+      if (requiredInputsResult && Array.isArray(requiredInputsResult)) {
+        baseGuidance.requiredInputs = requiredInputsResult;
+      } else {
+        this.logger.warn(
+          'Required inputs extraction failed or returned no inputs',
+        );
+        baseGuidance.requiredInputs = [];
+      }
+
+      return baseGuidance;
     } catch (error) {
       this.logger.error(
         `Error getting workflow guidance for role ${roleName}:`,

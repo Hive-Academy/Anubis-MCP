@@ -1,31 +1,110 @@
-# 🎯 MCP Workflow-Manager: Rule-Driven AI Development
+# 🎯 MCP Workflow-Manager: AI-Guided Development Intelligence
 
-**Transform chaotic development into organized, quality-driven workflows with embedded AI intelligence.**
+**Transform chaotic development into organized, quality-driven workflows with MCP-compliant AI guidance.**
 
-A revolutionary **Rule-Driven Model Context Protocol (MCP) server** that provides intelligent workflow orchestration for AI agents in software development. Built with NestJS + Prisma, this system offers embedded behavioral guidance, role specialization, and comprehensive analytics.
+A revolutionary **Model Context Protocol (MCP) server** that provides intelligent workflow guidance for AI agents in software development. Built with NestJS + Prisma, this system follows MCP protocol standards correctly by providing guidance instead of executing commands.
 
-## ✨ **KEY INNOVATIONS**
+## 🏆 **MAJOR ACHIEVEMENT: MCP PROTOCOL COMPLIANCE**
 
-### 🧠 **Embedded Workflow Intelligence**
+**✅ BREAKTHROUGH**: We've achieved full MCP protocol compliance by eliminating all execution violations and establishing a true guidance-only architecture.
 
-- **Context-Aware Guidance**: Every response includes role-specific behavioral context
-- **AI-Powered Recommendations**: Smart next-step suggestions and workflow optimization
-- **Quality Enforcement**: Built-in checklists and pattern validation
-- **Project Adaptation**: System learns and adapts to your specific project patterns
+### **🎯 What Makes This Special**
 
-### 🎯 **Clean Architecture (12 MCP Tools)**
+- **✅ MCP Compliant**: Server provides guidance, AI agents execute locally
+- **✅ Zero Execution Violations**: No server-side command execution
+- **✅ Intelligent Guidance**: Context-aware recommendations for AI agents
+- **✅ Clean Architecture**: Proper separation between guidance and execution
 
-- **8 Workflow-Rules Tools**: Primary interface for rule-driven development
-- **4 Reporting Tools**: Interactive dashboards and analytics
-- **Zero Task Complexity**: Tasks managed internally by workflow rules
-- **Role Specialization**: Intelligent transitions between specialized AI roles
+## 🚀 **BUSINESS VALUE**
+
+### **For Development Teams**
+
+- **🎯 Structured Workflows**: Transform chaotic development into organized processes
+- **📈 Quality Assurance**: Built-in quality gates and validation criteria
+- **⚡ Faster Delivery**: AI-guided development with intelligent recommendations
+- **📊 Analytics**: Comprehensive tracking and performance insights
+
+### **For AI Agents**
+
+- **🧠 Intelligent Guidance**: Context-aware step-by-step instructions
+- **🔧 Tool Recommendations**: Suggested tools for each development task
+- **✅ Success Criteria**: Clear validation requirements for each step
+- **📋 Progress Tracking**: Comprehensive workflow state management
+
+### **For Organizations**
+
+- **🏗️ Scalable Architecture**: MCP-compliant design for enterprise use
+- **🔒 Security**: No server-side execution reduces security risks
+- **📈 ROI**: Faster development cycles with higher quality output
+- **🎯 Standardization**: Consistent development practices across teams
+
+## 🎯 **HOW IT WORKS: MCP GUIDANCE ARCHITECTURE**
+
+### **1. AI Agent Requests Guidance**
+
+```javascript
+// AI agent calls MCP server for guidance
+get_step_guidance({
+  taskId: 123,
+  roleId: 'senior-developer',
+  stepId: 'implementation-setup',
+});
+```
+
+### **2. MCP Server Provides Intelligent Guidance**
+
+```json
+{
+  "success": true,
+  "guidance": {
+    "description": "Set up implementation environment with proper structure",
+    "expectedOutput": "Clean project structure with all dependencies configured",
+    "suggestedTools": ["codebase_search", "read_file", "edit_file"],
+    "localExecution": {
+      "commands": [
+        "Analyze existing project structure",
+        "Install required dependencies",
+        "Configure development environment"
+      ],
+      "aiIntelligence": "Apply senior developer expertise to create optimal setup"
+    },
+    "successCriteria": [
+      "All dependencies installed and configured",
+      "Project structure follows best practices",
+      "Development environment ready for implementation"
+    ]
+  }
+}
+```
+
+### **3. AI Agent Executes Locally**
+
+- AI agent receives structured guidance
+- Uses its own tools (codebase_search, read_file, edit_file, etc.)
+- Executes commands locally in the development environment
+- Reports results back to MCP server
+
+### **4. Progress Tracking & Analytics**
+
+```javascript
+// AI agent reports completion
+report_step_completion({
+  taskId: 123,
+  stepId: 'implementation-setup',
+  result: 'success',
+  executionData: {
+    /* results */
+  },
+  executionTime: 1500,
+});
+```
 
 ## 🚀 **QUICK START**
 
 ### NPX Setup (Recommended)
 
 ```json
-// Add to your MCP client config
+// Add to your MCP client config (Cursor, Claude Desktop, etc.)
 {
   "mcpServers": {
     "workflow-manager": {
@@ -40,8 +119,8 @@ A revolutionary **Rule-Driven Model Context Protocol (MCP) server** that provide
 
 - ✅ Zero installation required
 - ✅ Automatic dependency management
-- ✅ Automatic project isolation
 - ✅ Always latest version
+- ✅ Project isolation
 
 ### Docker Setup
 
@@ -63,102 +142,77 @@ A revolutionary **Rule-Driven Model Context Protocol (MCP) server** that provide
 }
 ```
 
-## 🎯 **FOR AI AGENTS: HOW TO USE**
-
-### **1. Start with Workflow Guidance**
-
-```javascript
-// Get role-specific behavioral context and next actions
-get_workflow_guidance({
-  roleName: 'boomerang|researcher|architect|senior-developer|code-review',
-  taskId: 'current-task-id',
-});
-```
-
-### **2. Execute Workflow Steps**
-
-```javascript
-// Execute steps with built-in validation and tracking
-execute_workflow_step({
-  id: taskId,
-  roleId: 'your-current-role',
-  stepId: 'recommended-step',
-  executionData: {
-    /* step-specific context */
-  },
-});
-```
-
-### **3. Generate Interactive Analytics**
-
-```javascript
-// Create beautiful dashboards with Chart.js visualizations
-generate_workflow_report({
-  reportType: 'interactive-dashboard',
-  outputFormat: 'html',
-  basePath: process.env.PROJECT_ROOT,
-});
-```
-
 ## 🎭 **AI ROLE SPECIALIZATIONS**
 
-| Role                    | Purpose                      | When to Use                            |
-| ----------------------- | ---------------------------- | -------------------------------------- |
-| **🎯 Boomerang**        | Strategic orchestration      | Project start, final delivery          |
-| **🔍 Researcher**       | Evidence-based investigation | Unknown tech, feasibility              |
-| **🏗️ Architect**        | Technical design & planning  | System architecture, complex decisions |
-| **👨‍💻 Senior Developer** | Implementation excellence    | Code development, features             |
-| **✅ Code Review**      | Quality assurance            | Implementation validation              |
+Our system provides specialized guidance for different development roles:
+
+| Role                    | Purpose                      | Guidance Focus                            |
+| ----------------------- | ---------------------------- | ----------------------------------------- |
+| **🎯 Boomerang**        | Strategic orchestration      | Project analysis, coordination, delivery  |
+| **🔍 Researcher**       | Evidence-based investigation | Technology research, feasibility analysis |
+| **🏗️ Architect**        | Technical design & planning  | System architecture, design patterns      |
+| **👨‍💻 Senior Developer** | Implementation excellence    | Code development, SOLID principles        |
+| **✅ Code Review**      | Quality assurance            | Testing, validation, acceptance criteria  |
 
 ## 🔧 **MCP TOOL ARCHITECTURE**
 
-### **Primary Interface: Workflow-Rules (8 Tools)**
+### **Core Workflow Tools (8 Tools)**
 
-- `get_workflow_guidance` - Role-specific behavioral context
-- `execute_workflow_step` - Step execution with validation
-- `get_step_progress` - Analytics and tracking
-- `get_next_available_step` - AI-powered recommendations
-- `get_role_transitions` - Intelligent role transitions
-- `validate_transition` - Transition requirement checking
-- `execute_transition` - Role transition execution
-- `get_transition_history` - Transition analytics
-- `workflow_execution_operations` - Execution lifecycle
+- `bootstrap_workflow` - Initialize new workflows with task creation
+- `get_workflow_guidance` - Get role-specific behavioral context
+- `get_step_guidance` - Get specific guidance for step execution
+- `report_step_completion` - Report AI execution results back to server
+- `get_next_available_step` - Get AI-powered next step recommendations
+- `get_step_progress` - Get step execution history and analytics
+- `workflow_execution_operations` - Complete execution lifecycle management
 
-### **Analytics Interface: Reporting (4 Tools)**
+### **Analytics & Reporting Tools (3 Tools)**
 
-- `generate_workflow_report` - Interactive dashboards
-- `get_report_status` - Report generation monitoring
-- `cleanup_report` - File management
-- `report_system_health` - System diagnostics
+- `generate_workflow_report` - Interactive HTML dashboards with Chart.js
+- `get_report_status` - Monitor report generation progress
+- `cleanup_report` - Clean up report files
 
-## 💡 **BEST PRACTICES**
+## 💡 **BEST PRACTICES FOR AI AGENTS**
 
-### **Rule-Driven Development**
+### **MCP-Compliant Development**
 
-- ✅ **DO**: Use workflow guidance for behavioral context
-- ✅ **DO**: Execute steps through the workflow system
-- ✅ **DO**: Follow role transitions with validation
-- ❌ **DON'T**: Try to manage tasks manually
-- ❌ **DON'T**: Skip workflow validation steps
+- ✅ **DO**: Request guidance from MCP server
+- ✅ **DO**: Execute commands locally using your own tools
+- ✅ **DO**: Report results back to MCP server
+- ✅ **DO**: Follow structured guidance recommendations
+- ❌ **DON'T**: Expect MCP server to execute commands
+- ❌ **DON'T**: Skip guidance requests for complex tasks
 
 ### **Quality Standards**
 
-- **Memory Bank Analysis**: Verify project documentation
-- **Current State Verification**: Test functionality before decisions
-- **Evidence-Based Completion**: Document acceptance criteria satisfaction
-- **Technical Excellence**: SOLID principles, design patterns, testing
+- **Evidence-Based Development**: Validate all changes with testing
+- **SOLID Principles**: Follow clean code practices
+- **Documentation**: Maintain comprehensive project documentation
+- **Progress Tracking**: Report completion status for analytics
 
 ## 📊 **INTERACTIVE ANALYTICS**
 
 Generate beautiful HTML dashboards with:
 
-- **Real-time Progress Tracking**: Visual workflow progress
-- **Role Performance Metrics**: Efficiency analytics
-- **Quality Gate Monitoring**: Compliance tracking
-- **Interactive Charts**: Chart.js visualizations
-- **Mobile Responsive**: Modern Tailwind CSS design
+- **📈 Real-time Progress Tracking**: Visual workflow progress indicators
+- **🎯 Role Performance Metrics**: Efficiency and quality analytics
+- **✅ Quality Gate Monitoring**: Compliance and validation tracking
+- **📊 Interactive Charts**: Chart.js visualizations with filtering
+- **📱 Mobile Responsive**: Modern Tailwind CSS design
 
-## 🏗️ **TECHNICAL STACK**
+## 🏗️ **TECHNICAL ARCHITECTURE**
+
+### **MCP-Compliant Design**
+
+```
+AI Agent ←→ MCP Protocol ←→ Guidance Server
+    ↓                           ↓
+Local Execution            Intelligent Guidance
+    ↓                           ↓
+Own Tools                  Database-Driven Rules
+```
+
+### **Technology Stack**
 
 - **Backend**: NestJS with TypeScript
 - **Database**: Prisma ORM (SQLite/PostgreSQL)
@@ -166,6 +220,13 @@ Generate beautiful HTML dashboards with:
 - **Validation**: Zod schemas
 - **Reports**: Direct HTML generation with Chart.js
 - **Transport**: STDIO, SSE, HTTP support
+
+### **Key Architectural Principles**
+
+- **Guidance-Only**: No server-side execution
+- **Intelligence**: Context-aware recommendations
+- **Scalability**: Database-driven workflow rules
+- **Quality**: Built-in validation and tracking
 
 ## 🎯 **PROJECT ISOLATION**
 
@@ -186,113 +247,42 @@ Configure volume names for project isolation:
 ```json
 // Project A
 "args": ["run", "-i", "-v", "project-a-workflow:/app/data", "--rm", "..."]
-
-// Project B
-"args": ["run", "-i", "-v", "project-b-workflow:/app/data", "--rm", "..."]
 ```
 
 ## 🚀 **DEVELOPMENT STATUS**
 
-**✅ PRODUCTION READY**
+**✅ PRODUCTION READY - MCP COMPLIANT**
 
-- **Architecture**: Clean rule-based workflow (100% complete)
-- **Performance**: Optimized with intelligent caching
-- **Quality**: Comprehensive testing and validation
-- **Documentation**: Complete system instructions
-- **Deployment**: NPX package ready for distribution
+- **✅ Architecture**: MCP-compliant guidance-only design
+- **✅ Performance**: Optimized with intelligent caching
+- **✅ Quality**: Comprehensive testing and validation
+- **✅ Compliance**: Zero execution violations
+- **✅ Documentation**: Complete system instructions
 
 ## 📚 **DOCUMENTATION**
 
-- **System Instructions**: `enhanced-workflow-rules/000-workflow-core.md`
+- **MCP Architecture Fix**: `docs/MCP_ARCHITECTURE_FIX.md`
 - **Technical Architecture**: `memory-bank/TechnicalArchitecture.md`
 - **Developer Guide**: `memory-bank/DeveloperGuide.md`
 - **Project Overview**: `memory-bank/ProjectOverview.md`
 
 ## 🤝 **CONTRIBUTING**
 
-This project follows clean architecture principles:
+This project follows MCP protocol standards and clean architecture principles:
 
-- **SOLID Principles**: Single responsibility, dependency inversion
+- **MCP Compliance**: Guidance-only, no execution
+- **SOLID Principles**: Clean, maintainable code
 - **Domain-Driven Design**: Clear domain boundaries
-- **Rule-Based Architecture**: Workflow rules drive execution
-- **Evidence-Based Development**: Comprehensive testing and validation
+- **Evidence-Based Development**: Comprehensive testing
 
 ## 📄 **LICENSE**
 
 MIT License - see LICENSE file for details.
 
-## 🏗️ **VERIFIED CLEAN ARCHITECTURE**
+---
 
-Our MCP Workflow-Manager has undergone comprehensive architectural verification to ensure optimal design and implementation:
+## 🎯 **THE BOTTOM LINE**
 
-### **✅ ARCHITECTURAL VALIDATION RESULTS**
+**This MCP server transforms AI development by providing intelligent guidance instead of trying to execute commands itself. It's the difference between a GPS that gives you directions (correct) vs. a GPS that tries to drive your car (wrong).**
 
-**🎯 CORRECT MODULE STRUCTURE**
-
-- `WorkflowRulesModule` properly imports `CoreWorkflowModule`
-- `CoreWorkflowModule` is independent with no circular dependencies
-- Services are correctly exported for dependency injection
-
-**🔧 PROPER SERVICE ORCHESTRATION**
-
-```typescript
-// Clean orchestration flow
-StepActionExecutor → CoreServiceOrchestrator → Core-Workflow Services
-```
-
-**🎭 CLEAN MCP INTERFACE LAYER**
-
-- **MCP Services** (workflow-rules) provide user interface with embedded intelligence
-- **Business Logic Services** (core-workflow) handle operations internally
-- **CoreServiceOrchestrator** coordinates between layers
-
-**⚡ VERIFIED ACTION EXECUTION FLOW**
-
-```
-User calls MCP tool (WorkflowGuidanceMcpService)
-    ↓
-MCP service calls WorkflowGuidanceService
-    ↓
-WorkflowGuidanceService orchestrates step execution
-    ↓
-StepActionExecutor uses CoreServiceOrchestrator
-    ↓
-CoreServiceOrchestrator calls appropriate core-workflow service
-    ↓
-Core-workflow service performs actual business logic
-```
-
-### **🏗️ ARCHITECTURE LAYERS**
-
-```
-┌─────────────────────────────────────────┐
-│           MCP CLIENT INTERFACE          │
-├─────────────────────────────────────────┤
-│  WorkflowRulesModule (8 MCP Tools)      │
-│  ├─ WorkflowGuidanceMcpService          │
-│  ├─ StepExecutionMcpService             │
-│  ├─ RoleTransitionMcpService            │
-│  └─ WorkflowExecutionMcpService         │
-├─────────────────────────────────────────┤
-│       ORCHESTRATION LAYER               │
-│  ├─ CoreServiceOrchestrator             │
-│  ├─ StepActionExecutor                  │
-│  └─ Rule-based workflow services        │
-├─────────────────────────────────────────┤
-│       BUSINESS LOGIC LAYER              │
-│  CoreWorkflowModule (Internal Services) │
-│  ├─ TaskOperationsService               │
-│  ├─ PlanningOperationsService           │
-│  ├─ WorkflowOperationsService           │
-│  ├─ ReviewOperationsService             │
-│  ├─ ResearchOperationsService           │
-│  └─ IndividualSubtaskOperationsService  │
-├─────────────────────────────────────────┤
-│            DATA LAYER                   │
-│  PrismaService + Database               │
-└─────────────────────────────────────────┘
-```
-
-**🚀 VERIFICATION COMPLETE**: The system achieves perfect architectural alignment with rule-driven workflow execution and proper service orchestration.
-
-## 🎯 **Rule-Driven Workflow Intelligence**
+**Result**: Faster, higher-quality development with proper MCP protocol compliance and clean separation of concerns.

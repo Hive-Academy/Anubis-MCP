@@ -107,17 +107,26 @@
           "logic": { "requiredStep": "context_acquisition" }
         }
       ],
-      "actions": [
-        {
-          "name": "analyze_implementation_quality",
-          "actionType": "IMPLEMENTATION_ANALYSIS",
-          "actionData": {
-            "analysisType": "comprehensive_quality_assessment",
-            "standardsValidation": "mcp_strategic_guidance",
-            "complianceCheck": "solid_principles_architectural"
-          }
-        }
-      ],
+      "guidance": {
+        "description": "Analyze implementation quality against strategic guidance and SOLID principles compliance",
+        "expectedOutput": "Comprehensive quality assessment with compliance verification",
+        "suggestedTools": ["codebase_search", "read_file", "grep_search"],
+        "localExecution": {
+          "commands": [
+            "Review implementation against strategic guidance",
+            "Validate SOLID principles compliance",
+            "Assess architectural alignment",
+            "Evaluate code quality standards"
+          ],
+          "aiIntelligence": "Apply code review expertise to assess implementation quality and architectural compliance"
+        },
+        "successCriteria": [
+          "Implementation follows strategic guidance and architectural patterns",
+          "SOLID principles compliance verified throughout codebase",
+          "Quality standards met with measurable validation",
+          "Architectural alignment verified with MCP context patterns"
+        ]
+      },
       "triggerReport": false
     },
     {
@@ -168,17 +177,26 @@
           "logic": { "requiredStep": "implementation_analysis" }
         }
       ],
-      "actions": [
-        {
-          "name": "validate_comprehensive_testing",
-          "actionType": "TESTING_VALIDATION",
-          "actionData": {
-            "validationType": "comprehensive_coverage_assessment",
-            "coverageTargets": "quality_constraints_validation",
-            "acceptanceCriteria": "evidence_based_verification"
-          }
-        }
-      ],
+      "guidance": {
+        "description": "Validate testing coverage, quality, and acceptance criteria with comprehensive evidence verification",
+        "expectedOutput": "Testing validation report with coverage analysis and acceptance criteria verification",
+        "suggestedTools": ["run_terminal_cmd", "read_file", "codebase_search"],
+        "localExecution": {
+          "commands": [
+            "Run test coverage analysis",
+            "Validate unit and integration tests",
+            "Verify acceptance criteria",
+            "Assess testing quality"
+          ],
+          "aiIntelligence": "Apply testing expertise to validate comprehensive coverage and quality standards"
+        },
+        "successCriteria": [
+          "Unit test coverage exceeds quality constraint targets with meaningful tests",
+          "Integration testing validates all workflows and acceptance criteria",
+          "Performance testing meets strategic guidance targets with evidence",
+          "Security testing validates all requirements with vulnerability assessment"
+        ]
+      },
       "triggerReport": false
     },
     {
@@ -229,17 +247,30 @@
           "logic": { "requiredStep": "testing_validation" }
         }
       ],
-      "actions": [
-        {
-          "name": "review_security_performance",
-          "actionType": "SECURITY_PERFORMANCE_REVIEW",
-          "actionData": {
-            "reviewType": "comprehensive_security_performance",
-            "securityValidation": "quality_constraints_compliance",
-            "performanceBaseline": "strategic_guidance_targets"
-          }
-        }
-      ],
+      "guidance": {
+        "description": "Review security implementation and performance validation against established baselines and quality constraints",
+        "expectedOutput": "Security and performance review report with baseline validation and vulnerability assessment",
+        "suggestedTools": [
+          "codebase_search",
+          "grep_search",
+          "run_terminal_cmd"
+        ],
+        "localExecution": {
+          "commands": [
+            "Review security implementation",
+            "Validate performance targets",
+            "Assess input validation",
+            "Evaluate error handling"
+          ],
+          "aiIntelligence": "Apply security and performance expertise to validate implementation against quality constraints"
+        },
+        "successCriteria": [
+          "Security implementation validates all quality constraint requirements",
+          "Performance targets achieved with documented baseline comparisons",
+          "Input validation and authentication properly implemented",
+          "Error handling protects against information disclosure vulnerabilities"
+        ]
+      },
       "triggerReport": false
     },
     {
@@ -290,17 +321,26 @@
           "logic": { "requiredStep": "security_performance_review" }
         }
       ],
-      "actions": [
-        {
-          "name": "collect_quality_evidence",
-          "actionType": "EVIDENCE_COLLECTION",
-          "actionData": {
-            "collectionType": "comprehensive_quality_metrics",
-            "evidenceScope": "implementation_testing_performance_security",
-            "documentationLevel": "review_decision_support"
-          }
-        }
-      ],
+      "guidance": {
+        "description": "Collect comprehensive evidence and validate quality metrics for review decision support",
+        "expectedOutput": "Complete evidence collection with quality metrics and documentation",
+        "suggestedTools": ["read_file", "run_terminal_cmd", "list_dir"],
+        "localExecution": {
+          "commands": [
+            "Document implementation files",
+            "Collect testing results",
+            "Validate security testing",
+            "Compile evidence for review"
+          ],
+          "aiIntelligence": "Apply systematic evidence collection to support informed review decision making"
+        },
+        "successCriteria": [
+          "Implementation evidence documented with strategic guidance compliance",
+          "Testing results collected with comprehensive coverage validation",
+          "Performance metrics validated with baseline comparisons and targets",
+          "Security evidence compiled with vulnerability assessment documentation"
+        ]
+      },
       "triggerReport": false
     },
     {
@@ -351,17 +391,26 @@
           "logic": { "requiredStep": "evidence_collection" }
         }
       ],
-      "actions": [
-        {
-          "name": "make_review_decision",
-          "actionType": "REVIEW_DECISION",
-          "actionData": {
-            "decisionType": "comprehensive_quality_assessment",
-            "evidenceBasis": "collected_quality_metrics",
-            "assessmentLevel": "production_readiness"
-          }
-        }
-      ],
+      "guidance": {
+        "description": "Make final review decision based on comprehensive evidence and quality assessment",
+        "expectedOutput": "Review decision with detailed rationale and actionable guidance",
+        "suggestedTools": ["read_file", "edit_file"],
+        "localExecution": {
+          "commands": [
+            "Evaluate evidence against approval criteria",
+            "Make review decision",
+            "Document assessment rationale",
+            "Provide workflow guidance"
+          ],
+          "aiIntelligence": "Apply code review expertise to make evidence-based decisions with clear rationale"
+        },
+        "successCriteria": [
+          "Review decision based on comprehensive evidence and quality assessment",
+          "Assessment documented with detailed rationale and supporting evidence",
+          "Decision guidance provides clear direction for workflow continuation",
+          "Quality validation complete with production readiness assessment"
+        ]
+      },
       "triggerReport": true,
       "reportType": "review_decision",
       "reportTemplate": "code_review_final_assessment"
@@ -414,17 +463,26 @@
           "logic": { "requiredStep": "review_decision" }
         }
       ],
-      "actions": [
-        {
-          "name": "complete_review_workflow",
-          "actionType": "WORKFLOW_COMPLETION",
-          "actionData": {
-            "completionType": "review_decision_based",
-            "transitionExecution": "decision_appropriate",
-            "contextPreservation": "comprehensive_handoff"
-          }
-        }
-      ],
+      "guidance": {
+        "description": "Complete review workflow and execute appropriate transition based on review decision",
+        "expectedOutput": "Workflow completion with appropriate transition and comprehensive documentation",
+        "suggestedTools": ["edit_file", "read_file"],
+        "localExecution": {
+          "commands": [
+            "Execute workflow transition",
+            "Preserve context for handoff",
+            "Document final assessment",
+            "Complete workflow status"
+          ],
+          "aiIntelligence": "Apply workflow management expertise to execute appropriate transitions and preserve context"
+        },
+        "successCriteria": [
+          "Workflow transition executed appropriately for review decision outcome",
+          "Context preservation comprehensive for receiving role or completion",
+          "Final assessment documented with production readiness status",
+          "Workflow completion includes all evidence and quality validation"
+        ]
+      },
       "triggerReport": true,
       "reportType": "workflow_completion",
       "reportTemplate": "code_review_workflow_completion"

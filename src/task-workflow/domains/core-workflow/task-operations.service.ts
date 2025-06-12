@@ -149,11 +149,9 @@ export class TaskOperationsService {
     }
   }
 
-  private async createTask(input: TaskOperationsInput): Promise<{
-    task: Task;
-    taskDescription: TaskDescription | null;
-    codebaseAnalysis: CodebaseAnalysis | null;
-  }> {
+  private async createTask(
+    input: TaskOperationsInput,
+  ): Promise<TaskWithRelations> {
     const { taskData, description, codebaseAnalysis } = input;
 
     if (!taskData?.name) {
@@ -216,17 +214,20 @@ export class TaskOperationsService {
         });
       }
 
-      return { task, taskDescription, codebaseAnalysis: analysis };
+      // Return as TaskWithRelations for consistent interface
+      return {
+        ...task,
+        taskDescription,
+        codebaseAnalysis: analysis,
+      } as TaskWithRelations;
     });
 
     return result;
   }
 
-  private async updateTask(input: TaskOperationsInput): Promise<{
-    task: Task | null;
-    taskDescription: TaskDescription | null;
-    codebaseAnalysis: CodebaseAnalysis | null;
-  }> {
+  private async updateTask(
+    input: TaskOperationsInput,
+  ): Promise<TaskWithRelations> {
     const { id, taskData, description, codebaseAnalysis } = input;
 
     if (!id) {
@@ -323,7 +324,20 @@ export class TaskOperationsService {
         });
       }
 
-      return { task, taskDescription, codebaseAnalysis: analysis };
+      // If no task data was provided, fetch the current task
+      if (!task) {
+        task = await tx.task.findUnique({ where: { id } });
+        if (!task) {
+          throw new Error(`Task with id ${id} not found`);
+        }
+      }
+
+      // Return as TaskWithRelations for consistent interface
+      return {
+        ...task,
+        taskDescription,
+        codebaseAnalysis: analysis,
+      } as TaskWithRelations;
     });
 
     return result;
