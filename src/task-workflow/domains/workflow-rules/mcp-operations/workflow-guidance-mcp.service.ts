@@ -110,112 +110,11 @@ It does NOT execute steps - that's the AI agent's responsibility.`,
         guidance,
       );
 
-      // ✅ FIXED: Create comprehensive response WITH role separation guidance
-      const enhancedEnvelope = {
-        ...envelope,
-        // ✅ FIXED: Clear AI agent execution guidance with role boundaries
-        aiAgentGuidance: {
-          currentAction: guidance.nextActions?.[0] || null,
-          nextStepGuidance: envelope.actionGuidance,
-          behavioralContext:
-            guidance.currentRole.description ||
-            'Role-specific workflow execution',
-          qualityReminders: guidance.qualityReminders || [],
-          projectContext: guidance.projectContext || {},
-
-          // ✅ NEW: Role separation instructions
-          executionProtocol: {
-            roleDefinition: 'AI Agent = Executor, MCP Server = Tour Guide',
-            aiAgentResponsibilities: [
-              'Execute commands locally using available tools',
-              'Analyze files and code using file system tools',
-              'Run git operations locally',
-              'Create and modify files locally',
-              'Report results back to MCP server',
-            ],
-            mcpServerResponsibilities: [
-              'Provide step-by-step guidance',
-              'Define success/failure criteria',
-              'Track workflow progress',
-              'Accept execution results',
-              'Determine next steps',
-            ],
-            workflowPattern: [
-              '1. Call get_step_guidance to get instructions',
-              '2. Execute guidance locally using available tools',
-              '3. Validate results locally',
-              '4. Report completion using report_step_completion',
-              '5. Get next step guidance and repeat',
-            ],
-          },
-        },
-
-        instructions: {
-          nextAction:
-            guidance.nextActions?.[0]?.actionType || 'get_step_guidance',
-          guidance: envelope.actionGuidance,
-          workingDirectory: input.projectPath || process.cwd(),
-
-          // ✅ NEW: Clear execution instructions
-          executionApproach: {
-            primary: 'Use get_step_guidance to get specific step instructions',
-            warning:
-              'DO NOT call execute_workflow_step - that tool no longer exists',
-            correctPattern:
-              'get_step_guidance -> local execution -> report_step_completion',
-            toolsToUse: {
-              forGuidance: [
-                'get_step_guidance',
-                'get_step_validation_criteria',
-              ],
-              forReporting: ['report_step_completion'],
-              forLocalExecution: [
-                'file system tools',
-                'shell commands',
-                'git operations',
-              ],
-              avoidThese: [
-                'execute_workflow_step (removed)',
-                'run_git_commands (removed)',
-              ],
-            },
-          },
-        },
-
-        // ✅ RESTORED: Include comprehensive workflow guidance data
-        workflowContext: {
-          currentRole: guidance.currentRole,
-          currentStep: guidance.currentStep,
-          nextActions: guidance.nextActions,
-          ruleEnforcement: guidance.ruleEnforcement,
-          reportingStatus: guidance.reportingStatus,
-        },
-
-        // ✅ NEW: Recommended next MCP calls
-        recommendedMcpCalls: [
-          {
-            tool: 'get_step_guidance',
-            parameters: {
-              taskId: input.taskId,
-              roleId: guidance.currentRole.name,
-            },
-            purpose: 'Get specific guidance for local execution',
-            when: 'When you need to know what to execute next',
-          },
-          {
-            tool: 'report_step_completion',
-            parameters: 'After executing step guidance locally',
-            purpose: 'Report execution results and get next guidance',
-            when: 'After completing local execution of a step',
-          },
-        ],
-      };
-
       const response = {
         content: [
           {
             type: 'text',
-            text: JSON.stringify(enhancedEnvelope, null, 2),
+            text: JSON.stringify(guidance, null, 2),
           },
         ],
       };

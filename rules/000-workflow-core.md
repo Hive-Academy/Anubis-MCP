@@ -81,7 +81,7 @@ Your workflow system has **8 focused tools** organized by purpose:
 
 ### **🚀 WORKFLOW INITIATION (1 Tool)**
 
-- `bootstrap_workflow` - Complete workflow initialization with task creation and execution setup
+- `bootstrap_workflow` - Creates placeholder task and workflow execution with database-driven steps
 
 ### **🧭 WORKFLOW GUIDANCE & EXECUTION (4 Tools)**
 
@@ -109,7 +109,7 @@ Your workflow system has **8 focused tools** organized by purpose:
 
 - **Purpose**: Task intake, analysis, delivery coordination
 - **When**: Project start, final delivery, strategic coordination
-- **Key Actions**: Context acquisition, git verification, current state verification, task setup, decision making, role delegation
+- **Key Actions**: Git setup, codebase analysis, real task creation, research decisions, role delegation
 
 ### **🔍 Researcher** - Evidence-Based Investigation
 
@@ -159,10 +159,25 @@ const bootstrap = await bootstrap_workflow({
   projectPath: '/actual/project/path', // Use real project path
 });
 
-// ✅ VERIFY SUCCESS
+// ✅ VERIFY SUCCESS - Simple response format
 console.log(`Task ID: ${bootstrap.resources.taskId}`);
 console.log(`Execution ID: ${bootstrap.resources.executionId}`);
+console.log(`Next Action: ${bootstrap.nextAction}`);
 ```
+
+**🎯 BOOTSTRAP CREATES:**
+
+- **Placeholder Task**: Minimal task for database constraints
+- **Workflow Execution**: Points to first boomerang database step
+- **Execution Context**: Stores real task data for boomerang step 3 to use
+
+**🎯 BOOMERANG WORKFLOW STEPS:**
+
+1. **Git Setup** - Clean git state, create feature branch
+2. **Codebase Analysis** - Analyze existing code and patterns
+3. **Real Task Creation** - Replace placeholder with comprehensive task
+4. **Research Decision** - Determine if research phase needed
+5. **Role Delegation** - Hand off to appropriate specialist role
 
 #### **STEP 2: Get Initial Guidance (MANDATORY SECOND)**
 
@@ -313,7 +328,27 @@ await report_step_completion({
 
 **Your tools return structured JSON envelopes, not verbose text. Here's what to expect:**
 
-### **Typical Response Structure:**
+### **Bootstrap Response Structure:**
+
+```json
+{
+  "success": true,
+  "message": "Workflow successfully bootstrapped...",
+  "resources": {
+    "taskId": "123",
+    "executionId": "exec-456",
+    "firstStepId": "step-789"
+  },
+  "currentStep": {
+    "stepId": "step-789",
+    "name": "mandatory_git_integration_setup",
+    "displayName": "MANDATORY: Git Integration Setup"
+  },
+  "nextAction": "get_workflow_guidance"
+}
+```
+
+### **Workflow Guidance Response Structure:**
 
 ```json
 {

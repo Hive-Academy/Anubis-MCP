@@ -1,108 +1,47 @@
 {
   "workflowSteps": [
     {
-      "name": "internal_service_context_acquisition",
-      "displayName": "Internal Service Context Acquisition",
-      "description": "Acquire context through internal service orchestration instead of direct MCP calls",
+      "name": "mandatory_git_integration_setup",
+      "displayName": "MANDATORY: Git Integration Setup",
+      "description": "CRITICAL: Complete Git operations before task creation. STOP workflow if any step fails.",
       "sequenceNumber": 1,
       "isRequired": true,
-      "estimatedTime": "2-3 minutes",
-      "stepType": "ACTION",
+      "estimatedTime": "2-4 minutes",
+      "stepType": "SETUP",
       "behavioralContext": {
-        "approach": "Use internal service orchestration to acquire all necessary context",
+        "approach": "Mandatory git state verification and feature branch creation",
         "principles": [
-          "Leverage CoreServiceOrchestrator for all task operations",
-          "Use TaskOperations service for task queries and management",
-          "Ensure proper service call validation and error handling"
-        ],
-        "methodology": "Service-driven context acquisition with proper orchestration"
-      },
-      "approachGuidance": {
-        "stepByStep": [
-          "Use CoreServiceOrchestrator.executeServiceCall() for task operations",
-          "Query active tasks through TaskOperations.executeTaskOperation()",
-          "Retrieve task context through internal service calls",
-          "Validate service responses and handle errors appropriately"
-        ]
-      },
-      "qualityChecklist": [
-        "Service calls properly orchestrated through CoreServiceOrchestrator",
-        "Task context successfully retrieved",
-        "Error handling implemented for service failures",
-        "Context data validated and complete"
-      ],
-      "conditions": [],
-      "actions": [
-        {
-          "name": "query_active_tasks",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "TaskOperations",
-            "operation": "list",
-            "parameters": {
-              "queryType": "current_assignments",
-              "status": "in-progress"
-            }
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "get_task_context",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "TaskOperations",
-            "operation": "get",
-            "parameters": {
-              "includeContext": true,
-              "includeSubtasks": true,
-              "includeBatches": true
-            }
-          },
-          "sequenceOrder": 2
-        }
-      ],
-      "triggerReport": false
-    },
-    {
-      "name": "git_integration_verification",
-      "displayName": "MANDATORY: Git Integration Verification",
-      "description": "CRITICAL: Verify clean git state and create feature branch before task creation. STOP workflow if any step fails.",
-      "sequenceNumber": 2,
-      "isRequired": true,
-      "estimatedTime": "2-3 minutes",
-      "stepType": "VALIDATION",
-      "behavioralContext": {
-        "approach": "Mandatory git state verification and branch creation",
-        "principles": [
-          "NEVER proceed with dirty git state",
-          "Always create feature branch for new work",
+          "NEVER proceed with dirty git state, always commit or stash changes before proceeding based on user input",
+          "Always create feature branch for new work, if user wants to continue working on existing task, use the same branch",
           "Follow strict git workflow protocols",
           "STOP workflow immediately if git operations fail"
         ],
-        "methodology": "Git-first workflow with mandatory verification"
+        "methodology": "Git-first workflow with mandatory verification and branch creation"
       },
       "approachGuidance": {
         "stepByStep": [
-          "Execute 'git status --porcelain' to verify clean state",
-          "STOP if any uncommitted changes detected",
-          "Create feature branch with format: feature/TSK-{timestamp}-{slug}",
-          "Verify branch creation with 'git branch --show-current'",
-          "Document branch name for task context"
+          "Verify clean working directory",
+          "Handle uncommitted changes if present (stash, commit, or clean)",
+          "Verify repository and remote configuration",
+          "Fetch latest changes from origin",
+          "Create feature branch with naming convention: feature/TSK-XXX-description",
+          "Verify branch creation and document branch name"
         ]
       },
       "qualityChecklist": [
         "Git status is completely clean (no uncommitted changes)",
-        "Feature branch created successfully",
-        "Branch name follows naming convention",
-        "Current branch verified and documented",
-        "Git operations completed without errors"
+        "Repository and remote configuration validated",
+        "Latest changes fetched successfully",
+        "Feature branch created with proper naming convention",
+        "Branch creation verified and documented",
+        "All git operations completed without errors"
       ],
       "conditions": [
         {
           "name": "git_available",
-          "conditionType": "CUSTOM_LOGIC",
+          "conditionType": "COMMAND_AVAILABLE",
           "logic": {
-            "check": "command_available",
+            "check": "command_exists",
             "parameters": {
               "command": "git",
               "requiredVersion": "2.0.0"
@@ -125,19 +64,48 @@
           "sequenceOrder": 1
         },
         {
+          "name": "verify_git_repository",
+          "actionType": "COMMAND",
+          "actionData": {
+            "command": "git",
+            "args": ["rev-parse", "--git-dir"],
+            "captureOutput": true,
+            "errorMessage": "CRITICAL: Not a valid git repository."
+          },
+          "sequenceOrder": 2
+        },
+        {
+          "name": "verify_remote_configuration",
+          "actionType": "COMMAND",
+          "actionData": {
+            "command": "git",
+            "args": ["remote", "-v"],
+            "captureOutput": true,
+            "errorMessage": "CRITICAL: No git remotes configured."
+          },
+          "sequenceOrder": 3
+        },
+        {
+          "name": "fetch_latest_changes",
+          "actionType": "COMMAND",
+          "actionData": {
+            "command": "git",
+            "args": ["fetch", "origin"],
+            "timeout": 30000,
+            "errorMessage": "CRITICAL: Failed to fetch from origin."
+          },
+          "sequenceOrder": 4
+        },
+        {
           "name": "create_feature_branch",
           "actionType": "COMMAND",
           "actionData": {
             "command": "git",
-            "args": [
-              "checkout",
-              "-b",
-              "feature/TSK-{{timestamp}}-{{task_slug}}"
-            ],
+            "args": ["checkout", "-b", "feature/TSK-{{task_id}}-{{task_slug}}"],
             "timeout": 10000,
             "errorMessage": "CRITICAL: Failed to create feature branch."
           },
-          "sequenceOrder": 2
+          "sequenceOrder": 5
         },
         {
           "name": "verify_branch_creation",
@@ -149,75 +117,61 @@
             "validateOutput": "feature/TSK-",
             "errorMessage": "CRITICAL: Branch creation verification failed."
           },
-          "sequenceOrder": 3
-        },
-        {
-          "name": "document_branch_context",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "TaskOperations",
-            "operation": "update",
-            "parameters": {
-              "updateType": "git_context",
-              "gitData": {
-                "branchName": "{{current_branch}}",
-                "branchCreated": "{{timestamp}}",
-                "gitStatus": "clean"
-              }
-            }
-          },
-          "sequenceOrder": 4
+          "sequenceOrder": 6
         }
       ],
-      "triggerReport": false
+      "triggerReport": true,
+      "reportType": "git_setup",
+      "reportTemplate": "git_integration_setup"
     },
     {
-      "name": "current_state_verification_protocol",
-      "displayName": "MANDATORY: Current State Verification Protocol",
-      "description": "BEFORE making strategic decisions, MUST execute functional verification through testing",
-      "sequenceNumber": 3,
+      "name": "mandatory_source_code_analysis_with_functional_verification",
+      "displayName": "MANDATORY: Source Code Analysis with Functional Verification",
+      "description": "Systematic codebase examination WITH functional testing to verify actual behavior",
+      "sequenceNumber": 2,
       "isRequired": true,
-      "estimatedTime": "5-10 minutes",
-      "stepType": "VALIDATION",
+      "estimatedTime": "8-12 minutes",
+      "stepType": "ANALYSIS",
       "behavioralContext": {
-        "approach": "Mandatory functional testing before any strategic decisions",
+        "approach": "Comprehensive codebase analysis combined with functional verification testing",
         "principles": [
           "Never make assumptions about current system state",
           "Always test actual functionality before decisions",
-          "Document all verification evidence",
-          "Use evidence to guide strategic choices"
+          "Document evidence-based findings",
+          "Verify capabilities through hands-on investigation"
         ],
-        "methodology": "Test-driven verification with evidence collection"
+        "methodology": "Multi-phase analysis: structural, functional verification, and quality assessment"
       },
       "approachGuidance": {
         "stepByStep": [
-          "Identify key assumptions about current implementation",
-          "Design functional tests to verify assumptions",
-          "Execute tests and document results",
-          "Collect evidence of current capabilities and limitations",
-          "Use evidence to inform strategic decisions"
+          "Identify implementation patterns relevant to current task",
+          "Document technology stack components and versions",
+          "Study similar feature implementations with examples",
+          "Test current functionality using available tools",
+          "Execute existing features to understand capabilities",
+          "Validate assumptions through actual testing",
+          "Review error handling and validation approaches",
+          "Document comprehensive findings with evidence"
         ]
       },
       "qualityChecklist": [
-        "All key assumptions identified and listed",
-        "Functional tests designed and executed",
-        "Test results documented with evidence",
-        "Current state accurately assessed",
-        "Evidence collected for strategic decision making"
+        "Implementation patterns identified and documented",
+        "Technology stack components and versions recorded",
+        "Similar feature implementations analyzed with examples",
+        "Current functionality tested with evidence collected",
+        "Assumptions validated through actual testing",
+        "Error handling and validation approaches reviewed",
+        "Comprehensive findings documented with evidence",
+        "Functional verification results documented"
       ],
       "conditions": [
         {
-          "name": "strategic_decision_required",
-          "conditionType": "CONTEXT_CHECK",
+          "name": "codebase_accessible",
+          "conditionType": "DIRECTORY_EXISTS",
           "logic": {
-            "check": "task_requires_strategic_decision",
+            "check": "directory_exists",
             "parameters": {
-              "decisionTypes": [
-                "architecture",
-                "implementation",
-                "delegation",
-                "escalation"
-              ]
+              "directories": ["src", "lib", "app"]
             }
           },
           "isRequired": true
@@ -225,282 +179,267 @@
       ],
       "actions": [
         {
-          "name": "identify_assumptions",
-          "actionType": "VALIDATION",
+          "name": "structural_analysis",
+          "actionType": "CODE_ANALYSIS",
           "actionData": {
-            "validationType": "assumption_identification",
-            "criteria": {
-              "categories": [
-                "current_implementation",
-                "system_capabilities",
-                "integration_points",
-                "data_flow"
-              ]
+            "analysisType": "structural",
+            "targets": [
+              "implementation_patterns",
+              "technology_stack",
+              "integration_patterns",
+              "component_interactions"
+            ]
+          },
+          "sequenceOrder": 1
+        },
+        {
+          "name": "functional_verification_testing",
+          "actionType": "TESTING",
+          "actionData": {
+            "testingType": "functional_verification",
+            "targets": [
+              "current_functionality",
+              "existing_features",
+              "capability_validation",
+              "assumption_testing"
+            ]
+          },
+          "sequenceOrder": 2
+        },
+        {
+          "name": "quality_assessment",
+          "actionType": "CODE_ANALYSIS",
+          "actionData": {
+            "analysisType": "quality",
+            "targets": [
+              "error_handling",
+              "testing_patterns",
+              "performance_considerations",
+              "security_implementations"
+            ]
+          },
+          "sequenceOrder": 3
+        },
+        {
+          "name": "evidence_documentation",
+          "actionType": "DOCUMENTATION",
+          "actionData": {
+            "documentationType": "evidence_collection",
+            "targets": [
+              "file_locations",
+              "testing_results",
+              "current_capabilities",
+              "identified_gaps"
+            ]
+          },
+          "sequenceOrder": 4
+        }
+      ],
+      "triggerReport": true,
+      "reportType": "functional_verification",
+      "reportTemplate": "source_code_analysis_with_verification"
+    },
+    {
+      "name": "mandatory_comprehensive_task_creation",
+      "displayName": "MANDATORY: Replace Placeholder with Real Task",
+      "description": "Replace bootstrap placeholder task with comprehensive real task using execution context data and codebase analysis",
+      "sequenceNumber": 3,
+      "isRequired": true,
+      "estimatedTime": "5-8 minutes",
+      "stepType": "ACTION",
+      "behavioralContext": {
+        "approach": "Replace placeholder task with real comprehensive task using stored execution context data",
+        "principles": [
+          "Read real task data from workflow execution context (stored by bootstrap)",
+          "Replace placeholder task with comprehensive task including codebase analysis",
+          "Generate human-readable task-slug from real task name",
+          "Store comprehensive codebase analysis for downstream roles",
+          "Document functional verification results",
+          "Update workflow execution to point to real task"
+        ],
+        "methodology": "Placeholder replacement with MCP-driven real task creation and execution context update"
+      },
+      "approachGuidance": {
+        "stepByStep": [
+          "Retrieve real task data from workflow execution taskCreationData",
+          "Generate human-readable task-slug from real task name",
+          "Create comprehensive real task with analysis and requirements",
+          "Structure codebase analysis findings for downstream consumption",
+          "Include functional verification results and evidence",
+          "Store git branch information and context",
+          "Update workflow execution to point to real task",
+          "Delete or mark placeholder task as replaced"
+        ]
+      },
+      "qualityChecklist": [
+        "Real task data successfully retrieved from execution context",
+        "Real task created with human-readable slug",
+        "Comprehensive description and requirements documented",
+        "Codebase analysis structured and complete",
+        "Functional verification results included",
+        "Git branch information recorded",
+        "Workflow execution updated to point to real task",
+        "Placeholder task properly handled"
+      ],
+      "conditions": [
+        {
+          "name": "analysis_completed",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "check": "step_completed",
+            "parameters": {
+              "stepName": "mandatory_source_code_analysis_with_functional_verification"
+            }
+          },
+          "isRequired": true
+        },
+        {
+          "name": "placeholder_task_exists",
+          "conditionType": "EXECUTION_CONTEXT_CHECK",
+          "logic": {
+            "check": "execution_context_contains",
+            "parameters": {
+              "key": "placeholderTaskCreated",
+              "expectedValue": true
+            }
+          },
+          "isRequired": true
+        }
+      ],
+      "actions": [
+        {
+          "name": "retrieve_real_task_data",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "WorkflowOperations",
+            "operation": "get_execution_context",
+            "parameters": {
+              "executionId": "{{current_execution_id}}",
+              "dataKey": "taskCreationData"
             }
           },
           "sequenceOrder": 1
         },
         {
-          "name": "execute_functional_tests",
-          "actionType": "COMMAND",
-          "actionData": {
-            "command": "npm",
-            "args": ["test", "--", "--testNamePattern=functional"],
-            "allowFailure": true,
-            "timeout": 60000
-          },
-          "sequenceOrder": 2
-        },
-        {
-          "name": "document_verification_evidence",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "TaskOperations",
-            "operation": "update",
-            "parameters": {
-              "updateType": "verification_evidence",
-              "evidenceData": {
-                "verificationResults": "{{test_results}}",
-                "currentCapabilities": "{{capabilities_assessment}}",
-                "limitations": "{{identified_limitations}}"
-              }
-            }
-          },
-          "sequenceOrder": 3
-        }
-      ],
-      "triggerReport": true,
-      "reportType": "verification_evidence",
-      "reportTemplate": "current_state_verification"
-    },
-    {
-      "name": "enhanced_task_setup",
-      "displayName": "Enhanced Task Setup (Initial or Escalation)",
-      "description": "Comprehensive task initialization with evidence-based analysis using internal services",
-      "sequenceNumber": 4,
-      "isRequired": true,
-      "estimatedTime": "10-15 minutes",
-      "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Service-orchestrated task setup with comprehensive analysis",
-        "principles": [
-          "Use internal services for all task operations",
-          "Ensure complete task context and metadata",
-          "Leverage planning services for subtask creation",
-          "Maintain evidence-based approach"
-        ],
-        "methodology": "Service-driven task initialization with proper orchestration"
-      },
-      "approachGuidance": {
-        "stepByStep": [
-          "Use TaskOperations service to create or update task",
-          "Leverage PlanningOperations for implementation planning",
-          "Use SubtaskOperations for subtask management",
-          "Ensure proper service orchestration and error handling"
-        ]
-      },
-      "qualityChecklist": [
-        "Task properly created/updated through TaskOperations service",
-        "Implementation plan created through PlanningOperations",
-        "Subtasks properly managed through SubtaskOperations",
-        "All service calls properly orchestrated",
-        "Error handling implemented for service failures"
-      ],
-      "conditions": [
-        {
-          "name": "task_setup_required",
-          "conditionType": "CONTEXT_CHECK",
-          "logic": {
-            "check": "needs_task_setup",
-            "parameters": {
-              "scenarios": ["new_task", "escalation", "context_update"]
-            }
-          },
-          "isRequired": true
-        }
-      ],
-      "actions": [
-        {
-          "name": "create_or_update_task",
+          "name": "create_real_comprehensive_task",
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "TaskOperations",
             "operation": "create",
             "parameters": {
               "taskData": {
-                "name": "{{task_name}}",
-                "description": "{{task_description}}",
-                "businessRequirements": "{{business_requirements}}",
-                "technicalRequirements": "{{technical_requirements}}",
-                "acceptanceCriteria": "{{acceptance_criteria}}",
-                "priority": "{{priority}}"
+                "name": "{{real_task_name_from_context}}",
+                "taskSlug": "{{generated_task_slug_from_real_name}}",
+                "status": "not-started",
+                "priority": "{{priority_from_context}}",
+                "gitBranch": "{{created_feature_branch}}"
               },
-              "includeContext": true
-            }
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "create_implementation_plan",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "PlanningOperations",
-            "operation": "create_plan",
-            "parameters": {
-              "planData": {
-                "taskId": "{{task_id}}",
-                "planType": "implementation",
-                "analysisData": "{{verification_evidence}}"
+              "description": {
+                "description": "{{task_description_from_context}}",
+                "businessRequirements": "{{business_requirements_from_context}}",
+                "technicalRequirements": "{{technical_requirements_from_context}}",
+                "acceptanceCriteria": "{{acceptance_criteria_from_context}}"
+              },
+              "codebaseAnalysis": {
+                "architectureFindings": "{{architecture_analysis_results}}",
+                "problemsIdentified": "{{identified_issues_and_debt}}",
+                "implementationContext": "{{patterns_and_standards}}",
+                "integrationPoints": "{{api_and_service_interfaces}}",
+                "qualityAssessment": "{{testing_and_performance_baseline}}",
+                "functionalVerification": "{{verification_evidence_and_results}}",
+                "gitBranch": "{{created_feature_branch}}",
+                "analyzedBy": "boomerang"
               }
             }
           },
           "sequenceOrder": 2
         },
         {
-          "name": "setup_subtask_structure",
+          "name": "update_workflow_execution",
           "actionType": "MCP_CALL",
           "actionData": {
-            "serviceName": "PlanningOperations",
-            "operation": "create_subtasks",
+            "serviceName": "WorkflowOperations",
+            "operation": "update_execution",
             "parameters": {
-              "taskId": "{{task_id}}",
-              "subtaskData": "{{implementation_plan_subtasks}}"
+              "executionId": "{{current_execution_id}}",
+              "updates": {
+                "taskId": "{{new_real_task_id}}",
+                "executionContext": {
+                  "placeholderTaskReplaced": true,
+                  "realTaskCreated": true,
+                  "realTaskId": "{{new_real_task_id}}",
+                  "placeholderTaskId": "{{old_placeholder_task_id}}"
+                }
+              }
             }
           },
           "sequenceOrder": 3
-        }
-      ],
-      "triggerReport": true,
-      "reportType": "task_creation",
-      "reportTemplate": "enhanced_task_setup"
-    },
-    {
-      "name": "strategic_decision_making",
-      "displayName": "Evidence-Based Strategic Decision Making",
-      "description": "Make strategic decisions based on verification evidence and current context",
-      "sequenceNumber": 5,
-      "isRequired": true,
-      "estimatedTime": "5-8 minutes",
-      "stepType": "DECISION",
-      "behavioralContext": {
-        "approach": "Evidence-based strategic analysis with service-driven execution",
-        "principles": [
-          "Base all decisions on verification evidence",
-          "Consider workflow efficiency and quality",
-          "Use appropriate services for decision implementation",
-          "Document decision rationale"
-        ],
-        "methodology": "Strategic analysis with service orchestration"
-      },
-      "approachGuidance": {
-        "stepByStep": [
-          "Analyze verification evidence and current context",
-          "Evaluate strategic options and their implications",
-          "Make evidence-based decision on next steps",
-          "Use appropriate services to implement decision",
-          "Document decision rationale and evidence"
-        ]
-      },
-      "qualityChecklist": [
-        "Decision based on verification evidence",
-        "Strategic options properly evaluated",
-        "Decision rationale documented",
-        "Implementation through appropriate services",
-        "Quality implications considered"
-      ],
-      "conditions": [
-        {
-          "name": "verification_completed",
-          "conditionType": "PREVIOUS_STEP_COMPLETED",
-          "logic": {
-            "check": "step_completed",
-            "parameters": {
-              "stepName": "current_state_verification_protocol"
-            }
-          },
-          "isRequired": true
-        }
-      ],
-      "actions": [
-        {
-          "name": "analyze_strategic_options",
-          "actionType": "VALIDATION",
-          "actionData": {
-            "validationType": "strategic_analysis",
-            "criteria": {
-              "evidenceBase": "{{verification_evidence}}",
-              "options": [
-                "continue_implementation",
-                "delegate_to_specialist",
-                "escalate_complexity",
-                "research_required"
-              ]
-            }
-          },
-          "sequenceOrder": 1
         },
         {
-          "name": "document_strategic_decision",
+          "name": "cleanup_placeholder_task",
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "TaskOperations",
             "operation": "update",
             "parameters": {
-              "updateType": "strategic_decision",
-              "decisionData": {
-                "decision": "{{strategic_decision}}",
-                "rationale": "{{decision_rationale}}",
-                "evidence": "{{supporting_evidence}}",
-                "nextSteps": "{{planned_next_steps}}"
+              "taskId": "{{placeholder_task_id}}",
+              "updates": {
+                "status": "replaced",
+                "name": "[REPLACED] {{placeholder_task_name}}"
               }
             }
           },
-          "sequenceOrder": 2
+          "sequenceOrder": 4
         }
       ],
-      "triggerReport": false
+      "triggerReport": true,
+      "reportType": "real_task_creation",
+      "reportTemplate": "placeholder_replacement_with_real_task"
     },
     {
-      "name": "intelligent_role_delegation",
-      "displayName": "Intelligent Role Delegation",
-      "description": "Delegate to appropriate role based on strategic decision and context",
-      "sequenceNumber": 6,
+      "name": "research_decision_framework_with_validation",
+      "displayName": "Research Decision Framework with Current State Validation",
+      "description": "Evaluate research necessity using verified decision criteria and evidence",
+      "sequenceNumber": 4,
       "isRequired": true,
       "estimatedTime": "3-5 minutes",
-      "stepType": "DELEGATION",
+      "stepType": "DECISION",
       "behavioralContext": {
-        "approach": "Service-orchestrated role delegation with context preservation",
+        "approach": "Evidence-based research decision making with mandatory verification",
         "principles": [
-          "Use WorkflowOperations service for delegation",
-          "Ensure complete context handoff",
-          "Select appropriate role based on task requirements",
-          "Maintain workflow continuity"
+          "Base decisions on verified current state testing",
+          "Document evidence supporting research rationale",
+          "Use tested capabilities vs assumptions for decisions",
+          "Provide specific research questions if research needed"
         ],
-        "methodology": "Service-driven delegation with proper orchestration"
+        "methodology": "Verification-driven decision matrix with evidence documentation"
       },
       "approachGuidance": {
         "stepByStep": [
-          "Determine appropriate target role based on strategic decision",
-          "Prepare comprehensive handoff context",
-          "Use WorkflowOperations service to execute delegation",
-          "Ensure proper context preservation and handoff documentation"
+          "Review functional verification results from previous step",
+          "Test existing functionality to understand current capabilities",
+          "Verify technical claims through actual code execution",
+          "Validate complexity assumptions with hands-on investigation",
+          "Apply evidence-based decision criteria for research necessity",
+          "Document specific research questions if research is needed"
         ]
       },
       "qualityChecklist": [
-        "Target role appropriately selected",
-        "Handoff context comprehensive and complete",
-        "Delegation executed through WorkflowOperations service",
-        "Context preservation ensured",
-        "Handoff documentation complete"
+        "Current state tested and capabilities verified",
+        "Technical claims validated through execution",
+        "Complexity assumptions tested with evidence",
+        "Decision criteria applied with verification evidence",
+        "Research decision documented with rationale",
+        "Specific research questions provided if research needed"
       ],
       "conditions": [
         {
-          "name": "strategic_decision_made",
+          "name": "functional_verification_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "strategic_decision_making"
+              "stepName": "mandatory_source_code_analysis_with_functional_verification"
             }
           },
           "isRequired": true
@@ -508,19 +447,97 @@
       ],
       "actions": [
         {
-          "name": "prepare_delegation_context",
-          "actionType": "MCP_CALL",
+          "name": "evaluate_research_necessity",
+          "actionType": "DECISION_MATRIX",
           "actionData": {
-            "serviceName": "TaskOperations",
-            "operation": "get",
-            "parameters": {
-              "includeFullContext": true,
-              "includeEvidence": true,
-              "includeDecisions": true
-            }
+            "decisionType": "research_evaluation",
+            "criteria": {
+              "definitely_research": [
+                "unfamiliar_technologies_verified",
+                "multiple_approaches_needed_confirmed",
+                "critical_architecture_decisions_tested",
+                "security_requirements_beyond_current",
+                "unknown_external_systems_proven"
+              ],
+              "unlikely_research": [
+                "clear_implementation_path_confirmed",
+                "well_understood_technology_validated",
+                "similar_work_completed_verified",
+                "standard_operations_tested"
+              ]
+            },
+            "evidenceRequired": true
           },
           "sequenceOrder": 1
         },
+        {
+          "name": "document_research_decision",
+          "actionType": "DOCUMENTATION",
+          "actionData": {
+            "documentationType": "research_decision",
+            "requiredFields": [
+              "current_state_tested",
+              "capabilities_verified",
+              "limitations_confirmed",
+              "complexity_validated",
+              "decision_rationale",
+              "verification_evidence"
+            ]
+          },
+          "sequenceOrder": 2
+        }
+      ],
+      "triggerReport": true,
+      "reportType": "research_decision",
+      "reportTemplate": "evidence_based_research_decision"
+    },
+    {
+      "name": "role_delegation_with_task_slug",
+      "displayName": "Role Delegation with Task-Slug",
+      "description": "Delegate to appropriate role with comprehensive context and human-readable references",
+      "sequenceNumber": 5,
+      "isRequired": true,
+      "estimatedTime": "2-3 minutes",
+      "stepType": "DELEGATION",
+      "behavioralContext": {
+        "approach": "Context-rich delegation with human-readable task references",
+        "principles": [
+          "Include task-slug for human-readable reference",
+          "Provide comprehensive context handoff",
+          "Select appropriate target role based on research decision",
+          "Ensure proper workflow continuity"
+        ],
+        "methodology": "MCP-driven delegation with structured context preservation"
+      },
+      "approachGuidance": {
+        "stepByStep": [
+          "Determine target role based on research decision results",
+          "Prepare comprehensive delegation context including task-slug",
+          "Execute workflow delegation through MCP operations",
+          "Ensure proper context handoff and documentation"
+        ]
+      },
+      "qualityChecklist": [
+        "Target role selected based on evidence-based research decision",
+        "Task-slug included for human-readable reference",
+        "Comprehensive context prepared for handoff",
+        "Delegation executed successfully through MCP",
+        "Workflow continuity ensured"
+      ],
+      "conditions": [
+        {
+          "name": "research_decision_completed",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "check": "step_completed",
+            "parameters": {
+              "stepName": "research_decision_framework_with_validation"
+            }
+          },
+          "isRequired": true
+        }
+      ],
+      "actions": [
         {
           "name": "execute_role_delegation",
           "actionType": "MCP_CALL",
@@ -528,18 +545,19 @@
             "serviceName": "WorkflowOperations",
             "operation": "delegate",
             "parameters": {
-              "targetRole": "{{target_role}}",
-              "handoffContext": "{{delegation_context}}",
-              "preserveContext": true,
-              "delegationReason": "{{strategic_decision}}"
+              "taskId": "{{task_id}}",
+              "taskSlug": "{{task_slug}}",
+              "fromRole": "boomerang",
+              "toRole": "{{target_role_based_on_research_decision}}",
+              "message": "{{focused_delegation_message_with_context}}"
             }
           },
-          "sequenceOrder": 2
+          "sequenceOrder": 1
         }
       ],
       "triggerReport": true,
       "reportType": "delegation",
-      "reportTemplate": "role_delegation"
+      "reportTemplate": "role_delegation_with_context"
     }
   ]
 }

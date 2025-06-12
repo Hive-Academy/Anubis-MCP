@@ -1,33 +1,21 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../../prisma/prisma.service';
-import { ActionGuidanceGeneratorService } from '../../../utils/envelope-builder/action-guidance-generator.service';
-import { ProgressCalculatorService } from '../../../utils/envelope-builder/progress-calculator.service';
-import { RequiredInputExtractorService } from '../../../utils/envelope-builder/required-input-extractor.service';
-import { ValidationContextBuilderService } from '../../../utils/envelope-builder/validation-context-builder.service';
-// REMOVED: EnvelopeBuilderService - envelope building is MCP layer responsibility
 
-// Configuration interfaces to eliminate hardcoding
+// Simplified configuration
 export interface BootstrapConfig {
   validation: {
     taskNameMaxLength: number;
     taskNameMinLength: number;
     validRoles: string[];
-    validPriorities: string[];
     validExecutionModes: string[];
   };
   defaults: {
-    priority: 'Low' | 'Medium' | 'High' | 'Critical';
     executionMode: 'GUIDED' | 'AUTOMATED' | 'HYBRID';
-    initialStepsCount: number;
-  };
-  performance: {
-    transactionTimeoutMs: number;
-    maxRetries: number;
   };
 }
 
 export interface BootstrapWorkflowInput {
-  // Task creation data (minimal upfront requirements)
+  // Task creation data (this will be stored in execution context for boomerang to use)
   taskName: string;
   taskDescription?: string;
   businessRequirements?: string;
@@ -49,37 +37,32 @@ export interface BootstrapWorkflowInput {
 
 export interface BootstrapResult {
   success: boolean;
-  task: any;
+  placeholderTask: any;
   workflowExecution: any;
-  initialGuidance: any;
-  nextSteps: any[];
+  firstStep: any;
   message: string;
-  // CORRECTED: Keep business logic enhancements, remove envelope metadata
-  validationContext?: any;
-  requiredInputs?: any[];
-  progressMetrics?: any;
-  actionGuidance?: string;
-  enhancedContext?: any;
-  // REMOVED: envelopeMetadata - that's MCP layer responsibility
+  resources: {
+    taskId: string;
+    executionId: string;
+    firstStepId: string | null;
+  };
 }
 
 /**
- * Workflow Bootstrap Service
+ * Simplified Workflow Bootstrap Service
  *
- * Single Responsibility: Bootstrap new workflows from scratch
- * - Creates task with full context
- * - Initializes workflow execution
- * - Provides initial guidance
- * - Sets up proper role context
- *
- * ENHANCED: Now includes enhanced envelope-builder integration for
- * comprehensive bootstrap validation and initial guidance generation
+ * ALIGNED WITH DATABASE-DRIVEN WORKFLOW STEPS:
+ * - Creates MINIMAL PLACEHOLDER TASK for database constraints only
+ * - Stores real task data in execution context for boomerang step 3 to use
+ * - Creates workflow execution pointing to first database step
+ * - Loads first workflow step from database for the boomerang role
+ * - Lets boomerang step 3 handle the REAL task creation with analysis
  */
 @Injectable()
 export class WorkflowBootstrapService {
   private readonly logger = new Logger(WorkflowBootstrapService.name);
 
-  // Configuration with sensible defaults
+  // Simplified configuration
   private readonly config: BootstrapConfig = {
     validation: {
       taskNameMaxLength: 200,
@@ -92,64 +75,30 @@ export class WorkflowBootstrapService {
         'code-review',
         'integration-engineer',
       ],
-      validPriorities: ['Low', 'Medium', 'High', 'Critical'],
       validExecutionModes: ['GUIDED', 'AUTOMATED', 'HYBRID'],
     },
     defaults: {
-      priority: 'Medium',
       executionMode: 'GUIDED',
-      initialStepsCount: 3,
-    },
-    performance: {
-      transactionTimeoutMs: 30000,
-      maxRetries: 3,
     },
   };
 
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly inputExtractor: RequiredInputExtractorService,
-    private readonly guidanceGenerator: ActionGuidanceGeneratorService,
-    private readonly progressCalculator: ProgressCalculatorService,
-    private readonly validationBuilder: ValidationContextBuilderService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Update bootstrap configuration
-   */
-  updateConfig(config: Partial<BootstrapConfig>): void {
-    if (config.validation) {
-      Object.assign(this.config.validation, config.validation);
-    }
-    if (config.defaults) {
-      Object.assign(this.config.defaults, config.defaults);
-    }
-    if (config.performance) {
-      Object.assign(this.config.performance, config.performance);
-    }
-    this.logger.log('Bootstrap configuration updated');
-  }
-
-  /**
-   * Get current configuration
-   */
-  getConfig(): BootstrapConfig {
-    return {
-      validation: { ...this.config.validation },
-      defaults: { ...this.config.defaults },
-      performance: { ...this.config.performance },
-    };
-  }
-
-  /**
-   * Bootstrap a complete workflow from scratch (optimized version)
-   * Creates task, workflow execution, and provides initial guidance
-   * - Eliminates nested transactions for better performance
-   * - Reduces database operations
-   * - Uses single transaction for all operations
+   * Bootstrap a workflow - CREATES PLACEHOLDER TASK + EXECUTION
    *
-   * ENHANCED: Now includes enhanced envelope-builder integration for
-   * comprehensive bootstrap validation and initial guidance generation
+   * WHAT THIS DOES:
+   * 1. Creates MINIMAL PLACEHOLDER task (just for database constraints)
+   * 2. Stores REAL task data in execution context for boomerang step 3
+   * 3. Finds the first workflow step for the boomerang role from database
+   * 4. Creates workflow execution pointing to that first step
+   * 5. Returns resources for the step guidance system to take over
+   *
+   * WHAT THE BOOMERANG STEP 3 WILL DO:
+   * - Read the real task data from execution context
+   * - Perform codebase analysis and git setup (steps 1-2)
+   * - Create the REAL comprehensive task with analysis (step 3)
+   * - Update the workflow execution to point to the real task
    */
   async bootstrapWorkflow(
     input: BootstrapWorkflowInput,
@@ -157,288 +106,177 @@ export class WorkflowBootstrapService {
     const startTime = Date.now();
 
     try {
-      this.logger.log(`Bootstrapping workflow (enhanced): ${input.taskName}`);
+      this.logger.log(
+        `Bootstrapping workflow with placeholder task: ${input.taskName}`,
+      );
 
-      // ENHANCED: Validate input using enhanced validation services first
+      // Validate input
       const inputValidation = this.validateBootstrapInput(input);
       if (!inputValidation.valid) {
         return {
           success: false,
-          task: null,
+          placeholderTask: null,
           workflowExecution: null,
-          initialGuidance: null,
-          nextSteps: [],
+          firstStep: null,
           message: `Bootstrap validation failed: ${inputValidation.errors.join(', ')}`,
+          resources: {
+            taskId: '',
+            executionId: '',
+            firstStepId: null,
+          },
         };
       }
 
       // Single transaction for all operations
-      const result = await this.prisma.$transaction(
-        async (tx) => {
-          // Step 1: Direct task creation (no nested transaction)
-          const taskSlug = await this.generateUniqueSlug(tx, input.taskName);
+      const result = await this.prisma.$transaction(async (tx) => {
+        // Step 1: Create MINIMAL PLACEHOLDER task (just for database constraints)
+        const placeholderSlug = `bootstrap-placeholder-${Date.now()}`;
 
-          const task = await tx.task.create({
-            data: {
-              name: input.taskName,
-              slug: taskSlug,
-              status: 'not-started',
-              priority: input.priority || this.config.defaults.priority,
-              dependencies: [],
-              owner: 'boomerang',
-              currentMode: 'boomerang',
-            },
-          });
-
-          // Step 2: Create description if provided (minimal fields)
-          let taskDescription = null;
-          if (
-            input.taskDescription ||
-            input.businessRequirements ||
-            input.technicalRequirements
-          ) {
-            taskDescription = await tx.taskDescription.create({
-              data: {
-                taskId: task.id,
-                description: input.taskDescription || '',
-                businessRequirements: input.businessRequirements || '',
-                technicalRequirements: input.technicalRequirements || '',
-                acceptanceCriteria: input.acceptanceCriteria || [],
-              },
-            });
-          }
-
-          // Step 3: Get role and first step in parallel
-          const [role, firstStep] = await Promise.all([
-            tx.workflowRole.findUnique({
-              where: { name: input.initialRole },
-              select: { id: true, name: true, displayName: true }, // Include displayName
-            }),
-            tx.workflowStep.findFirst({
-              where: {
-                role: { name: input.initialRole },
-              },
-              orderBy: { sequenceNumber: 'asc' },
-              select: { id: true, name: true, sequenceNumber: true }, // Only select needed fields
-            }),
-          ]);
-
-          if (!role) {
-            throw new Error(`Role '${input.initialRole}' not found`);
-          }
-
-          // Step 4: Create execution (minimal includes)
-          const workflowExecution = await tx.workflowExecution.create({
-            data: {
-              taskId: task.id,
-              currentRoleId: role.id,
-              currentStepId: firstStep?.id || null,
-              executionMode:
-                input.executionMode || this.config.defaults.executionMode,
-              autoCreatedTask: true,
-              executionContext: {
-                bootstrapped: true,
-                bootstrapTime: new Date().toISOString(),
-                projectPath: input.projectPath,
-                initialRoleName: input.initialRole,
-                ...input.executionContext,
-              },
-              executionState: {
-                phase: 'initialized',
-                currentContext: input.executionContext || {},
-                progressMarkers: [],
-                ...(firstStep && {
-                  currentStep: {
-                    id: firstStep.id,
-                    name: firstStep.name,
-                    sequenceNumber: firstStep.sequenceNumber,
-                    assignedAt: new Date().toISOString(),
-                  },
-                }),
-              },
-            },
-            include: {
-              task: true,
-              currentRole: {
-                select: { id: true, name: true, displayName: true },
-              },
-              currentStep: {
-                select: { id: true, name: true, displayName: true },
-              },
-            },
-          });
-
-          return {
-            task: { ...task, taskDescription },
-            workflowExecution,
-            role,
-            firstStep,
-          };
-        },
-        {
-          timeout: 15000, // Reduced timeout since we're doing less work
-        },
-      );
-
-      // ENHANCED: Get enhanced context for the bootstrapped workflow
-      const baseGuidance = {
-        currentRole: {
-          name: result.role.name,
-          displayName: result.role.displayName || result.role.name,
-          description: `Role: ${result.role.name}`,
-          capabilities: {},
-        },
-        currentStep: result.firstStep
-          ? {
-              name: result.firstStep.name,
-              displayName: result.firstStep.name,
-              description: `Initial step: ${result.firstStep.name}`,
-              stepType: 'WORKFLOW',
-            }
-          : null,
-        nextActions: [
-          {
-            name: `Begin with ${result.firstStep?.name || 'initial workflow step'}`,
-            actionType: 'WORKFLOW',
-            actionData: {
-              stepId: result.firstStep?.id,
-              stepName: result.firstStep?.name,
-              serviceName: 'workflow-guidance',
-              operation: 'initialize',
-            },
-            sequenceOrder: 1,
+        const placeholderTask = await tx.task.create({
+          data: {
+            name: `[PLACEHOLDER] ${input.taskName}`,
+            slug: placeholderSlug,
+            status: 'not-started',
+            priority: 'Medium', // Default, will be set by boomerang step 3
+            dependencies: [],
+            owner: 'boomerang',
+            currentMode: 'boomerang',
           },
-        ],
-        projectContext: {
-          projectType: 'bootstrap',
-          behavioralProfile: {
-            projectPath: input.projectPath,
-            initialRole: input.initialRole,
+        });
+
+        // Step 2: Get boomerang role and its FIRST workflow step from database
+        const role = await tx.workflowRole.findUnique({
+          where: { name: input.initialRole },
+          select: { id: true, name: true, displayName: true },
+        });
+
+        if (!role) {
+          throw new Error(`Role '${input.initialRole}' not found`);
+        }
+
+        // Step 3: Get the FIRST workflow step for this role from database
+        const firstStep = await tx.workflowStep.findFirst({
+          where: {
+            roleId: role.id,
+          },
+          orderBy: { sequenceNumber: 'asc' },
+          select: {
+            id: true,
+            name: true,
+            displayName: true,
+            description: true,
+            sequenceNumber: true,
+            stepType: true,
+            estimatedTime: true,
+            behavioralContext: true,
+            approachGuidance: true,
+            qualityChecklist: true,
+          },
+        });
+
+        if (!firstStep) {
+          throw new Error(
+            `No workflow steps found for role '${input.initialRole}'`,
+          );
+        }
+
+        // Step 4: Create workflow execution with REAL task data in context
+        const workflowExecution = await tx.workflowExecution.create({
+          data: {
+            taskId: placeholderTask.id,
+            currentRoleId: role.id,
+            currentStepId: firstStep.id,
             executionMode:
               input.executionMode || this.config.defaults.executionMode,
+            autoCreatedTask: true,
+            // CRITICAL: Store REAL task data for boomerang step 3 to use
+            taskCreationData: {
+              // This is what boomerang step 3 will use to create the REAL task
+              realTaskName: input.taskName,
+              taskDescription: input.taskDescription,
+              businessRequirements: input.businessRequirements,
+              technicalRequirements: input.technicalRequirements,
+              acceptanceCriteria: input.acceptanceCriteria,
+              priority: input.priority,
+              projectPath: input.projectPath,
+            },
+            executionContext: {
+              bootstrapped: true,
+              bootstrapTime: new Date().toISOString(),
+              projectPath: input.projectPath,
+              initialRoleName: input.initialRole,
+              firstStepName: firstStep.name,
+              placeholderTaskCreated: true,
+              realTaskPending: true, // Flag for boomerang step 3
+              ...input.executionContext,
+            },
+            executionState: {
+              phase: 'initialized',
+              currentContext: input.executionContext || {},
+              progressMarkers: [],
+              currentStep: {
+                id: firstStep.id,
+                name: firstStep.name,
+                displayName: firstStep.displayName,
+                sequenceNumber: firstStep.sequenceNumber,
+                assignedAt: new Date().toISOString(),
+              },
+              placeholderTask: {
+                id: placeholderTask.id,
+                name: placeholderTask.name,
+                isPlaceholder: true,
+              },
+            },
           },
-          detectedPatterns: [],
-          qualityStandards: {},
-        },
-        qualityReminders: [],
-        ruleEnforcement: {
-          requiredPatterns: [],
-          antiPatterns: [],
-          complianceChecks: [],
-        },
-        reportingStatus: { shouldTriggerReport: false },
-      };
-
-      // ENHANCED: Use enhanced services for comprehensive bootstrap context
-      const [
-        validationResult,
-        progressResult,
-        requiredInputsResult,
-        actionGuidanceResult,
-      ] = await Promise.all([
-        this.validationBuilder.buildValidationContext(
-          baseGuidance,
-          result.firstStep?.id || null,
-          result.task.id,
-        ),
-        this.progressCalculator.calculateProgress(
-          result.task.id,
-          baseGuidance,
-          result.firstStep?.id || null,
-        ),
-        this.inputExtractor.extractRequiredInput(
-          result.firstStep?.id || null,
-          baseGuidance,
-        ),
-        this.guidanceGenerator.generateActionGuidance(
-          baseGuidance,
-          result.firstStep?.id || null,
-          {
-            taskId: result.task.id,
-            roleId: result.role.id,
+          include: {
+            task: true,
+            currentRole: {
+              select: { id: true, name: true, displayName: true },
+            },
+            currentStep: {
+              select: { id: true, name: true, displayName: true },
+            },
           },
-        ),
-      ]);
+        });
 
-      // Enhanced post-processing (outside transaction)
-      const nextSteps = this.getSimpleNextSteps(
-        input.initialRole,
-        result.firstStep,
-      );
+        return {
+          placeholderTask,
+          workflowExecution,
+          role,
+          firstStep,
+        };
+      });
 
       const duration = Date.now() - startTime;
-      this.logger.log(`Workflow bootstrapped (enhanced) in ${duration}ms`);
+      this.logger.log(
+        `Workflow bootstrapped in ${duration}ms - Placeholder task created, boomerang step 3 will create real task`,
+      );
 
-      // ENHANCED: Build bootstrap envelope for standardized response format
-      const bootstrapResult = {
-        success: true,
-        task: result.task,
-        workflowExecution: result.workflowExecution,
-        initialGuidance: {
-          currentRole: result.role,
-          currentStep: result.firstStep,
-          nextActions: [
-            {
-              name: `Begin with ${result.firstStep?.name || 'initial workflow step'}`,
-              actionType: 'WORKFLOW',
-              actionData: {
-                stepId: result.firstStep?.id,
-                stepName: result.firstStep?.name,
-                serviceName: 'workflow-guidance',
-                operation: 'initialize',
-              },
-              sequenceOrder: 1,
-            },
-          ],
-        },
-        nextSteps,
-        validationContext: validationResult.success
-          ? validationResult.context
-          : null,
-        requiredInputs: Array.isArray(requiredInputsResult)
-          ? requiredInputsResult
-          : [],
-        progressMetrics: progressResult.success ? progressResult.metrics : null,
-        actionGuidance:
-          actionGuidanceResult && typeof actionGuidanceResult === 'string'
-            ? actionGuidanceResult
-            : undefined,
-        enhancedContext: {
-          bootstrapDuration: duration,
-          initialRole: input.initialRole,
-          executionMode:
-            input.executionMode || this.config.defaults.executionMode,
-          taskCreated: {
-            id: result.task.id,
-            name: result.task.name,
-            slug: result.task.slug,
-          },
-          workflowExecutionCreated: {
-            id: result.workflowExecution.id,
-            currentRoleId: result.workflowExecution.currentRoleId,
-            currentStepId: result.workflowExecution.currentStepId,
-          },
-          enhancedValidation: validationResult.success,
-          enhancedProgress: progressResult.success,
-          enhancedInputs: Array.isArray(requiredInputsResult),
-          enhancedGuidance: !!actionGuidanceResult,
-        },
-      };
-
-      // CORRECTED: Return business result without envelope (MCP layer handles envelopes)
       return {
-        ...bootstrapResult,
-        message: `Workflow successfully bootstrapped for "${input.taskName}" with ${input.initialRole} role`,
+        success: true,
+        placeholderTask: result.placeholderTask,
+        workflowExecution: result.workflowExecution,
+        firstStep: result.firstStep,
+        message: `Workflow successfully bootstrapped with placeholder task. Boomerang workflow will handle real task creation in step 3 after git setup and codebase analysis.`,
+        resources: {
+          taskId: result.placeholderTask.id.toString(),
+          executionId: result.workflowExecution.id,
+          firstStepId: result.firstStep.id,
+        },
       };
     } catch (error) {
-      this.logger.error(`Optimized bootstrap failed:`, error);
+      this.logger.error(`Bootstrap failed:`, error);
       return {
         success: false,
-        task: null,
+        placeholderTask: null,
         workflowExecution: null,
-        initialGuidance: null,
-        nextSteps: [],
+        firstStep: null,
         message: `Bootstrap failed: ${error.message}`,
+        resources: {
+          taskId: '',
+          executionId: '',
+          firstStepId: null,
+        },
       };
     }
   }
@@ -479,11 +317,6 @@ export class WorkflowBootstrapService {
       errors.push(`Initial role must be one of: ${validRoles.join(', ')}`);
     }
 
-    const validPriorities = this.config.validation.validPriorities;
-    if (input.priority && !validPriorities.includes(input.priority)) {
-      errors.push(`Priority must be one of: ${validPriorities.join(', ')}`);
-    }
-
     const validExecutionModes = this.config.validation.validExecutionModes;
     if (
       input.executionMode &&
@@ -522,34 +355,5 @@ export class WorkflowBootstrapService {
 
     // If exists, append timestamp for uniqueness
     return `${baseSlug}-${Date.now()}`;
-  }
-
-  /**
-   * Simple next steps without additional database calls
-   */
-  private getSimpleNextSteps(roleName: string, firstStep: any): any[] {
-    if (firstStep) {
-      return [
-        {
-          stepId: firstStep.id,
-          name: firstStep.name,
-          displayName: firstStep.displayName || firstStep.name,
-          description: `Execute ${firstStep.name} for ${roleName} role`,
-          stepType: 'WORKFLOW',
-          sequenceNumber: firstStep.sequenceNumber,
-          status: 'ready',
-        },
-      ];
-    }
-
-    return [
-      {
-        name: 'initial_analysis',
-        displayName: 'Initial Analysis',
-        description: `Begin ${roleName} workflow with initial analysis`,
-        stepType: 'ANALYSIS',
-        status: 'ready',
-      },
-    ];
   }
 }
