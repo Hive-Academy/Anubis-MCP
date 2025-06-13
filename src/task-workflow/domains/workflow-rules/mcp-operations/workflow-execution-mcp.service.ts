@@ -1,14 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { z } from 'zod';
-import { WorkflowGuidanceService } from '../services/workflow-guidance.service';
+// EnvelopeBuilderService removed - using minimal responses
 import {
-  WorkflowExecutionOperationsService,
   WorkflowExecutionInput,
+  WorkflowExecutionOperationsService,
 } from '../services/workflow-execution-operations.service';
-import { createErrorResult } from '../utils/type-safety.utils';
-import { EnvelopeBuilderService } from '../../../utils/envelope-builder';
-import { shouldIncludeDebugInfo } from '../../../config/mcp-response.config';
 
 // Schema for workflow execution operations
 const WorkflowExecutionSchema = z.object({
@@ -72,26 +69,34 @@ export class WorkflowExecutionMcpService {
 
   constructor(
     private readonly executionOps: WorkflowExecutionOperationsService,
-    private readonly workflowGuidance: WorkflowGuidanceService,
-    private readonly envelopeBuilder: EnvelopeBuilderService,
   ) {}
 
   @Tool({
     name: 'workflow_execution_operations',
     description: `
-Workflow execution lifecycle management with state tracking and progress monitoring.
+**⚙️ WORKFLOW STATE MANAGEMENT - Query and manage execution state only**
 
-**Operations:**
-- create_execution: Create new workflow execution for a task
-- get_execution: Retrieve execution with relations and progress
+**FOCUSED OPERATIONS:**
+- get_active_executions: List all active executions (taskId, executionId, currentRole)
+- get_execution: Get current execution state without guidance
 - update_execution: Update execution state and progress
 - complete_execution: Mark execution as completed
-- get_active_executions: List all active executions
-- execute_step_with_services: Execute a step with associated services
+
+**Does NOT provide:**
+❌ Workflow guidance (use get_workflow_guidance)
+❌ Step guidance (use get_step_guidance)  
+❌ Role recommendations (use role transition tools)
+❌ Complex envelopes (minimal state data only)
+
+**Usage:**
+- Check active workflows before starting
+- Get current execution state for resuming work
+- Update execution progress
+- Mark workflows complete
 
 **Examples:**
-- Create: { operation: "create_execution", taskId: 123, roleName: "architect" }
-- Get: { operation: "get_execution", executionId: "exec-123" }
+- List active: { operation: "get_active_executions", taskId: 0 }
+- Get state: { operation: "get_execution", taskId: 123 }
 - Update: { operation: "update_execution", executionId: "exec-123", updateData: {...} }
 `,
     parameters: WorkflowExecutionSchema,
@@ -99,8 +104,6 @@ Workflow execution lifecycle management with state tracking and progress monitor
   async executeWorkflowOperation(input: WorkflowExecutionInputSchema): Promise<{
     content: Array<{ type: 'text'; text: string }>;
   }> {
-    const startTime = performance.now();
-
     try {
       this.logger.debug(`Workflow Execution: ${input.operation}`, {
         taskId: input.taskId,
@@ -175,114 +178,51 @@ Workflow execution lifecycle management with state tracking and progress monitor
         }
       }
 
-      const responseTime = performance.now() - startTime;
-      const workflowGuidance = await this.generateWorkflowGuidance(
-        input,
-        result,
-      );
-
-      this.logger.debug(
-        `Workflow execution completed in ${responseTime.toFixed(2)}ms`,
-        {
-          operation: input.operation,
-          taskId: input.taskId,
-          responseTime,
-        },
-      );
-
-      // 🎯 BUILD WORKFLOW EXECUTION ENVELOPE
-      const envelope = this.envelopeBuilder.buildWorkflowExecutionEnvelope(
-        input.operation,
-        input.taskId,
-        result,
-        workflowGuidance,
-      );
-
-      // Note: responseTime is tracked in the response wrapper, not the envelope metadata
-
-      const response: {
-        content: Array<{ type: 'text'; text: string }>;
-      } = {
+      // Return MINIMAL state data only - NO guidance generation, NO envelopes
+      return {
         content: [
           {
             type: 'text' as const,
-            text: JSON.stringify(envelope, null, 2),
+            text: JSON.stringify(
+              {
+                operation: input.operation,
+                taskId: input.taskId,
+                success: true,
+                data: result,
+                timestamp: new Date().toISOString(),
+              },
+              null,
+              2,
+            ),
           },
         ],
       };
-
-      // Add verbose data if requested (FIXED: Eliminated duplication)
-      if (shouldIncludeDebugInfo()) {
-        response.content.push({
-          type: 'text' as const,
-          text: JSON.stringify(
-            {
-              debug: {
-                // ONLY include data NOT in main response
-                processingTime: Math.round(responseTime),
-                internalMetrics: {
-                  operation: input.operation,
-                  timestamp: new Date().toISOString(),
-                },
-                // REMOVED: rawResult, rawGuidance (already in main response)
-              },
-            },
-            null,
-            2,
-          ),
-        });
-      }
-
-      return response;
     } catch (error: unknown) {
       this.logger.error(`Workflow execution failed:`, error);
-      const errorResult = createErrorResult(error, 'Workflow execution');
-
-      const errorEnvelope = {
-        taskId: input.taskId,
-        operation: input.operation,
-        success: false,
-        error: {
-          message: errorResult.message,
-          code: 'WORKFLOW_EXECUTION_FAILED',
-          operation: input.operation,
-          taskId: input.taskId,
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-          responseTime: Math.round(performance.now() - startTime),
-        },
-      };
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
 
       return {
         content: [
           {
             type: 'text' as const,
-            text: JSON.stringify(errorEnvelope, null, 2),
+            text: JSON.stringify(
+              {
+                operation: input.operation,
+                taskId: input.taskId,
+                success: false,
+                error: {
+                  message: errorMessage,
+                  code: 'WORKFLOW_EXECUTION_FAILED',
+                },
+                timestamp: new Date().toISOString(),
+              },
+              null,
+              2,
+            ),
           },
         ],
       };
-    }
-  }
-
-  /**
-   * Generate workflow guidance for response
-   */
-  private async generateWorkflowGuidance(
-    input: WorkflowExecutionInputSchema,
-    result: any,
-  ): Promise<any> {
-    try {
-      if (!input.roleName) return null;
-
-      return await this.workflowGuidance.getWorkflowGuidance(input.roleName, {
-        taskId: input.taskId,
-        roleId: input.roleName,
-        executionData: { operation: input.operation, result },
-      });
-    } catch (error) {
-      this.logger.warn('Failed to generate workflow guidance:', error);
-      return null;
     }
   }
 }

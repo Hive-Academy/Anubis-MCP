@@ -3,18 +3,14 @@ import {
   ProjectBehavioralProfile,
   ProjectContext,
   WorkflowRole,
-  WorkflowStep,
 } from 'generated/prisma';
 import { PrismaService } from '../../../../prisma/prisma.service';
-import { RequiredInputExtractorService } from '../../../utils/envelope-builder/required-input-extractor.service';
-import { ValidationContextBuilderService } from '../../../utils/envelope-builder/validation-context-builder.service';
 
-// Configuration interfaces to eliminate hardcoding
+// Simplified configuration for role-focused guidance only
 export interface GuidanceConfig {
   defaults: {
     patternConfidence: number;
     patternUsage: string;
-    estimatedTime: string;
   };
   patternDetection: {
     requiredPatternKeywords: string[];
@@ -43,6 +39,7 @@ export interface PatternImplementation {
   [key: string]: any;
 }
 
+// FOCUSED: Role/Persona context only - NO step details
 export interface WorkflowGuidance {
   currentRole: {
     name: string;
@@ -50,23 +47,6 @@ export interface WorkflowGuidance {
     description: string;
     capabilities: any;
   };
-  currentStep: {
-    name: string;
-    displayName: string;
-    description: string;
-    stepType: string;
-    estimatedTime?: string;
-    behavioralContext?: any;
-    approachGuidance?: any;
-    qualityChecklist?: any;
-    patternEnforcement?: any;
-  } | null;
-  nextActions: Array<{
-    name: string;
-    actionType: string;
-    actionData: any;
-    sequenceOrder: number;
-  }>;
   projectContext: {
     projectType?: string;
     behavioralProfile?: any;
@@ -79,33 +59,22 @@ export interface WorkflowGuidance {
     antiPatterns: string[];
     complianceChecks: any[];
   };
-  reportingStatus: {
-    shouldTriggerReport: boolean;
-    reportType?: string;
-    reportTemplate?: string;
-  };
-  // ENHANCED: Added required inputs from enhanced envelope-builder services
-  requiredInputs?: any[];
 }
 
-export interface StepExecutionContext {
+export interface RoleContext {
   taskId: number;
-  roleId: string;
-  stepId?: string;
   projectPath?: string;
-  executionData?: any;
 }
 
 @Injectable()
 export class WorkflowGuidanceService {
   private readonly logger = new Logger(WorkflowGuidanceService.name);
 
-  // Configuration with sensible defaults
+  // Simplified configuration - removed step-related configs
   private readonly config: GuidanceConfig = {
     defaults: {
       patternConfidence: 0.8,
       patternUsage: 'general',
-      estimatedTime: '15 minutes',
     },
     patternDetection: {
       requiredPatternKeywords: ['required', 'mandatory', 'must', 'essential'],
@@ -117,12 +86,7 @@ export class WorkflowGuidanceService {
     },
   };
 
-  constructor(
-    private prisma: PrismaService,
-    // Enhanced envelope-builder service dependencies
-    private readonly inputExtractor: RequiredInputExtractorService,
-    private readonly validationBuilder: ValidationContextBuilderService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
   /**
    * Update guidance configuration
@@ -152,13 +116,13 @@ export class WorkflowGuidanceService {
   }
 
   /**
-   * Get comprehensive workflow guidance for a role in a specific context
-   * This is the core method that provides intelligent, embedded guidance
-   * ENHANCED: Now uses TYPE-SAFE enhanced envelope-builder services
+   * FOCUSED: Get ONLY role/persona context - NO step details
+   * Call this ONCE when switching roles to get the persona context
+   * REMOVED: All envelope builder services and redundant data
    */
   async getWorkflowGuidance(
     roleName: string,
-    context: StepExecutionContext,
+    context: RoleContext,
   ): Promise<WorkflowGuidance> {
     try {
       // Get role information
@@ -170,48 +134,20 @@ export class WorkflowGuidanceService {
       // Get project context if available
       const projectContext = await this.getProjectContext(context.projectPath);
 
-      // Get current step based on context
-      const currentStep = await this.getCurrentStep(role.id, context);
-
-      // Get next actions for the current step
-      const nextActions = currentStep
-        ? await this.getStepActions(currentStep.id)
-        : [];
-
       // Get project-specific behavioral profile
       const behavioralProfile = await this.getProjectBehavioralProfile(
         projectContext?.id,
         roleName,
       );
 
-      // Build initial guidance structure
-      const baseGuidance: WorkflowGuidance = {
+      // FOCUSED: Build role-only guidance structure (NO step details)
+      const roleGuidance: WorkflowGuidance = {
         currentRole: {
           name: role.name,
           displayName: role.displayName,
           description: role.description,
           capabilities: role.capabilities,
         },
-        currentStep: currentStep
-          ? {
-              name: currentStep.name,
-              displayName: currentStep.displayName,
-              description: currentStep.description,
-              stepType: currentStep.stepType,
-              estimatedTime:
-                currentStep.estimatedTime ?? this.config.defaults.estimatedTime,
-              behavioralContext: currentStep.behavioralContext,
-              approachGuidance: currentStep.approachGuidance,
-              qualityChecklist: currentStep.qualityChecklist,
-              patternEnforcement: currentStep.patternEnforcement,
-            }
-          : null,
-        nextActions: nextActions.map((action) => ({
-          name: action.name,
-          actionType: action.actionType,
-          actionData: action.actionData,
-          sequenceOrder: action.sequenceOrder,
-        })),
         projectContext: {
           projectType: projectContext?.projectType,
           behavioralProfile: behavioralProfile,
@@ -220,79 +156,17 @@ export class WorkflowGuidanceService {
             : [],
           qualityStandards: behavioralProfile?.qualityStandards,
         },
-        qualityReminders: [], // Will be enhanced below
-        ruleEnforcement: {
-          // Will be enhanced below
-          requiredPatterns: [],
-          antiPatterns: [],
-          complianceChecks: [],
-        },
-        reportingStatus: {
-          shouldTriggerReport: currentStep?.triggerReport || false,
-          reportType: currentStep?.reportType || undefined,
-          reportTemplate: currentStep?.reportTemplate || undefined,
-        },
-        requiredInputs: [], // Will be enhanced below
+        qualityReminders: await this.getQualityReminders(
+          role.id,
+          projectContext?.id,
+        ),
+        ruleEnforcement: await this.getRuleEnforcement(
+          role.id,
+          projectContext?.id,
+        ),
       };
 
-      // ENHANCED: Use enhanced envelope-builder services for comprehensive guidance
-      const [validationResult, requiredInputsResult] = await Promise.all([
-        this.validationBuilder.buildValidationContext(
-          baseGuidance,
-          currentStep?.id || null,
-          context.taskId,
-        ),
-        this.inputExtractor.extractRequiredInput(
-          currentStep?.id || null,
-          baseGuidance,
-        ),
-      ]);
-
-      // ENHANCED: Integrate validation and input extraction results into guidance
-      if (validationResult.success && validationResult.context) {
-        const validationContext = validationResult.context;
-
-        // Enhanced quality reminders from validation context
-        baseGuidance.qualityReminders = [
-          ...validationContext.roleSpecificStandards,
-          ...validationContext.stepSpecificCriteria,
-          ...validationContext.projectStandards,
-        ];
-
-        // Enhanced rule enforcement from validation context
-        baseGuidance.ruleEnforcement = {
-          requiredPatterns: validationContext.qualityPatterns.map(
-            (p) => p.name,
-          ),
-          antiPatterns: validationContext.antiPatterns.map((p) => p.name),
-          complianceChecks: validationContext.validationChecks,
-        };
-      } else {
-        // Fallback to traditional methods if enhanced validation fails
-        this.logger.warn(
-          'Enhanced validation failed, falling back to traditional methods',
-        );
-        baseGuidance.qualityReminders = await this.getQualityReminders(
-          role.id,
-          projectContext?.id,
-        );
-        baseGuidance.ruleEnforcement = await this.getRuleEnforcement(
-          role.id,
-          projectContext?.id,
-        );
-      }
-
-      // ENHANCED: Integrate required inputs from input extractor
-      if (requiredInputsResult && Array.isArray(requiredInputsResult)) {
-        baseGuidance.requiredInputs = requiredInputsResult;
-      } else {
-        this.logger.warn(
-          'Required inputs extraction failed or returned no inputs',
-        );
-        baseGuidance.requiredInputs = [];
-      }
-
-      return baseGuidance;
+      return roleGuidance;
     } catch (error) {
       this.logger.error(
         `Error getting workflow guidance for role ${roleName}:`,
@@ -302,7 +176,7 @@ export class WorkflowGuidanceService {
     }
   }
 
-  // Private helper methods focused on guidance generation
+  // Private helper methods focused on role/persona guidance only
 
   private async getWorkflowRole(
     roleName: string,
@@ -319,43 +193,6 @@ export class WorkflowGuidanceService {
 
     return this.prisma.projectContext.findFirst({
       where: { projectPath },
-    });
-  }
-
-  private async getCurrentStep(
-    roleId: string,
-    context: StepExecutionContext,
-  ): Promise<WorkflowStep | null> {
-    // If stepId is provided, get that specific step
-    if (context.stepId) {
-      return this.prisma.workflowStep.findUnique({
-        where: { id: context.stepId },
-      });
-    }
-
-    // Get current step from workflow execution
-    const execution = await this.prisma.workflowExecution.findFirst({
-      where: { taskId: context.taskId },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    if (execution?.currentStepId) {
-      return this.prisma.workflowStep.findUnique({
-        where: { id: execution.currentStepId },
-      });
-    }
-
-    // Fallback: get the first step in sequence for this role
-    return this.prisma.workflowStep.findFirst({
-      where: { roleId },
-      orderBy: { sequenceNumber: 'asc' },
-    });
-  }
-
-  private getStepActions(stepId: string) {
-    return this.prisma.stepAction.findMany({
-      where: { stepId },
-      orderBy: { sequenceOrder: 'asc' },
     });
   }
 
@@ -449,7 +286,7 @@ export class WorkflowGuidanceService {
       // Use implementation field for anti-patterns with type safety
       enforcement.antiPatterns = patterns.flatMap((p) => {
         const impl = p.implementation as PatternImplementation;
-        return impl?.antiPatterns || [];
+        return Array.isArray(impl?.antiPatterns) ? impl.antiPatterns : [];
       });
 
       // Use implementation field for compliance checks with type safety
@@ -458,7 +295,7 @@ export class WorkflowGuidanceService {
           const impl = p.implementation as PatternImplementation;
           return impl?.complianceChecks;
         })
-        .filter(Boolean);
+        .filter((checks): checks is any[] => Array.isArray(checks));
     }
 
     return enforcement;

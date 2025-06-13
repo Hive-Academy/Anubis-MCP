@@ -192,15 +192,10 @@ export class WorkflowExecutionOperationsService {
     const nextSteps = await this.dataEnricher.getNextStepsForExecution(
       execution.id,
     );
-    const recommendations = await this.dataEnricher.getRoleRecommendations(
-      input.roleName!, // Safe after validation
-      input.taskId,
-    );
 
     return {
       execution,
       nextSteps,
-      recommendations,
     };
   }
 

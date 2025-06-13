@@ -11,6 +11,8 @@ import { WorkflowBootstrapMcpService } from './mcp-operations/workflow-bootstrap
 
 // Services
 import { WorkflowGuidanceService } from './services/workflow-guidance.service';
+import { RequiredInputExtractorService } from './services/required-input-extractor.service';
+import { ProgressCalculatorService } from './services/progress-calculator.service';
 import { StepExecutionService } from './services/step-execution.service';
 import { StepExecutionCoreService } from './services/step-execution-core.service';
 import { StepGuidanceService } from './services/step-guidance.service';
@@ -24,14 +26,7 @@ import { WorkflowBootstrapService } from './services/workflow-bootstrap.service'
 import { CoreServiceOrchestrator } from './services/core-service-orchestrator.service';
 
 import { ExecutionAnalyticsService } from './services/execution-analytics.service';
-// Utils
-import {
-  EnvelopeBuilderService,
-  RequiredInputExtractorService,
-  ActionGuidanceGeneratorService,
-} from '../../utils/envelope-builder';
-import { ValidationContextBuilderService } from '../../utils/envelope-builder/validation-context-builder.service';
-import { ProgressCalculatorService } from '../../utils/envelope-builder/progress-calculator.service';
+// Utils - Legacy services removed
 
 @Module({
   imports: [CoreWorkflowModule],
@@ -47,6 +42,8 @@ import { ProgressCalculatorService } from '../../utils/envelope-builder/progress
 
     // Core Services
     WorkflowGuidanceService,
+    RequiredInputExtractorService,
+    ProgressCalculatorService,
     StepExecutionService,
     StepExecutionCoreService,
     StepGuidanceService,
@@ -59,13 +56,6 @@ import { ProgressCalculatorService } from '../../utils/envelope-builder/progress
     WorkflowBootstrapService,
     CoreServiceOrchestrator,
     ExecutionAnalyticsService,
-
-    // Utils
-    EnvelopeBuilderService,
-    RequiredInputExtractorService,
-    ActionGuidanceGeneratorService,
-    ProgressCalculatorService,
-    ValidationContextBuilderService,
   ],
   exports: [
     // MCP Operations

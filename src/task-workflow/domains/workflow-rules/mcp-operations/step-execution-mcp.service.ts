@@ -3,6 +3,7 @@ import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { StepExecutionService } from '../services/step-execution.service';
 import { CoreServiceOrchestrator } from '../services/core-service-orchestrator.service';
+import { RequiredInputExtractorService } from '../services/required-input-extractor.service';
 import { getErrorMessage } from '../utils/type-safety.utils';
 import { WorkflowStep } from '../services/step-query.service';
 
@@ -58,6 +59,27 @@ type ExecuteMcpOperationInput = z.infer<typeof ExecuteMcpOperationInputSchema>;
 type GetStepProgressInput = z.infer<typeof GetStepProgressInputSchema>;
 type GetNextStepInput = z.infer<typeof GetNextStepInputSchema>;
 
+// Add type definitions at the top
+interface CurrentExecution {
+  currentStepId: string | null;
+  currentRoleId: string;
+  status: string;
+}
+
+interface StepGuidanceData {
+  step?: {
+    name: string;
+    description: string;
+  };
+  mcpActions?: Array<{
+    serviceName: string;
+    operation: string;
+    parameters: any;
+  }>;
+  successCriteria?: string[];
+  qualityChecklist?: string[];
+}
+
 /**
  * 🚀 REVAMPED: StepExecutionMcpService
  *
@@ -77,6 +99,7 @@ export class StepExecutionMcpService {
   constructor(
     private readonly stepExecutionService: StepExecutionService,
     private readonly coreServiceOrchestrator: CoreServiceOrchestrator,
+    private readonly requiredInputExtractorService: RequiredInputExtractorService,
   ) {}
 
   // ===================================================================
@@ -85,37 +108,101 @@ export class StepExecutionMcpService {
 
   @Tool({
     name: 'get_step_guidance',
-    description: `Get guidance for what the AI agent should execute locally.
+    description: `Get FOCUSED guidance for the current step execution only.
 
-🎯 TOUR GUIDE ROLE - Provides step-by-step guidance for local execution
+🎯 FOCUSED STEP GUIDANCE - No role context, no redundancy
 
-**AI Agent workflow:**
-1. Call this to get guidance
-2. Execute the guidance locally using available tools
-3. Report results back using report_step_completion
-
-**Returns structured guidance with:**
-- Step details and description
-- Local execution commands
+**Returns ONLY:**
+- Current step details and description  
+- Specific commands to execute locally
 - Success/failure criteria
-- What data to report back
+- Quality checklist for validation
 
-**IMPORTANT: AI executes locally - MCP only provides guidance!**`,
+**Does NOT return:**
+- Role context (get that from get_workflow_guidance once per role)
+- Project context (not needed for individual steps)
+- Historical data (focus on current action)
+- Envelope wrappers (minimal response)
+
+**Pattern:** get_workflow_guidance (once) → get_step_guidance (per step) → execute locally → report_step_completion`,
     parameters: GetStepGuidanceInputSchema as ZodSchema<GetStepGuidanceInput>,
   })
   async getStepGuidance(input: GetStepGuidanceInput) {
     try {
       this.logger.log(
-        `Getting step guidance for task: ${input.taskId}, role: ${input.roleId}`,
+        `Getting focused step guidance for task: ${input.taskId}, role: ${input.roleId}`,
       );
 
-      const stepGuidance = await this.stepExecutionService.getStepGuidance(
-        input.taskId,
-        input.roleId,
-        input.stepId || '',
-      );
+      // Get current execution to find current step if not provided
+      let currentStepId = input.stepId;
+      let currentRoleId = input.roleId;
 
-      return this.buildMcpResponse(stepGuidance, 'step-guidance');
+      if (!currentStepId) {
+        const execution = await this.coreServiceOrchestrator.executeServiceCall(
+          'WorkflowOperations',
+          'get_execution',
+          { taskId: input.taskId },
+        );
+
+        if (!execution.success || !execution.data) {
+          return this.buildMinimalResponse({
+            error: 'No active execution found',
+            // ❌ REMOVED: suggestion (hardcoded flow control)
+          });
+        }
+
+        const currentExecution = execution.data as CurrentExecution;
+        const executionStepId = currentExecution.currentStepId;
+        currentRoleId = currentExecution.currentRoleId;
+
+        if (!executionStepId) {
+          return this.buildMinimalResponse({
+            error: 'No current step found',
+            // ❌ REMOVED: suggestion (hardcoded flow control)
+          });
+        }
+
+        currentStepId = executionStepId;
+      }
+
+      // Get step guidance from business service
+      const stepGuidanceResult =
+        await this.stepExecutionService.getStepGuidance(
+          input.taskId,
+          currentRoleId,
+          currentStepId,
+        );
+
+      const stepGuidance = stepGuidanceResult as StepGuidanceData;
+
+      // 🎯 NEW: Extract MCP operation parameter requirements
+      const mcpParameterRequirements =
+        this.extractMcpParameterRequirements(stepGuidance);
+
+      // Return ONLY focused step guidance - NO role context
+      const response: any = {
+        stepInfo: {
+          stepId: currentStepId,
+          name: stepGuidance.step?.name || 'Current Step',
+          description:
+            stepGuidance.step?.description || 'Execute current workflow step',
+        },
+        localExecution: {
+          commands: this.extractLocalCommands(stepGuidance),
+          description: 'Commands for you to execute locally using your tools',
+        },
+        validation: {
+          successCriteria: this.extractSuccessCriteria(stepGuidance),
+          qualityChecklist: this.extractQualityChecklist(stepGuidance),
+        },
+      };
+
+      // 🎯 CONDITIONALLY ADD: MCP operation parameters if step has MCP_CALL actions
+      if (mcpParameterRequirements.length > 0) {
+        response.mcpOperations = mcpParameterRequirements;
+      }
+
+      return this.buildMinimalResponse(response);
     } catch (error) {
       return this.buildErrorResponse(
         'Failed to get step guidance',
@@ -131,14 +218,19 @@ export class StepExecutionMcpService {
 
   @Tool({
     name: 'report_step_completion',
-    description: `Report step completion results and get next guidance.
+    description: `Report step completion results and get next step guidance.
 
-🎯 RESULT REPORTING - AI reports what it accomplished locally
+🎯 RESULT REPORTING - Report what you accomplished locally
 
 **Use this AFTER executing step guidance locally:**
 - Report success/failure of local execution
 - Provide execution results and data
-- Get guidance for next step
+- Get minimal info about next step (no role context)
+
+**Returns:**
+- Completion confirmation
+- Next step availability status
+- Minimal next action guidance (use get_step_guidance for details)
 
 **Example:**
 After running 'git status' locally, report:
@@ -163,7 +255,18 @@ After running 'git status' locally, report:
           input.executionData,
         );
 
-      return this.buildMcpResponse(completionResult, 'step-completion');
+      // Return minimal completion response - NO role context, NO detailed guidance
+      return this.buildMinimalResponse({
+        completion: {
+          stepId: input.stepId,
+          result: input.result,
+          status: 'reported',
+        },
+        nextGuidance: {
+          hasNextStep: Boolean(completionResult),
+          // ❌ REMOVED: suggestion (hardcoded flow control)
+        },
+      });
     } catch (error) {
       return this.buildErrorResponse(
         'Failed to report step completion',
@@ -221,7 +324,13 @@ AI collects task data, then calls:
           input.parameters as Record<string, unknown>,
         );
 
-      return this.buildMcpResponse(operationResult, 'mcp-operation');
+      // ✅ MINIMAL RESPONSE: Only essential operation result
+      return this.buildMinimalResponse({
+        serviceName: input.serviceName,
+        operation: input.operation,
+        success: operationResult.success,
+        data: operationResult.data,
+      });
     } catch (error) {
       return this.buildErrorResponse(
         `Failed to execute ${input.serviceName}.${input.operation}`,
@@ -237,13 +346,23 @@ AI collects task data, then calls:
 
   @Tool({
     name: 'get_step_progress',
-    description: `Get workflow step progress for a task.
+    description: `Get focused step progress summary for a task.
 
-**Returns comprehensive progress data:**
-- Step execution history
-- Performance metrics
-- Status tracking
-- Role-specific filtering`,
+🎯 FOCUSED PROGRESS - Essential progress data only
+
+**Returns ONLY:**
+- Current step status
+- Basic progress metrics
+- Step completion status
+- Simple next action guidance
+
+**Does NOT return:**
+- Complex progress analytics
+- Redundant step details
+- Over-detailed metrics
+- Debug progress data
+
+**Pattern:** Simple progress overview for monitoring`,
     parameters: GetStepProgressInputSchema as ZodSchema<GetStepProgressInput>,
   })
   async getStepProgress(input: GetStepProgressInput) {
@@ -254,7 +373,16 @@ AI collects task data, then calls:
         input.id,
       );
 
-      return this.buildMcpResponse(progress, 'step-progress');
+      // ✅ MINIMAL RESPONSE: Only essential progress data
+      return this.buildMinimalResponse({
+        taskId: input.id,
+        status: (progress as any).status || 'in_progress',
+        currentStep: {
+          name: 'Current Step', // Will be enhanced with actual step data
+          status: 'active',
+        },
+        // ❌ REMOVED: nextAction (hardcoded flow control)
+      });
     } catch (error) {
       return this.buildErrorResponse(
         'Failed to get step progress',
@@ -266,12 +394,23 @@ AI collects task data, then calls:
 
   @Tool({
     name: 'get_next_available_step',
-    description: `Get the next available step for a role.
+    description: `Get focused next step information for role progression.
 
-**Returns intelligent step recommendations:**
-- Next step in sequence
-- Role-specific steps
-- Progress-aware suggestions`,
+🎯 FOCUSED NEXT STEP - Essential step progression only
+
+**Returns ONLY:**
+- Next step basic details
+- Step availability status  
+- Simple progression guidance
+- Role transition hint if needed
+
+**Does NOT return:**
+- Complex step analytics
+- Redundant step metadata
+- Over-detailed step information
+- Debug step data
+
+**Pattern:** Simple next step discovery for workflow progression`,
     parameters: GetNextStepInputSchema as ZodSchema<GetNextStepInput>,
   })
   async getNextAvailableStep(input: GetNextStepInput) {
@@ -286,20 +425,21 @@ AI collects task data, then calls:
           input.roleId,
         );
 
-      const result = {
+      // ✅ MINIMAL RESPONSE: Only essential next step data
+      return this.buildMinimalResponse({
+        taskId: input.id,
+        roleId: input.roleId,
         nextStep: nextStep
           ? {
               stepId: nextStep.id,
               name: nextStep.name,
-              stepType: nextStep.stepType,
               description: nextStep.description,
               sequenceNumber: nextStep.sequenceNumber,
             }
           : null,
         status: nextStep ? 'step_available' : 'no_steps_available',
-      };
-
-      return this.buildMcpResponse(result, 'next-step');
+        // ❌ REMOVED: nextAction (hardcoded flow control)
+      });
     } catch (error) {
       return this.buildErrorResponse(
         'Failed to get next available step',
@@ -310,28 +450,8 @@ AI collects task data, then calls:
   }
 
   // ===================================================================
-  // 🔧 PRIVATE HELPER METHODS
+  // 🔧 PRIVATE HELPER METHODS - Consistent with other fixed tools
   // ===================================================================
-
-  private buildMcpResponse(data: unknown, responseType: string) {
-    return {
-      content: [
-        {
-          type: 'text' as const,
-          text: JSON.stringify(
-            {
-              type: responseType,
-              success: true,
-              data,
-              timestamp: new Date().toISOString(),
-            },
-            null,
-            2,
-          ),
-        },
-      ],
-    };
-  }
 
   private buildErrorResponse(message: string, error: string, code: string) {
     return {
@@ -355,5 +475,94 @@ AI collects task data, then calls:
         },
       ],
     };
+  }
+
+  private buildMinimalResponse(data: unknown) {
+    return {
+      content: [
+        {
+          type: 'text' as const,
+          text: JSON.stringify(data, null, 2),
+        },
+      ],
+    };
+  }
+
+  private extractLocalCommands(stepGuidance: StepGuidanceData): string[] {
+    if (!stepGuidance.mcpActions) {
+      return ['No specific commands available'];
+    }
+
+    return stepGuidance.mcpActions.map(
+      (action) => `Execute ${action.serviceName}.${action.operation}`,
+    );
+  }
+
+  private extractSuccessCriteria(stepGuidance: StepGuidanceData): string[] {
+    return stepGuidance.successCriteria || ['Step completed successfully'];
+  }
+
+  private extractQualityChecklist(stepGuidance: StepGuidanceData): string[] {
+    return stepGuidance.qualityChecklist || ['Verify step completion'];
+  }
+
+  /**
+   * 🎯 NEW: Extract MCP operation parameter requirements from step actions
+   * This integrates the RequiredInputExtractorService to provide parameter guidance
+   */
+  private extractMcpParameterRequirements(
+    stepGuidance: StepGuidanceData,
+  ): Array<{
+    serviceName: string;
+    operation: string;
+    requiredParameters: string[];
+    optionalParameters: string[];
+    parameterDetails: Record<string, any>;
+    usage: string;
+  }> {
+    if (!stepGuidance.mcpActions || stepGuidance.mcpActions.length === 0) {
+      return [];
+    }
+
+    const mcpRequirements = [];
+
+    for (const action of stepGuidance.mcpActions) {
+      try {
+        // Extract parameter requirements using our RequiredInputExtractorService
+        const extraction =
+          this.requiredInputExtractorService.extractFromServiceSchema(
+            action.serviceName,
+            action.operation,
+          );
+
+        mcpRequirements.push({
+          serviceName: action.serviceName,
+          operation: action.operation,
+          requiredParameters: extraction.requiredParameters,
+          optionalParameters: extraction.optionalParameters,
+          parameterDetails: extraction.parameterDetails,
+          usage: `Execute ${action.serviceName}.${action.operation} with these parameters`,
+        });
+      } catch (error) {
+        this.logger.warn(
+          `Failed to extract parameters for ${action.serviceName}.${action.operation}: ${error}`,
+        );
+
+        // Provide fallback parameter guidance
+        mcpRequirements.push({
+          serviceName: action.serviceName,
+          operation: action.operation,
+          requiredParameters: ['operation', 'executionData'],
+          optionalParameters: [],
+          parameterDetails: {
+            operation: { description: 'Operation name', isRequired: true },
+            executionData: { description: 'Operation data', isRequired: true },
+          },
+          usage: `Execute ${action.serviceName}.${action.operation} (schema extraction failed, using fallback)`,
+        });
+      }
+    }
+
+    return mcpRequirements;
   }
 }

@@ -46,12 +46,9 @@ export interface BootstrapResult {
     executionId: string;
     firstStepId: string | null;
   };
-  currentStep: {
-    stepId: string;
-    name: string;
-    displayName: string;
-  };
-  nextAction: string;
+  execution: any;
+  currentRole: any;
+  currentStep: any;
 }
 
 /**
@@ -62,6 +59,7 @@ export interface BootstrapResult {
  * - Stores additional task data in execution context for boomerang UPDATE
  * - Creates workflow execution pointing to first database step
  * - Loads first workflow step from database for the boomerang role
+ * - Returns COMPREHENSIVE execution data including role context and step guidance
  * - Lets boomerang step 3 UPDATE the task with comprehensive data and analysis
  */
 @Injectable()
@@ -91,14 +89,15 @@ export class WorkflowBootstrapService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Bootstrap a workflow - CREATES MINIMAL REAL TASK + EXECUTION
+   * Bootstrap a workflow - CREATES MINIMAL REAL TASK + COMPREHENSIVE EXECUTION DATA
    *
    * WHAT THIS DOES:
    * 1. Creates MINIMAL REAL task with just name and generated slug
    * 2. Stores additional task data in execution context for boomerang UPDATE
    * 3. Finds the first workflow step for the boomerang role from database
    * 4. Creates workflow execution pointing to that first step
-   * 5. Returns resources for the step guidance system to take over
+   * 5. Returns COMPREHENSIVE execution data including role context and step guidance
+   * 6. AI can start executing immediately without needing get_step_guidance calls
    *
    * WHAT THE BOOMERANG STEP 3 WILL DO:
    * - Read the additional task data from execution context
@@ -115,29 +114,6 @@ export class WorkflowBootstrapService {
       this.logger.log(
         `Bootstrapping workflow with minimal real task: ${input.taskName}`,
       );
-
-      // Validate input
-      const inputValidation = this.validateBootstrapInput(input);
-      if (!inputValidation.valid) {
-        return {
-          success: false,
-          task: null,
-          workflowExecution: null,
-          firstStep: null,
-          message: `Bootstrap validation failed: ${inputValidation.errors.join(', ')}`,
-          resources: {
-            taskId: '',
-            executionId: '',
-            firstStepId: null,
-          },
-          currentStep: {
-            stepId: '',
-            name: '',
-            displayName: '',
-          },
-          nextAction: '',
-        };
-      }
 
       // Single transaction for all operations
       const result = await this.prisma.$transaction(async (tx) => {
@@ -157,17 +133,25 @@ export class WorkflowBootstrapService {
           },
         });
 
-        // Step 3: Get boomerang role and its FIRST workflow step from database
+        // Step 3: Get boomerang role with FULL CONTEXT and its FIRST workflow step from database
         const role = await tx.workflowRole.findUnique({
           where: { name: input.initialRole },
-          select: { id: true, name: true, displayName: true },
+          select: {
+            id: true,
+            name: true,
+            displayName: true,
+            description: true,
+            capabilities: true,
+            priority: true,
+            roleType: true,
+          },
         });
 
         if (!role) {
           throw new Error(`Role '${input.initialRole}' not found`);
         }
 
-        // Step 4: Get the FIRST workflow step for this role from database
+        // Step 4: Get the FIRST workflow step for this role with COMPLETE DETAILS
         const firstStep = await tx.workflowStep.findFirst({
           where: {
             roleId: role.id,
@@ -184,6 +168,9 @@ export class WorkflowBootstrapService {
             behavioralContext: true,
             approachGuidance: true,
             qualityChecklist: true,
+            actionData: true,
+            contextValidation: true,
+            patternEnforcement: true,
           },
         });
 
@@ -252,10 +239,29 @@ export class WorkflowBootstrapService {
           include: {
             task: true,
             currentRole: {
-              select: { id: true, name: true, displayName: true },
+              select: {
+                id: true,
+                name: true,
+                displayName: true,
+                description: true,
+                capabilities: true,
+                priority: true,
+                roleType: true,
+              },
             },
             currentStep: {
-              select: { id: true, name: true, displayName: true },
+              select: {
+                id: true,
+                name: true,
+                displayName: true,
+                description: true,
+                behavioralContext: true,
+                approachGuidance: true,
+                qualityChecklist: true,
+                actionData: true,
+                contextValidation: true,
+                patternEnforcement: true,
+              },
             },
           },
         });
@@ -270,26 +276,26 @@ export class WorkflowBootstrapService {
 
       const duration = Date.now() - startTime;
       this.logger.log(
-        `Workflow bootstrapped in ${duration}ms - Minimal real task created, boomerang will update with comprehensive data`,
+        `Workflow bootstrapped in ${duration}ms - Comprehensive execution data ready`,
       );
 
+      // ✅ RETURN COMPREHENSIVE DATA - Everything needed to start execution
+      // Just return the full execution object since Prisma includes give us everything
       return {
         success: true,
-        task: result.task,
-        workflowExecution: result.workflowExecution,
-        firstStep: result.firstStep,
         message: `Workflow successfully bootstrapped with minimal real task. Boomerang workflow will update task with comprehensive data after git setup and codebase analysis.`,
         resources: {
           taskId: result.task.id.toString(),
           executionId: result.workflowExecution.id,
           firstStepId: result.firstStep.id,
         },
-        currentStep: {
-          stepId: result.firstStep.id,
-          name: result.firstStep.name,
-          displayName: result.firstStep.displayName,
-        },
-        nextAction: 'get_workflow_guidance',
+        // Return the full objects directly - no manual field mapping needed
+        task: result.task,
+        workflowExecution: result.workflowExecution,
+        firstStep: result.firstStep,
+        execution: result.workflowExecution.executionState,
+        currentRole: result.workflowExecution.currentRole,
+        currentStep: result.workflowExecution.currentStep,
       };
     } catch (error) {
       this.logger.error(`Bootstrap failed:`, error);
@@ -309,7 +315,8 @@ export class WorkflowBootstrapService {
           name: '',
           displayName: '',
         },
-        nextAction: '',
+        execution: null,
+        currentRole: null,
       };
     }
   }

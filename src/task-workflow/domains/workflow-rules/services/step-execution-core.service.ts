@@ -20,12 +20,13 @@ export interface StepExecutionContext {
   taskId: string;
   roleId: string;
   executionContext?: unknown;
+  projectPath?: string;
 }
 
 export interface StepExecutionResult {
   success: boolean;
   guidance: StepGuidanceResult;
-  nextAction: string;
+  // ❌ REMOVED: nextAction (hardcoded flow control)
   message: string;
 }
 
@@ -132,7 +133,7 @@ export class StepExecutionCoreService {
       return {
         success: true,
         guidance,
-        nextAction: 'EXECUTE_MCP_ACTIONS',
+        // ❌ REMOVED: nextAction (hardcoded flow control)
         message: 'Step guidance prepared for AI execution',
       };
     } catch (error) {

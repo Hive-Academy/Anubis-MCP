@@ -1,15 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service';
-import { WorkflowGuidance } from '../../domains/workflow-rules/services/workflow-guidance.service';
+import { PrismaService } from '../../../../prisma/prisma.service';
+import { WorkflowGuidance } from './workflow-guidance.service';
 
 // 🎯 PHASE 4.1: Enhanced schema imports with comprehensive core-workflow coverage
 import { ZodSchema } from 'zod';
-import { IndividualSubtaskOperationsSchema } from '../../domains/core-workflow/schemas/individual-subtask-operations.schema';
-import { PlanningOperationsSchema } from '../../domains/core-workflow/schemas/planning-operations.schema';
-import { ResearchOperationsSchema } from '../../domains/core-workflow/schemas/research-operations.schema';
-import { ReviewOperationsSchema } from '../../domains/core-workflow/schemas/review-operations.schema';
-import { TaskOperationsSchema } from '../../domains/core-workflow/schemas/task-operations.schema';
-import { WorkflowOperationsSchema } from '../../domains/core-workflow/schemas/workflow-operations.schema';
+import { IndividualSubtaskOperationsSchema } from '../../core-workflow/schemas/individual-subtask-operations.schema';
+import { PlanningOperationsSchema } from '../../core-workflow/schemas/planning-operations.schema';
+import { ResearchOperationsSchema } from '../../core-workflow/schemas/research-operations.schema';
+import { ReviewOperationsSchema } from '../../core-workflow/schemas/review-operations.schema';
+import { TaskOperationsSchema } from '../../core-workflow/schemas/task-operations.schema';
+import { WorkflowOperationsSchema } from '../../core-workflow/schemas/workflow-operations.schema';
 
 /**
  * 🎯 PHASE 4.1: ENHANCED SCHEMA-BASED REQUIRED INPUT EXTRACTOR
@@ -457,17 +457,17 @@ export class RequiredInputExtractorService {
   }
 
   /**
-   * 🎯 RESTORED: Extract required inputs with proper schema introspection
-   * Combines schema-based extraction with context-aware filtering
+   * 🎯 NEW: Extract required inputs from step actions
+   * Analyzes step actions to determine MCP operation parameter requirements
    */
-  extractRequiredInput(
+  extractRequiredInputFromStepActions(
     stepId: string | null,
-    guidance: WorkflowGuidance,
+    stepActions: any[],
   ): string[] {
     const requiredInputs = new Set<string>();
 
     // 🎯 PRIMARY: Extract from schemas for MCP service parameters
-    guidance.nextActions?.forEach((action) => {
+    stepActions?.forEach((action: any) => {
       if (action.actionType === 'MCP_CALL' && action.actionData?.serviceName) {
         const extraction = this.extractFromServiceSchema(
           action.actionData.serviceName,
@@ -493,6 +493,20 @@ export class RequiredInputExtractorService {
       `Extracted ${result.length} schema-based inputs for step ${stepId}: ${result.join(', ')}`,
     );
     return result;
+  }
+
+  /**
+   * 🎯 LEGACY: Extract required inputs with proper schema introspection
+   * @deprecated Use extractRequiredInputFromStepActions instead
+   */
+  extractRequiredInput(
+    _stepId: string | null,
+    _guidance: WorkflowGuidance,
+  ): string[] {
+    // Return basic inputs since WorkflowGuidance doesn't contain step actions
+    const requiredInputs = new Set<string>();
+    this.addEssentialWorkflowInputs(requiredInputs);
+    return Array.from(requiredInputs);
   }
 
   /**

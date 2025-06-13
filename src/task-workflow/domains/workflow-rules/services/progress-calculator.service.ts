@@ -1,14 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service';
-import { WorkflowGuidance } from '../../domains/workflow-rules/services/workflow-guidance.service';
+import { PrismaService } from '../../../../prisma/prisma.service';
+import { WorkflowGuidance } from './workflow-guidance.service';
 import {
   ProgressMetrics,
   ProgressCalculationResult,
-} from './types/progress-calculator.types';
-import {
-  getErrorMessage,
-  createErrorResult,
-} from '../../domains/workflow-rules/utils/type-safety.utils';
+} from '../types/progress-calculator.types';
+import { getErrorMessage, createErrorResult } from '../utils/type-safety.utils';
 
 @Injectable()
 export class ProgressCalculatorService {

@@ -1,11 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../../../../prisma/prisma.service';
-import { RoleTransition } from 'generated/prisma';
-import { StepExecutionContext } from './workflow-guidance.service';
-import * as fs from 'fs/promises';
-import * as path from 'path';
 import { exec } from 'child_process';
+import * as fs from 'fs/promises';
+import { RoleTransition } from 'generated/prisma';
+import * as path from 'path';
 import { promisify } from 'util';
+import { PrismaService } from '../../../../prisma/prisma.service';
 
 const execAsync = promisify(exec);
 
@@ -94,7 +93,6 @@ export class RoleTransitionService {
    */
   async getAvailableTransitions(
     fromRoleName: string,
-    _context: StepExecutionContext,
   ): Promise<AvailableTransition[]> {
     try {
       const fromRole = await this.prisma.workflowRole.findUnique({
@@ -145,7 +143,7 @@ export class RoleTransitionService {
    */
   async validateTransition(
     transitionId: string,
-    context: StepExecutionContext,
+    context: { roleId: string; taskId: string; projectPath?: string },
   ): Promise<TransitionValidationResult> {
     try {
       const transition = await this.prisma.roleTransition.findUnique({
@@ -210,7 +208,7 @@ export class RoleTransitionService {
    */
   async executeTransition(
     transitionId: string,
-    context: StepExecutionContext,
+    context: { roleId: string; taskId: string; projectPath?: string },
     handoffMessage?: string,
   ): Promise<{ success: boolean; message: string; newRoleId?: string }> {
     try {
@@ -280,12 +278,10 @@ export class RoleTransitionService {
    */
   async getRecommendedTransitions(
     currentRoleName: string,
-    context: StepExecutionContext,
+    context: { roleId: string; taskId: string },
   ): Promise<AvailableTransition[]> {
-    const availableTransitions = await this.getAvailableTransitions(
-      currentRoleName,
-      context,
-    );
+    const availableTransitions =
+      await this.getAvailableTransitions(currentRoleName);
 
     // Filter and rank transitions based on context
     const recommendedTransitions = [];
@@ -300,10 +296,7 @@ export class RoleTransitionService {
       ) {
         recommendedTransitions.push({
           ...transition,
-          recommendationScore: this.calculateRecommendationScore(
-            transition,
-            context,
-          ),
+          recommendationScore: this.calculateRecommendationScore(transition),
         });
       }
     }
@@ -321,7 +314,7 @@ export class RoleTransitionService {
 
   private async validateTransitionConditions(
     conditions: any,
-    context: StepExecutionContext,
+    context: { roleId: string; taskId: string; projectPath?: string },
   ): Promise<{ valid: boolean; errors: string[]; warnings?: string[] }> {
     const errors: string[] = [];
     const warnings: string[] = [];
@@ -339,7 +332,7 @@ export class RoleTransitionService {
     // Validate task status requirements
     if (conditions.requiredTaskStatus) {
       const task = await this.prisma.task.findUnique({
-        where: { id: context.taskId },
+        where: { id: Number(context.taskId) },
         select: { status: true },
       });
 
@@ -363,7 +356,7 @@ export class RoleTransitionService {
 
   private async validateTransitionRequirements(
     requirements: any,
-    context: StepExecutionContext,
+    context: { roleId: string; taskId: string; projectPath?: string },
   ): Promise<{ valid: boolean; errors: string[]; warnings?: string[] }> {
     const errors: string[] = [];
     const warnings: string[] = [];
@@ -393,7 +386,7 @@ export class RoleTransitionService {
 
   private async isStepCompleted(
     stepId: string,
-    context: StepExecutionContext,
+    context: { roleId: string; taskId: string },
   ): Promise<boolean> {
     const progress = await this.prisma.workflowStepProgress.findFirst({
       where: {
@@ -406,18 +399,20 @@ export class RoleTransitionService {
     return !!progress;
   }
 
-  private async getTimeInCurrentRole(
-    context: StepExecutionContext,
-  ): Promise<number> {
+  private async getTimeInCurrentRole(context: {
+    roleId: string;
+    taskId: string;
+    projectPath?: string;
+  }): Promise<number> {
     const latestTransition = await this.prisma.delegationRecord.findFirst({
-      where: { taskId: context.taskId },
+      where: { taskId: Number(context.taskId) },
       orderBy: { delegationTimestamp: 'desc' },
     });
 
     if (!latestTransition) {
       // If no transitions, use task creation time
       const task = await this.prisma.task.findUnique({
-        where: { id: context.taskId },
+        where: { id: Number(context.taskId) },
         select: { createdAt: true },
       });
       return task ? Date.now() - task.createdAt.getTime() : 0;
@@ -428,7 +423,7 @@ export class RoleTransitionService {
 
   private async checkDeliverableExists(
     deliverable: string,
-    context: StepExecutionContext,
+    context: { roleId: string; taskId: string; projectPath?: string },
   ): Promise<boolean> {
     try {
       // Check different types of deliverables
@@ -471,7 +466,7 @@ export class RoleTransitionService {
 
   private async checkQualityGate(
     gate: string,
-    context: StepExecutionContext,
+    context: { roleId: string; taskId: string; projectPath?: string },
   ): Promise<boolean> {
     try {
       switch (gate) {
@@ -499,12 +494,12 @@ export class RoleTransitionService {
 
   private async recordTransition(
     transition: RoleTransition & { fromRole: any; toRole: any },
-    context: StepExecutionContext,
+    context: { roleId: string; taskId: string },
     handoffMessage?: string,
   ): Promise<void> {
     await this.prisma.delegationRecord.create({
       data: {
-        taskId: context.taskId,
+        taskId: Number(context.taskId),
         fromMode: transition.fromRole.name,
         toMode: transition.toRole.name,
         delegationTimestamp: new Date(),
@@ -529,7 +524,6 @@ export class RoleTransitionService {
 
   private calculateRecommendationScore(
     transition: AvailableTransition,
-    _context: StepExecutionContext,
   ): number {
     // This would implement sophisticated recommendation logic
     // For now, we'll use a simple scoring system
@@ -552,7 +546,7 @@ export class RoleTransitionService {
 
   private resolveProjectPath(
     filePath: string,
-    context: StepExecutionContext,
+    context: { roleId: string; taskId: string; projectPath?: string },
   ): string {
     if (path.isAbsolute(filePath)) {
       return filePath;
@@ -573,7 +567,7 @@ export class RoleTransitionService {
 
   private async checkTestDeliverable(
     testType: string,
-    context: StepExecutionContext,
+    context: { roleId: string; taskId: string; projectPath?: string },
   ): Promise<boolean> {
     try {
       const workingDir = context.projectPath || process.cwd();
@@ -605,9 +599,11 @@ export class RoleTransitionService {
     }
   }
 
-  private async checkCodeQualityGate(
-    context: StepExecutionContext,
-  ): Promise<boolean> {
+  private async checkCodeQualityGate(context: {
+    roleId: string;
+    taskId: string;
+    projectPath?: string;
+  }): Promise<boolean> {
     try {
       const workingDir = context.projectPath || process.cwd();
       await execAsync(this.qualityGateConfig.commands.lint, {
@@ -621,9 +617,11 @@ export class RoleTransitionService {
     }
   }
 
-  private async checkTestCoverageGate(
-    context: StepExecutionContext,
-  ): Promise<boolean> {
+  private async checkTestCoverageGate(context: {
+    roleId: string;
+    taskId: string;
+    projectPath?: string;
+  }): Promise<boolean> {
     try {
       const workingDir = context.projectPath || process.cwd();
       const { stdout } = await execAsync(
@@ -648,9 +646,11 @@ export class RoleTransitionService {
     }
   }
 
-  private async checkSecurityGate(
-    context: StepExecutionContext,
-  ): Promise<boolean> {
+  private async checkSecurityGate(context: {
+    roleId: string;
+    taskId: string;
+    projectPath?: string;
+  }): Promise<boolean> {
     try {
       const workingDir = context.projectPath || process.cwd();
 
@@ -684,9 +684,11 @@ export class RoleTransitionService {
     }
   }
 
-  private async checkDocumentationGate(
-    context: StepExecutionContext,
-  ): Promise<boolean> {
+  private async checkDocumentationGate(context: {
+    roleId: string;
+    taskId: string;
+    projectPath?: string;
+  }): Promise<boolean> {
     try {
       // Check if README exists and has content
       const readmePath = this.resolveProjectPath('README.md', context);
@@ -704,14 +706,16 @@ export class RoleTransitionService {
     }
   }
 
-  private async checkPeerReviewGate(
-    context: StepExecutionContext,
-  ): Promise<boolean> {
+  private async checkPeerReviewGate(context: {
+    roleId: string;
+    taskId: string;
+    projectPath?: string;
+  }): Promise<boolean> {
     try {
       // Check if there's a code review record for this task
       const review = await this.prisma.codeReview.findFirst({
         where: {
-          taskId: context.taskId,
+          taskId: Number(context.taskId),
           status: 'APPROVED',
         },
       });
@@ -723,9 +727,11 @@ export class RoleTransitionService {
     }
   }
 
-  private async checkBuildGate(
-    context: StepExecutionContext,
-  ): Promise<boolean> {
+  private async checkBuildGate(context: {
+    roleId: string;
+    taskId: string;
+    projectPath?: string;
+  }): Promise<boolean> {
     try {
       const workingDir = context.projectPath || process.cwd();
       await execAsync(this.qualityGateConfig.commands.build, {
@@ -772,14 +778,14 @@ export class RoleTransitionService {
    * Update workflow execution state after role transition
    */
   private async updateWorkflowExecutionStateForTransition(
-    taskId: number,
+    taskId: string,
     newRoleId: string,
     handoffMessage?: string,
   ): Promise<void> {
     try {
       // Get the workflow execution for this task
       const execution = await this.prisma.workflowExecution.findFirst({
-        where: { taskId },
+        where: { taskId: Number(taskId) },
         orderBy: { createdAt: 'desc' },
       });
 

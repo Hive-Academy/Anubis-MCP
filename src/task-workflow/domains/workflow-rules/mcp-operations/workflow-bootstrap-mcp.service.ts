@@ -2,8 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { WorkflowBootstrapService } from '../services/workflow-bootstrap.service';
-import { EnvelopeBuilderService } from '../../../utils/envelope-builder';
-import { shouldIncludeDebugInfo } from '../../../config/mcp-response.config';
 
 // Schema for bootstrap workflow input
 const BootstrapWorkflowInputSchema = z.object({
@@ -54,18 +52,25 @@ type BootstrapWorkflowInputType = z.infer<typeof BootstrapWorkflowInputSchema>;
 export class WorkflowBootstrapMcpService {
   private readonly logger = new Logger(WorkflowBootstrapMcpService.name);
 
-  constructor(
-    private readonly bootstrapService: WorkflowBootstrapService,
-    private readonly envelopeBuilder: EnvelopeBuilderService,
-  ) {}
+  constructor(private readonly bootstrapService: WorkflowBootstrapService) {}
 
   @Tool({
     name: 'bootstrap_workflow',
-    description: `Create a new workflow execution with placeholder task.
+    description: `Create a new workflow execution with minimal task setup.
 
-Creates a minimal placeholder task and workflow execution pointing to the first database-driven step for the specified role. The real task will be created by the boomerang workflow after git setup and codebase analysis.
+**🚀 WORKFLOW INITIATION - Creates minimal placeholder task**
 
-Returns: Task ID, execution ID, and first step information for use with workflow guidance tools.`,
+Creates placeholder task and workflow execution pointing to first database-driven step. 
+The real task will be created by boomerang workflow after git setup and codebase analysis.
+
+**Returns ONLY:**
+- Task ID and execution ID for subsequent tool calls
+- Current execution state with step and role details
+- **NO complex envelopes, NO debug data, NO redundant information**
+
+**Usage Pattern:**
+1. bootstrap_workflow() → Get IDs and execution state
+2. Follow patterns from 000-workflow-core.md for next actions`,
     parameters:
       BootstrapWorkflowInputSchema as ZodSchema<BootstrapWorkflowInputType>,
   })
@@ -76,19 +81,21 @@ Returns: Task ID, execution ID, and first step information for use with workflow
       // Validate input
       const validation = this.bootstrapService.validateBootstrapInput(input);
       if (!validation.valid) {
-        const errorEnvelope = {
-          success: false,
-          error: {
-            message: 'Bootstrap validation failed',
-            errors: validation.errors,
-          },
-        };
-
         return {
           content: [
             {
               type: 'text' as const,
-              text: JSON.stringify(errorEnvelope, null, 2),
+              text: JSON.stringify(
+                {
+                  success: false,
+                  error: {
+                    message: 'Bootstrap validation failed',
+                    errors: validation.errors,
+                  },
+                },
+                null,
+                2,
+              ),
             },
           ],
         };
@@ -98,87 +105,67 @@ Returns: Task ID, execution ID, and first step information for use with workflow
       const result = await this.bootstrapService.bootstrapWorkflow(input);
 
       if (!result.success) {
-        const errorEnvelope = {
-          success: false,
-          error: {
-            message: result.message,
-          },
-        };
-
         return {
           content: [
             {
               type: 'text' as const,
-              text: JSON.stringify(errorEnvelope, null, 2),
+              text: JSON.stringify(
+                {
+                  success: false,
+                  error: {
+                    message: result.message,
+                  },
+                },
+                null,
+                2,
+              ),
             },
           ],
         };
       }
 
-      // Build simple success envelope
-      const envelope = {
-        success: true,
-        message: result.message,
-        data: {
-          workflow: {
-            taskId: result.resources.taskId,
-            executionId: result.resources.executionId,
-            firstStepId: result.resources.firstStepId,
-            task: result.task,
-            workflowExecution: result.workflowExecution,
-            firstStep: result.firstStep,
-          },
-        },
-        resources: result.resources,
-        currentStep: result.currentStep,
-        nextAction: result.nextAction,
-      };
-
-      const response: {
-        content: Array<{ type: 'text'; text: string }>;
-      } = {
+      // Return comprehensive execution data - NO hardcoded flow control
+      return {
         content: [
           {
             type: 'text' as const,
-            text: JSON.stringify(envelope, null, 2),
+            text: JSON.stringify(
+              {
+                success: true,
+                message: result.message,
+                resources: {
+                  taskId: result.resources.taskId,
+                  executionId: result.resources.executionId,
+                  firstStepId: result.resources.firstStepId,
+                },
+                execution: result.execution,
+                currentStep: result.currentStep,
+                currentRole: result.currentRole,
+              },
+              null,
+              2,
+            ),
           },
         ],
       };
-
-      // Add debug data if requested
-      if (shouldIncludeDebugInfo()) {
-        response.content.push({
-          type: 'text' as const,
-          text: JSON.stringify(
-            {
-              debug: {
-                task: result.task,
-                firstStep: result.firstStep,
-                execution: result.workflowExecution,
-              },
-            },
-            null,
-            2,
-          ),
-        });
-      }
-
-      return response;
     } catch (error: any) {
       this.logger.error(`Bootstrap error: ${error.message}`, error);
-
-      const errorEnvelope = {
-        success: false,
-        error: {
-          message: error.message,
-        },
-      };
 
       return {
         content: [
           {
             type: 'text' as const,
-            text: JSON.stringify(errorEnvelope, null, 2),
+            text: JSON.stringify(
+              {
+                success: false,
+                error: {
+                  message: error.message,
+                  code: 'BOOTSTRAP_ERROR',
+                },
+              },
+              null,
+              2,
+            ),
           },
         ],
       };

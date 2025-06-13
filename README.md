@@ -2,7 +2,7 @@
 
 **Transform chaotic development into organized, quality-driven workflows with MCP-compliant AI guidance.**
 
-A revolutionary **Model Context Protocol (MCP) server** that provides intelligent workflow guidance for AI agents in software development. Built with NestJS + Prisma, this system follows MCP protocol standards correctly by providing guidance instead of executing commands.
+A revolutionary **Model Context Protocol (MCP) server** that provides intelligent workflow guidance for AI agents in software development. Built with NestJS + Prisma, this system follows MCP protocol standards correctly by providing guidance instead of plain text documents.
 
 ## 🏆 **MAJOR ACHIEVEMENT: MCP PROTOCOL COMPLIANCE**
 

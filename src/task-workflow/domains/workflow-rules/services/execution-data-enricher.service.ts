@@ -1,13 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { WorkflowExecutionWithRelations } from './workflow-execution.service';
-import { StepExecutionService } from './step-execution.service';
-import { RoleTransitionService } from './role-transition.service';
-import { WorkflowGuidanceService } from './workflow-guidance.service';
-import {
-  safePropertyAccess,
-  getErrorMessage,
-} from '../utils/type-safety.utils';
 import { PrismaService } from '../../../../prisma/prisma.service';
+import { getErrorMessage } from '../utils/type-safety.utils';
+import { RoleTransitionService } from './role-transition.service';
+import { StepExecutionService } from './step-execution.service';
+import { WorkflowExecutionWithRelations } from './workflow-execution.service';
+import { WorkflowGuidanceService } from './workflow-guidance.service';
 
 // Configuration interfaces to eliminate hardcoding
 export interface DataEnricherConfig {
@@ -237,53 +234,14 @@ export class ExecutionDataEnricherService {
   }
 
   /**
-   * Get role-specific recommendations
-   */
-  async getRoleRecommendations(
-    roleName: string,
-    taskId: number,
-  ): Promise<string[]> {
-    try {
-      const guidance = await this.workflowGuidance.getWorkflowGuidance(
-        roleName,
-        {
-          taskId,
-          roleId: roleName,
-        },
-      );
-
-      const nextActions = guidance.nextActions || [];
-      return nextActions.map((action: { name: string }) =>
-        safePropertyAccess(action, 'name', 'Unknown action'),
-      );
-    } catch (error) {
-      this.logger.warn(
-        'Failed to get role recommendations:',
-        getErrorMessage(error),
-      );
-      return this.config.defaults.fallbackRecommendations.slice(
-        0,
-        this.config.performance.maxRecommendations,
-      );
-    }
-  }
-
-  /**
    * Get available role transitions
    */
   private async getAvailableTransitions(
     execution: WorkflowExecutionWithRelations,
   ): Promise<unknown[]> {
     try {
-      const context = {
-        taskId: execution.taskId,
-        roleId: execution.currentRoleId,
-        projectPath: this.config.defaults.projectPath,
-      };
-
       return await this.roleTransition.getAvailableTransitions(
         execution.currentRoleId,
-        context,
       );
     } catch (error) {
       this.logger.warn(
