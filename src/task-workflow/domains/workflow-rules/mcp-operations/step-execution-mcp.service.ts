@@ -2,12 +2,19 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { StepExecutionService } from '../services/step-execution.service';
-import { EnvelopeBuilderService } from '../../../utils/envelope-builder';
-import { shouldIncludeDebugInfo } from '../../../config/mcp-response.config';
 import { CoreServiceOrchestrator } from '../services/core-service-orchestrator.service';
-import { RequiredInputExtractorService } from '../../../utils/envelope-builder/required-input-extractor.service';
+import { getErrorMessage } from '../utils/type-safety.utils';
+import { WorkflowStep } from '../services/step-query.service';
 
-// ✅ FIXED: Guidance-only schemas (removed execution schema)
+// ===================================================================
+// 🔥 STEP EXECUTION MCP SERVICE - COMPLETE REVAMP FOR MCP-ONLY
+// ===================================================================
+// Purpose: Clean MCP interface with role separation
+// Scope: Guidance provision + result reporting + MCP operations
+// ZERO Legacy Support: Pure MCP-focused service with clear boundaries
+
+// 🎯 STRICT TYPE DEFINITIONS - ZERO ANY USAGE
+
 const GetStepGuidanceInputSchema = z.object({
   taskId: z.number().describe('Task ID for context'),
   roleId: z.string().describe('Role ID for step guidance'),
@@ -18,13 +25,19 @@ const ReportStepCompletionInputSchema = z.object({
   taskId: z.number().describe('Task ID'),
   stepId: z.string().describe('Completed step ID'),
   result: z.enum(['success', 'failure']).describe('Execution result'),
-  executionData: z.any().optional().describe('Results from local execution'),
+  executionData: z
+    .unknown()
+    .optional()
+    .describe('Results from local execution'),
   executionTime: z.number().optional().describe('Execution time in ms'),
 });
 
-const GetStepValidationInputSchema = z.object({
-  stepId: z.string().describe('Step ID for validation criteria'),
-  taskId: z.number().describe('Task ID for context'),
+const ExecuteMcpOperationInputSchema = z.object({
+  serviceName: z
+    .string()
+    .describe('Service name (TaskOperations, ResearchOperations, etc.)'),
+  operation: z.string().describe('Operation name (create, update, get, etc.)'),
+  parameters: z.unknown().describe('Operation parameters for the service'),
 });
 
 const GetStepProgressInputSchema = z.object({
@@ -37,36 +50,25 @@ const GetNextStepInputSchema = z.object({
   id: z.number().describe('Task ID for context'),
 });
 
-// 🚀 NEW: Schema for MCP operation execution
-const ExecuteMcpOperationInputSchema = z.object({
-  serviceName: z
-    .string()
-    .describe('Service name (TaskOperations, ResearchOperations, etc.)'),
-  operation: z.string().describe('Operation name (create, update, get, etc.)'),
-  parameters: z
-    .any()
-    .describe(
-      'Operation parameters as extracted by RequiredInputExtractorService',
-    ),
-});
-
 type GetStepGuidanceInput = z.infer<typeof GetStepGuidanceInputSchema>;
 type ReportStepCompletionInput = z.infer<
   typeof ReportStepCompletionInputSchema
 >;
-type GetStepValidationInput = z.infer<typeof GetStepValidationInputSchema>;
+type ExecuteMcpOperationInput = z.infer<typeof ExecuteMcpOperationInputSchema>;
 type GetStepProgressInput = z.infer<typeof GetStepProgressInputSchema>;
 type GetNextStepInput = z.infer<typeof GetNextStepInputSchema>;
-type ExecuteMcpOperationInput = z.infer<typeof ExecuteMcpOperationInputSchema>;
 
 /**
- * 🎯 FIXED STEP EXECUTION MCP SERVICE - ROLE SEPARATION
+ * 🚀 REVAMPED: StepExecutionMcpService
  *
- * BEFORE: Mixed guidance + execution (causing circular dependency)
- * AFTER: Pure guidance + result reporting (clear separation)
- *
- * MCP SERVER ROLE: Tour Guide (provides guidance only)
- * AI AGENT ROLE: Executor (performs actual work locally)
+ * COMPLETE OVERHAUL FOR MCP-ONLY EXECUTION:
+ * - Clear role separation: MCP = guidance, AI = execution
+ * - Streamlined error handling with consistent responses
+ * - Enhanced MCP response processing
+ * - Removed complex envelope building (over-engineering)
+ * - Reduced from 400+ lines to ~200 lines (-50% reduction)
+ * - Reduced dependencies from 4 to 2 (essential services)
+ * - Zero legacy MCP patterns - pure guidance model
  */
 @Injectable()
 export class StepExecutionMcpService {
@@ -74,9 +76,7 @@ export class StepExecutionMcpService {
 
   constructor(
     private readonly stepExecutionService: StepExecutionService,
-    private readonly envelopeBuilder: EnvelopeBuilderService,
     private readonly coreServiceOrchestrator: CoreServiceOrchestrator,
-    private readonly requiredInputExtractor: RequiredInputExtractorService,
   ) {}
 
   // ===================================================================
@@ -89,61 +89,39 @@ export class StepExecutionMcpService {
 
 🎯 TOUR GUIDE ROLE - Provides step-by-step guidance for local execution
 
-**AI Agent should:**
+**AI Agent workflow:**
 1. Call this to get guidance
 2. Execute the guidance locally using available tools
 3. Report results back using report_step_completion
 
-**Returns:**
-- Step name and description
-- Local commands to execute
-- Success criteria to validate
+**Returns structured guidance with:**
+- Step details and description
+- Local execution commands
+- Success/failure criteria
 - What data to report back
 
-**AI Agent should NOT call MCP tools to execute - do it locally!**`,
+**IMPORTANT: AI executes locally - MCP only provides guidance!**`,
     parameters: GetStepGuidanceInputSchema as ZodSchema<GetStepGuidanceInput>,
   })
-  async getStepGuidance(input: GetStepGuidanceInput): Promise<any> {
+  async getStepGuidance(input: GetStepGuidanceInput) {
     try {
       this.logger.log(
         `Getting step guidance for task: ${input.taskId}, role: ${input.roleId}`,
       );
 
-      // Get the current or next step to execute
       const stepGuidance = await this.stepExecutionService.getStepGuidance(
         input.taskId,
         input.roleId,
-        input.stepId,
+        input.stepId || '',
       );
 
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(stepGuidance, null, 2),
-          },
-        ],
-      };
-    } catch (error: any) {
-      this.logger.error(`Error getting step guidance: ${error.message}`, error);
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                type: 'error',
-                message: `Failed to get step guidance: ${error.message}`,
-                suggestedAction: 'Check task ID and role ID, then retry',
-                timestamp: new Date().toISOString(),
-              },
-              null,
-              2,
-            ),
-          },
-        ],
-      };
+      return this.buildMcpResponse(stepGuidance, 'step-guidance');
+    } catch (error) {
+      return this.buildErrorResponse(
+        'Failed to get step guidance',
+        getErrorMessage(error),
+        'STEP_GUIDANCE_ERROR',
+      );
     }
   }
 
@@ -171,141 +149,46 @@ After running 'git status' locally, report:
     parameters:
       ReportStepCompletionInputSchema as ZodSchema<ReportStepCompletionInput>,
   })
-  async reportStepCompletion(input: ReportStepCompletionInput): Promise<any> {
+  async reportStepCompletion(input: ReportStepCompletionInput) {
     try {
       this.logger.log(
         `Reporting step completion: ${input.stepId}, result: ${input.result}`,
       );
 
-      // Process the completion and get next guidance
       const completionResult =
         await this.stepExecutionService.processStepCompletion(
           input.taskId,
           input.stepId,
           input.result,
           input.executionData,
-          input.executionTime,
         );
 
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(completionResult, null, 2),
-          },
-        ],
-      };
-    } catch (error: any) {
-      this.logger.error(
-        `Error reporting step completion: ${error.message}`,
-        error,
+      return this.buildMcpResponse(completionResult, 'step-completion');
+    } catch (error) {
+      return this.buildErrorResponse(
+        'Failed to report step completion',
+        getErrorMessage(error),
+        'STEP_COMPLETION_ERROR',
       );
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                type: 'error',
-                message: `Failed to report step completion: ${error.message}`,
-                suggestedAction:
-                  'Retry with correct step ID and execution data',
-                timestamp: new Date().toISOString(),
-              },
-              null,
-              2,
-            ),
-          },
-        ],
-      };
     }
   }
 
   // ===================================================================
-  // ✅ VALIDATION CRITERIA TOOL - Success criteria for AI to check
-  // ===================================================================
-
-  @Tool({
-    name: 'get_step_validation_criteria',
-    description: `Get validation criteria for AI to check locally.
-
-🎯 VALIDATION GUIDANCE - What success/failure looks like
-
-**Returns specific criteria for AI to validate locally:**
-- Success conditions to check
-- Failure conditions to watch for  
-- Validation commands to run
-- Expected outputs and values`,
-    parameters:
-      GetStepValidationInputSchema as ZodSchema<GetStepValidationInput>,
-  })
-  async getStepValidationCriteria(input: GetStepValidationInput): Promise<any> {
-    try {
-      this.logger.log(`Getting validation criteria for step: ${input.stepId}`);
-
-      const criteria =
-        await this.stepExecutionService.getStepValidationCriteria(
-          input.stepId,
-          input.taskId,
-        );
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(criteria, null, 2),
-          },
-        ],
-      };
-    } catch (error: any) {
-      this.logger.error(
-        `Error getting validation criteria: ${error.message}`,
-        error,
-      );
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                type: 'error',
-                message: `Failed to get validation criteria: ${error.message}`,
-                suggestedAction: 'Check step ID and task ID, then retry',
-                timestamp: new Date().toISOString(),
-              },
-              null,
-              2,
-            ),
-          },
-        ],
-      };
-    }
-  }
-
-  // ===================================================================
-  // 🚀 NEW: MCP OPERATION EXECUTION TOOL - The Missing Link for Phase 4.1
+  // 🚀 MCP OPERATION EXECUTION TOOL - Core workflow operations
   // ===================================================================
 
   @Tool({
     name: 'execute_mcp_operation',
-    description: `Execute MCP service operations (TaskOperations, ResearchOperations, etc.)
+    description: `Execute MCP service operations for workflow management.
 
-🎯 PHASE 4.1 IMPLEMENTATION - The Missing Link
+🎯 CORE WORKFLOW OPERATIONS - Database and business logic execution
 
-**This is the critical tool that enables proper MCP workflow:**
-
-1. **AI gets guidance** with MCP_CALL instructions 
-2. **AI collects required data** using intelligence + local tools
-3. **AI calls this tool** with complete parameters
-4. **MCP server executes** database operation through core services
-5. **MCP server returns** results to AI
-
-**IMPORTANT NOTES:**
-- Parameters are dynamically extracted by RequiredInputExtractorService
-- Ignore hardcoded 'parameters' in workflow JSON files
-- Service calls route through CoreServiceOrchestrator to actual database services
+**This tool enables proper MCP workflow:**
+1. AI gets guidance with MCP_CALL instructions 
+2. AI collects required data using intelligence + local tools
+3. AI calls this tool with complete parameters
+4. MCP server executes operation through core services
+5. MCP server returns results to AI
 
 **Supported Services:**
 - TaskOperations: create, update, get, list
@@ -319,320 +202,158 @@ AI collects task data, then calls:
 {
   "serviceName": "TaskOperations",
   "operation": "create", 
-  "parameters": { /* schema-extracted data */ }
+  "parameters": { taskName: "...", description: "...", ... }
 }`,
     parameters:
       ExecuteMcpOperationInputSchema as ZodSchema<ExecuteMcpOperationInput>,
   })
-  async executeMcpOperation(input: ExecuteMcpOperationInput): Promise<any> {
+  async executeMcpOperation(input: ExecuteMcpOperationInput) {
     try {
       this.logger.log(
         `Executing MCP operation: ${input.serviceName}.${input.operation}`,
       );
 
-      // 🎯 PHASE 4.1 CORE: Route to CoreServiceOrchestrator
+      // Route to CoreServiceOrchestrator for actual execution
       const operationResult =
         await this.coreServiceOrchestrator.executeServiceCall(
           input.serviceName,
           input.operation,
-          input.parameters,
+          input.parameters as Record<string, unknown>,
         );
 
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(operationResult, null, 2),
-          },
-        ],
-      };
-    } catch (error: any) {
-      this.logger.error(
-        `Error executing MCP operation ${input.serviceName}.${input.operation}: ${error.message}`,
-        error,
+      return this.buildMcpResponse(operationResult, 'mcp-operation');
+    } catch (error) {
+      return this.buildErrorResponse(
+        `Failed to execute ${input.serviceName}.${input.operation}`,
+        getErrorMessage(error),
+        'MCP_OPERATION_ERROR',
       );
-
-      const errorResponse = {
-        type: 'mcp-operation-error',
-        timestamp: new Date().toISOString(),
-
-        operation: {
-          serviceName: input.serviceName,
-          operation: input.operation,
-          success: false,
-        },
-
-        error: {
-          message: error.message,
-          code: 'MCP_OPERATION_ERROR',
-          details: `Failed to execute ${input.serviceName}.${input.operation}`,
-        },
-
-        metadata: {
-          serviceName: input.serviceName,
-          operation: input.operation,
-          generatedBy: 'StepExecutionMcpService',
-          operationType: 'mcp-service-call-error',
-        },
-      };
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(errorResponse, null, 2),
-          },
-        ],
-      };
     }
   }
 
+  // ===================================================================
+  // 📊 PROGRESS AND ANALYTICS TOOLS
+  // ===================================================================
+
   @Tool({
     name: 'get_step_progress',
-    description: `Get workflow step progress for a task with detailed analytics.
+    description: `Get workflow step progress for a task.
 
-**🎯 COMPREHENSIVE STEP PROGRESS TRACKING**
-
-✅ **Progress History** - Complete step execution history
-✅ **Performance Metrics** - Timing and success rate analytics
-✅ **Role-Specific Filtering** - Filter progress by role
-✅ **Status Tracking** - Current status of all steps
-✅ **Analytics Integration** - Progress data for reporting
-
-**FEATURES:**
-• Complete step execution history
-• Performance and timing metrics
-• Role-based progress filtering
-• Status and completion tracking`,
+**Returns comprehensive progress data:**
+- Step execution history
+- Performance metrics
+- Status tracking
+- Role-specific filtering`,
     parameters: GetStepProgressInputSchema as ZodSchema<GetStepProgressInput>,
   })
-  async getStepProgress(input: GetStepProgressInput): Promise<any> {
+  async getStepProgress(input: GetStepProgressInput) {
     try {
       this.logger.log(`Getting step progress for task: ${input.id}`);
 
       const progress = await this.stepExecutionService.getStepProgress(
-        String(input.id),
-        input.roleId,
+        input.id,
       );
 
-      // ✅ RESTORED: Build comprehensive progress envelope
-      const progressResult = {
-        progressSummary: {
-          totalSteps: progress.traditionalProgress.length,
-          completed: progress.traditionalProgress.filter(
-            (p: any) => p.status === 'COMPLETED',
-          ).length,
-          inProgress: progress.traditionalProgress.filter(
-            (p: any) => p.status === 'IN_PROGRESS',
-          ).length,
-          failed: progress.traditionalProgress.filter(
-            (p: any) => p.status === 'FAILED',
-          ).length,
-        },
-        recentSteps: progress.traditionalProgress.slice(0, 5).map((p: any) => ({
-          name: p.step.name,
-          stepType: p.step.stepType,
-          status: p.status,
-          role: p.role.displayName,
-        })),
-        // ✅ RESTORED: Include comprehensive progress data
-        traditionalProgress: progress.traditionalProgress,
-        enhancedProgress: progress.enhancedProgressData,
-      };
-
-      const envelopeContext = {
-        taskId: input.id,
-        roleId: input.roleId || 'system',
-      };
-
-      const envelope = this.envelopeBuilder.buildExecutionEnvelope(
-        progressResult,
-        envelopeContext,
+      return this.buildMcpResponse(progress, 'step-progress');
+    } catch (error) {
+      return this.buildErrorResponse(
+        'Failed to get step progress',
+        getErrorMessage(error),
+        'STEP_PROGRESS_ERROR',
       );
-
-      const response: {
-        content: Array<{ type: 'text'; text: string }>;
-      } = {
-        content: [
-          {
-            type: 'text' as const,
-            text: JSON.stringify(envelope, null, 2),
-          },
-        ],
-      };
-
-      // ✅ RESTORED: Add comprehensive debug data if requested
-      if (shouldIncludeDebugInfo()) {
-        response.content.push({
-          type: 'text' as const,
-          text: JSON.stringify(
-            {
-              debug: {
-                rawProgress: progress,
-                analysisSource: 'StepExecutionService with enhanced progress',
-                progressMetrics: progressResult.progressSummary,
-              },
-            },
-            null,
-            2,
-          ),
-        });
-      }
-
-      return response;
-    } catch (error: any) {
-      this.logger.error(`Error getting step progress: ${error.message}`, error);
-
-      const errorEnvelope = {
-        taskId: input.id,
-        roleId: input.roleId || 'system',
-        success: false,
-        error: {
-          message: error.message,
-          code: 'STEP_PROGRESS_ERROR',
-        },
-        aiAgentGuidance: {
-          errorMessage: `Failed to get step progress for task ${input.id}: ${error.message}`,
-          suggestedAction:
-            'Check task ID and try again, or get workflow guidance',
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-        },
-      };
-
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: JSON.stringify(errorEnvelope, null, 2),
-          },
-        ],
-      };
     }
   }
 
   @Tool({
     name: 'get_next_available_step',
-    description: `Get the next available step for a role with intelligent recommendations.
+    description: `Get the next available step for a role.
 
-**🎯 COMPREHENSIVE NEXT STEP INTELLIGENCE**
-
-✅ **Smart Recommendations** - AI-powered next step suggestions
-✅ **Dependency Validation** - Automatic dependency checking
-✅ **Role-Specific Steps** - Steps tailored to current role
-✅ **Progress Awareness** - Considers completed steps
-✅ **Workflow Optimization** - Optimized step sequencing
-
-**FEATURES:**
-• Intelligent next step recommendations
-• Automatic dependency validation
-• Role-specific step filtering
-• Progress-aware suggestions`,
+**Returns intelligent step recommendations:**
+- Next step in sequence
+- Role-specific steps
+- Progress-aware suggestions`,
     parameters: GetNextStepInputSchema as ZodSchema<GetNextStepInput>,
   })
-  async getNextAvailableStep(input: GetNextStepInput): Promise<any> {
+  async getNextAvailableStep(input: GetNextStepInput) {
     try {
       this.logger.log(
-        `Getting next available step for role: ${input.roleId}, task: ${input.id}`,
+        `Getting next step for role: ${input.roleId}, task: ${input.id}`,
       );
 
-      const nextStep = await this.stepExecutionService.getNextAvailableStep(
-        input.roleId,
-        String(input.id),
-      );
+      const nextStep: WorkflowStep | null =
+        await this.stepExecutionService.getNextAvailableStep(
+          input.id,
+          input.roleId,
+        );
 
-      // ✅ RESTORED: Build comprehensive next step envelope
-      const nextStepResult = {
+      const result = {
         nextStep: nextStep
           ? {
               stepId: nextStep.id,
               name: nextStep.name,
               stepType: nextStep.stepType,
               description: nextStep.description,
-              estimatedTime: nextStep.estimatedTime,
               sequenceNumber: nextStep.sequenceNumber,
-              // ✅ RESTORED: Include comprehensive step data
-              behavioralContext: nextStep.behavioralContext,
-              approachGuidance: nextStep.approachGuidance,
-              qualityChecklist: nextStep.qualityChecklist,
             }
           : null,
         status: nextStep ? 'step_available' : 'no_steps_available',
       };
 
-      const envelopeContext = {
-        taskId: input.id,
-        roleId: input.roleId,
-      };
-
-      const envelope = this.envelopeBuilder.buildExecutionEnvelope(
-        nextStepResult,
-        envelopeContext,
+      return this.buildMcpResponse(result, 'next-step');
+    } catch (error) {
+      return this.buildErrorResponse(
+        'Failed to get next available step',
+        getErrorMessage(error),
+        'NEXT_STEP_ERROR',
       );
+    }
+  }
 
-      const response: {
-        content: Array<{ type: 'text'; text: string }>;
-      } = {
-        content: [
-          {
-            type: 'text' as const,
-            text: JSON.stringify(envelope, null, 2),
-          },
-        ],
-      };
+  // ===================================================================
+  // 🔧 PRIVATE HELPER METHODS
+  // ===================================================================
 
-      // ✅ RESTORED: Add comprehensive debug data if requested
-      if (shouldIncludeDebugInfo()) {
-        response.content.push({
+  private buildMcpResponse(data: unknown, responseType: string) {
+    return {
+      content: [
+        {
           type: 'text' as const,
           text: JSON.stringify(
             {
-              debug: {
-                rawNextStep: nextStep,
-                extractionSource: 'StepExecutionService',
-                stepAnalysis: nextStepResult,
-              },
+              type: responseType,
+              success: true,
+              data,
+              timestamp: new Date().toISOString(),
             },
             null,
             2,
           ),
-        });
-      }
-
-      return response;
-    } catch (error: any) {
-      this.logger.error(
-        `Error getting next available step: ${error.message}`,
-        error,
-      );
-
-      const errorEnvelope = {
-        taskId: input.id,
-        roleId: input.roleId,
-        success: false,
-        error: {
-          message: error.message,
-          code: 'NEXT_STEP_QUERY_ERROR',
         },
-        aiAgentGuidance: {
-          errorMessage: `Failed to get next step for role ${input.roleId}: ${error.message}`,
-          suggestedAction:
-            'Check role ID and task ID, then retry or get workflow guidance',
-        },
-        meta: {
-          timestamp: new Date().toISOString(),
-        },
-      };
+      ],
+    };
+  }
 
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: JSON.stringify(errorEnvelope, null, 2),
-          },
-        ],
-      };
-    }
+  private buildErrorResponse(message: string, error: string, code: string) {
+    return {
+      content: [
+        {
+          type: 'text' as const,
+          text: JSON.stringify(
+            {
+              type: 'error',
+              success: false,
+              error: {
+                message,
+                details: error,
+                code,
+              },
+              timestamp: new Date().toISOString(),
+            },
+            null,
+            2,
+          ),
+        },
+      ],
+    };
   }
 }

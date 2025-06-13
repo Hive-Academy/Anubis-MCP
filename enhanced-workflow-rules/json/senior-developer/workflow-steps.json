@@ -7,7 +7,7 @@
       "sequenceNumber": 1,
       "isRequired": true,
       "estimatedTime": "10-15 minutes",
-      "stepType": "SETUP",
+      "stepType": "ACTION",
       "behavioralContext": {
         "approach": "MANDATORY consumption of existing comprehensive context without redundant analysis",
         "principles": [
@@ -16,15 +16,51 @@
           "ALWAYS consume architect's strategic guidance completely",
           "ALWAYS build upon previous discoveries rather than starting from scratch"
         ],
-        "methodology": "Context consumption with implementation environment preparation"
+        "methodology": "Context consumption with implementation environment preparation",
+        "contextConsumption": {
+          "codebaseAnalysis": "Extract and validate existing codebaseAnalysis from boomerang (technology stack, patterns, integration points)",
+          "strategicGuidance": "Consume architect's strategic guidance (implementation specifics, code examples, quality constraints)",
+          "environmentSetup": "Setup development environment following verified technology stack and patterns",
+          "readinessValidation": "Validate implementation readiness without redundant discovery"
+        },
+        "validationCriteria": {
+          "codebaseAnalysisAvailable": "Technology stack, patterns, and integration points from boomerang",
+          "strategicGuidanceAvailable": "Implementation specifics, code examples, and quality constraints from architect",
+          "implementationReadiness": "No redundant analysis required, existing context comprehensive",
+          "contextConsumptionComplete": "Ready to proceed following established patterns"
+        },
+        "environmentSetup": {
+          "gitBranchVerification": "Verify git branch matches task requirements",
+          "dependencyInstallation": "Install dependencies using confirmed technology stack",
+          "developmentServerValidation": "Validate development server and test functionality",
+          "projectStructureConfirmation": "Confirm project structure matches verified analysis"
+        }
       },
       "approachGuidance": {
         "stepByStep": [
-          "Execute query_task_context with comprehensive inclusion (plans, subtasks, analysis)",
+          "Execute TaskOperations.get with comprehensive inclusion (plans, subtasks, analysis)",
           "Extract and validate existing codebaseAnalysis from boomerang (technology stack, patterns, integration points)",
           "Consume architect's strategic guidance (implementation specifics, code examples, quality constraints)",
           "Setup development environment following verified technology stack and patterns",
           "Validate implementation readiness without redundant discovery"
+        ],
+        "contextExtractionSteps": [
+          "Call TaskOperations.get with comprehensive parameters to retrieve all context",
+          "Parse codebaseAnalysis for technology stack, architecture patterns, and integration points",
+          "Extract architect's strategic guidance including implementation specifics and code examples",
+          "Validate that all necessary context is available for implementation"
+        ],
+        "environmentSetupSteps": [
+          "Verify git branch matches task requirements and is clean",
+          "Install dependencies using confirmed technology stack from analysis",
+          "Validate development server functionality and test environment",
+          "Confirm project structure matches verified analysis patterns"
+        ],
+        "readinessValidationSteps": [
+          "Confirm codebase analysis provides sufficient implementation context",
+          "Verify strategic guidance includes specific implementation details",
+          "Validate environment is properly configured for implementation",
+          "Ensure no redundant analysis is required to proceed"
         ]
       },
       "qualityChecklist": [
@@ -53,34 +89,6 @@
             }
           },
           "sequenceOrder": 1
-        },
-        {
-          "name": "validate_context_consumption",
-          "actionType": "VALIDATION",
-          "actionData": {
-            "validationType": "mandatory_context_consumption",
-            "criteria": {
-              "codebaseAnalysisAvailable": "{{technology_stack_patterns_integration_points}}",
-              "strategicGuidanceAvailable": "{{implementation_specifics_code_examples_quality_constraints}}",
-              "implementationReadiness": "{{no_redundant_analysis_required_existing_context_comprehensive}}",
-              "contextConsumptionComplete": "{{ready_to_proceed_following_established_patterns}}"
-            }
-          },
-          "sequenceOrder": 2
-        },
-        {
-          "name": "setup_implementation_environment",
-          "actionType": "ENVIRONMENT_SETUP",
-          "actionData": {
-            "setupType": "verified_technology_stack_environment",
-            "setupTargets": [
-              "verify_git_branch_matches_task_requirements",
-              "install_dependencies_using_confirmed_technology_stack",
-              "validate_development_server_and_test_functionality",
-              "confirm_project_structure_matches_verified_analysis"
-            ]
-          },
-          "sequenceOrder": 3
         }
       ],
       "triggerReport": true,
@@ -94,7 +102,7 @@
       "sequenceNumber": 2,
       "isRequired": true,
       "estimatedTime": "60-120 minutes",
-      "stepType": "IMPLEMENTATION",
+      "stepType": "ACTION",
       "behavioralContext": {
         "approach": "Strategic implementation following architectural guidance with decision matrix for escalation",
         "principles": [
@@ -103,7 +111,41 @@
           "Use strategic decision matrix for implementation vs escalation decisions",
           "Maintain architectural consistency throughout implementation"
         ],
-        "methodology": "Pattern-driven implementation with evidence-based decision making"
+        "methodology": "Pattern-driven implementation with evidence-based decision making",
+        "solidPrinciples": {
+          "singleResponsibility": "Each class/service has one clear purpose and reason to change",
+          "openClosed": "Extensible through composition and inheritance, not modification",
+          "liskovSubstitution": "Derived classes substitutable for base classes without breaking functionality",
+          "interfaceSegregation": "Focused interfaces with specific responsibilities and dependencies",
+          "dependencyInversion": "Depend on abstractions and interfaces, not concrete implementations"
+        },
+        "decisionMatrix": {
+          "implementDirectly": [
+            "following_provided_code_examples_exactly",
+            "implementing_methods_with_complete_architectural_guidance",
+            "making_configuration_changes_with_clear_patterns",
+            "adding_simple_functionality_following_established_examples"
+          ],
+          "redelegateToArchitect": [
+            "multiple_implementation_approaches_possible_without_clear_guidance",
+            "performance_optimization_requiring_architectural_decisions",
+            "integration_patterns_not_covered_in_current_guidance",
+            "service_structure_decisions_affecting_system_architecture"
+          ],
+          "escalateToBoomerang": [
+            "acceptance_criteria_conflicts_with_implementation",
+            "business_logic_unclear_or_contradictory",
+            "scope_changes_discovered_during_implementation"
+          ]
+        },
+        "validationCheckpoints": {
+          "patternCompliance": "Follows discovered architectural patterns exactly",
+          "technologyAlignment": "Uses established technology stack conventions",
+          "errorHandling": "Implements same error handling patterns discovered",
+          "dataTransformation": "Follows established conventions from analysis",
+          "integrationConsistency": "Follows discovered service patterns",
+          "architecturalConsistency": "Validated at each implementation step"
+        }
       },
       "approachGuidance": {
         "stepByStep": [
@@ -112,6 +154,24 @@
           "Use strategic decision matrix for implementation decisions: IMPLEMENT DIRECTLY vs REDELEGATE TO ARCHITECT vs ESCALATE TO BOOMERANG",
           "Maintain pattern consistency with existing codebase analysis throughout implementation",
           "Validate architectural consistency at each implementation checkpoint"
+        ],
+        "implementationSteps": [
+          "Follow architect's code examples exactly for core functionality implementation",
+          "Apply SOLID principles consistently across all code components",
+          "Use established patterns from codebase analysis for consistency",
+          "Implement error handling following discovered patterns"
+        ],
+        "decisionSteps": [
+          "Apply decision matrix for complex implementation decisions",
+          "Implement directly when following provided examples and clear guidance",
+          "Redelegate to architect for architectural decisions not covered in guidance",
+          "Escalate to boomerang for business logic conflicts or scope changes"
+        ],
+        "validationSteps": [
+          "Validate pattern compliance at each implementation checkpoint",
+          "Ensure technology alignment with established stack conventions",
+          "Verify error handling follows discovered patterns",
+          "Confirm architectural consistency throughout implementation"
         ]
       },
       "qualityChecklist": [
@@ -134,58 +194,7 @@
           "isRequired": true
         }
       ],
-      "actions": [
-        {
-          "name": "execute_strategic_implementation",
-          "actionType": "IMPLEMENTATION",
-          "actionData": {
-            "implementationType": "strategic_guided_implementation",
-            "implementationPrinciples": {
-              "singleResponsibility": "Each class/service has one clear purpose and reason to change",
-              "openClosed": "Extensible through composition and inheritance, not modification",
-              "liskovSubstitution": "Derived classes substitutable for base classes without breaking functionality",
-              "interfaceSegregation": "Focused interfaces with specific responsibilities and dependencies",
-              "dependencyInversion": "Depend on abstractions and interfaces, not concrete implementations"
-            },
-            "decisionMatrix": {
-              "implementDirectly": [
-                "following_provided_code_examples_exactly",
-                "implementing_methods_with_complete_architectural_guidance",
-                "making_configuration_changes_with_clear_patterns",
-                "adding_simple_functionality_following_established_examples"
-              ],
-              "redelegateToArchitect": [
-                "multiple_implementation_approaches_possible_without_clear_guidance",
-                "performance_optimization_requiring_architectural_decisions",
-                "integration_patterns_not_covered_in_current_guidance",
-                "service_structure_decisions_affecting_system_architecture"
-              ],
-              "escalateToBoomerang": [
-                "acceptance_criteria_conflicts_with_implementation",
-                "business_logic_unclear_or_contradictory",
-                "scope_changes_discovered_during_implementation"
-              ]
-            }
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "validate_implementation_checkpoints",
-          "actionType": "VALIDATION",
-          "actionData": {
-            "validationType": "continuous_architectural_consistency",
-            "checkpointValidation": {
-              "patternCompliance": "{{follows_discovered_architectural_patterns_exactly}}",
-              "technologyAlignment": "{{uses_established_technology_stack_conventions}}",
-              "errorHandling": "{{implements_same_error_handling_patterns_discovered}}",
-              "dataTransformation": "{{follows_established_conventions_from_analysis}}",
-              "integrationConsistency": "{{follows_discovered_service_patterns}}",
-              "architecturalConsistency": "{{validated_at_each_step}}"
-            }
-          },
-          "sequenceOrder": 2
-        }
-      ],
+      "actions": [],
       "triggerReport": true,
       "reportType": "strategic_implementation_execution",
       "reportTemplate": "implementation_with_decision_matrix"
@@ -197,7 +206,7 @@
       "sequenceNumber": 3,
       "isRequired": true,
       "estimatedTime": "40-60 minutes",
-      "stepType": "VALIDATION",
+      "stepType": "ACTION",
       "behavioralContext": {
         "approach": "Comprehensive testing with quality validation against strategic requirements and SOLID principles",
         "principles": [
@@ -206,7 +215,26 @@
           "Test all success criteria and error scenarios comprehensively",
           "Verify performance targets and security requirements"
         ],
-        "methodology": "Multi-layer testing with architectural quality validation"
+        "methodology": "Multi-layer testing with architectural quality validation",
+        "testingStrategy": {
+          "unitTests": "Happy path, edge cases, error scenarios with mocks and meaningful assertions",
+          "integrationTests": "Service interactions, repository layer, API endpoints, data flow validation",
+          "manualValidation": "Success criteria, user workflows, error scenarios, architect requirements",
+          "performanceTesting": "Response times, resource usage, optimization, baseline validation"
+        },
+        "coverageTargets": {
+          "minimumCoverage": "Quality constraints coverage requirements",
+          "criticalPathCoverage": "100 percent for core business logic",
+          "errorScenarioCoverage": "Comprehensive error handling validation"
+        },
+        "qualityGates": {
+          "solidPrinciplesCompliance": "Verified for all code components",
+          "performanceTargets": "Achieved within established baseline",
+          "securityRequirements": "Implemented following verified patterns",
+          "patternAdherence": "Maintained with architectural consistency",
+          "codeQuality": "Follows strategic guidance and verified standards",
+          "testingQuality": "Coverage targets met with meaningful validation"
+        }
       },
       "approachGuidance": {
         "stepByStep": [
@@ -216,6 +244,24 @@
           "Validate SOLID principles compliance throughout codebase",
           "Verify performance targets and security requirements implementation",
           "Validate pattern adherence and architectural consistency"
+        ],
+        "testingSteps": [
+          "Implement unit tests covering happy path, edge cases, and error scenarios",
+          "Create integration tests for service interactions and API endpoints",
+          "Execute manual validation against all architect's success criteria",
+          "Perform performance testing to validate response times and resource usage"
+        ],
+        "validationSteps": [
+          "Validate SOLID principles compliance for all implemented code components",
+          "Verify performance targets are achieved within established baseline",
+          "Confirm security requirements are implemented following verified patterns",
+          "Validate pattern adherence and architectural consistency throughout"
+        ],
+        "qualitySteps": [
+          "Ensure minimum coverage targets are met with meaningful assertions",
+          "Validate critical path coverage is 100% for core business logic",
+          "Confirm comprehensive error scenario coverage and handling",
+          "Verify all quality gates are satisfied before completion"
         ]
       },
       "qualityChecklist": [
@@ -239,42 +285,7 @@
           "isRequired": true
         }
       ],
-      "actions": [
-        {
-          "name": "execute_comprehensive_testing",
-          "actionType": "TESTING",
-          "actionData": {
-            "testingStrategy": {
-              "unitTests": "happy_path_edge_cases_error_scenarios_with_mocks_and_meaningful_assertions",
-              "integrationTests": "service_interactions_repository_layer_API_endpoints_data_flow_validation",
-              "manualValidation": "success_criteria_user_workflows_error_scenarios_architect_requirements",
-              "performanceTesting": "response_times_resource_usage_optimization_baseline_validation"
-            },
-            "coverageTargets": {
-              "minimumCoverage": "{{quality_constraints_coverage_requirements}}",
-              "criticalPathCoverage": "100_percent_for_core_business_logic",
-              "errorScenarioCoverage": "comprehensive_error_handling_validation"
-            }
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "validate_quality_and_architecture",
-          "actionType": "VALIDATION",
-          "actionData": {
-            "validationType": "comprehensive_quality_architecture_validation",
-            "qualityGates": {
-              "solidPrinciplesCompliance": "{{verified_for_all_code_components}}",
-              "performanceTargets": "{{achieved_within_established_baseline}}",
-              "securityRequirements": "{{implemented_following_verified_patterns}}",
-              "patternAdherence": "{{maintained_with_architectural_consistency}}",
-              "codeQuality": "{{follows_strategic_guidance_and_verified_standards}}",
-              "testingQuality": "{{coverage_targets_met_with_meaningful_validation}}"
-            }
-          },
-          "sequenceOrder": 2
-        }
-      ],
+      "actions": [],
       "triggerReport": true,
       "reportType": "comprehensive_testing_and_quality",
       "reportTemplate": "testing_quality_validation_report"
@@ -286,7 +297,7 @@
       "sequenceNumber": 4,
       "isRequired": true,
       "estimatedTime": "15-20 minutes",
-      "stepType": "COMPLETION",
+      "stepType": "ACTION",
       "behavioralContext": {
         "approach": "MANDATORY Git operations with comprehensive delegation context and strategic implementation evidence",
         "principles": [
@@ -295,7 +306,27 @@
           "ALWAYS include comprehensive strategic implementation evidence",
           "ALWAYS use task-slug for human-readable reference"
         ],
-        "methodology": "Git-first completion with evidence-based delegation"
+        "methodology": "Git-first completion with evidence-based delegation",
+        "gitProtocol": {
+          "checkStatus": "git status to verify working directory state",
+          "addChanges": "git add all implementation changes",
+          "commitChanges": "git commit with conventional commits descriptive message",
+          "verifyCommit": "git log to verify commit success and clean state"
+        },
+        "commitMessageStandards": {
+          "feat": "New feature implementation following architectural guidance",
+          "fix": "Bug fixes and corrections following existing patterns",
+          "refactor": "Code improvements maintaining architectural consistency",
+          "test": "Test additions following comprehensive testing strategy",
+          "docs": "Documentation updates reflecting implementation changes"
+        },
+        "evidenceCategories": {
+          "architecturalGuidanceImplementation": "Root cause solved, pattern compliance, elegant implementation",
+          "implementationSpecificsCompleted": "Files modified, methods implemented, pattern references followed",
+          "technologyStackCompliance": "Technology alignment, project structure, integration, performance",
+          "qualityConstraintsSatisfied": "Pattern compliance, performance targets, quality gates, anti-pattern avoidance",
+          "gitOperationsCompleted": "Changes committed, verified, working directory clean"
+        }
       },
       "approachGuidance": {
         "stepByStep": [
@@ -305,6 +336,24 @@
           "Prepare delegation context with architectural guidance compliance and quality validation",
           "Execute delegation to code review with task-slug and implementation evidence",
           "Include Git context (commit hash, message, working directory status) in delegation"
+        ],
+        "gitOperationSteps": [
+          "Check git status to verify working directory state",
+          "Add all implementation changes using git add",
+          "Commit changes with conventional commits descriptive message",
+          "Verify commit success and clean working directory state"
+        ],
+        "evidenceDocumentationSteps": [
+          "Document architectural guidance implementation with root cause solved",
+          "Record implementation specifics completed with files and methods",
+          "Validate technology stack compliance and integration",
+          "Confirm quality constraints satisfied and anti-patterns avoided"
+        ],
+        "delegationSteps": [
+          "Prepare comprehensive delegation context with implementation evidence",
+          "Execute WorkflowOperations.delegate to code review with task-slug",
+          "Include strategic implementation context and evidence",
+          "Provide git context with commit hash, message, and status"
         ]
       },
       "qualityChecklist": [
@@ -329,41 +378,6 @@
         }
       ],
       "actions": [
-        {
-          "name": "execute_mandatory_git_operations",
-          "actionType": "GIT_OPERATIONS",
-          "actionData": {
-            "gitProtocol": {
-              "checkStatus": "git_status_verify_working_directory_state",
-              "addChanges": "git_add_all_implementation_changes",
-              "commitChanges": "git_commit_with_conventional_commits_descriptive_message",
-              "verifyCommit": "git_log_verify_commit_success_and_clean_state"
-            },
-            "commitMessageStandards": {
-              "feat": "New feature implementation following architectural guidance",
-              "fix": "Bug fixes and corrections following existing patterns",
-              "refactor": "Code improvements maintaining architectural consistency",
-              "test": "Test additions following comprehensive testing strategy",
-              "docs": "Documentation updates reflecting implementation changes"
-            }
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "document_strategic_implementation_evidence",
-          "actionType": "DOCUMENTATION",
-          "actionData": {
-            "documentationType": "strategic_implementation_completion_evidence",
-            "evidenceCategories": {
-              "architecturalGuidanceImplementation": "{{root_cause_solved_pattern_compliance_elegant_implementation}}",
-              "implementationSpecificsCompleted": "{{files_modified_methods_implemented_pattern_references_followed}}",
-              "technologyStackCompliance": "{{technology_alignment_project_structure_integration_performance}}",
-              "qualityConstraintsSatisfied": "{{pattern_compliance_performance_targets_quality_gates_anti_pattern_avoidance}}",
-              "gitOperationsCompleted": "{{changes_committed_verified_working_directory_clean}}"
-            }
-          },
-          "sequenceOrder": 2
-        },
         {
           "name": "delegate_to_code_review",
           "actionType": "MCP_CALL",
@@ -399,7 +413,7 @@
               }
             }
           },
-          "sequenceOrder": 3
+          "sequenceOrder": 1
         }
       ],
       "triggerReport": true,

@@ -188,12 +188,14 @@ model WorkflowStepProgress {
   status          StepProgressStatus // 'not_started', 'in_progress', 'completed', 'skipped', 'failed'
   startedAt       DateTime?
   completedAt     DateTime?
+  failedAt        DateTime?  // 🆕 NEW: When step failed (for better failure tracking)
   duration        Int?     // Duration in milliseconds
   
   // Step execution data
   executionData   Json?    // Data collected during step execution
   validationResults Json?  // Results of step validation
   errorDetails    Json?    // Error information if step failed
+  result          StepExecutionResult? // 🆕 NEW: SUCCESS/FAILURE result
   
   // Reporting integration
   reportGenerated Boolean  @default(false) // Was a report generated for this step?

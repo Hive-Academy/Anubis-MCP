@@ -20,7 +20,7 @@
       },
       "approachGuidance": {
         "stepByStep": [
-          "Execute query_task_context with comprehensive parameters",
+          "Execute TaskOperations.get with comprehensive parameters",
           "Include existing codebase analysis and architectural findings",
           "Access business requirements and technical constraints",
           "Retrieve quality assessment and performance baselines",
@@ -73,7 +73,21 @@
           "Focus on solutions for identified technical debt",
           "Ensure integration compatibility with existing architecture"
         ],
-        "methodology": "Analysis-informed research with architecture-first approach"
+        "methodology": "Analysis-informed research with architecture-first approach",
+        "analysisIntegration": {
+          "architectureExtraction": "Extract current architecture patterns from codebase analysis",
+          "debtIdentification": "Identify technical debt and code quality issues needing research",
+          "compatibilityResearch": "Review technology stack details for compatibility research",
+          "constraintAnalysis": "Analyze integration constraints for research focus",
+          "qualityStandards": "Document quality standards for compliance research requirements"
+        },
+        "researchFoundation": {
+          "patternEnhancement": "Research architecture enhancement opportunities",
+          "problemSolutions": "Focus on solutions for technical debt resolution needs",
+          "integrationApproaches": "Research system integration requirements",
+          "qualityImprovements": "Investigate quality enhancement needs",
+          "performanceOptimization": "Research performance improvement areas"
+        }
       },
       "approachGuidance": {
         "stepByStep": [
@@ -82,6 +96,18 @@
           "Review technology stack details for compatibility research",
           "Analyze integration constraints for research focus",
           "Document quality standards for compliance research requirements"
+        ],
+        "extractionSteps": [
+          "Parse codebase analysis for architecture patterns and design decisions",
+          "Identify technical debt items that require research for resolution",
+          "Map technology stack components and their compatibility requirements",
+          "Document integration points and constraints that affect research scope"
+        ],
+        "foundationSteps": [
+          "Establish research baseline using existing analysis findings",
+          "Identify gaps where additional research is needed",
+          "Map research questions to specific architecture enhancement opportunities",
+          "Prioritize research areas based on technical debt impact and resolution needs"
         ]
       },
       "qualityChecklist": [
@@ -104,38 +130,7 @@
           "isRequired": true
         }
       ],
-      "actions": [
-        {
-          "name": "extract_architecture_context",
-          "actionType": "ANALYSIS",
-          "actionData": {
-            "analysisType": "codebase_architecture_extraction",
-            "targets": [
-              "current_architecture_patterns",
-              "identified_technical_debt",
-              "technology_stack_details",
-              "integration_constraints",
-              "quality_standards"
-            ]
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "identify_research_foundation",
-          "actionType": "VALIDATION",
-          "actionData": {
-            "validationType": "research_foundation_analysis",
-            "criteria": {
-              "patternEnhancement": "{{architecture_enhancement_opportunities}}",
-              "problemSolutions": "{{technical_debt_resolution_needs}}",
-              "integrationApproaches": "{{system_integration_requirements}}",
-              "qualityImprovements": "{{quality_enhancement_needs}}",
-              "performanceOptimization": "{{performance_improvement_areas}}"
-            }
-          },
-          "sequenceOrder": 2
-        }
-      ],
+      "actions": [],
       "triggerReport": true,
       "reportType": "codebase_analysis_integration",
       "reportTemplate": "codebase_analysis_foundation"
@@ -156,7 +151,21 @@
           "Prioritize based on criticality and blocking nature",
           "Align questions with existing architectural constraints"
         ],
-        "methodology": "Structured question identification with priority matrix application"
+        "methodology": "Structured question identification with priority matrix application",
+        "questionCategories": [
+          "technical_unknowns",
+          "implementation_options",
+          "integration_challenges",
+          "best_practices",
+          "security_requirements",
+          "performance_considerations",
+          "scalability_implications"
+        ],
+        "priorityClassification": {
+          "critical": "Blocking questions for implementation",
+          "important": "Quality enhancement questions",
+          "nice_to_have": "Optimization opportunity questions"
+        }
       },
       "approachGuidance": {
         "stepByStep": [
@@ -166,6 +175,18 @@
           "Document best practices and industry standards needs",
           "Classify questions as Critical, Important, or Nice-to-have",
           "Prioritize research questions based on blocking impact"
+        ],
+        "identificationSteps": [
+          "Review task requirements for technical unknowns and uncertainties",
+          "Analyze codebase analysis for areas requiring additional investigation",
+          "Extract implementation options that need research and comparison",
+          "Identify integration challenges that require solution research"
+        ],
+        "prioritizationSteps": [
+          "Apply priority matrix to classify questions by impact and urgency",
+          "Identify critical blocking questions that must be answered first",
+          "Categorize important questions that enhance quality and implementation",
+          "Document nice-to-have questions for optimization opportunities"
         ]
       },
       "qualityChecklist": [
@@ -189,38 +210,7 @@
           "isRequired": true
         }
       ],
-      "actions": [
-        {
-          "name": "identify_research_questions",
-          "actionType": "ANALYSIS",
-          "actionData": {
-            "analysisType": "research_question_extraction",
-            "categories": [
-              "technical_unknowns",
-              "implementation_options",
-              "integration_challenges",
-              "best_practices",
-              "security_requirements",
-              "performance_considerations",
-              "scalability_implications"
-            ]
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "prioritize_research_questions",
-          "actionType": "VALIDATION",
-          "actionData": {
-            "validationType": "priority_classification",
-            "criteria": {
-              "critical": "{{blocking_questions_for_implementation}}",
-              "important": "{{quality_enhancement_questions}}",
-              "nice_to_have": "{{optimization_opportunity_questions}}"
-            }
-          },
-          "sequenceOrder": 2
-        }
-      ],
+      "actions": [],
       "triggerReport": true,
       "reportType": "research_questions",
       "reportTemplate": "research_question_prioritization"
@@ -232,7 +222,7 @@
       "sequenceNumber": 4,
       "isRequired": true,
       "estimatedTime": "4-6 minutes",
-      "stepType": "PLANNING",
+      "stepType": "ACTION",
       "behavioralContext": {
         "approach": "Question-type driven methodology selection with quality standards",
         "principles": [
@@ -241,7 +231,37 @@
           "Apply multi-source validation requirements",
           "Focus on practical applicability and integration compatibility"
         ],
-        "methodology": "Structured methodology framework with quality validation"
+        "methodology": "Structured methodology framework with quality validation",
+        "methodologyTypes": {
+          "technical_implementation": [
+            "official_documentation",
+            "github_repositories",
+            "stack_overflow_validated",
+            "technical_blogs_experts",
+            "performance_benchmarks"
+          ],
+          "architecture_decisions": [
+            "architecture_pattern_docs",
+            "case_studies_implementations",
+            "trade_off_analysis",
+            "scalability_considerations",
+            "integration_compatibility"
+          ],
+          "security_compliance": [
+            "security_best_practices",
+            "compliance_frameworks",
+            "vulnerability_analysis",
+            "authentication_patterns",
+            "data_protection_regulations"
+          ]
+        },
+        "qualityStandards": {
+          "multipleSourceValidation": "minimum_3_authoritative_sources",
+          "recencyVerification": "prioritize_last_2_years_actively_maintained",
+          "authorityAssessment": "evaluate_credibility_expertise_recognition",
+          "practicalApplicability": "focus_actionable_implementable_guidance",
+          "integrationCompatibility": "ensure_existing_architecture_compatibility"
+        }
       },
       "approachGuidance": {
         "stepByStep": [
@@ -251,6 +271,18 @@
           "Plan multi-source validation approach",
           "Ensure practical applicability focus",
           "Document methodology for each research area"
+        ],
+        "selectionSteps": [
+          "Map research questions to appropriate methodology types",
+          "Select research sources based on question category and requirements",
+          "Define quality criteria for evaluating sources and findings",
+          "Plan validation approach using multiple authoritative sources"
+        ],
+        "validationSteps": [
+          "Establish quality standards for source credibility and recency",
+          "Define practical applicability criteria for findings",
+          "Ensure integration compatibility requirements are considered",
+          "Document methodology approach for each research area"
         ]
       },
       "qualityChecklist": [
@@ -274,54 +306,7 @@
           "isRequired": true
         }
       ],
-      "actions": [
-        {
-          "name": "select_research_methodology",
-          "actionType": "PLANNING",
-          "actionData": {
-            "planType": "research_methodology",
-            "methodologyTypes": {
-              "technical_implementation": [
-                "official_documentation",
-                "github_repositories",
-                "stack_overflow_validated",
-                "technical_blogs_experts",
-                "performance_benchmarks"
-              ],
-              "architecture_decisions": [
-                "architecture_pattern_docs",
-                "case_studies_implementations",
-                "trade_off_analysis",
-                "scalability_considerations",
-                "integration_compatibility"
-              ],
-              "security_compliance": [
-                "security_best_practices",
-                "compliance_frameworks",
-                "vulnerability_analysis",
-                "authentication_patterns",
-                "data_protection_regulations"
-              ]
-            }
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "define_quality_standards",
-          "actionType": "VALIDATION",
-          "actionData": {
-            "validationType": "research_quality_standards",
-            "criteria": {
-              "multipleSourceValidation": "minimum_3_authoritative_sources",
-              "recencyVerification": "prioritize_last_2_years_actively_maintained",
-              "authorityAssessment": "evaluate_credibility_expertise_recognition",
-              "practicalApplicability": "focus_actionable_implementable_guidance",
-              "integrationCompatibility": "ensure_existing_architecture_compatibility"
-            }
-          },
-          "sequenceOrder": 2
-        }
-      ],
+      "actions": [],
       "triggerReport": false
     },
     {
@@ -340,7 +325,23 @@
           "Focus on actionable and practical guidance",
           "Document evidence and reasoning for all findings"
         ],
-        "methodology": "Systematic investigation with structured documentation"
+        "methodology": "Systematic investigation with structured documentation",
+        "researchExecution": {
+          "qualityStandards": {
+            "multipleSourceValidation": true,
+            "recencyVerification": true,
+            "authorityAssessment": true,
+            "practicalApplicability": true,
+            "integrationCompatibility": true
+          },
+          "documentationPattern": {
+            "question": "Clear research question",
+            "sources": "Authoritative sources with credibility assessment",
+            "findings": "Key discoveries with supporting evidence",
+            "implications": "Implementation impact analysis",
+            "recommendations": "Actionable guidance with justification"
+          }
+        }
       },
       "approachGuidance": {
         "stepByStep": [
@@ -350,6 +351,18 @@
           "Focus on practical applicability and integration compatibility",
           "Document findings with supporting evidence and source credibility",
           "Validate implications for implementation decisions and architecture"
+        ],
+        "executionSteps": [
+          "Conduct systematic investigation for each prioritized research question",
+          "Apply quality standards consistently across all research activities",
+          "Validate findings using multiple authoritative sources",
+          "Focus on actionable and practical guidance for implementation"
+        ],
+        "documentationSteps": [
+          "Document each research question with clear context and scope",
+          "Record authoritative sources with credibility assessment",
+          "Document key findings with supporting evidence and reasoning",
+          "Analyze implementation implications and provide actionable recommendations"
         ]
       },
       "qualityChecklist": [
@@ -373,30 +386,7 @@
           "isRequired": true
         }
       ],
-      "actions": [
-        {
-          "name": "execute_comprehensive_research",
-          "actionType": "RESEARCH",
-          "actionData": {
-            "researchType": "systematic_investigation",
-            "qualityStandards": {
-              "multipleSourceValidation": true,
-              "recencyVerification": true,
-              "authorityAssessment": true,
-              "practicalApplicability": true,
-              "integrationCompatibility": true
-            },
-            "documentationPattern": {
-              "question": "{{clear_research_question}}",
-              "sources": "{{authoritative_sources_with_credibility}}",
-              "findings": "{{key_discoveries_with_evidence}}",
-              "implications": "{{implementation_impact_analysis}}",
-              "recommendations": "{{actionable_guidance_with_justification}}"
-            }
-          },
-          "sequenceOrder": 1
-        }
-      ],
+      "actions": [],
       "triggerReport": true,
       "reportType": "research_execution",
       "reportTemplate": "systematic_research_findings"
@@ -417,7 +407,37 @@
           "Perform comprehensive risk assessment with mitigation strategies",
           "Ensure compatibility with existing system architecture"
         ],
-        "methodology": "Structured synthesis with validation and risk assessment"
+        "methodology": "Structured synthesis with validation and risk assessment",
+        "synthesisAreas": {
+          "technicalRecommendations": [
+            "preferred_implementation_approaches",
+            "technology_stack_compatibility",
+            "integration_patterns",
+            "performance_optimization",
+            "error_handling"
+          ],
+          "architectureImplications": [
+            "design_pattern_recommendations",
+            "component_interaction",
+            "data_flow",
+            "scalability_considerations",
+            "maintenance_strategies"
+          ],
+          "riskAssessment": [
+            "implementation_risks",
+            "mitigation_strategies",
+            "alternative_approaches",
+            "fallback_options",
+            "testing_strategies"
+          ]
+        },
+        "validationCriteria": {
+          "architecturalAlignment": "Existing architecture compatibility",
+          "implementationFeasibility": "Technical feasibility assessment",
+          "riskMitigation": "Risk mitigation completeness",
+          "qualityStandards": "Quality requirements compliance",
+          "performanceImpact": "Performance impact analysis"
+        }
       },
       "approachGuidance": {
         "stepByStep": [
@@ -427,6 +447,18 @@
           "Perform risk assessment with implementation risks and mitigation",
           "Validate technology stack compatibility and integration patterns",
           "Create comprehensive recommendation framework with alternatives"
+        ],
+        "synthesisSteps": [
+          "Consolidate research findings into coherent technical recommendations",
+          "Document preferred implementation approaches with evidence-based justification",
+          "Analyze architecture implications and recommend appropriate design patterns",
+          "Assess risks and develop comprehensive mitigation strategies"
+        ],
+        "validationSteps": [
+          "Validate recommendations against existing architecture compatibility",
+          "Assess technical feasibility and implementation complexity",
+          "Verify risk mitigation strategies are comprehensive and actionable",
+          "Ensure recommendations comply with quality standards and performance requirements"
         ]
       },
       "qualityChecklist": [
@@ -450,54 +482,7 @@
           "isRequired": true
         }
       ],
-      "actions": [
-        {
-          "name": "synthesize_technical_recommendations",
-          "actionType": "ANALYSIS",
-          "actionData": {
-            "analysisType": "recommendations_synthesis",
-            "synthesisAreas": {
-              "technicalRecommendations": [
-                "preferred_implementation_approaches",
-                "technology_stack_compatibility",
-                "integration_patterns",
-                "performance_optimization",
-                "error_handling"
-              ],
-              "architectureImplications": [
-                "design_pattern_recommendations",
-                "component_interaction",
-                "data_flow",
-                "scalability_considerations",
-                "maintenance_strategies"
-              ],
-              "riskAssessment": [
-                "implementation_risks",
-                "mitigation_strategies",
-                "alternative_approaches",
-                "fallback_options",
-                "testing_strategies"
-              ]
-            }
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "validate_recommendations",
-          "actionType": "VALIDATION",
-          "actionData": {
-            "validationType": "recommendation_validation",
-            "criteria": {
-              "architecturalAlignment": "{{existing_architecture_compatibility}}",
-              "implementationFeasibility": "{{technical_feasibility_assessment}}",
-              "riskMitigation": "{{risk_mitigation_completeness}}",
-              "qualityStandards": "{{quality_requirements_compliance}}",
-              "performanceImpact": "{{performance_impact_analysis}}"
-            }
-          },
-          "sequenceOrder": 2
-        }
-      ],
+      "actions": [],
       "triggerReport": true,
       "reportType": "findings_synthesis",
       "reportTemplate": "research_synthesis_validation"
@@ -509,7 +494,7 @@
       "sequenceNumber": 7,
       "isRequired": true,
       "estimatedTime": "8-12 minutes",
-      "stepType": "REPORTING",
+      "stepType": "ACTION",
       "behavioralContext": {
         "approach": "Comprehensive research report generation with structured documentation",
         "principles": [
@@ -582,7 +567,7 @@
       "sequenceNumber": 8,
       "isRequired": true,
       "estimatedTime": "2-3 minutes",
-      "stepType": "DELEGATION",
+      "stepType": "ACTION",
       "behavioralContext": {
         "approach": "Context-preserving delegation with comprehensive research handoff",
         "principles": [

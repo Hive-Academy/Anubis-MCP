@@ -230,6 +230,86 @@ export class WorkflowExecutionOperationsService {
   }
 
   /**
+   * Get execution context data
+   * Used by boomerang workflow to retrieve task creation data
+   */
+  async getExecutionContext(input: {
+    executionId: string;
+    dataKey?: string;
+  }): Promise<any> {
+    const execution = await this.workflowExecution.getExecutionById(
+      input.executionId,
+    );
+
+    if (input.dataKey) {
+      // Return specific data from execution context
+      if (
+        execution.executionContext &&
+        typeof execution.executionContext === 'object' &&
+        execution.executionContext !== null &&
+        input.dataKey in execution.executionContext
+      ) {
+        return (execution.executionContext as Record<string, any>)[
+          input.dataKey
+        ];
+      }
+      // Also check in taskCreationData for backward compatibility
+      if (execution.taskCreationData && input.dataKey === 'taskCreationData') {
+        return execution.taskCreationData;
+      }
+      throw new Error(
+        `Data key '${input.dataKey}' not found in execution context`,
+      );
+    }
+
+    // Return full execution context
+    return {
+      executionContext: execution.executionContext,
+      taskCreationData: execution.taskCreationData,
+      executionState: execution.executionState,
+    };
+  }
+
+  /**
+   * Update execution context
+   * Used by boomerang workflow to update context after task updates
+   */
+  async updateExecutionContext(input: {
+    executionId: string;
+    contextUpdates: Record<string, any>;
+  }): Promise<any> {
+    const execution = await this.workflowExecution.getExecutionById(
+      input.executionId,
+    );
+
+    // Merge context updates with existing context
+    const currentContext =
+      execution.executionContext &&
+      typeof execution.executionContext === 'object' &&
+      execution.executionContext !== null
+        ? (execution.executionContext as Record<string, any>)
+        : {};
+
+    const updatedContext = {
+      ...currentContext,
+      ...input.contextUpdates,
+    };
+
+    const updatedExecution = await this.workflowExecution.updateExecution(
+      input.executionId,
+      {
+        executionContext: updatedContext,
+      },
+    );
+
+    return {
+      success: true,
+      updatedContext: updatedExecution.executionContext,
+      executionId: input.executionId,
+    };
+  }
+
+  /**
    * Update execution state
    */
   async updateExecution(

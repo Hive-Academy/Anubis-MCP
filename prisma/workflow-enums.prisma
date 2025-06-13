@@ -43,6 +43,12 @@ enum StepProgressStatus {
   FAILED
 }
 
+// 🆕 NEW: Step execution result for MCP-focused tracking
+enum StepExecutionResult {
+  SUCCESS
+  FAILURE
+}
+
 enum ProjectType {
   MONOREPO
   MICROSERVICES

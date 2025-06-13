@@ -190,8 +190,8 @@ export class ExecutionDataEnricherService {
 
       // Get the next available step for the current role
       const nextStep = await this.stepExecution.getNextAvailableStep(
+        execution.taskId,
         execution.currentRoleId,
-        String(execution.taskId),
       );
 
       if (!nextStep) {

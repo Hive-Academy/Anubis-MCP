@@ -119,17 +119,19 @@ Returns: Task ID, execution ID, and first step information for use with workflow
       const envelope = {
         success: true,
         message: result.message,
-        resources: {
-          taskId: result.resources.taskId,
-          executionId: result.resources.executionId,
-          firstStepId: result.resources.firstStepId,
+        data: {
+          workflow: {
+            taskId: result.resources.taskId,
+            executionId: result.resources.executionId,
+            firstStepId: result.resources.firstStepId,
+            task: result.task,
+            workflowExecution: result.workflowExecution,
+            firstStep: result.firstStep,
+          },
         },
-        currentStep: {
-          stepId: result.firstStep.id,
-          name: result.firstStep.name,
-          displayName: result.firstStep.displayName,
-        },
-        nextAction: 'get_workflow_guidance',
+        resources: result.resources,
+        currentStep: result.currentStep,
+        nextAction: result.nextAction,
       };
 
       const response: {
@@ -150,7 +152,7 @@ Returns: Task ID, execution ID, and first step information for use with workflow
           text: JSON.stringify(
             {
               debug: {
-                placeholderTask: result.placeholderTask,
+                task: result.task,
                 firstStep: result.firstStep,
                 execution: result.workflowExecution,
               },

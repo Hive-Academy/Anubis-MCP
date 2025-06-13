@@ -19,6 +19,8 @@ const WorkflowExecutionSchema = z.object({
     'complete_execution',
     'get_active_executions',
     'execute_step_with_services',
+    'get_execution_context',
+    'update_execution_context',
   ]),
   taskId: z.number(),
   executionId: z.string().optional(),
@@ -51,6 +53,9 @@ const WorkflowExecutionSchema = z.object({
       continueOnFailure: z.boolean().optional(),
     })
     .optional(),
+  // New fields for context operations
+  dataKey: z.string().optional(),
+  contextUpdates: z.record(z.any()).optional(),
 });
 
 type WorkflowExecutionInputSchema = z.infer<typeof WorkflowExecutionSchema>;
@@ -136,6 +141,33 @@ Workflow execution lifecycle management with state tracking and progress monitor
         case 'execute_step_with_services':
           result =
             await this.executionOps.executeStepWithServices(workflowInput);
+          break;
+        case 'get_execution_context':
+          if (!input.executionId) {
+            throw new Error(
+              'executionId is required for get_execution_context',
+            );
+          }
+          result = await this.executionOps.getExecutionContext({
+            executionId: input.executionId,
+            dataKey: input.dataKey,
+          });
+          break;
+        case 'update_execution_context':
+          if (!input.executionId) {
+            throw new Error(
+              'executionId is required for update_execution_context',
+            );
+          }
+          if (!input.contextUpdates) {
+            throw new Error(
+              'contextUpdates is required for update_execution_context',
+            );
+          }
+          result = await this.executionOps.updateExecutionContext({
+            executionId: input.executionId,
+            contextUpdates: input.contextUpdates,
+          });
           break;
         default: {
           const exhaustiveCheck: never = input.operation;
