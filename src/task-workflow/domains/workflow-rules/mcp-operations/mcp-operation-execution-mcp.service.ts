@@ -13,14 +13,28 @@ import { BaseMcpService } from '../utils/mcp-response.utils';
 // Scope: Internal MCP_CALL operations only (TaskOperations, ResearchOperations, etc.)
 // ZERO Step Logic: Pure MCP operation delegation and execution
 
-// 🎯 STRICT TYPE DEFINITIONS
+// 🎯 STRICT TYPE DEFINITIONS WITH COMPREHENSIVE SERVICE MAPPING
 
 const ExecuteMcpOperationInputSchema = z.object({
   serviceName: z
+    .enum([
+      'TaskOperations',
+      'PlanningOperations',
+      'WorkflowOperations',
+      'ReviewOperations',
+      'ResearchOperations',
+      'SubtaskOperations',
+    ])
+    .describe('Service name - must be one of the supported services'),
+  operation: z
     .string()
-    .describe('Service name (TaskOperations, ResearchOperations, etc.)'),
-  operation: z.string().describe('Operation name (create, update, get, etc.)'),
-  parameters: z.unknown().describe('Operation parameters for the service'),
+    .describe('Operation name - must be supported by the selected service'),
+  parameters: z
+    .unknown()
+    .optional()
+    .describe(
+      'Operation parameters for the service (optional for some operations)',
+    ),
 });
 
 type ExecuteMcpOperationInput = z.infer<typeof ExecuteMcpOperationInputSchema>;
@@ -64,19 +78,96 @@ export class McpOperationExecutionMcpService extends BaseMcpService {
 4. MCP server executes operation through core services
 5. MCP server returns results to AI
 
-**Supported Services:**
-- TaskOperations: create, update, get, list
-- ResearchOperations: create_research, update_research, add_comment
-- WorkflowOperations: delegate, complete, escalate
-- PlanningOperations: create_plan, create_subtasks
-- ReviewOperations: create_review, create_completion
+**SUPPORTED SERVICES AND OPERATIONS:**
 
-**Example:**
-AI collects task data, then calls:
+**TaskOperations Service:**
+- create: Create new task with comprehensive data
+- update: Update existing task properties and status
+- get: Retrieve task details with optional inclusions
+- list: List tasks with filtering and pagination
+
+**PlanningOperations Service:**
+- create_plan: Create implementation plan for a task
+- update_plan: Update existing implementation plan
+- get_plan: Retrieve plan with optional subtasks (use includeBatches: true)
+- create_subtasks: Create batch of subtasks for a plan
+- update_batch: Update status of entire subtask batch
+- get_batch: Retrieve specific subtask batch
+
+**WorkflowOperations Service:**
+- delegate: Delegate task to another role with context
+- complete: Mark workflow as completed
+- escalate: Escalate task to higher authority
+
+**ReviewOperations Service:**
+- create_review: Create code review for completed work
+- update_review: Update review status and feedback
+- get_review: Retrieve review details
+- create_completion: Mark review as completed
+
+**ResearchOperations Service:**
+- create_research: Create research task
+- update_research: Update research findings
+- get_research: Retrieve research details
+- add_comment: Add comment to research
+
+**SubtaskOperations Service:**
+- create_subtask: Create individual subtask with detailed specs
+- update_subtask: Update subtask status and completion evidence
+- get_subtask: Retrieve subtask details with dependencies
+- get_next_subtask: Get next available subtask for execution
+
+**PARAMETER EXAMPLES:**
+
+TaskOperations.create:
+{
+  "taskName": "Task name",
+  "description": "Detailed description", 
+  "priority": "High|Medium|Low|Critical",
+  "requirements": "Specific requirements"
+}
+
+TaskOperations.get:
+{
+  "taskId": 123,
+  "includeAnalysis": true,
+  "includePlans": true,
+  "includeSubtasks": true
+}
+
+PlanningOperations.get_plan:
+{
+  "taskId": 123,
+  "includeBatches": true
+}
+
+SubtaskOperations.update_subtask:
+{
+  "taskId": 123,
+  "subtaskId": 456,
+  "updateData": {
+    "status": "completed|in-progress|not-started",
+    "completionEvidence": {
+      "implementationSummary": "What was implemented",
+      "filesModified": ["file1.ts", "file2.ts"],
+      "duration": "30 minutes"
+    }
+  }
+}
+
+WorkflowOperations.delegate:
+{
+  "taskId": 123,
+  "targetRole": "code-review",
+  "delegationContext": "Implementation completed with evidence"
+}
+
+**USAGE PATTERN:**
+AI collects required data, then calls:
 {
   "serviceName": "TaskOperations",
   "operation": "create", 
-  "parameters": { taskName: "...", description: "...", ... }
+  "parameters": { taskName: "...", description: "...", priority: "High" }
 }`,
     parameters:
       ExecuteMcpOperationInputSchema as ZodSchema<ExecuteMcpOperationInput>,
@@ -87,12 +178,29 @@ AI collects task data, then calls:
         `Executing MCP operation: ${input.serviceName}.${input.operation}`,
       );
 
+      // Validate that the operation is supported
+      const supportedServices =
+        this.coreServiceOrchestrator.getSupportedServices();
+      const supportedOperations = supportedServices[input.serviceName];
+
+      if (!supportedOperations) {
+        throw new Error(
+          `Service '${input.serviceName}' is not supported. Available services: ${Object.keys(supportedServices).join(', ')}`,
+        );
+      }
+
+      if (!supportedOperations.includes(input.operation)) {
+        throw new Error(
+          `Operation '${input.operation}' is not supported for service '${input.serviceName}'. Available operations: ${supportedOperations.join(', ')}`,
+        );
+      }
+
       // Route to CoreServiceOrchestrator for actual execution
       const operationResult =
         await this.coreServiceOrchestrator.executeServiceCall(
           input.serviceName,
           input.operation,
-          input.parameters as Record<string, unknown>,
+          (input.parameters as Record<string, unknown>) || {},
         );
 
       // ✅ MINIMAL RESPONSE: Only essential operation result
@@ -101,6 +209,13 @@ AI collects task data, then calls:
         operation: input.operation,
         success: operationResult.success,
         data: operationResult.data,
+        ...(operationResult.error && { error: operationResult.error }),
+        metadata: {
+          operation: input.operation,
+          serviceValidated: true,
+          supportedOperations: supportedOperations,
+          responseTime: operationResult.duration,
+        },
       });
     } catch (error) {
       return this.buildErrorResponse(

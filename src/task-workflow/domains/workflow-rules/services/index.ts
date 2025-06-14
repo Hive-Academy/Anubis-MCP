@@ -5,14 +5,11 @@
 // Core Services
 // CoreServiceOrchestrator - Internal use only by MCP operation execution service
 // export { CoreServiceOrchestrator } from './core-service-orchestrator.service';
-export { StepExecutionService } from './step-execution.service';
-
-// Specialized Services
 export {
-  StepExecutionCoreService,
+  StepExecutionService,
   StepExecutionContext,
   StepExecutionResult,
-} from './step-execution-core.service';
+} from './step-execution.service';
 export {
   StepGuidanceService,
   StepGuidanceContext,

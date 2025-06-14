@@ -15,7 +15,6 @@ import { RequiredInputExtractorService } from './services/required-input-extract
 import { SchemaDefinitionGeneratorService } from './services/schema-definition-generator.service';
 import { ProgressCalculatorService } from './services/progress-calculator.service';
 import { StepExecutionService } from './services/step-execution.service';
-import { StepExecutionCoreService } from './services/step-execution-core.service';
 import { StepGuidanceService } from './services/step-guidance.service';
 import { StepProgressTrackerService } from './services/step-progress-tracker.service';
 import { StepQueryService } from './services/step-query.service';
@@ -48,7 +47,6 @@ import { McpOperationExecutionMcpService } from './mcp-operations/mcp-operation-
     SchemaDefinitionGeneratorService,
     ProgressCalculatorService,
     StepExecutionService,
-    StepExecutionCoreService,
     StepGuidanceService,
     StepProgressTrackerService,
     StepQueryService,
@@ -74,7 +72,6 @@ import { McpOperationExecutionMcpService } from './mcp-operations/mcp-operation-
     WorkflowGuidanceService,
     SchemaDefinitionGeneratorService,
     StepExecutionService,
-    StepExecutionCoreService,
     StepGuidanceService,
     StepProgressTrackerService,
     StepQueryService,
