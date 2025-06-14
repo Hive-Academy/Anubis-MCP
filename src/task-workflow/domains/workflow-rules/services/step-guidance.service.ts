@@ -2,6 +2,15 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { RequiredInputExtractorService } from './required-input-extractor.service';
 import { WorkflowStep, StepAction } from 'generated/prisma';
+import {
+  StepNotFoundError,
+  buildGuidanceFromDatabase,
+  extractMcpActionsWithDynamicParameters,
+  handleStepServiceOperation,
+  safeJsonCast,
+  extractBehavioralContext,
+  extractApproachGuidance,
+} from '../utils/step-service-shared.utils';
 
 // ===================================================================
 // 🔥 STEP GUIDANCE SERVICE - DATABASE-ONLY MODEL + DYNAMIC PARAMETERS
@@ -94,14 +103,7 @@ export interface McpActionData {
   sequenceOrder?: number;
 }
 
-// Custom Error Classes
-export class StepNotFoundError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'StepNotFoundError';
-  }
-}
-
+// Custom Error Classes - Using shared utilities
 export class StepConfigNotFoundError extends Error {
   constructor(message: string) {
     super(message);
@@ -128,7 +130,11 @@ export class StepGuidanceService {
   ): Promise<StepGuidanceResult> {
     const step = await this.getStepWithMcpActions(context.stepId);
     if (!step) {
-      throw new StepNotFoundError(`Step not found: ${context.stepId}`);
+      throw new StepNotFoundError(
+        context.stepId,
+        'StepGuidanceService',
+        'getStepGuidance',
+      );
     }
 
     // ✅ FIXED: Extract MCP actions with dynamic parameter information
@@ -171,7 +177,11 @@ export class StepGuidanceService {
     });
 
     if (!step) {
-      throw new StepNotFoundError(`Step not found: ${stepId}`);
+      throw new StepNotFoundError(
+        stepId,
+        'StepGuidanceService',
+        'getStepValidationCriteria',
+      );
     }
 
     const guidance = this.buildGuidanceFromDatabase(step);

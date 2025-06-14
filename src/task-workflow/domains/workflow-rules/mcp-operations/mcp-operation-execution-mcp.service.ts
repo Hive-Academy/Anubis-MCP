@@ -200,7 +200,10 @@ AI collects required data, then calls:
         await this.coreServiceOrchestrator.executeServiceCall(
           input.serviceName,
           input.operation,
-          (input.parameters as Record<string, unknown>) || {},
+          this.requiredInputExtractorService.extractFromServiceSchema(
+            input.serviceName,
+            input.operation,
+          ),
         );
 
       // ✅ MINIMAL RESPONSE: Only essential operation result

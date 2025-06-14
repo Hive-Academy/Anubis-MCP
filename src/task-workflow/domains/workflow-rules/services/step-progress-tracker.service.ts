@@ -1,10 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import {
-  safeJsonCast,
+  StepProgressError,
+  transformProgressRecord,
+  handleStepServiceOperation,
   getErrorMessage,
+  safeJsonCast,
   isDefined,
-} from '../utils/type-safety.utils';
+} from '../utils/step-service-shared.utils';
 
 // ===================================================================
 // 🔥 STEP PROGRESS TRACKER SERVICE - COMPLETE REVAMP FOR MCP-ONLY
@@ -79,16 +82,7 @@ export interface RoleProgressSummary {
   successRate: number;
 }
 
-// Custom Error Classes
-export class StepProgressError extends Error {
-  constructor(
-    message: string,
-    public stepId: string,
-  ) {
-    super(message);
-    this.name = 'StepProgressError';
-  }
-}
+// Custom Error Classes - Using shared utilities
 
 /**
  * 🚀 REVAMPED: StepProgressTrackerService
@@ -154,7 +148,9 @@ export class StepProgressTrackerService {
       this.logger.error(`Failed to start step progress tracking:`, error);
       throw new StepProgressError(
         `Failed to start progress tracking: ${getErrorMessage(error)}`,
-        stepId,
+        'StepProgressTrackerService',
+        'startStep',
+        { stepId },
       );
     }
   }
