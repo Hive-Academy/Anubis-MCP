@@ -4,6 +4,7 @@ import { ZodSchema, z } from 'zod';
 import { CoreServiceOrchestrator } from '../services/core-service-orchestrator.service';
 import { RequiredInputExtractorService } from '../services/required-input-extractor.service';
 import { getErrorMessage } from '../utils/type-safety.utils';
+import { BaseMcpService } from '../utils/mcp-response.utils';
 
 // ===================================================================
 // 🔥 MCP OPERATION EXECUTION SERVICE - DEDICATED MCP_CALL HANDLER
@@ -33,15 +34,18 @@ type ExecuteMcpOperationInput = z.infer<typeof ExecuteMcpOperationInputSchema>;
  * - Direct delegation to CoreServiceOrchestrator
  * - Parameter extraction and validation support
  * - Clean error handling and response formatting
+ * - Extends BaseMcpService for consistent response building
  */
 @Injectable()
-export class McpOperationExecutionMcpService {
+export class McpOperationExecutionMcpService extends BaseMcpService {
   private readonly logger = new Logger(McpOperationExecutionMcpService.name);
 
   constructor(
     private readonly coreServiceOrchestrator: CoreServiceOrchestrator,
     private readonly requiredInputExtractorService: RequiredInputExtractorService,
-  ) {}
+  ) {
+    super();
+  }
 
   // ===================================================================
   // 🚀 MCP OPERATION EXECUTION TOOL - Core workflow operations
@@ -105,44 +109,5 @@ AI collects task data, then calls:
         'MCP_OPERATION_ERROR',
       );
     }
-  }
-
-  // ===================================================================
-  // 🔧 PRIVATE HELPER METHODS
-  // ===================================================================
-
-  private buildErrorResponse(message: string, error: string, code: string) {
-    return {
-      content: [
-        {
-          type: 'text' as const,
-          text: JSON.stringify(
-            {
-              type: 'error',
-              success: false,
-              error: {
-                message,
-                details: error,
-                code,
-              },
-              timestamp: new Date().toISOString(),
-            },
-            null,
-            2,
-          ),
-        },
-      ],
-    };
-  }
-
-  private buildMinimalResponse(data: unknown) {
-    return {
-      content: [
-        {
-          type: 'text' as const,
-          text: JSON.stringify(data, null, 2),
-        },
-      ],
-    };
   }
 }

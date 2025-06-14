@@ -5,9 +5,13 @@ import {
   WorkflowRole,
 } from 'generated/prisma';
 import { PrismaService } from '../../../../prisma/prisma.service';
+import {
+  ConfigurableService,
+  BaseServiceConfig,
+} from '../utils/configurable-service.base';
 
 // Simplified configuration for role-focused guidance only
-export interface GuidanceConfig {
+export interface GuidanceConfig extends BaseServiceConfig {
   defaults: {
     patternConfidence: number;
     patternUsage: string;
@@ -67,11 +71,11 @@ export interface RoleContext {
 }
 
 @Injectable()
-export class WorkflowGuidanceService {
+export class WorkflowGuidanceService extends ConfigurableService<GuidanceConfig> {
   private readonly logger = new Logger(WorkflowGuidanceService.name);
 
-  // Simplified configuration - removed step-related configs
-  private readonly config: GuidanceConfig = {
+  // Default configuration implementation (required by ConfigurableService)
+  protected readonly defaultConfig: GuidanceConfig = {
     defaults: {
       patternConfidence: 0.8,
       patternUsage: 'general',
@@ -86,33 +90,14 @@ export class WorkflowGuidanceService {
     },
   };
 
-  constructor(private prisma: PrismaService) {}
-
-  /**
-   * Update guidance configuration
-   */
-  updateConfig(config: Partial<GuidanceConfig>): void {
-    if (config.defaults) {
-      Object.assign(this.config.defaults, config.defaults);
-    }
-    if (config.patternDetection) {
-      Object.assign(this.config.patternDetection, config.patternDetection);
-    }
-    if (config.performance) {
-      Object.assign(this.config.performance, config.performance);
-    }
-    this.logger.log('Guidance configuration updated');
+  constructor(private prisma: PrismaService) {
+    super();
+    this.initializeConfig();
   }
 
-  /**
-   * Get current configuration
-   */
-  getConfig(): GuidanceConfig {
-    return {
-      defaults: { ...this.config.defaults },
-      patternDetection: { ...this.config.patternDetection },
-      performance: { ...this.config.performance },
-    };
+  // Optional: Override configuration change hook
+  protected onConfigUpdate(): void {
+    this.logger.log('Guidance configuration updated');
   }
 
   /**
@@ -277,8 +262,9 @@ export class WorkflowGuidanceService {
       // Use configurable keywords for pattern detection
       enforcement.requiredPatterns = patterns
         .filter((p) =>
-          this.config.patternDetection.requiredPatternKeywords.some((keyword) =>
-            p.description.toLowerCase().includes(keyword.toLowerCase()),
+          this.getConfigValue('patternDetection').requiredPatternKeywords.some(
+            (keyword) =>
+              p.description.toLowerCase().includes(keyword.toLowerCase()),
           ),
         )
         .map((p) => p.patternName);
@@ -304,15 +290,15 @@ export class WorkflowGuidanceService {
   private async getProjectPatterns(projectContextId: number): Promise<any[]> {
     const patterns = await this.prisma.projectPattern.findMany({
       where: { projectContextId },
-      take: this.config.performance.maxPatternsReturned,
+      take: this.getConfigValue('performance').maxPatternsReturned,
     });
 
     return patterns.map((pattern) => ({
       name: pattern.patternName,
       type: pattern.patternType,
       description: pattern.description,
-      usage: this.config.defaults.patternUsage,
-      confidence: this.config.defaults.patternConfidence,
+      usage: this.getConfigValue('defaults').patternUsage,
+      confidence: this.getConfigValue('defaults').patternConfidence,
     }));
   }
 }

@@ -1,56 +1,6 @@
 {
   "roleTransitions": [
     {
-      "fromRoleId": "boomerang",
-      "toRoleId": "researcher",
-      "transitionName": "boomerang_to_researcher",
-      "conditions": {
-        "knowledgeGapsIdentified": true,
-        "researchScopeRequired": true,
-        "technicalValidationNeeded": true,
-        "informationGatheringRequired": true
-      },
-      "requirements": {
-        "taskContextAvailable": true,
-        "researchScopeDefined": true,
-        "existingAnalysisReviewed": true,
-        "knowledgeGapsPrioritized": true
-      },
-      "validationRules": {
-        "mcpContextAcquired": "Task context must be retrieved from MCP",
-        "researchPrioritiesSet": "Research priorities must be established based on gaps",
-        "qualityStandardsDefined": "Research quality standards must be established",
-        "evidenceFrameworkSet": "Evidence collection framework must be defined"
-      },
-      "handoffGuidance": {
-        "contextPreservation": [
-          "Task requirements and constraints",
-          "Existing codebase analysis findings",
-          "Identified knowledge gaps and priorities",
-          "Quality standards and validation criteria"
-        ],
-        "researchScope": [
-          "Technical feasibility requirements",
-          "Performance benchmarking needs",
-          "Security analysis requirements",
-          "Integration compatibility validation"
-        ],
-        "deliverables": [
-          "Comprehensive research report with findings",
-          "Evidence-based recommendations",
-          "Risk assessment with mitigation strategies",
-          "Implementation guidance for architecture role"
-        ]
-      },
-      "contextPreservation": {
-        "taskContext": "Complete task context including business and technical requirements",
-        "codebaseAnalysis": "Existing architectural findings and technology stack",
-        "qualityBaseline": "Current performance metrics and quality standards",
-        "integrationPoints": "Existing integration boundaries and patterns"
-      },
-      "isActive": true
-    },
-    {
       "fromRoleId": "researcher",
       "toRoleId": "architect",
       "transitionName": "researcher_to_architect",
@@ -151,56 +101,6 @@
         "blockageAnalysis": "Detailed analysis of research limitations and blockages",
         "partialFindings": "Validated findings available for strategic consideration",
         "alternativeOptions": "Explored alternatives and their feasibility assessment"
-      },
-      "isActive": true
-    },
-    {
-      "fromRoleId": "architect",
-      "toRoleId": "researcher",
-      "transitionName": "architect_to_researcher_validation",
-      "conditions": {
-        "additionalResearchRequired": true,
-        "technicalValidationNeeded": true,
-        "performanceAnalysisRequired": true,
-        "securityResearchNeeded": true
-      },
-      "requirements": {
-        "specificResearchScope": true,
-        "architecturalContextProvided": true,
-        "validationCriteriaSet": true,
-        "timelineEstablished": true
-      },
-      "validationRules": {
-        "researchScopeSpecific": "Research scope must be clearly defined and specific",
-        "architecturalContextComplete": "Complete architectural context must be provided",
-        "validationCriteriaClear": "Clear validation criteria must be established",
-        "timelineRealistic": "Research timeline must be realistic and achievable"
-      },
-      "handoffGuidance": {
-        "researchRequirements": [
-          "Specific technical questions requiring research",
-          "Validation criteria for architectural decisions",
-          "Performance benchmarking requirements",
-          "Security analysis and compliance validation"
-        ],
-        "architecturalContext": [
-          "Current architectural decisions and rationale",
-          "Design constraints and requirements",
-          "Integration requirements and boundaries",
-          "Quality standards and performance targets"
-        ],
-        "deliverableExpectations": [
-          "Specific research deliverables required",
-          "Evidence quality standards and validation",
-          "Timeline for research completion",
-          "Integration with ongoing architectural work"
-        ]
-      },
-      "contextPreservation": {
-        "architecturalDecisions": "Current architectural decisions and design rationale",
-        "designConstraints": "Technical and business constraints affecting design",
-        "researchQuestions": "Specific questions requiring research validation",
-        "qualityTargets": "Performance and quality targets for validation"
       },
       "isActive": true
     }

@@ -1,9 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { WorkflowExecution, WorkflowExecutionMode } from 'generated/prisma';
 import { PrismaService } from '../../../../prisma/prisma.service';
+import {
+  ConfigurableService,
+  BaseServiceConfig,
+} from '../utils/configurable-service.base';
 
 // Configuration interfaces to eliminate hardcoding
-export interface ExecutionServiceConfig {
+export interface ExecutionServiceConfig extends BaseServiceConfig {
   defaults: {
     executionMode: WorkflowExecutionMode;
     maxRecoveryAttempts: number;
@@ -62,11 +66,11 @@ export interface WorkflowExecutionWithRelations extends WorkflowExecution {
  * Dependency Inversion: Depends on PrismaService abstraction
  */
 @Injectable()
-export class WorkflowExecutionService {
+export class WorkflowExecutionService extends ConfigurableService<ExecutionServiceConfig> {
   private readonly logger = new Logger(WorkflowExecutionService.name);
 
-  // Configuration with sensible defaults
-  private readonly config: ExecutionServiceConfig = {
+  // Default configuration implementation (required by ConfigurableService)
+  protected readonly defaultConfig: ExecutionServiceConfig = {
     defaults: {
       executionMode: 'GUIDED',
       maxRecoveryAttempts: 3,
@@ -91,37 +95,14 @@ export class WorkflowExecutionService {
     },
   };
 
-  constructor(private readonly prisma: PrismaService) {}
-
-  /**
-   * Update execution service configuration
-   */
-  updateConfig(config: Partial<ExecutionServiceConfig>): void {
-    if (config.defaults) {
-      Object.assign(this.config.defaults, config.defaults);
-    }
-    if (config.phases) {
-      Object.assign(this.config.phases, config.phases);
-    }
-    if (config.validation) {
-      Object.assign(this.config.validation, config.validation);
-    }
-    if (config.performance) {
-      Object.assign(this.config.performance, config.performance);
-    }
-    this.logger.log('Execution service configuration updated');
+  constructor(private readonly prisma: PrismaService) {
+    super();
+    this.initializeConfig();
   }
 
-  /**
-   * Get current configuration
-   */
-  getConfig(): ExecutionServiceConfig {
-    return {
-      defaults: { ...this.config.defaults },
-      phases: { ...this.config.phases },
-      validation: { ...this.config.validation },
-      performance: { ...this.config.performance },
-    };
+  // Optional: Override configuration change hook
+  protected onConfigUpdate(): void {
+    this.logger.log('Execution service configuration updated');
   }
 
   /**
@@ -129,15 +110,19 @@ export class WorkflowExecutionService {
    */
   private validateInput(input: CreateWorkflowExecutionInput): void {
     // taskId is now optional for bootstrap workflows
-    if (this.config.validation.requireRoleId && !input.currentRoleId) {
+    if (
+      this.getConfigValue('validation').requireRoleId &&
+      !input.currentRoleId
+    ) {
       throw new Error('currentRoleId is required');
     }
 
     if (input.executionContext) {
       const contextSize = JSON.stringify(input.executionContext).length;
-      if (contextSize > this.config.validation.maxContextSize) {
+      const maxContextSize = this.getConfigValue('validation').maxContextSize;
+      if (contextSize > maxContextSize) {
         throw new Error(
-          `Execution context too large: ${contextSize} bytes. Maximum: ${this.config.validation.maxContextSize} bytes`,
+          `Execution context too large: ${contextSize} bytes. Maximum: ${maxContextSize} bytes`,
         );
       }
     }
@@ -170,11 +155,11 @@ export class WorkflowExecutionService {
         currentRoleId: input.currentRoleId,
         currentStepId: firstStep?.id || null,
         executionMode:
-          input.executionMode || this.config.defaults.executionMode,
+          input.executionMode || this.getConfigValue('defaults').executionMode,
         autoCreatedTask: input.autoCreatedTask || false,
         executionContext: input.executionContext || {},
         executionState: {
-          phase: this.config.phases.initialized,
+          phase: this.getConfigValue('phases').initialized,
           currentContext: input.executionContext || {},
           progressMarkers: [],
           ...(firstStep && {
@@ -318,9 +303,9 @@ export class WorkflowExecutionService {
   ): Promise<WorkflowExecutionWithRelations> {
     return this.updateExecution(executionId, {
       completedAt: new Date(),
-      progressPercentage: this.config.defaults.completionPercentage,
+      progressPercentage: this.getConfigValue('defaults').completionPercentage,
       executionState: {
-        phase: this.config.phases.completed,
+        phase: this.getConfigValue('phases').completed,
         completedAt: new Date().toISOString(),
       },
     });

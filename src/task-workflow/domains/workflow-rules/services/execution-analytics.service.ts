@@ -1,9 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { WorkflowExecutionWithRelations } from './workflow-execution.service';
 import { getErrorMessage } from '../utils/type-safety.utils';
+import {
+  ConfigurableService,
+  BaseServiceConfig,
+} from '../utils/configurable-service.base';
 
 // Configuration interface to eliminate hardcoding
-export interface ExecutionAnalyticsConfig {
+export interface ExecutionAnalyticsConfig extends BaseServiceConfig {
   defaults: {
     executionMode: string;
     roleId: string;
@@ -53,11 +57,11 @@ export interface ProgressOverview {
  * Follows Single Responsibility Principle - only handles analytics.
  */
 @Injectable()
-export class ExecutionAnalyticsService {
+export class ExecutionAnalyticsService extends ConfigurableService<ExecutionAnalyticsConfig> {
   private readonly logger = new Logger(ExecutionAnalyticsService.name);
 
   // Configuration with sensible defaults
-  private readonly config: ExecutionAnalyticsConfig = {
+  protected readonly defaultConfig: ExecutionAnalyticsConfig = {
     defaults: {
       executionMode: 'GUIDED',
       roleId: 'unknown',
@@ -88,44 +92,14 @@ export class ExecutionAnalyticsService {
     },
   };
 
-  /**
-   * Update analytics configuration
-   */
-  updateConfig(config: Partial<ExecutionAnalyticsConfig>): void {
-    if (config.defaults) {
-      Object.assign(this.config.defaults, config.defaults);
-    }
-    if (config.recommendations) {
-      Object.assign(this.config.recommendations, config.recommendations);
-    }
-    if (config.calculations) {
-      Object.assign(this.config.calculations, config.calculations);
-    }
-    if (config.performance) {
-      Object.assign(this.config.performance, config.performance);
-    }
-    this.logger.log('Execution analytics configuration updated');
+  constructor() {
+    super();
+    this.initializeConfig();
   }
 
-  /**
-   * Get current configuration
-   */
-  getConfig(): ExecutionAnalyticsConfig {
-    return {
-      defaults: { ...this.config.defaults },
-      recommendations: {
-        finalRecommendations: [
-          ...this.config.recommendations.finalRecommendations,
-        ],
-        maxRecommendations: this.config.recommendations.maxRecommendations,
-      },
-      calculations: {
-        progressRoundingPrecision:
-          this.config.calculations.progressRoundingPrecision,
-        durationFormat: { ...this.config.calculations.durationFormat },
-      },
-      performance: { ...this.config.performance },
-    };
+  // Optional: Override configuration change hook
+  protected onConfigUpdate(): void {
+    this.logger.log('Execution analytics configuration updated');
   }
 
   /**
@@ -140,7 +114,7 @@ export class ExecutionAnalyticsService {
     const currentRoleId = this.safeGetString(
       execution,
       'currentRoleId',
-      this.config.defaults.roleId,
+      this.getConfigValue('defaults').roleId,
     );
 
     return {
@@ -160,13 +134,13 @@ export class ExecutionAnalyticsService {
     const recoveryAttempts = this.safeGetNumber(
       execution,
       'recoveryAttempts',
-      this.config.defaults.recoveryAttempts,
+      this.getConfigValue('defaults').recoveryAttempts,
     );
     const lastError = execution.lastError;
     const executionMode = this.safeGetString(
       execution,
       'executionMode',
-      this.config.defaults.executionMode,
+      this.getConfigValue('defaults').executionMode,
     );
 
     return {
@@ -187,7 +161,7 @@ export class ExecutionAnalyticsService {
         const roleId = this.safeGetString(
           exec,
           'currentRoleId',
-          this.config.defaults.roleId,
+          this.getConfigValue('defaults').roleId,
         );
         acc[roleId] = (acc[roleId] || 0) + 1;
         return acc;
@@ -205,7 +179,7 @@ export class ExecutionAnalyticsService {
     const total = executions.length;
     if (total === 0)
       return {
-        averageProgress: this.config.defaults.progressPercentage,
+        averageProgress: this.getConfigValue('defaults').progressPercentage,
         totalActive: 0,
       };
 
@@ -214,7 +188,7 @@ export class ExecutionAnalyticsService {
         const progress = this.safeGetNumber(
           exec,
           'progressPercentage',
-          this.config.defaults.progressPercentage,
+          this.getConfigValue('defaults').progressPercentage,
         );
         return sum + progress;
       }, 0) / total;
@@ -236,7 +210,7 @@ export class ExecutionAnalyticsService {
       return `${hours}h ${minutes}m`;
     } catch (error) {
       this.logger.warn('Failed to calculate duration:', getErrorMessage(error));
-      return this.config.defaults.duration;
+      return this.getConfigValue('defaults').duration;
     }
   }
 
@@ -244,9 +218,9 @@ export class ExecutionAnalyticsService {
    * Get final recommendations for completed executions
    */
   getFinalRecommendations(): string[] {
-    return this.config.recommendations.finalRecommendations.slice(
+    return this.getConfigValue('recommendations').finalRecommendations.slice(
       0,
-      this.config.recommendations.maxRecommendations,
+      this.getConfigValue('recommendations').maxRecommendations,
     );
   }
 
@@ -254,7 +228,8 @@ export class ExecutionAnalyticsService {
    * Round progress percentage based on configuration
    */
   private roundProgress(progress: number): number {
-    const precision = this.config.calculations.progressRoundingPrecision;
+    const precision =
+      this.getConfigValue('calculations').progressRoundingPrecision;
     return (
       Math.round(progress * Math.pow(10, precision)) / Math.pow(10, precision)
     );

@@ -3,6 +3,7 @@ import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { RoleTransitionService } from '../services/role-transition.service';
 import { getErrorMessage } from '../utils/type-safety.utils';
+import { BaseMcpService } from '../utils/mcp-response.utils';
 
 // ===================================================================
 // 🔥 ROLE TRANSITION MCP SERVICE - COMPLETE REVAMP FOR MINIMAL RESPONSES
@@ -60,15 +61,18 @@ type GetTransitionHistoryInput = z.infer<
  * - Reduced dependencies from 2 to 1 (essential service only)
  * - Removed shouldIncludeDebugInfo() redundant patterns
  * - Simplified error handling with consistent responses
+ * - Extends BaseMcpService for consistent response building
  */
 @Injectable()
-export class RoleTransitionMcpService {
+export class RoleTransitionMcpService extends BaseMcpService {
   private readonly logger = new Logger(RoleTransitionMcpService.name);
 
   constructor(
     private readonly roleTransitionService: RoleTransitionService,
     // ✅ REMOVED: EnvelopeBuilderService dependency (source of redundancy)
-  ) {}
+  ) {
+    super();
+  }
 
   // ===================================================================
   // ✅ ROLE TRANSITION DISCOVERY - Minimal focused responses
@@ -326,40 +330,6 @@ export class RoleTransitionMcpService {
   }
 
   // ===================================================================
-  // 🔧 PRIVATE HELPER METHODS - Consistent with other fixed tools
+  // 🔧 PRIVATE HELPER METHODS - Using inherited response builders
   // ===================================================================
-
-  private buildMinimalResponse(data: unknown) {
-    return {
-      content: [
-        {
-          type: 'text' as const,
-          text: JSON.stringify(data, null, 2),
-        },
-      ],
-    };
-  }
-
-  private buildErrorResponse(message: string, error: string, code: string) {
-    return {
-      content: [
-        {
-          type: 'text' as const,
-          text: JSON.stringify(
-            {
-              success: false,
-              error: {
-                message,
-                details: error,
-                code,
-              },
-              timestamp: new Date().toISOString(),
-            },
-            null,
-            2,
-          ),
-        },
-      ],
-    };
-  }
 }

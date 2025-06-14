@@ -6,6 +6,7 @@ import { RequiredInputExtractorService } from '../services/required-input-extrac
 import { WorkflowExecutionOperationsService } from '../services/workflow-execution-operations.service';
 import { getErrorMessage } from '../utils/type-safety.utils';
 import { WorkflowStep } from '../services/step-query.service';
+import { BaseMcpService } from '../utils/mcp-response.utils';
 
 // ===================================================================
 // 🔥 STEP EXECUTION MCP SERVICE - FOCUSED STEP MANAGEMENT
@@ -92,20 +93,19 @@ interface StepGuidanceData {
     operation: string;
     parameters: any;
   }>;
-  successCriteria?: string[];
-  qualityChecklist?: string[];
-}
-
-interface StepGuidanceData {
-  step?: {
-    name: string;
-    description: string;
+  behavioralGuidance?: {
+    approach: string;
+    principles: string[];
+    methodology: string;
+    keyFocus: string[];
+    qualityStandards: string[];
   };
-  mcpActions?: Array<{
-    serviceName: string;
-    operation: string;
-    parameters: any;
-  }>;
+  approachGuidance?: {
+    stepByStep: string[];
+    validationSteps: string[];
+    errorHandling: string[];
+    bestPractices: string[];
+  };
   successCriteria?: string[];
   qualityChecklist?: string[];
 }
@@ -120,16 +120,19 @@ interface StepGuidanceData {
  * - Simplified error handling and responses
  * - Zero MCP_CALL operations (moved to dedicated service)
  * - Pure step workflow focus
+ * - Extends BaseMcpService for consistent response building
  */
 @Injectable()
-export class StepExecutionMcpService {
+export class StepExecutionMcpService extends BaseMcpService {
   private readonly logger = new Logger(StepExecutionMcpService.name);
 
   constructor(
     private readonly stepExecutionService: StepExecutionService,
     private readonly requiredInputExtractorService: RequiredInputExtractorService,
     private readonly workflowExecutionOperationsService: WorkflowExecutionOperationsService,
-  ) {}
+  ) {
+    super();
+  }
 
   // ===================================================================
   // ✅ GUIDANCE TOOL - What AI should do locally
@@ -228,18 +231,18 @@ export class StepExecutionMcpService {
       const response: any = {
         stepInfo: {
           stepId: currentStepId,
-          name: stepGuidance.step?.name || 'Current Step',
-          description:
-            stepGuidance.step?.description || 'Execute current workflow step',
+          name: stepGuidance.step?.name,
+          description: stepGuidance.step?.description,
         },
+        behavioralContext: stepGuidance.behavioralGuidance,
+        approachGuidance: stepGuidance.approachGuidance,
         localExecution: {
           commands: this.extractLocalCommands(stepGuidance),
           description: 'Commands for you to execute locally using your tools',
         },
-        validation: {
-          successCriteria: this.extractSuccessCriteria(stepGuidance),
-          qualityChecklist: this.extractQualityChecklist(stepGuidance),
-        },
+
+        successCriteria: this.extractSuccessCriteria(stepGuidance),
+        qualityChecklist: this.extractQualityChecklist(stepGuidance),
       };
 
       // 🎯 CONDITIONALLY ADD: MCP operation parameters if step has MCP_CALL actions
@@ -503,43 +506,8 @@ After running 'git status' locally, report:
   }
 
   // ===================================================================
-  // 🔧 PRIVATE HELPER METHODS - Consistent with other fixed tools
+  // 🔧 PRIVATE HELPER METHODS - Using inherited response builders
   // ===================================================================
-
-  private buildErrorResponse(message: string, error: string, code: string) {
-    return {
-      content: [
-        {
-          type: 'text' as const,
-          text: JSON.stringify(
-            {
-              type: 'error',
-              success: false,
-              error: {
-                message,
-                details: error,
-                code,
-              },
-              timestamp: new Date().toISOString(),
-            },
-            null,
-            2,
-          ),
-        },
-      ],
-    };
-  }
-
-  private buildMinimalResponse(data: unknown) {
-    return {
-      content: [
-        {
-          type: 'text' as const,
-          text: JSON.stringify(data, null, 2),
-        },
-      ],
-    };
-  }
 
   private extractLocalCommands(stepGuidance: StepGuidanceData): string[] {
     if (!stepGuidance.mcpActions) {

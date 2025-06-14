@@ -5,9 +5,13 @@ import { RoleTransitionService } from './role-transition.service';
 import { StepExecutionService } from './step-execution.service';
 import { WorkflowExecutionWithRelations } from './workflow-execution.service';
 import { WorkflowGuidanceService } from './workflow-guidance.service';
+import {
+  ConfigurableService,
+  BaseServiceConfig,
+} from '../utils/configurable-service.base';
 
 // Configuration interfaces to eliminate hardcoding
-export interface DataEnricherConfig {
+export interface DataEnricherConfig extends BaseServiceConfig {
   defaults: {
     projectPath: string;
     fallbackRecommendations: string[];
@@ -64,11 +68,11 @@ export interface EnrichedExecutionData {
  * Follows Single Responsibility Principle - only handles data enrichment.
  */
 @Injectable()
-export class ExecutionDataEnricherService {
+export class ExecutionDataEnricherService extends ConfigurableService<DataEnricherConfig> {
   private readonly logger = new Logger(ExecutionDataEnricherService.name);
 
   // Configuration with sensible defaults
-  private readonly config: DataEnricherConfig = {
+  protected readonly defaultConfig: DataEnricherConfig = {
     defaults: {
       projectPath: process.cwd(),
       fallbackRecommendations: [
@@ -112,33 +116,14 @@ export class ExecutionDataEnricherService {
     private readonly roleTransition: RoleTransitionService,
     private readonly workflowGuidance: WorkflowGuidanceService,
     private readonly prisma: PrismaService,
-  ) {}
-
-  /**
-   * Update data enricher configuration
-   */
-  updateConfig(config: Partial<DataEnricherConfig>): void {
-    if (config.defaults) {
-      Object.assign(this.config.defaults, config.defaults);
-    }
-    if (config.fallbackSteps) {
-      Object.assign(this.config.fallbackSteps, config.fallbackSteps);
-    }
-    if (config.performance) {
-      Object.assign(this.config.performance, config.performance);
-    }
-    this.logger.log('Data enricher configuration updated');
+  ) {
+    super();
+    this.initializeConfig();
   }
 
-  /**
-   * Get current configuration
-   */
-  getConfig(): DataEnricherConfig {
-    return {
-      defaults: { ...this.config.defaults },
-      fallbackSteps: JSON.parse(JSON.stringify(this.config.fallbackSteps)),
-      performance: { ...this.config.performance },
-    };
+  // Optional: Override configuration change hook
+  protected onConfigUpdate(): void {
+    this.logger.log('Data enricher configuration updated');
   }
 
   /**
@@ -177,10 +162,11 @@ export class ExecutionDataEnricherService {
         this.logger.warn(`Execution not found: ${executionId}`);
         return [
           {
-            name: this.config.fallbackSteps.executionNotFound.name,
+            name: this.getConfigValue('fallbackSteps').executionNotFound.name,
             status: 'ready',
             description:
-              this.config.fallbackSteps.executionNotFound.description,
+              this.getConfigValue('fallbackSteps').executionNotFound
+                .description,
           },
         ];
       }
@@ -194,9 +180,10 @@ export class ExecutionDataEnricherService {
       if (!nextStep) {
         return [
           {
-            name: this.config.fallbackSteps.noNextStep.name,
+            name: this.getConfigValue('fallbackSteps').noNextStep.name,
             status: 'ready',
-            description: this.config.fallbackSteps.noNextStep.description,
+            description:
+              this.getConfigValue('fallbackSteps').noNextStep.description,
           },
         ];
       }
@@ -225,9 +212,10 @@ export class ExecutionDataEnricherService {
       this.logger.warn('Failed to get next steps:', getErrorMessage(error));
       return [
         {
-          name: this.config.fallbackSteps.errorFallback.name,
+          name: this.getConfigValue('fallbackSteps').errorFallback.name,
           status: 'ready',
-          description: this.config.fallbackSteps.errorFallback.description,
+          description:
+            this.getConfigValue('fallbackSteps').errorFallback.description,
         },
       ];
     }
@@ -281,8 +269,8 @@ export class ExecutionDataEnricherService {
 
     const remaining = totalSteps - stepsCompleted;
     return remaining > 0
-      ? `${remaining} ${this.config.defaults.completionMessages.stepsRemaining}`
-      : this.config.defaults.completionMessages.nearCompletion;
+      ? `${remaining} ${this.getConfigValue('defaults').completionMessages.stepsRemaining}`
+      : this.getConfigValue('defaults').completionMessages.nearCompletion;
   }
 
   /**

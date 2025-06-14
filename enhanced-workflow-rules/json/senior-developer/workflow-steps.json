@@ -9,7 +9,7 @@
       "estimatedTime": "10-15 minutes",
       "stepType": "ACTION",
       "behavioralContext": {
-        "approach": "MANDATORY consumption of existing comprehensive context without redundant analysis",
+        "approach": "MANDATORY user mcp operations to get task context and make sure you include the codebase analysis and task description along with the plan and subtasks  ",
         "principles": [
           "WORKFLOW STOPPER: Cannot proceed without consuming existing codebaseAnalysis",
           "NEVER re-investigate comprehensive analysis boomerang already completed",
@@ -80,6 +80,15 @@
             "operation": "get"
           },
           "sequenceOrder": 1
+        },
+        {
+          "name": "acquire_implementation_context",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "PlanningOperations",
+            "operation": "get_plan"
+          },
+          "sequenceOrder": 2
         }
       ],
       "triggerReport": true,
