@@ -72,113 +72,55 @@
     },
     {
       "name": "mandatory_codebase_analysis_and_task_creation",
-      "displayName": "MANDATORY: Codebase Analysis and Comprehensive Task Creation",
-      "description": "Perform systematic codebase analysis with functional verification, then immediately create comprehensive task with analysis results",
+      "displayName": "Task Creation and Codebase Analysis",
+      "description": "Analyze codebase systematically, then create comprehensive task with analysis results",
       "sequenceNumber": 2,
       "isRequired": true,
       "estimatedTime": "10-15 minutes",
-      "stepType": "HYBRID",
+      "stepType": "ACTION",
       "behavioralContext": {
-        "approach": "Combined codebase analysis and task creation to eliminate context loss and improve efficiency",
+        "approach": "Combined analysis and task creation for efficiency and context preservation",
         "principles": [
-          "Perform comprehensive codebase analysis with functional verification",
-          "Immediately use analysis results for task creation - no context loss",
-          "Document evidence-based findings throughout analysis",
-          "Create task with structured analysis data for downstream roles",
-          "Link task to current workflow execution automatically"
+          "Perform systematic codebase analysis with functional verification",
+          "Create task immediately with analysis results to preserve context",
+          "Link task to current workflow execution via executionId",
+          "Structure analysis data for downstream role consumption"
         ],
-        "methodology": "Integrated analysis-to-task workflow with immediate data utilization",
-        "workflowPhases": {
-          "analysisPhase": {
-            "structuralAnalysis": "Identify implementation patterns, technology stack, integration patterns, and component interactions",
-            "functionalVerification": "Test current functionality, existing features, validate capabilities, and test assumptions",
-            "qualityAssessment": "Review error handling, testing patterns, performance considerations, and security implementations",
-            "evidenceDocumentation": "Document file locations, testing results, current capabilities, and identified gaps"
-          },
-          "taskCreationPhase": {
-            "requirementsGathering": "Extract task requirements from user input and analysis findings",
-            "analysisStructuring": "Structure codebase analysis findings for downstream consumption",
-            "taskGeneration": "Create comprehensive task with description, requirements, and structured analysis",
-            "executionLinking": "Link task to current workflow execution for proper context"
-          }
-        },
-        "integrationStrategy": {
-          "contextPreservation": "Maintain analysis context throughout task creation",
-          "dataFlow": "Direct flow from analysis findings to task structure",
-          "verificationIntegration": "Include functional verification results in task documentation",
-          "downstreamPreparation": "Structure data for optimal consumption by subsequent roles"
-        }
+        "methodology": "Analysis → Task Creation → Context Linking"
       },
       "approachGuidance": {
         "stepByStep": [
-          "Identify implementation patterns relevant to current task",
-          "Document technology stack components and versions",
-          "Study similar feature implementations with examples",
-          "Test current functionality using available tools",
-          "Execute existing features to understand capabilities",
-          "Validate assumptions through actual testing",
-          "Review error handling and validation approaches",
-          "Gather task requirements from user input and analysis",
-          "Structure codebase analysis findings for downstream roles",
-          "Create comprehensive task with all analysis data",
-          "Link task to current execution for proper workflow continuity"
+          "Analyze project structure and identify key patterns",
+          "Document technology stack and architecture findings",
+          "Test current functionality to verify capabilities",
+          "Extract task requirements from user input",
+          "Create comprehensive task with analysis data",
+          "CRITICAL: Include executionId to link task to workflow"
         ],
-        "analysisSteps": [
-          "Examine project structure and identify key directories and files",
-          "Map technology stack including frameworks, libraries, and versions",
-          "Find and analyze similar implementations for patterns and approaches",
-          "Test existing functionality to understand current system behavior",
-          "Execute existing features to verify actual capabilities",
-          "Test edge cases and error conditions to understand system limits",
-          "Validate technical assumptions through direct testing",
-          "Document evidence from testing and verification activities"
+        "analysisPhase": [
+          "Map technology stack and versions",
+          "Identify architectural patterns and design principles",
+          "Test functionality to validate current capabilities",
+          "Document findings with evidence"
         ],
-        "taskCreationSteps": [
-          "Extract task requirements from user input and conversation context",
-          "Generate unique task slug from task name",
-          "Prepare comprehensive task description and requirements",
-          "Structure codebase analysis results in standardized format",
-          "Include functional verification evidence and results",
-          "Call TaskOperations.create with all required parameters",
-          "Include executionId to automatically link to current execution",
-          "Verify task creation success and data integrity"
-        ],
-        "validationSteps": [
-          "Verify comprehensive analysis completed with evidence",
-          "Confirm task created successfully with all required fields",
-          "Validate task is properly linked to current execution",
-          "Ensure codebase analysis data is properly structured",
-          "Confirm functional verification results are included"
+        "taskCreationPhase": [
+          "Extract requirements from user request",
+          "Structure analysis findings for downstream consumption",
+          "Call TaskOperations.create with ALL required parameters",
+          "Verify task creation and execution linking"
         ]
       },
       "qualityChecklist": [
-        "Implementation patterns identified and documented",
-        "Technology stack components and versions recorded",
-        "Similar feature implementations analyzed with examples",
-        "Current functionality tested with evidence collected",
-        "Assumptions validated through actual testing",
-        "Error handling and validation approaches reviewed",
-        "Comprehensive findings documented with evidence",
-        "Functional verification results documented",
+        "Architecture patterns and technology stack documented",
+        "Current functionality tested and verified",
         "Task created with comprehensive description and requirements",
-        "Codebase analysis structured and complete in task",
-        "Functional verification results included in task",
+        "Codebase analysis properly structured in task",
+        "CRITICAL: executionId included in TaskOperations.create call",
+        "Task successfully linked to current workflow execution",
         "Git branch information recorded in task",
-        "Task automatically linked to execution via executionId",
-        "All required TaskOperations.create parameters provided"
+        "All acceptance criteria clearly defined"
       ],
       "conditions": [
-        {
-          "name": "codebase_accessible",
-          "conditionType": "DIRECTORY_EXISTS",
-          "logic": {
-            "check": "directory_exists",
-            "parameters": {
-              "directories": ["src", "lib", "app"]
-            }
-          },
-          "isRequired": true
-        },
         {
           "name": "git_setup_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
@@ -197,14 +139,21 @@
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "TaskOperations",
-            "operation": "create"
+            "operation": "create",
+            "requiredParameters": [
+              "operation",
+              "executionId",
+              "taskData",
+              "description",
+              "codebaseAnalysis"
+            ]
           },
           "sequenceOrder": 1
         }
       ],
       "triggerReport": true,
-      "reportType": "combined_analysis_and_task_creation",
-      "reportTemplate": "codebase_analysis_with_task_creation_completion"
+      "reportType": "task_creation_with_analysis",
+      "reportTemplate": "task_creation_completion"
     },
     {
       "name": "research_decision_framework_with_validation",

@@ -173,6 +173,12 @@ export const TaskOperationsSchema = z
     id: z.number().optional(),
     slug: z.string().optional().describe('Human-readable task slug for lookup'),
 
+    // Execution linking - REQUIRED for create operations
+    executionId: z
+      .string()
+      .optional()
+      .describe('Workflow execution ID to link task to current execution'),
+
     // For create/update operations
     taskData: z
       .object({
@@ -247,6 +253,19 @@ export const TaskOperationsSchema = z
     },
     {
       message: "For 'create' operations, 'taskData.name' is required",
+    },
+  )
+  .refine(
+    (data) => {
+      // For 'create' operations, require executionId for workflow linking
+      if (data.operation === 'create') {
+        return data.executionId !== undefined;
+      }
+      return true;
+    },
+    {
+      message:
+        "For 'create' operations, 'executionId' is required to link task to workflow execution",
     },
   )
   .refine(
