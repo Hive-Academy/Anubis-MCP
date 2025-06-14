@@ -180,7 +180,8 @@ model RuleVersion {
 // Progress tracking for workflow steps - enables reporting and analytics
 model WorkflowStepProgress {
   id              String   @id @default(cuid())
-  taskId          String   // Link to the task being worked on
+  executionId     String   // 🔧 FIXED: Link to execution instead of task
+  taskId          String?  // 🔧 FIXED: Optional - task may not exist yet (bootstrap)
   roleId          String   // Which role is executing this step
   stepId          String   // Which step is being executed
   
@@ -203,13 +204,15 @@ model WorkflowStepProgress {
   reportData      Json?    // Report metadata and content
   
   // Relationships
+  execution       WorkflowExecution @relation(fields: [executionId], references: [id]) // 🔧 FIXED: Tie to execution
   role            WorkflowRole @relation(fields: [roleId], references: [id])
   step            WorkflowStep @relation(fields: [stepId], references: [id])
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
-  @@index([taskId])
+  @@index([executionId]) // 🔧 FIXED: Index on executionId instead of taskId
+  @@index([taskId])      // Keep taskId index for backwards compatibility
   @@index([roleId])
   @@index([stepId])
   @@index([status])
@@ -249,6 +252,7 @@ model WorkflowExecution {
   task            Task? @relation(fields: [taskId], references: [id]) // Optional task relation
   currentRole     WorkflowRole @relation(fields: [currentRoleId], references: [id])
   currentStep     WorkflowStep? @relation(fields: [currentStepId], references: [id])
+  stepProgress    WorkflowStepProgress[] // 🔧 FIXED: Add opposite relation field
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

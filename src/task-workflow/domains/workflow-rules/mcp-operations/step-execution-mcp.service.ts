@@ -37,16 +37,31 @@ const GetStepGuidanceInputSchema = z
     },
   );
 
-const ReportStepCompletionInputSchema = z.object({
-  taskId: z.number().describe('Task ID'),
-  stepId: z.string().describe('Completed step ID'),
-  result: z.enum(['success', 'failure']).describe('Execution result'),
-  executionData: z
-    .unknown()
-    .optional()
-    .describe('Results from local execution'),
-  executionTime: z.number().optional().describe('Execution time in ms'),
-});
+const ReportStepCompletionInputSchema = z
+  .object({
+    taskId: z
+      .number()
+      .optional()
+      .describe('Task ID (optional if executionId provided)'),
+    executionId: z
+      .string()
+      .optional()
+      .describe('Execution ID (optional if taskId provided)'),
+    stepId: z.string().describe('Completed step ID'),
+    result: z.enum(['success', 'failure']).describe('Execution result'),
+    executionData: z
+      .unknown()
+      .optional()
+      .describe('Results from local execution'),
+    executionTime: z.number().optional().describe('Execution time in ms'),
+  })
+  .refine(
+    (data) => data.taskId !== undefined || data.executionId !== undefined,
+    {
+      message: 'Either taskId or executionId must be provided',
+      path: ['taskId', 'executionId'],
+    },
+  );
 
 const GetStepProgressInputSchema = z.object({
   id: z.number().describe('Task ID for progress query'),
@@ -277,9 +292,36 @@ After running 'git status' locally, report:
         `Reporting step completion: ${input.stepId}, result: ${input.result}`,
       );
 
+      // 🔧 FIXED: Use executionId directly for step completion
+      let executionId = input.executionId;
+
+      // If only taskId provided, get executionId from task
+      if (!executionId && input.taskId) {
+        const execution =
+          await this.workflowExecutionOperationsService.getExecution({
+            taskId: input.taskId,
+          });
+        if (!execution.execution) {
+          return this.buildErrorResponse(
+            'No execution found for task',
+            `Task ${input.taskId} has no active execution`,
+            'EXECUTION_NOT_FOUND',
+          );
+        }
+        executionId = execution.execution.id;
+      }
+
+      if (!executionId) {
+        return this.buildErrorResponse(
+          'No execution identifier provided',
+          'Either taskId or executionId must be provided',
+          'MISSING_EXECUTION_ID',
+        );
+      }
+
       const completionResult =
         await this.stepExecutionService.processStepCompletion(
-          input.taskId,
+          executionId,
           input.stepId,
           input.result,
           input.executionData,

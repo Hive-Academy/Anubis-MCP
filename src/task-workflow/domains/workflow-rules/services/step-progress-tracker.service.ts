@@ -18,7 +18,8 @@ import {
 export interface StepProgressRecord {
   id: string;
   stepId: string;
-  taskId: string;
+  executionId: string; // 🔧 FIXED: Added required executionId
+  taskId?: string; // 🔧 FIXED: Made optional (can be null for bootstrap)
   roleId: string;
   status: 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'SKIPPED' | 'FAILED';
   startedAt?: Date;
@@ -111,15 +112,30 @@ export class StepProgressTrackerService {
    */
   async startStep(
     stepId: string,
-    taskId: string,
-    roleId: string,
+    executionId: string,
+    taskId?: string,
+    roleId?: string,
   ): Promise<StepProgressRecord> {
     try {
+      // Get roleId from execution if not provided
+      let actualRoleId = roleId;
+      if (!actualRoleId) {
+        const execution = await this.prisma.workflowExecution.findUnique({
+          where: { id: executionId },
+          select: { currentRoleId: true },
+        });
+        if (!execution) {
+          throw new Error(`Execution not found: ${executionId}`);
+        }
+        actualRoleId = execution.currentRoleId;
+      }
+
       const progressRecord = await this.prisma.workflowStepProgress.create({
         data: {
           stepId,
-          taskId,
-          roleId,
+          executionId, // 🔧 FIXED: Include required executionId
+          taskId: taskId || null, // Optional - may be null for bootstrap executions
+          roleId: actualRoleId,
           status: 'IN_PROGRESS',
           startedAt: new Date(),
           executionData: {
@@ -377,7 +393,8 @@ export class StepProgressTrackerService {
     const typedRecord = record as {
       id: string;
       stepId: string;
-      taskId: string;
+      executionId: string; // 🔧 FIXED: Added executionId
+      taskId: string | null; // 🔧 FIXED: Can be null now
       roleId: string;
       status: string;
       startedAt: Date | null;
@@ -393,7 +410,8 @@ export class StepProgressTrackerService {
     return {
       id: typedRecord.id,
       stepId: typedRecord.stepId,
-      taskId: typedRecord.taskId,
+      executionId: typedRecord.executionId, // 🔧 FIXED: Include executionId
+      taskId: typedRecord.taskId || undefined, // 🔧 FIXED: Convert null to undefined
       roleId: typedRecord.roleId,
       status: typedRecord.status as StepProgressRecord['status'],
       startedAt: typedRecord.startedAt || undefined,

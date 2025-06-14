@@ -105,10 +105,10 @@ export class StepExecutionService {
   }
 
   /**
-   * Process step completion - basic delegation
+   * Process step completion - using executionId
    */
   async processStepCompletion(
-    taskId: number,
+    executionId: string,
     stepId: string,
     result: 'success' | 'failure',
     executionData?: unknown,
@@ -116,18 +116,23 @@ export class StepExecutionService {
     try {
       this.logger.debug(`Processing step completion: ${stepId} -> ${result}`);
 
-      // Update step progress
+      // Get current execution to get taskId and roleId
+      const execution = await this.prisma.workflowExecution.findUnique({
+        where: { id: executionId },
+        select: { taskId: true, currentRoleId: true },
+      });
+
+      if (!execution) {
+        throw new Error(`Execution not found: ${executionId}`);
+      }
+
+      // Update step progress tied to execution
       await this.prisma.workflowStepProgress.create({
         data: {
-          taskId: taskId.toString(),
+          executionId: executionId, // 🔧 FIXED: Use executionId
+          taskId: execution.taskId?.toString(), // Optional - may be null for bootstrap
           stepId,
-          roleId:
-            (
-              await this.prisma.workflowStep.findUnique({
-                where: { id: stepId },
-                select: { roleId: true },
-              })
-            )?.roleId || '',
+          roleId: execution.currentRoleId,
           status: result === 'success' ? 'COMPLETED' : 'FAILED',
           startedAt: new Date(),
           completedAt: result === 'success' ? new Date() : null,
@@ -145,23 +150,21 @@ export class StepExecutionService {
           await this.queryService.getNextStepAfterCompletion(stepId);
 
         // Update workflow execution to point to next step
-        const execution = await this.prisma.workflowExecution.findFirst({
-          where: {
-            ...(taskId ? { taskId } : {}),
-            // If no taskId provided, find by other criteria like currentStepId
-            ...(!taskId ? { currentStepId: stepId } : {}),
+        const currentExecution = await this.prisma.workflowExecution.findUnique(
+          {
+            where: { id: executionId },
           },
-          orderBy: { createdAt: 'desc' },
-        });
+        );
 
-        if (execution) {
+        if (currentExecution) {
           await this.prisma.workflowExecution.update({
-            where: { id: execution.id },
+            where: { id: executionId },
             data: {
               currentStepId: nextStep?.id || null,
-              stepsCompleted: (execution.stepsCompleted || 0) + 1,
+              stepsCompleted: (currentExecution.stepsCompleted || 0) + 1,
               executionState: {
-                ...((execution.executionState as Record<string, any>) || {}),
+                ...((currentExecution.executionState as Record<string, any>) ||
+                  {}),
                 lastCompletedStep: {
                   id: stepId,
                   completedAt: new Date().toISOString(),
