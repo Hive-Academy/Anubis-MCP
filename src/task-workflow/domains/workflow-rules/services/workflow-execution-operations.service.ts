@@ -12,7 +12,7 @@ import {
   CompletionSummary,
   ProgressOverview,
 } from './execution-analytics.service';
-import { CoreServiceOrchestrator } from './core-service-orchestrator.service';
+
 
 // Configuration interfaces to eliminate hardcoding
 export interface ExecutionOperationsConfig {
@@ -105,7 +105,6 @@ export class WorkflowExecutionOperationsService {
     private readonly workflowExecution: WorkflowExecutionService,
     private readonly dataEnricher: ExecutionDataEnricherService,
     private readonly analytics: ExecutionAnalyticsService,
-    private readonly coreServiceOrchestrator: CoreServiceOrchestrator,
   ) {}
 
   /**
@@ -370,31 +369,17 @@ export class WorkflowExecutionOperationsService {
 
   /**
    * Execute step with services orchestration
+   * 
+   * ❌ DEPRECATED: Use MCP operation execution service directly
+   * This method is kept for backward compatibility but should be avoided.
+   * Use execute_mcp_operation tool instead for MCP-based service calls.
    */
   async executeStepWithServices(
     input: WorkflowExecutionInput,
   ): Promise<Record<string, unknown>> {
-    if (!input.stepId || !input.orchestrationConfig?.serviceCalls) {
-      throw new Error(
-        'stepId and orchestrationConfig.serviceCalls are required for executing a step with services',
-      );
-    }
-
-    const result = await this.coreServiceOrchestrator.executeStepWithServices(
-      input.stepId,
-      input.orchestrationConfig.serviceCalls,
-      input.orchestrationConfig.executionMode ||
-        this.config.defaults.orchestrationMode,
-      input.orchestrationConfig.continueOnFailure ??
-        this.config.defaults.continueOnFailure,
+    throw new Error(
+      'executeStepWithServices is deprecated. Use MCP operation execution service directly via execute_mcp_operation tool.'
     );
-
-    return {
-      executionResult: result,
-      taskId: input.taskId,
-      stepId: input.stepId,
-      timestamp: new Date().toISOString(),
-    };
   }
 
   /**

@@ -2,17 +2,17 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { StepExecutionService } from '../services/step-execution.service';
-import { CoreServiceOrchestrator } from '../services/core-service-orchestrator.service';
 import { RequiredInputExtractorService } from '../services/required-input-extractor.service';
+import { WorkflowExecutionOperationsService } from '../services/workflow-execution-operations.service';
 import { getErrorMessage } from '../utils/type-safety.utils';
 import { WorkflowStep } from '../services/step-query.service';
 
 // ===================================================================
-// 🔥 STEP EXECUTION MCP SERVICE - COMPLETE REVAMP FOR MCP-ONLY
+// 🔥 STEP EXECUTION MCP SERVICE - FOCUSED STEP MANAGEMENT
 // ===================================================================
-// Purpose: Clean MCP interface with role separation
-// Scope: Guidance provision + result reporting + MCP operations
-// ZERO Legacy Support: Pure MCP-focused service with clear boundaries
+// Purpose: Step guidance, progress tracking, and completion reporting
+// Scope: Step workflow management only (NO MCP operations)
+// ZERO MCP_CALL Operations: Pure step execution focus
 
 // 🎯 STRICT TYPE DEFINITIONS - ZERO ANY USAGE
 
@@ -33,14 +33,6 @@ const ReportStepCompletionInputSchema = z.object({
   executionTime: z.number().optional().describe('Execution time in ms'),
 });
 
-const ExecuteMcpOperationInputSchema = z.object({
-  serviceName: z
-    .string()
-    .describe('Service name (TaskOperations, ResearchOperations, etc.)'),
-  operation: z.string().describe('Operation name (create, update, get, etc.)'),
-  parameters: z.unknown().describe('Operation parameters for the service'),
-});
-
 const GetStepProgressInputSchema = z.object({
   id: z.number().describe('Task ID for progress query'),
   roleId: z.string().optional().describe('Optional role ID filter'),
@@ -55,15 +47,23 @@ type GetStepGuidanceInput = z.infer<typeof GetStepGuidanceInputSchema>;
 type ReportStepCompletionInput = z.infer<
   typeof ReportStepCompletionInputSchema
 >;
-type ExecuteMcpOperationInput = z.infer<typeof ExecuteMcpOperationInputSchema>;
+
 type GetStepProgressInput = z.infer<typeof GetStepProgressInputSchema>;
 type GetNextStepInput = z.infer<typeof GetNextStepInputSchema>;
 
 // Add type definitions at the top
-interface CurrentExecution {
-  currentStepId: string | null;
-  currentRoleId: string;
-  status: string;
+interface StepGuidanceData {
+  step?: {
+    name: string;
+    description: string;
+  };
+  mcpActions?: Array<{
+    serviceName: string;
+    operation: string;
+    parameters: any;
+  }>;
+  successCriteria?: string[];
+  qualityChecklist?: string[];
 }
 
 interface StepGuidanceData {
@@ -81,16 +81,15 @@ interface StepGuidanceData {
 }
 
 /**
- * 🚀 REVAMPED: StepExecutionMcpService
+ * 🚀 FOCUSED: StepExecutionMcpService
  *
- * COMPLETE OVERHAUL FOR MCP-ONLY EXECUTION:
- * - Clear role separation: MCP = guidance, AI = execution
- * - Streamlined error handling with consistent responses
- * - Enhanced MCP response processing
- * - Removed complex envelope building (over-engineering)
- * - Reduced from 400+ lines to ~200 lines (-50% reduction)
- * - Reduced dependencies from 4 to 2 (essential services)
- * - Zero legacy MCP patterns - pure guidance model
+ * DEDICATED STEP EXECUTION MANAGEMENT:
+ * - Step guidance and progress tracking only
+ * - Clear separation from MCP operation execution
+ * - Direct execution service integration
+ * - Simplified error handling and responses
+ * - Zero MCP_CALL operations (moved to dedicated service)
+ * - Pure step workflow focus
  */
 @Injectable()
 export class StepExecutionMcpService {
@@ -98,8 +97,8 @@ export class StepExecutionMcpService {
 
   constructor(
     private readonly stepExecutionService: StepExecutionService,
-    private readonly coreServiceOrchestrator: CoreServiceOrchestrator,
     private readonly requiredInputExtractorService: RequiredInputExtractorService,
+    private readonly workflowExecutionOperationsService: WorkflowExecutionOperationsService,
   ) {}
 
   // ===================================================================
@@ -138,27 +137,31 @@ export class StepExecutionMcpService {
       let currentRoleId = input.roleId;
 
       if (!currentStepId) {
-        const execution = await this.coreServiceOrchestrator.executeServiceCall(
-          'WorkflowOperations',
-          'get_execution',
-          { taskId: input.taskId },
-        );
+        // ✅ FIXED: Call execution service directly, not through CoreServiceOrchestrator
+        const executionResult =
+          await this.workflowExecutionOperationsService.getExecution({
+            taskId: input.taskId,
+          });
 
-        if (!execution.success || !execution.data) {
+        if (!executionResult.execution) {
           return this.buildMinimalResponse({
             error: 'No active execution found',
-            // ❌ REMOVED: suggestion (hardcoded flow control)
           });
         }
 
-        const currentExecution = execution.data as CurrentExecution;
+        const currentExecution = executionResult.execution;
         const executionStepId = currentExecution.currentStepId;
         currentRoleId = currentExecution.currentRoleId;
 
         if (!executionStepId) {
           return this.buildMinimalResponse({
             error: 'No current step found',
-            // ❌ REMOVED: suggestion (hardcoded flow control)
+          });
+        }
+
+        if (!currentRoleId) {
+          return this.buildMinimalResponse({
+            error: 'No current role found',
           });
         }
 
@@ -170,7 +173,7 @@ export class StepExecutionMcpService {
         await this.stepExecutionService.getStepGuidance(
           input.taskId,
           currentRoleId,
-          currentStepId,
+          currentStepId!,
         );
 
       const stepGuidance = stepGuidanceResult as StepGuidanceData;
@@ -277,70 +280,6 @@ After running 'git status' locally, report:
   }
 
   // ===================================================================
-  // 🚀 MCP OPERATION EXECUTION TOOL - Core workflow operations
-  // ===================================================================
-
-  @Tool({
-    name: 'execute_mcp_operation',
-    description: `Execute MCP service operations for workflow management.
-
-🎯 CORE WORKFLOW OPERATIONS - Database and business logic execution
-
-**This tool enables proper MCP workflow:**
-1. AI gets guidance with MCP_CALL instructions 
-2. AI collects required data using intelligence + local tools
-3. AI calls this tool with complete parameters
-4. MCP server executes operation through core services
-5. MCP server returns results to AI
-
-**Supported Services:**
-- TaskOperations: create, update, get, list
-- ResearchOperations: create_research, update_research, add_comment
-- WorkflowOperations: delegate, complete, escalate
-- PlanningOperations: create_plan, create_subtasks
-- ReviewOperations: create_review, create_completion
-
-**Example:**
-AI collects task data, then calls:
-{
-  "serviceName": "TaskOperations",
-  "operation": "create", 
-  "parameters": { taskName: "...", description: "...", ... }
-}`,
-    parameters:
-      ExecuteMcpOperationInputSchema as ZodSchema<ExecuteMcpOperationInput>,
-  })
-  async executeMcpOperation(input: ExecuteMcpOperationInput) {
-    try {
-      this.logger.log(
-        `Executing MCP operation: ${input.serviceName}.${input.operation}`,
-      );
-
-      // Route to CoreServiceOrchestrator for actual execution
-      const operationResult =
-        await this.coreServiceOrchestrator.executeServiceCall(
-          input.serviceName,
-          input.operation,
-          input.parameters as Record<string, unknown>,
-        );
-
-      // ✅ MINIMAL RESPONSE: Only essential operation result
-      return this.buildMinimalResponse({
-        serviceName: input.serviceName,
-        operation: input.operation,
-        success: operationResult.success,
-        data: operationResult.data,
-      });
-    } catch (error) {
-      return this.buildErrorResponse(
-        `Failed to execute ${input.serviceName}.${input.operation}`,
-        getErrorMessage(error),
-        'MCP_OPERATION_ERROR',
-      );
-    }
-  }
-
-  // ===================================================================
   // 📊 PROGRESS AND ANALYTICS TOOLS
   // ===================================================================
 
@@ -369,19 +308,36 @@ AI collects task data, then calls:
     try {
       this.logger.log(`Getting step progress for task: ${input.id}`);
 
-      const progress = await this.stepExecutionService.getStepProgress(
-        input.id,
-      );
+      // ✅ FIXED: Get current execution first to determine real progress
+      const executionResult =
+        await this.workflowExecutionOperationsService.getExecution({
+          taskId: input.id,
+        });
 
-      // ✅ MINIMAL RESPONSE: Only essential progress data
+      if (!executionResult.execution) {
+        return this.buildMinimalResponse({
+          taskId: input.id,
+          status: 'no_execution',
+          error: 'No active execution found',
+        });
+      }
+
+      const execution = executionResult.execution;
+      const currentStep = execution.currentStep;
+
+      // ✅ MINIMAL RESPONSE: Only essential progress data from real execution
       return this.buildMinimalResponse({
         taskId: input.id,
-        status: (progress as any).status || 'in_progress',
+        status: execution.completedAt ? 'completed' : 'in_progress',
         currentStep: {
-          name: 'Current Step', // Will be enhanced with actual step data
-          status: 'active',
+          name: currentStep?.name || 'No current step',
+          status: execution.completedAt ? 'completed' : 'active',
+          stepId: currentStep?.id,
         },
-        // ❌ REMOVED: nextAction (hardcoded flow control)
+        progress: {
+          stepsCompleted: execution.stepsCompleted || 0,
+          progressPercentage: execution.progressPercentage || 0,
+        },
       });
     } catch (error) {
       return this.buildErrorResponse(
@@ -419,6 +375,35 @@ AI collects task data, then calls:
         `Getting next step for role: ${input.roleId}, task: ${input.id}`,
       );
 
+      // ✅ FIXED: Get current execution to understand the current state
+      const executionResult =
+        await this.workflowExecutionOperationsService.getExecution({
+          taskId: input.id,
+        });
+
+      if (!executionResult.execution) {
+        return this.buildMinimalResponse({
+          taskId: input.id,
+          roleId: input.roleId,
+          status: 'no_execution',
+          error: 'No active execution found',
+        });
+      }
+
+      const execution = executionResult.execution;
+
+      // Check if this is the correct role for the current execution
+      if (execution.currentRoleId !== input.roleId) {
+        return this.buildMinimalResponse({
+          taskId: input.id,
+          roleId: input.roleId,
+          status: 'role_mismatch',
+          currentRole: execution.currentRole?.name || 'unknown',
+          message: `Execution is currently assigned to ${execution.currentRole?.name || 'unknown'}, not ${input.roleId}`,
+        });
+      }
+
+      // Use step execution service with proper context
       const nextStep: WorkflowStep | null =
         await this.stepExecutionService.getNextAvailableStep(
           input.id,
@@ -438,7 +423,6 @@ AI collects task data, then calls:
             }
           : null,
         status: nextStep ? 'step_available' : 'no_steps_available',
-        // ❌ REMOVED: nextAction (hardcoded flow control)
       });
     } catch (error) {
       return this.buildErrorResponse(

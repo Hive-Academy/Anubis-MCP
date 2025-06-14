@@ -3,7 +3,8 @@
 // ===================================================================
 
 // Core Services
-export { CoreServiceOrchestrator } from './core-service-orchestrator.service';
+// CoreServiceOrchestrator - Internal use only by MCP operation execution service
+// export { CoreServiceOrchestrator } from './core-service-orchestrator.service';
 export { StepExecutionService } from './step-execution.service';
 
 // Specialized Services

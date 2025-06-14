@@ -35,22 +35,6 @@ export interface BootstrapWorkflowInput {
   executionContext?: Record<string, any>;
 }
 
-export interface BootstrapResult {
-  success: boolean;
-  task: any;
-  workflowExecution: any;
-  firstStep: any;
-  message: string;
-  resources: {
-    taskId: string;
-    executionId: string;
-    firstStepId: string | null;
-  };
-  execution: any;
-  currentRole: any;
-  currentStep: any;
-}
-
 /**
  * Fixed Workflow Bootstrap Service
  *
@@ -105,9 +89,7 @@ export class WorkflowBootstrapService {
    * - UPDATE the REAL task with comprehensive data and analysis (step 3)
    * - Continue with normal workflow
    */
-  async bootstrapWorkflow(
-    input: BootstrapWorkflowInput,
-  ): Promise<BootstrapResult> {
+  async bootstrapWorkflow(input: BootstrapWorkflowInput): Promise<any> {
     const startTime = Date.now();
 
     try {
@@ -290,12 +272,7 @@ export class WorkflowBootstrapService {
           firstStepId: result.firstStep.id,
         },
         // Return the full objects directly - no manual field mapping needed
-        task: result.task,
-        workflowExecution: result.workflowExecution,
-        firstStep: result.firstStep,
-        execution: result.workflowExecution.executionState,
-        currentRole: result.workflowExecution.currentRole,
-        currentStep: result.workflowExecution.currentStep,
+        ...result.workflowExecution,
       };
     } catch (error) {
       this.logger.error(`Bootstrap failed:`, error);

@@ -26,6 +26,7 @@ import { WorkflowBootstrapService } from './services/workflow-bootstrap.service'
 import { CoreServiceOrchestrator } from './services/core-service-orchestrator.service';
 
 import { ExecutionAnalyticsService } from './services/execution-analytics.service';
+import { McpOperationExecutionMcpService } from './mcp-operations/mcp-operation-execution-mcp.service';
 // Utils - Legacy services removed
 
 @Module({
@@ -56,6 +57,7 @@ import { ExecutionAnalyticsService } from './services/execution-analytics.servic
     WorkflowBootstrapService,
     CoreServiceOrchestrator,
     ExecutionAnalyticsService,
+    McpOperationExecutionMcpService,
   ],
   exports: [
     // MCP Operations
@@ -64,6 +66,7 @@ import { ExecutionAnalyticsService } from './services/execution-analytics.servic
     RoleTransitionMcpService,
     WorkflowExecutionMcpService,
     WorkflowBootstrapMcpService,
+    McpOperationExecutionMcpService,
 
     // Core Services
     WorkflowGuidanceService,
@@ -77,8 +80,9 @@ import { ExecutionAnalyticsService } from './services/execution-analytics.servic
     WorkflowExecutionOperationsService,
     ExecutionDataEnricherService,
     WorkflowBootstrapService,
-    CoreServiceOrchestrator,
     ExecutionAnalyticsService,
+
+    // Note: CoreServiceOrchestrator not exported - internal use only by MCP operation execution service
   ],
 })
 export class WorkflowRulesModule {}
