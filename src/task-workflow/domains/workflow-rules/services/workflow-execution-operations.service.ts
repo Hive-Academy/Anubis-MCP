@@ -141,20 +141,12 @@ export class WorkflowExecutionOperationsService {
     operation: string,
   ): void {
     // Special handling for operations that can work without taskId
-    const operationsWithoutTaskId = [
-      'get_active_executions',
-      'get_execution_context',
-      'update_execution_context',
-    ];
 
     // get_execution can work with either taskId OR executionId
     if (operation === 'get_execution') {
       if (!input.taskId && !input.executionId) {
         throw new Error(`get_execution requires either taskId or executionId`);
       }
-    } else if (!operationsWithoutTaskId.includes(operation) && !input.taskId) {
-      // For other operations, taskId is still required unless it's in the exception list
-      throw new Error(`taskId is required for ${operation}`);
     }
 
     if (
