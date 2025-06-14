@@ -65,17 +65,7 @@
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "TaskOperations",
-            "operation": "get",
-            "parameters": {
-              "includeLevel": "comprehensive",
-              "includePlans": true,
-              "includeSubtasks": true,
-              "includeAnalysis": true,
-              "includeComments": false,
-              "includeImplementationEvidence": true,
-              "includeQualityMetrics": true,
-              "includeValidationResults": true
-            }
+            "operation": "get"
           },
           "sequenceOrder": 1
         }
@@ -316,17 +306,7 @@
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "ReviewOperations",
-            "operation": "create_completion",
-            "parameters": {
-              "completionData": {
-                "summary": "{{complete_integration_ready_for_production_deployment_with_validation}}",
-                "acceptanceCriteriaVerification": "{{comprehensive_criteria_verification_with_evidence}}",
-                "deliveryEvidence": "{{git_integration_pull_request_documentation_quality_validation}}",
-                "filesModified": "{{complete_list_modified_files_with_descriptions}}",
-                "documentationUpdates": "{{memory_bank_readme_technical_documentation_updates}}",
-                "integrationNotes": "{{implementation_integrated_with_documentation_testing_validation_production_readiness}}"
-              }
-            }
+            "operation": "create_completion"
           },
           "sequenceOrder": 1
         },
@@ -335,23 +315,7 @@
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "WorkflowOperations",
-            "operation": "delegate",
-            "parameters": {
-              "fromRole": "integration-engineer",
-              "toRole": "boomerang",
-              "message": "Task fully integrated and ready for production deployment. All code committed, comprehensive PR created, documentation updated and validated, quality gates satisfied. Ready for user delivery and next work evaluation.",
-              "completionData": {
-                "taskStatus": "integrated",
-                "deliveryStatus": "ready-for-production",
-                "pullRequest": "{{PR_created_with_comprehensive_review_checklist_and_validation_evidence}}",
-                "documentationStatus": "fully-updated-and-validated",
-                "qualityValidation": "all-gates-passed-with-evidence",
-                "nextActions": [
-                  "user-delivery-with-pr-link",
-                  "next-task-evaluation"
-                ]
-              }
-            }
+            "operation": "delegate"
           },
           "sequenceOrder": 2
         }

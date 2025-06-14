@@ -108,62 +108,6 @@ AI collects task data, then calls:
   }
 
   // ===================================================================
-  // 📋 PARAMETER GUIDANCE TOOLS - Help AI understand required parameters
-  // ===================================================================
-
-  @Tool({
-    name: 'get_mcp_operation_parameters',
-    description: `Get required and optional parameters for MCP operations.
-
-🎯 PARAMETER GUIDANCE - Help AI understand what data is needed
-
-**Returns:**
-- Required parameters with descriptions
-- Optional parameters and defaults
-- Parameter validation rules
-- Usage examples
-
-**Example:**
-{
-  "serviceName": "TaskOperations",
-  "operation": "create"
-}`,
-    parameters: z.object({
-      serviceName: z.string().describe('Service name to query'),
-      operation: z.string().describe('Operation to get parameters for'),
-    }) as ZodSchema<{ serviceName: string; operation: string }>,
-  })
-  getMcpOperationParameters(input: { serviceName: string; operation: string }) {
-    try {
-      this.logger.log(
-        `Getting parameter requirements for: ${input.serviceName}.${input.operation}`,
-      );
-
-      // Extract parameter requirements using RequiredInputExtractorService
-      const extraction =
-        this.requiredInputExtractorService.extractFromServiceSchema(
-          input.serviceName,
-          input.operation,
-        );
-
-      return this.buildMinimalResponse({
-        serviceName: input.serviceName,
-        operation: input.operation,
-        requiredParameters: extraction.requiredParameters,
-        optionalParameters: extraction.optionalParameters,
-        parameterDetails: extraction.parameterDetails,
-        usage: `Call execute_mcp_operation with serviceName: "${input.serviceName}", operation: "${input.operation}", and these parameters`,
-      });
-    } catch (error) {
-      return this.buildErrorResponse(
-        `Failed to get parameters for ${input.serviceName}.${input.operation}`,
-        getErrorMessage(error),
-        'PARAMETER_EXTRACTION_ERROR',
-      );
-    }
-  }
-
-  // ===================================================================
   // 🔧 PRIVATE HELPER METHODS
   // ===================================================================
 

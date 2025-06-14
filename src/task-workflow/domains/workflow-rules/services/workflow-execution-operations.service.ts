@@ -13,7 +13,6 @@ import {
   ProgressOverview,
 } from './execution-analytics.service';
 
-
 // Configuration interfaces to eliminate hardcoding
 export interface ExecutionOperationsConfig {
   defaults: {
@@ -53,7 +52,7 @@ export interface ExecutionsSummary {
 }
 
 export interface WorkflowExecutionInput {
-  taskId: number;
+  taskId?: number;
   executionId?: string;
   roleName?: string;
   executionMode?: 'GUIDED' | 'AUTOMATED' | 'HYBRID';
@@ -141,7 +140,20 @@ export class WorkflowExecutionOperationsService {
     input: WorkflowExecutionInput,
     operation: string,
   ): void {
-    if (!input.taskId) {
+    // Special handling for operations that can work without taskId
+    const operationsWithoutTaskId = [
+      'get_active_executions',
+      'get_execution_context',
+      'update_execution_context',
+    ];
+
+    // get_execution can work with either taskId OR executionId
+    if (operation === 'get_execution') {
+      if (!input.taskId && !input.executionId) {
+        throw new Error(`get_execution requires either taskId or executionId`);
+      }
+    } else if (!operationsWithoutTaskId.includes(operation) && !input.taskId) {
+      // For other operations, taskId is still required unless it's in the exception list
       throw new Error(`taskId is required for ${operation}`);
     }
 
@@ -207,6 +219,11 @@ export class WorkflowExecutionOperationsService {
     let execution: any;
 
     if (!input.executionId) {
+      if (!input.taskId) {
+        throw new Error(
+          `Either taskId or executionId is required for get operation`,
+        );
+      }
       execution = await this.workflowExecution.getExecutionByTaskId(
         input.taskId,
       );
@@ -365,21 +382,6 @@ export class WorkflowExecutionOperationsService {
         progressOverview: this.analytics.calculateOverallProgress(executions),
       },
     };
-  }
-
-  /**
-   * Execute step with services orchestration
-   * 
-   * ❌ DEPRECATED: Use MCP operation execution service directly
-   * This method is kept for backward compatibility but should be avoided.
-   * Use execute_mcp_operation tool instead for MCP-based service calls.
-   */
-  async executeStepWithServices(
-    input: WorkflowExecutionInput,
-  ): Promise<Record<string, unknown>> {
-    throw new Error(
-      'executeStepWithServices is deprecated. Use MCP operation execution service directly via execute_mcp_operation tool.'
-    );
   }
 
   /**

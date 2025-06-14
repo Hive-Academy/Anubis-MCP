@@ -41,16 +41,7 @@
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "TaskOperations",
-            "operation": "get",
-            "parameters": {
-              "includeLevel": "comprehensive",
-              "includePlans": false,
-              "includeSubtasks": false,
-              "includeAnalysis": true,
-              "includeComments": true,
-              "includeCodebaseAnalysis": true,
-              "includeArchitecturalContext": true
-            }
+            "operation": "get"
           },
           "sequenceOrder": 1
         }
@@ -542,16 +533,7 @@
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "ResearchOperations",
-            "operation": "create_research",
-            "parameters": {
-              "researchData": {
-                "title": "{{descriptive_research_title_reflecting_scope}}",
-                "summary": "{{executive_summary_key_findings_recommendations}}",
-                "findings": "{{detailed_technical_analysis_with_evidence}}",
-                "recommendations": "{{specific_actionable_implementation_guidance}}",
-                "references": "{{authoritative_sources_with_credibility_notes}}"
-              }
-            }
+            "operation": "create_research"
           },
           "sequenceOrder": 1
         }
@@ -613,12 +595,7 @@
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "WorkflowOperations",
-            "operation": "delegate",
-            "parameters": {
-              "fromRole": "researcher",
-              "toRole": "architect",
-              "message": "Research complete with validated recommendations and evidence-based implementation guidance. All critical questions answered with multi-source validation."
-            }
+            "operation": "delegate"
           },
           "sequenceOrder": 1
         }

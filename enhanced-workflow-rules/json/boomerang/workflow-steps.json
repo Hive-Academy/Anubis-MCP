@@ -194,54 +194,43 @@
         ],
         "methodology": "Task creation with MCP-driven comprehensive data integration and analysis storage",
         "creationStrategy": {
-          "contextRetrieval": "Retrieve task creation data from workflow execution taskCreationData",
-          "taskCreation": "Create task with comprehensive description and requirements from context",
+          "taskCreation": "Create task with comprehensive description and requirements using TaskOperations.create",
           "analysisIntegration": "Structure codebase analysis findings for downstream consumption",
           "verificationStorage": "Include functional verification results and evidence",
-          "executionLinking": "Link created task to existing workflow execution",
-          "contextUpdate": "Update execution context to mark task as created"
+          "executionLinking": "Link created task to existing workflow execution via executionId parameter"
         }
       },
       "approachGuidance": {
         "stepByStep": [
-          "Retrieve task creation data from workflow execution taskCreationData",
+          "Gather task creation data from user requirements and codebase analysis",
           "Generate unique slug from task name",
           "Create task with comprehensive description and requirements",
-          "Structure codebase analysis findings for downstream consumption",
+          "Include codebase analysis findings in structured format",
           "Include functional verification results and evidence",
           "Store git branch information and context",
-          "Link task to workflow execution",
-          "Update execution context to mark task as created"
-        ],
-        "dataRetrievalSteps": [
-          "Call WorkflowOperations.get_execution_context to get taskCreationData",
-          "Extract task name, description, requirements, and acceptance criteria",
-          "Get current execution ID for linking",
-          "Prepare comprehensive task creation data structure"
+          "Link task to current execution via executionId parameter"
         ],
         "creationSteps": [
-          "Generate unique slug from task name",
-          "Call TaskOperations.create with comprehensive data",
+          "Prepare comprehensive task creation data structure",
+          "Call TaskOperations.create with all required parameters",
           "Include codebase analysis results in structured format",
           "Add functional verification evidence and results",
-          "Update git branch information and metadata"
+          "Include executionId to automatically link to current execution"
         ],
-        "linkingSteps": [
-          "Update WorkflowExecution with created task ID",
-          "Call WorkflowOperations.update_execution_context",
-          "Mark task creation as completed",
-          "Update timestamps and completion flags",
-          "Ensure workflow continuity for next steps"
+        "validationSteps": [
+          "Verify task created successfully with all required fields",
+          "Confirm task is linked to current execution",
+          "Validate codebase analysis data is properly structured",
+          "Ensure functional verification results are included"
         ]
       },
       "qualityChecklist": [
-        "Task creation data successfully retrieved from execution context",
         "Task created with comprehensive description and requirements",
         "Codebase analysis structured and complete",
         "Functional verification results included",
         "Git branch information recorded",
-        "Task linked to workflow execution",
-        "Execution context updated to reflect task creation"
+        "Task automatically linked to execution via executionId",
+        "All required TaskOperations.create parameters provided"
       ],
       "conditions": [
         {
@@ -270,90 +259,13 @@
       ],
       "actions": [
         {
-          "name": "retrieve_task_creation_data",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "WorkflowOperations",
-            "operation": "get_execution_context",
-            "parameters": {
-              "executionId": "{{current_execution_id}}",
-              "dataKey": "taskCreationData"
-            }
-          },
-          "sequenceOrder": 1
-        },
-        {
           "name": "create_task_with_comprehensive_data",
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "TaskOperations",
-            "operation": "create",
-            "parameters": {
-              "name": "{{task_name_from_context}}",
-              "slug": "{{generated_unique_slug}}",
-              "description": "{{task_description_from_context}}",
-              "businessRequirements": "{{business_requirements_from_context}}",
-              "technicalRequirements": "{{technical_requirements_from_context}}",
-              "acceptanceCriteria": "{{acceptance_criteria_from_context}}",
-              "priority": "{{priority_from_context}}",
-              "status": "not-started",
-              "owner": "boomerang",
-              "currentMode": "boomerang",
-              "gitBranch": "{{created_feature_branch}}",
-              "codebaseAnalysis": {
-                "architectureFindings": "{{architecture_analysis_results}}",
-                "problemsIdentified": "{{identified_issues_and_debt}}",
-                "implementationContext": "{{patterns_and_standards}}",
-                "integrationPoints": "{{api_and_service_interfaces}}",
-                "qualityAssessment": "{{testing_and_performance_baseline}}",
-                "functionalVerification": "{{verification_evidence_and_results}}",
-                "gitBranch": "{{created_feature_branch}}",
-                "analyzedBy": "boomerang",
-                "analysisTimestamp": "{{current_timestamp}}"
-              },
-              "metadata": {
-                "createdFromExecution": true,
-                "executionId": "{{current_execution_id}}",
-                "comprehensiveCreation": true,
-                "creationTimestamp": "{{current_timestamp}}"
-              }
-            }
+            "operation": "create"
           },
-          "sequenceOrder": 2
-        },
-        {
-          "name": "link_task_to_execution",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "WorkflowOperations",
-            "operation": "update_execution",
-            "parameters": {
-              "executionId": "{{current_execution_id}}",
-              "updates": {
-                "taskId": "{{created_task_id}}",
-                "autoCreatedTask": true
-              }
-            }
-          },
-          "sequenceOrder": 3
-        },
-        {
-          "name": "update_execution_context",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "WorkflowOperations",
-            "operation": "update_execution_context",
-            "parameters": {
-              "executionId": "{{current_execution_id}}",
-              "contextUpdates": {
-                "taskCreationPending": false,
-                "taskCreated": true,
-                "taskId": "{{created_task_id}}",
-                "taskCreationTimestamp": "{{current_timestamp}}"
-              }
-            }
-          },
-          "sequenceOrder": 4
+          "sequenceOrder": 1
         }
       ],
       "triggerReport": true,
@@ -518,14 +430,7 @@
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "WorkflowOperations",
-            "operation": "delegate",
-            "parameters": {
-              "taskId": "{{task_id}}",
-              "taskSlug": "{{task_slug}}",
-              "fromRole": "boomerang",
-              "toRole": "{{target_role_based_on_research_decision}}",
-              "message": "{{focused_delegation_message_with_context}}"
-            }
+            "operation": "delegate"
           },
           "sequenceOrder": 1
         }

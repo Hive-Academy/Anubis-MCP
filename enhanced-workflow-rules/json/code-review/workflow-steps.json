@@ -75,16 +75,7 @@
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "TaskOperations",
-            "operation": "get",
-            "parameters": {
-              "includeLevel": "comprehensive",
-              "includePlans": true,
-              "includeSubtasks": true,
-              "includeAnalysis": true,
-              "includeComments": false,
-              "includeCodebaseAnalysis": true,
-              "includeImplementationEvidence": true
-            }
+            "operation": "get"
           },
           "sequenceOrder": 1
         }
@@ -412,18 +403,7 @@
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "ReviewOperations",
-            "operation": "create_review",
-            "parameters": {
-              "reviewData": {
-                "status": "{{APPROVED_or_APPROVED_WITH_RESERVATIONS_or_NEEDS_CHANGES}}",
-                "summary": "{{comprehensive_review_summary_with_key_findings}}",
-                "strengths": "{{implementation_strengths_and_quality_highlights}}",
-                "issues": "{{identified_issues_and_improvement_areas}}",
-                "acceptanceCriteriaVerification": "{{criterion_verification_status_and_evidence}}",
-                "manualTestingResults": "{{hands_on_testing_and_validation_results}}",
-                "requiredChanges": "{{specific_changes_if_NEEDS_CHANGES_status}}"
-              }
-            }
+            "operation": "create_review"
           },
           "sequenceOrder": 1
         },
@@ -432,23 +412,7 @@
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "WorkflowOperations",
-            "operation": "{{complete_or_escalate_based_on_review_decision}}",
-            "parameters": {
-              "fromRole": "code-review",
-              "toRole": "{{task_completion_or_senior_developer_based_on_decision}}",
-              "completionData": {
-                "summary": "{{implementation_status_with_quality_gates_satisfaction}}",
-                "filesModified": "{{array_of_final_implemented_files}}",
-                "acceptanceCriteriaVerification": "{{verified_criteria_with_evidence}}",
-                "productionReadiness": "{{production_readiness_assessment}}"
-              },
-              "escalationData": {
-                "reason": "{{implementation_requires_changes_before_approval}}",
-                "severity": "{{escalation_severity_level}}",
-                "blockers": "{{specific_issues_requiring_resolution}}",
-                "improvementGuidance": "{{detailed_guidance_for_resolution}}"
-              }
-            }
+            "operation": "{{complete_or_escalate_based_on_review_decision}}"
           },
           "sequenceOrder": 2
         }

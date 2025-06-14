@@ -86,18 +86,17 @@ export class RequiredInputExtractorService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * 🎯 PHASE 4.1: Enhanced public method for direct schema extraction
+   * 🎯 PHASE 4.1: Enhanced public method for complete schema structure extraction
    *
-   * This is the key method that enables schema-based parameter extraction
-   * for MCP_CALL operations in workflow JSON files
+   * Returns the complete schema structure as JSON that AI agents can understand precisely
    */
   extractFromServiceSchema(
     serviceName: string,
     operation?: string,
   ): {
+    schemaStructure: Record<string, any>;
     requiredParameters: string[];
     optionalParameters: string[];
-    parameterDetails: Record<string, any>;
     validationSchema: ZodSchema | null;
     extractionMetadata: {
       serviceName: string;
@@ -108,74 +107,74 @@ export class RequiredInputExtractorService {
     };
   } {
     this.logger.debug(
-      `🎯 PHASE 4.1: Extracting schema parameters for ${serviceName}.${operation}`,
+      `🎯 PHASE 4.1: Extracting complete schema structure for ${serviceName}.${operation}`,
     );
 
     try {
       const schema = this.serviceSchemas[serviceName];
       if (!schema) {
         this.logger.warn(`❌ No schema found for service: ${serviceName}`);
-        return this.createFallbackExtraction(serviceName, operation);
+        return this.createFallbackSchemaExtraction(serviceName, operation);
       }
 
-      // 🎯 Enhanced schema introspection
-      const extractionResult = this.performEnhancedSchemaExtraction(
+      // 🎯 Enhanced schema structure extraction
+      const extractionResult = this.performCompleteSchemaExtraction(
         schema,
         serviceName,
         operation,
       );
 
       this.logger.debug(
-        `✅ Schema extraction completed for ${serviceName}.${operation}: ${extractionResult.requiredParameters.length} required, ${extractionResult.optionalParameters.length} optional`,
+        `✅ Schema structure extraction completed for ${serviceName}.${operation}: ${extractionResult.requiredParameters.length} required, ${extractionResult.optionalParameters.length} optional`,
       );
 
       return extractionResult;
     } catch (error) {
       this.logger.error(
-        `💥 Schema extraction failed for ${serviceName}.${operation}:`,
+        `💥 Schema structure extraction failed for ${serviceName}.${operation}:`,
         error,
       );
-      return this.createErrorExtraction(serviceName, operation, error);
+      return this.createErrorSchemaExtraction(serviceName, operation, error);
     }
   }
 
   /**
-   * 🎯 PHASE 4.1: Enhanced schema introspection with comprehensive parameter detection
+   * 🎯 PHASE 4.1: Complete schema structure extraction with full JSON representation
    */
-  private performEnhancedSchemaExtraction(
+  private performCompleteSchemaExtraction(
     schema: ZodSchema,
     serviceName: string,
     operation?: string,
   ): {
+    schemaStructure: Record<string, any>;
     requiredParameters: string[];
     optionalParameters: string[];
-    parameterDetails: Record<string, any>;
     validationSchema: ZodSchema;
     extractionMetadata: any;
   } {
     const requiredParameters: string[] = [];
     const optionalParameters: string[] = [];
-    const parameterDetails: Record<string, any> = {};
+    const schemaStructure: Record<string, any> = {};
 
     try {
-      // 🎯 Zod schema introspection
-      const schemaShape = (schema as any)._def?.shape;
+      // 🎯 Zod schema introspection - FIXED: shape is a function, need to call it
+      const schemaShape = (schema as any)._def?.shape?.();
       if (schemaShape) {
         Object.entries(schemaShape).forEach(([key, value]: [string, any]) => {
-          const fieldInfo = this.analyzeSchemaField(
+          const fieldStructure = this.extractCompleteFieldStructure(
             key,
             value,
             serviceName,
             operation,
           );
 
-          if (fieldInfo.isRequired) {
+          if (fieldStructure.required) {
             requiredParameters.push(key);
           } else {
             optionalParameters.push(key);
           }
 
-          parameterDetails[key] = fieldInfo;
+          schemaStructure[key] = fieldStructure;
         });
       }
 
@@ -190,24 +189,24 @@ export class RequiredInputExtractorService {
           !optionalParameters.includes(param)
         ) {
           requiredParameters.push(param);
-          parameterDetails[param] = {
+          schemaStructure[param] = {
             type: 'operation-specific',
+            required: true,
             description: `Required parameter for ${serviceName}.${operation}`,
-            isRequired: true,
           };
         }
       });
 
       return {
+        schemaStructure,
         requiredParameters,
         optionalParameters,
-        parameterDetails,
         validationSchema: schema,
         extractionMetadata: {
           serviceName,
           operation: operation || 'unknown',
           schemaFound: true,
-          extractionMethod: 'enhanced-zod-introspection',
+          extractionMethod: 'complete-schema-structure',
           parametersFound:
             requiredParameters.length + optionalParameters.length,
           requiredCount: requiredParameters.length,
@@ -216,9 +215,149 @@ export class RequiredInputExtractorService {
       };
     } catch (_error) {
       this.logger.warn(
-        `⚠️ Enhanced extraction failed, falling back to operation mapping for ${serviceName}.${operation}`,
+        `⚠️ Complete schema extraction failed, falling back to operation mapping for ${serviceName}.${operation}`,
       );
-      return this.fallbackToOperationMapping(serviceName, operation, schema);
+      return this.fallbackToCompleteSchemaMapping(
+        serviceName,
+        operation,
+        schema,
+      );
+    }
+  }
+
+  /**
+   * 🎯 PHASE 4.1: Extract complete field structure with full type information
+   */
+  private extractCompleteFieldStructure(
+    fieldName: string,
+    fieldSchema: any,
+    serviceName: string,
+    operation?: string,
+  ): {
+    type: string;
+    required: boolean;
+    description: string;
+    values?: string[];
+    properties?: Record<string, any>;
+    items?: any;
+    defaultValue?: any;
+  } {
+    const baseStructure = {
+      type: 'unknown',
+      required: fieldSchema.isOptional?.() === false,
+      description: this.getFieldDescription(fieldName),
+    };
+
+    if (!fieldSchema?._def) {
+      return { ...baseStructure, type: 'unknown' };
+    }
+
+    const typeName = fieldSchema._def.typeName;
+
+    switch (typeName) {
+      case 'ZodString': {
+        const enumValues = fieldSchema._def.checks?.find(
+          (check: any) => check.kind === 'enum',
+        )?.values;
+        return {
+          ...baseStructure,
+          type: enumValues ? 'enum' : 'string',
+          values: enumValues,
+        };
+      }
+
+      case 'ZodNumber': {
+        return { ...baseStructure, type: 'number' };
+      }
+
+      case 'ZodBoolean': {
+        return { ...baseStructure, type: 'boolean' };
+      }
+
+      case 'ZodEnum': {
+        const enumValues = fieldSchema._def.values || [];
+        return {
+          ...baseStructure,
+          type: 'enum',
+          values: enumValues,
+        };
+      }
+
+      case 'ZodArray': {
+        const arrayElement = fieldSchema._def.type;
+        return {
+          ...baseStructure,
+          type: 'array',
+          items: arrayElement
+            ? this.extractCompleteFieldStructure(
+                'item',
+                arrayElement,
+                serviceName,
+                operation,
+              )
+            : { type: 'unknown' },
+        };
+      }
+
+      case 'ZodObject': {
+        const objectShape = fieldSchema._def.shape?.() || {};
+        const properties: Record<string, any> = {};
+
+        Object.entries(objectShape).forEach(([key, value]: [string, any]) => {
+          properties[key] = this.extractCompleteFieldStructure(
+            key,
+            value,
+            serviceName,
+            operation,
+          );
+        });
+
+        return {
+          ...baseStructure,
+          type: 'object',
+          properties,
+        };
+      }
+
+      case 'ZodOptional': {
+        const innerSchema = fieldSchema._def.innerType;
+        return this.extractCompleteFieldStructure(
+          fieldName,
+          innerSchema,
+          serviceName,
+          operation,
+        );
+      }
+
+      case 'ZodDefault': {
+        const innerSchema = fieldSchema._def.innerType;
+        const defaultValue = fieldSchema._def.defaultValue?.();
+        const result = this.extractCompleteFieldStructure(
+          fieldName,
+          innerSchema,
+          serviceName,
+          operation,
+        );
+        return { ...result, defaultValue };
+      }
+
+      case 'ZodUnion': {
+        const options = fieldSchema._def.options || [];
+        if (options.length > 0) {
+          // For unions, try to extract the first option's structure
+          return this.extractCompleteFieldStructure(
+            fieldName,
+            options[0],
+            serviceName,
+            operation,
+          );
+        }
+        return { ...baseStructure, type: 'union' };
+      }
+
+      default: {
+        return { ...baseStructure, type: typeName || 'unknown' };
+      }
     }
   }
 
@@ -323,16 +462,25 @@ export class RequiredInputExtractorService {
   }
 
   /**
-   * 🎯 PHASE 4.1: Fallback to operation mapping when schema introspection fails
+   * 🎯 ESSENTIAL: Add core workflow inputs that are always needed
    */
-  private fallbackToOperationMapping(
+  private addEssentialWorkflowInputs(requiredInputs: Set<string>): void {
+    requiredInputs.add('taskId');
+    requiredInputs.add('roleId');
+    requiredInputs.add('projectPath');
+  }
+
+  /**
+   * 🎯 Fallback to complete schema mapping when schema introspection fails
+   */
+  private fallbackToCompleteSchemaMapping(
     serviceName: string,
     operation: string | undefined,
     schema: ZodSchema,
   ): {
+    schemaStructure: Record<string, any>;
     requiredParameters: string[];
     optionalParameters: string[];
-    parameterDetails: Record<string, any>;
     validationSchema: ZodSchema;
     extractionMetadata: any;
   } {
@@ -340,20 +488,20 @@ export class RequiredInputExtractorService {
       serviceName,
       operation,
     );
-    const parameterDetails: Record<string, any> = {};
+    const schemaStructure: Record<string, any> = {};
 
     operationParams.forEach((param) => {
-      parameterDetails[param] = {
+      schemaStructure[param] = {
         type: 'mapped-parameter',
+        required: true,
         description: this.getFieldDescription(param),
-        isRequired: true,
       };
     });
 
     return {
+      schemaStructure,
       requiredParameters: operationParams,
       optionalParameters: [],
-      parameterDetails,
       validationSchema: schema,
       extractionMetadata: {
         serviceName,
@@ -368,15 +516,15 @@ export class RequiredInputExtractorService {
   }
 
   /**
-   * 🎯 PHASE 4.1: Create fallback extraction when no schema is found
+   * 🎯 Create fallback schema extraction when no schema is found
    */
-  private createFallbackExtraction(
+  private createFallbackSchemaExtraction(
     serviceName: string,
     operation?: string,
   ): {
+    schemaStructure: Record<string, any>;
     requiredParameters: string[];
     optionalParameters: string[];
-    parameterDetails: Record<string, any>;
     validationSchema: null;
     extractionMetadata: any;
   } {
@@ -389,19 +537,19 @@ export class RequiredInputExtractorService {
         ? operationParams
         : ['operation', 'executionData'];
 
-    const parameterDetails: Record<string, any> = {};
+    const schemaStructure: Record<string, any> = {};
     fallbackParams.forEach((param) => {
-      parameterDetails[param] = {
+      schemaStructure[param] = {
         type: 'fallback-parameter',
+        required: true,
         description: this.getFieldDescription(param),
-        isRequired: true,
       };
     });
 
     return {
+      schemaStructure,
       requiredParameters: fallbackParams,
       optionalParameters: [],
-      parameterDetails,
       validationSchema: null,
       extractionMetadata: {
         serviceName,
@@ -415,34 +563,34 @@ export class RequiredInputExtractorService {
   }
 
   /**
-   * 🎯 PHASE 4.1: Create error extraction when extraction fails
+   * 🎯 Create error schema extraction when extraction fails
    */
-  private createErrorExtraction(
+  private createErrorSchemaExtraction(
     serviceName: string,
     operation: string | undefined,
     error: any,
   ): {
+    schemaStructure: Record<string, any>;
     requiredParameters: string[];
     optionalParameters: string[];
-    parameterDetails: Record<string, any>;
     validationSchema: null;
     extractionMetadata: any;
   } {
     return {
-      requiredParameters: ['operation', 'executionData'],
-      optionalParameters: [],
-      parameterDetails: {
+      schemaStructure: {
         operation: {
           type: 'error-fallback',
+          required: true,
           description: 'Operation name (required due to extraction error)',
-          isRequired: true,
         },
         executionData: {
           type: 'error-fallback',
+          required: true,
           description: 'Execution data (fallback due to extraction error)',
-          isRequired: true,
         },
       },
+      requiredParameters: ['operation', 'executionData'],
+      optionalParameters: [],
       validationSchema: null,
       extractionMetadata: {
         serviceName,
@@ -507,14 +655,5 @@ export class RequiredInputExtractorService {
     const requiredInputs = new Set<string>();
     this.addEssentialWorkflowInputs(requiredInputs);
     return Array.from(requiredInputs);
-  }
-
-  /**
-   * 🎯 ESSENTIAL: Add core workflow inputs that are always needed
-   */
-  private addEssentialWorkflowInputs(requiredInputs: Set<string>): void {
-    requiredInputs.add('taskId');
-    requiredInputs.add('roleId');
-    requiredInputs.add('projectPath');
   }
 }

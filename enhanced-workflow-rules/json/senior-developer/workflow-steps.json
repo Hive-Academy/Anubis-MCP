@@ -77,16 +77,7 @@
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "TaskOperations",
-            "operation": "get",
-            "parameters": {
-              "includeLevel": "comprehensive",
-              "includePlans": true,
-              "includeSubtasks": true,
-              "includeAnalysis": true,
-              "includeComments": false,
-              "includeCodebaseAnalysis": true,
-              "includeStrategicGuidance": true
-            }
+            "operation": "get"
           },
           "sequenceOrder": 1
         }
@@ -383,35 +374,7 @@
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "WorkflowOperations",
-            "operation": "delegate",
-            "parameters": {
-              "taskSlug": "{{task_slug}}",
-              "fromRole": "senior-developer",
-              "toRole": "code-review",
-              "message": "Strategic implementation completed for task [{{task_slug}}] following comprehensive architectural guidance and discovered project patterns. All changes committed (commit: {{commit_hash}}) and ready for validation.",
-              "strategicImplementationContext": {
-                "architecturalGuidanceFollowed": true,
-                "patternConsistencyMaintained": true,
-                "technicalDebtEliminated": true,
-                "elegantSolutionDelivered": true,
-                "qualityGatesValidated": true,
-                "solidPrinciplesCompliant": true,
-                "gitOperationsCompleted": true
-              },
-              "implementationEvidence": {
-                "rootCauseSolved": "{{problem_solved_following_architectural_guidance}}",
-                "patternEnhancement": "{{implementation_enhanced_following_discovered_patterns}}",
-                "architecturalCompliance": "{{implementation_follows_discovered_patterns_exactly}}",
-                "qualityAssurance": "{{comprehensive_validation_against_strategic_requirements}}",
-                "technologyCompliance": "{{technology_stack_conventions_respected_throughout}}"
-              },
-              "gitContext": {
-                "commitHash": "{{commit_hash}}",
-                "commitMessage": "{{commit_message}}",
-                "workingDirectoryStatus": "clean",
-                "changesCommitted": true
-              }
-            }
+            "operation": "delegate"
           },
           "sequenceOrder": 1
         }

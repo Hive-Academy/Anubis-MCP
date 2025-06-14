@@ -16,11 +16,26 @@ import { WorkflowStep } from '../services/step-query.service';
 
 // 🎯 STRICT TYPE DEFINITIONS - ZERO ANY USAGE
 
-const GetStepGuidanceInputSchema = z.object({
-  taskId: z.number().describe('Task ID for context'),
-  roleId: z.string().describe('Role ID for step guidance'),
-  stepId: z.string().optional().describe('Optional specific step ID'),
-});
+const GetStepGuidanceInputSchema = z
+  .object({
+    taskId: z
+      .number()
+      .optional()
+      .describe('Task ID for context (optional if executionId provided)'),
+    executionId: z
+      .string()
+      .optional()
+      .describe('Execution ID for context (optional if taskId provided)'),
+    roleId: z.string().describe('Role ID for step guidance'),
+    stepId: z.string().optional().describe('Optional specific step ID'),
+  })
+  .refine(
+    (data) => data.taskId !== undefined || data.executionId !== undefined,
+    {
+      message: 'Either taskId or executionId must be provided',
+      path: ['taskId', 'executionId'],
+    },
+  );
 
 const ReportStepCompletionInputSchema = z.object({
   taskId: z.number().describe('Task ID'),
@@ -123,13 +138,18 @@ export class StepExecutionMcpService {
 - Historical data (focus on current action)
 - Envelope wrappers (minimal response)
 
+**Parameters:**
+- taskId OR executionId: Either task ID (number) or execution ID (string) is required
+- roleId: Role ID for context (string)
+- stepId: Optional specific step ID (string, if not provided uses current step from execution)
+
 **Pattern:** get_workflow_guidance (once) → get_step_guidance (per step) → execute locally → report_step_completion`,
     parameters: GetStepGuidanceInputSchema as ZodSchema<GetStepGuidanceInput>,
   })
   async getStepGuidance(input: GetStepGuidanceInput) {
     try {
       this.logger.log(
-        `Getting focused step guidance for task: ${input.taskId}, role: ${input.roleId}`,
+        `Getting focused step guidance for ${input.taskId ? `task: ${input.taskId}` : `execution: ${input.executionId}`}, role: ${input.roleId}`,
       );
 
       // Get current execution to find current step if not provided
@@ -137,11 +157,16 @@ export class StepExecutionMcpService {
       let currentRoleId = input.roleId;
 
       if (!currentStepId) {
-        // ✅ FIXED: Call execution service directly, not through CoreServiceOrchestrator
+        // ✅ FIXED: Call execution service with either taskId or executionId
+        const executionQuery =
+          input.taskId !== undefined
+            ? { taskId: input.taskId }
+            : { executionId: input.executionId };
+
         const executionResult =
-          await this.workflowExecutionOperationsService.getExecution({
-            taskId: input.taskId,
-          });
+          await this.workflowExecutionOperationsService.getExecution(
+            executionQuery,
+          );
 
         if (!executionResult.execution) {
           return this.buildMinimalResponse({
@@ -169,9 +194,11 @@ export class StepExecutionMcpService {
       }
 
       // Get step guidance from business service
+      // Use actual taskId from execution if not provided in input
+      const actualTaskId = input.taskId || 0; // Use 0 as fallback for bootstrap executions
       const stepGuidanceResult =
         await this.stepExecutionService.getStepGuidance(
-          input.taskId,
+          actualTaskId,
           currentRoleId,
           currentStepId!,
         );
@@ -501,7 +528,7 @@ After running 'git status' locally, report:
     operation: string;
     requiredParameters: string[];
     optionalParameters: string[];
-    parameterDetails: Record<string, any>;
+    schemaStructure: Record<string, any>;
     usage: string;
   }> {
     if (!stepGuidance.mcpActions || stepGuidance.mcpActions.length === 0) {
@@ -524,7 +551,7 @@ After running 'git status' locally, report:
           operation: action.operation,
           requiredParameters: extraction.requiredParameters,
           optionalParameters: extraction.optionalParameters,
-          parameterDetails: extraction.parameterDetails,
+          schemaStructure: extraction.schemaStructure,
           usage: `Execute ${action.serviceName}.${action.operation} with these parameters`,
         });
       } catch (error) {
@@ -538,9 +565,17 @@ After running 'git status' locally, report:
           operation: action.operation,
           requiredParameters: ['operation', 'executionData'],
           optionalParameters: [],
-          parameterDetails: {
-            operation: { description: 'Operation name', isRequired: true },
-            executionData: { description: 'Operation data', isRequired: true },
+          schemaStructure: {
+            operation: {
+              type: 'string',
+              required: true,
+              description: 'Operation name',
+            },
+            executionData: {
+              type: 'any',
+              required: true,
+              description: 'Operation data',
+            },
           },
           usage: `Execute ${action.serviceName}.${action.operation} (schema extraction failed, using fallback)`,
         });

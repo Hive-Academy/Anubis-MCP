@@ -65,16 +65,7 @@
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "TaskOperations",
-            "operation": "get",
-            "parameters": {
-              "includeLevel": "comprehensive",
-              "includePlans": true,
-              "includeSubtasks": true,
-              "includeAnalysis": true,
-              "includeComments": true,
-              "includeCodebaseAnalysis": true,
-              "includeRedelegationContext": true
-            }
+            "operation": "get"
           },
           "sequenceOrder": 1
         }
@@ -237,11 +228,7 @@
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "PlanningOperations",
-            "operation": "get_plan",
-            "parameters": {
-              "includeBatches": true,
-              "includeSubtasks": true
-            }
+            "operation": "get_plan"
           },
           "sequenceOrder": 1
         },
@@ -250,18 +237,7 @@
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "PlanningOperations",
-            "operation": "{{create_or_update_based_on_existing}}",
-            "parameters": {
-              "taskSlug": "{{task_slug}}",
-              "planData": {
-                "strategicEnhancement": "{{redelegation_issue_resolution_strategy}}",
-                "technicalDecisions": "{{architectural_strategy_and_pattern_compliance}}",
-                "strategicGuidance": "{{root_cause_solution_and_pattern_consistency}}",
-                "verificationEvidence": "{{current_state_verified_and_evidence_based_design}}",
-                "architecturalRationale": "{{strategic_solution_addresses_root_cause}}",
-                "implementationStrategy": "{{strategic_enhancement_not_quick_fixes}}"
-              }
-            }
+            "operation": "{{create_or_update_based_on_existing}}"
           },
           "sequenceOrder": 2
         }
@@ -349,25 +325,7 @@
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "PlanningOperations",
-            "operation": "create_subtasks",
-            "parameters": {
-              "taskSlug": "{{task_slug}}",
-              "batchData": {
-                "strategicContext": "{{redelegation_origin_and_solution_approach}}",
-                "subtasks": [
-                  {
-                    "strategicGuidance": {
-                      "architecturalContext": "{{problem_solved_and_pattern_followed}}",
-                      "implementationSpecifics": "{{file_to_modify_and_method_to_add}}",
-                      "codeExample": "{{complete_code_example_with_context}}",
-                      "qualityConstraints": "{{pattern_compliance_and_error_handling}}",
-                      "successCriteria": "{{validation_requirements_and_testing}}",
-                      "architecturalRationale": "{{enhancement_maintains_boundaries}}"
-                    }
-                  }
-                ]
-              }
-            }
+            "operation": "create_subtasks"
           },
           "sequenceOrder": 1
         }
@@ -497,34 +455,7 @@
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "WorkflowOperations",
-            "operation": "delegate",
-            "parameters": {
-              "taskSlug": "{{task_slug}}",
-              "fromRole": "architect",
-              "toRole": "senior-developer",
-              "message": "Strategic architectural solution designed for task [{{task_slug}}] - elegant enhancement with comprehensive implementation guidance, patterns, code examples, and quality constraints.",
-              "strategicContext": {
-                "issueResolved": "{{complex_pattern_violations_requiring_architectural_solution}}",
-                "solutionApproach": "{{service_enhancement_following_established_patterns}}",
-                "implementationReadiness": true,
-                "patternComplianceEnsured": true,
-                "qualityGatesDefinied": true,
-                "technicalDebtPrevention": true,
-                "elegantSolutionDesigned": true
-              },
-              "architecturalGuidance": {
-                "corePattern": "{{enhance_service_with_method}}",
-                "implementationStrategy": "{{follow_existing_patterns_exactly}}",
-                "qualityAssurance": "{{comprehensive_testing_with_integration}}",
-                "antiPatternAvoidance": "{{eliminate_all_anti_patterns}}"
-              },
-              "verificationContext": {
-                "currentStateVerified": true,
-                "issuesConfirmedThroughTesting": true,
-                "evidenceBasedSolution": true,
-                "patternValidityTested": true
-              }
-            }
+            "operation": "delegate"
           },
           "sequenceOrder": 1
         }
