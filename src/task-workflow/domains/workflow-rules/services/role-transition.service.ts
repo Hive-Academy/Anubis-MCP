@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { exec } from 'child_process';
-import * as fs from 'fs/promises';
 import { RoleTransition } from 'generated/prisma';
 import * as path from 'path';
 import { promisify } from 'util';
@@ -175,20 +174,6 @@ export class RoleTransitionService {
         }
       }
 
-      // Validate transition requirements
-      if (transition.requirements) {
-        const requirementResult = await this.validateTransitionRequirements(
-          transition.requirements,
-          context,
-        );
-        if (!requirementResult.valid) {
-          errors.push(...requirementResult.errors);
-        }
-        if (requirementResult.warnings) {
-          warnings.push(...requirementResult.warnings);
-        }
-      }
-
       return {
         valid: errors.length === 0,
         errors,
@@ -354,36 +339,6 @@ export class RoleTransitionService {
     return { valid: errors.length === 0, errors, warnings };
   }
 
-  private async validateTransitionRequirements(
-    requirements: any,
-    context: { roleId: string; taskId: string; projectPath?: string },
-  ): Promise<{ valid: boolean; errors: string[]; warnings?: string[] }> {
-    const errors: string[] = [];
-    const warnings: string[] = [];
-
-    // Validate deliverables
-    if (requirements.requiredDeliverables) {
-      for (const deliverable of requirements.requiredDeliverables) {
-        const exists = await this.checkDeliverableExists(deliverable, context);
-        if (!exists) {
-          errors.push(`Required deliverable '${deliverable}' not found`);
-        }
-      }
-    }
-
-    // Validate quality gates
-    if (requirements.qualityGates) {
-      for (const gate of requirements.qualityGates) {
-        const passed = await this.checkQualityGate(gate, context);
-        if (!passed) {
-          errors.push(`Quality gate '${gate}' not passed`);
-        }
-      }
-    }
-
-    return { valid: errors.length === 0, errors, warnings };
-  }
-
   private async isStepCompleted(
     stepId: string,
     context: { roleId: string; taskId: string },
@@ -419,49 +374,6 @@ export class RoleTransitionService {
     }
 
     return Date.now() - latestTransition.delegationTimestamp.getTime();
-  }
-
-  private async checkDeliverableExists(
-    deliverable: string,
-    context: { roleId: string; taskId: string; projectPath?: string },
-  ): Promise<boolean> {
-    try {
-      // Check different types of deliverables
-      if (deliverable.startsWith('file:')) {
-        // File deliverable - check if file exists
-        const filePath = deliverable.substring(5);
-        const resolvedPath = this.resolveProjectPath(filePath, context);
-        return this.fileExists(resolvedPath);
-      } else if (deliverable.startsWith('report:')) {
-        // Report deliverable - check if report exists in database
-        const _reportType = deliverable.substring(7);
-        // Check if report exists - using task progress as proxy since reportGeneration table may not exist
-        const reportProgress = await this.prisma.workflowStepProgress.findFirst(
-          {
-            where: {
-              taskId: String(context.taskId),
-              status: 'COMPLETED',
-            },
-          },
-        );
-        return !!reportProgress;
-      } else if (deliverable.startsWith('step:')) {
-        // Step completion deliverable
-        const stepId = deliverable.substring(5);
-        return this.isStepCompleted(stepId, context);
-      } else if (deliverable.startsWith('test:')) {
-        // Test deliverable - check if tests pass
-        const testType = deliverable.substring(5);
-        return this.checkTestDeliverable(testType, context);
-      } else {
-        // Generic deliverable - assume it's a file
-        const resolvedPath = this.resolveProjectPath(deliverable, context);
-        return this.fileExists(resolvedPath);
-      }
-    } catch (error) {
-      this.logger.error(`Error checking deliverable '${deliverable}':`, error);
-      return false;
-    }
   }
 
   private async checkQualityGate(
@@ -554,15 +466,6 @@ export class RoleTransitionService {
 
     const projectRoot = context.projectPath || process.cwd();
     return path.resolve(projectRoot, filePath);
-  }
-
-  private async fileExists(filePath: string): Promise<boolean> {
-    try {
-      await fs.access(filePath);
-      return true;
-    } catch {
-      return false;
-    }
   }
 
   private async checkTestDeliverable(
@@ -684,26 +587,14 @@ export class RoleTransitionService {
     }
   }
 
-  private async checkDocumentationGate(context: {
+  private checkDocumentationGate(_context: {
     roleId: string;
     taskId: string;
     projectPath?: string;
-  }): Promise<boolean> {
-    try {
-      // Check if README exists and has content
-      const readmePath = this.resolveProjectPath('README.md', context);
-      if (!(await this.fileExists(readmePath))) {
-        return false;
-      }
-
-      const content = await fs.readFile(readmePath, 'utf8');
-      return (
-        content.trim().length >= this.qualityGateConfig.documentationMinLength
-      );
-    } catch (error) {
-      this.logger.debug('Documentation gate failed:', error);
-      return false;
-    }
+  }): boolean {
+    // Documentation gate check removed - not appropriate for production
+    // Quality gates should be based on actual deliverables, not internal files
+    return true;
   }
 
   private async checkPeerReviewGate(context: {

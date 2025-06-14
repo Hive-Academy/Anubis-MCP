@@ -3,29 +3,8 @@ import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { WorkflowBootstrapService } from '../services/workflow-bootstrap.service';
 
-// Schema for bootstrap workflow input
+// Simplified schema - just basic execution setup
 const BootstrapWorkflowInputSchema = z.object({
-  taskName: z.string().min(1).max(200).describe('Name of the task to create'),
-  taskDescription: z
-    .string()
-    .optional()
-    .describe('Detailed description of the task'),
-  businessRequirements: z
-    .string()
-    .optional()
-    .describe('Business requirements for the task'),
-  technicalRequirements: z
-    .string()
-    .optional()
-    .describe('Technical requirements for the task'),
-  acceptanceCriteria: z
-    .array(z.string())
-    .optional()
-    .describe('List of acceptance criteria'),
-  priority: z
-    .enum(['Low', 'Medium', 'High', 'Critical'])
-    .optional()
-    .describe('Task priority level'),
   initialRole: z
     .enum([
       'boomerang',
@@ -34,16 +13,13 @@ const BootstrapWorkflowInputSchema = z.object({
       'senior-developer',
       'code-review',
     ])
+    .default('boomerang')
     .describe('Initial role to start the workflow with'),
   executionMode: z
     .enum(['GUIDED', 'AUTOMATED', 'HYBRID'])
-    .optional()
+    .default('GUIDED')
     .describe('Workflow execution mode'),
   projectPath: z.string().optional().describe('Project path for context'),
-  executionContext: z
-    .record(z.any())
-    .optional()
-    .describe('Additional execution context'),
 });
 
 type BootstrapWorkflowInputType = z.infer<typeof BootstrapWorkflowInputSchema>;
@@ -56,52 +32,35 @@ export class WorkflowBootstrapMcpService {
 
   @Tool({
     name: 'bootstrap_workflow',
-    description: `Create a new workflow execution with minimal task setup.
+    description: `Start a new workflow execution - Simple kickoff without task details.
 
-**🚀 WORKFLOW INITIATION - Creates minimal placeholder task**
+**🚀 WORKFLOW KICKOFF - Pure execution starter**
 
-Creates placeholder task and workflow execution pointing to first database-driven step. 
-The real task will be created by boomerang workflow after git setup and codebase analysis.
+Starts a workflow execution pointing to the first boomerang step. 
+The boomerang workflow steps will guide the agent to:
+1. Perform git setup and verification
+2. Analyze the codebase with functional testing
+3. Gather task requirements and create comprehensive task
+4. Make research decisions
+5. Delegate to appropriate next role
 
-**Returns ONLY:**
-- Task ID and execution ID for subsequent tool calls
-- Current execution state with step and role details
-- **NO complex envelopes, NO debug data, NO redundant information**
+**Returns:**
+- Execution ID and first step ID for workflow execution
+- Current step guidance for immediate execution
+- Complete execution context to start boomerang workflow
 
-**Usage Pattern:**
-1. bootstrap_workflow() → Get IDs and execution state
-2. Follow patterns from 000-workflow-core.md for next actions`,
+**Usage:**
+Just call bootstrap_workflow() and start executing the returned step guidance.`,
     parameters:
       BootstrapWorkflowInputSchema as ZodSchema<BootstrapWorkflowInputType>,
   })
   async bootstrapWorkflow(input: BootstrapWorkflowInputType): Promise<any> {
     try {
-      this.logger.log(`Bootstrapping workflow: ${input.taskName}`);
+      this.logger.log(
+        `Starting workflow execution with role: ${input.initialRole}`,
+      );
 
-      // Validate input
-      const validation = this.bootstrapService.validateBootstrapInput(input);
-      if (!validation.valid) {
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: JSON.stringify(
-                {
-                  success: false,
-                  error: {
-                    message: 'Bootstrap validation failed',
-                    errors: validation.errors,
-                  },
-                },
-                null,
-                2,
-              ),
-            },
-          ],
-        };
-      }
-
-      // Bootstrap the workflow
+      // Bootstrap the workflow execution
       const result = await this.bootstrapService.bootstrapWorkflow(input);
 
       if (!result.success) {
@@ -115,6 +74,7 @@ The real task will be created by boomerang workflow after git setup and codebase
                   error: {
                     message: result.message,
                   },
+                  timestamp: new Date().toISOString(),
                 },
                 null,
                 2,
@@ -124,23 +84,20 @@ The real task will be created by boomerang workflow after git setup and codebase
         };
       }
 
-      // Return comprehensive execution data - NO hardcoded flow control
+      // Return execution data for immediate workflow start
       return {
         content: [
           {
             type: 'text' as const,
             text: JSON.stringify(
               {
+                currentRole: result.currentRole,
+                currentStep: result.currentStep,
+                execution: result.execution,
                 success: true,
                 message: result.message,
-                resources: {
-                  taskId: result.resources.taskId,
-                  executionId: result.resources.executionId,
-                  firstStepId: result.resources.firstStepId,
-                },
-                execution: result.execution,
-                currentStep: result.currentStep,
-                currentRole: result.currentRole,
+                resources: result.resources,
+                timestamp: new Date().toISOString(),
               },
               null,
               2,
@@ -162,6 +119,7 @@ The real task will be created by boomerang workflow after git setup and codebase
                   message: error.message,
                   code: 'BOOTSTRAP_ERROR',
                 },
+                timestamp: new Date().toISOString(),
               },
               null,
               2,

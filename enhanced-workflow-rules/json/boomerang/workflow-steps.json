@@ -176,68 +176,72 @@
       "reportTemplate": "source_code_analysis_with_verification"
     },
     {
-      "name": "mandatory_comprehensive_task_update",
-      "displayName": "MANDATORY: Update Task with Comprehensive Data",
-      "description": "Update the minimal real task with comprehensive data using execution context and codebase analysis",
+      "name": "mandatory_comprehensive_task_creation",
+      "displayName": "MANDATORY: Create Task with Comprehensive Data",
+      "description": "Create the task with comprehensive data using execution context and codebase analysis",
       "sequenceNumber": 3,
       "isRequired": true,
       "estimatedTime": "5-8 minutes",
       "stepType": "ACTION",
       "behavioralContext": {
-        "approach": "Update existing minimal task with comprehensive data using stored execution context and codebase analysis",
+        "approach": "Create task with comprehensive data using stored execution context and codebase analysis",
         "principles": [
-          "Read additional task data from workflow execution context (stored by bootstrap)",
-          "Update existing task with comprehensive description, requirements, and codebase analysis",
+          "Read task creation data from workflow execution context (stored by bootstrap)",
+          "Create task with comprehensive description, requirements, and codebase analysis",
           "Store comprehensive codebase analysis for downstream roles",
           "Document functional verification results",
-          "Keep existing task ID and slug for continuity"
+          "Link task to existing workflow execution"
         ],
-        "methodology": "Task update with MCP-driven comprehensive data integration and analysis storage",
-        "updateStrategy": {
-          "contextRetrieval": "Retrieve additional task data from workflow execution taskCreationData",
-          "taskUpdate": "Update existing task with comprehensive description and requirements from context",
+        "methodology": "Task creation with MCP-driven comprehensive data integration and analysis storage",
+        "creationStrategy": {
+          "contextRetrieval": "Retrieve task creation data from workflow execution taskCreationData",
+          "taskCreation": "Create task with comprehensive description and requirements from context",
           "analysisIntegration": "Structure codebase analysis findings for downstream consumption",
           "verificationStorage": "Include functional verification results and evidence",
-          "contextUpdate": "Update execution context to mark task as comprehensive"
+          "executionLinking": "Link created task to existing workflow execution",
+          "contextUpdate": "Update execution context to mark task as created"
         }
       },
       "approachGuidance": {
         "stepByStep": [
-          "Retrieve additional task data from workflow execution taskCreationData",
-          "Get current task ID and slug from execution context",
-          "Update existing task with comprehensive description and requirements",
+          "Retrieve task creation data from workflow execution taskCreationData",
+          "Generate unique slug from task name",
+          "Create task with comprehensive description and requirements",
           "Structure codebase analysis findings for downstream consumption",
           "Include functional verification results and evidence",
           "Store git branch information and context",
-          "Update execution context to mark task as comprehensive"
+          "Link task to workflow execution",
+          "Update execution context to mark task as created"
         ],
         "dataRetrievalSteps": [
           "Call WorkflowOperations.get_execution_context to get taskCreationData",
-          "Extract task description, requirements, and acceptance criteria",
-          "Get current task ID and slug for update operations",
-          "Prepare comprehensive update data structure"
+          "Extract task name, description, requirements, and acceptance criteria",
+          "Get current execution ID for linking",
+          "Prepare comprehensive task creation data structure"
         ],
-        "updateSteps": [
-          "Call TaskOperations.update with comprehensive data",
+        "creationSteps": [
+          "Generate unique slug from task name",
+          "Call TaskOperations.create with comprehensive data",
           "Include codebase analysis results in structured format",
           "Add functional verification evidence and results",
           "Update git branch information and metadata"
         ],
-        "contextUpdateSteps": [
+        "linkingSteps": [
+          "Update WorkflowExecution with created task ID",
           "Call WorkflowOperations.update_execution_context",
-          "Mark task update as completed",
+          "Mark task creation as completed",
           "Update timestamps and completion flags",
           "Ensure workflow continuity for next steps"
         ]
       },
       "qualityChecklist": [
-        "Additional task data successfully retrieved from execution context",
-        "Existing task updated with comprehensive description and requirements",
+        "Task creation data successfully retrieved from execution context",
+        "Task created with comprehensive description and requirements",
         "Codebase analysis structured and complete",
         "Functional verification results included",
         "Git branch information recorded",
-        "Execution context updated to reflect comprehensive task",
-        "Task continuity maintained (same ID and slug)"
+        "Task linked to workflow execution",
+        "Execution context updated to reflect task creation"
       ],
       "conditions": [
         {
@@ -252,12 +256,12 @@
           "isRequired": true
         },
         {
-          "name": "minimal_task_exists",
+          "name": "task_creation_pending",
           "conditionType": "EXECUTION_CONTEXT_CHECK",
           "logic": {
             "check": "execution_context_contains",
             "parameters": {
-              "key": "taskUpdatePending",
+              "key": "taskCreationPending",
               "expectedValue": true
             }
           },
@@ -266,7 +270,7 @@
       ],
       "actions": [
         {
-          "name": "retrieve_task_update_data",
+          "name": "retrieve_task_creation_data",
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "WorkflowOperations",
@@ -279,40 +283,59 @@
           "sequenceOrder": 1
         },
         {
-          "name": "update_task_with_comprehensive_data",
+          "name": "create_task_with_comprehensive_data",
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "TaskOperations",
-            "operation": "update",
+            "operation": "create",
             "parameters": {
-              "id": "{{task_id_from_context}}",
-              "updates": {
-                "description": "{{task_description_from_context}}",
-                "businessRequirements": "{{business_requirements_from_context}}",
-                "technicalRequirements": "{{technical_requirements_from_context}}",
-                "acceptanceCriteria": "{{acceptance_criteria_from_context}}",
+              "name": "{{task_name_from_context}}",
+              "slug": "{{generated_unique_slug}}",
+              "description": "{{task_description_from_context}}",
+              "businessRequirements": "{{business_requirements_from_context}}",
+              "technicalRequirements": "{{technical_requirements_from_context}}",
+              "acceptanceCriteria": "{{acceptance_criteria_from_context}}",
+              "priority": "{{priority_from_context}}",
+              "status": "not-started",
+              "owner": "boomerang",
+              "currentMode": "boomerang",
+              "gitBranch": "{{created_feature_branch}}",
+              "codebaseAnalysis": {
+                "architectureFindings": "{{architecture_analysis_results}}",
+                "problemsIdentified": "{{identified_issues_and_debt}}",
+                "implementationContext": "{{patterns_and_standards}}",
+                "integrationPoints": "{{api_and_service_interfaces}}",
+                "qualityAssessment": "{{testing_and_performance_baseline}}",
+                "functionalVerification": "{{verification_evidence_and_results}}",
                 "gitBranch": "{{created_feature_branch}}",
-                "codebaseAnalysis": {
-                  "architectureFindings": "{{architecture_analysis_results}}",
-                  "problemsIdentified": "{{identified_issues_and_debt}}",
-                  "implementationContext": "{{patterns_and_standards}}",
-                  "integrationPoints": "{{api_and_service_interfaces}}",
-                  "qualityAssessment": "{{testing_and_performance_baseline}}",
-                  "functionalVerification": "{{verification_evidence_and_results}}",
-                  "gitBranch": "{{created_feature_branch}}",
-                  "analyzedBy": "boomerang",
-                  "analysisTimestamp": "{{current_timestamp}}"
-                },
-                "metadata": {
-                  "updatedFromMinimal": true,
-                  "originalTaskId": "{{task_id_from_context}}",
-                  "taskSlug": "{{task_slug_from_context}}",
-                  "comprehensiveUpdateTimestamp": "{{current_timestamp}}"
-                }
+                "analyzedBy": "boomerang",
+                "analysisTimestamp": "{{current_timestamp}}"
+              },
+              "metadata": {
+                "createdFromExecution": true,
+                "executionId": "{{current_execution_id}}",
+                "comprehensiveCreation": true,
+                "creationTimestamp": "{{current_timestamp}}"
               }
             }
           },
           "sequenceOrder": 2
+        },
+        {
+          "name": "link_task_to_execution",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "WorkflowOperations",
+            "operation": "update_execution",
+            "parameters": {
+              "executionId": "{{current_execution_id}}",
+              "updates": {
+                "taskId": "{{created_task_id}}",
+                "autoCreatedTask": true
+              }
+            }
+          },
+          "sequenceOrder": 3
         },
         {
           "name": "update_execution_context",
@@ -323,19 +346,19 @@
             "parameters": {
               "executionId": "{{current_execution_id}}",
               "contextUpdates": {
-                "taskUpdatePending": false,
-                "taskComprehensiveUpdate": true,
-                "comprehensiveTaskCompleted": true,
-                "taskUpdateTimestamp": "{{current_timestamp}}"
+                "taskCreationPending": false,
+                "taskCreated": true,
+                "taskId": "{{created_task_id}}",
+                "taskCreationTimestamp": "{{current_timestamp}}"
               }
             }
           },
-          "sequenceOrder": 3
+          "sequenceOrder": 4
         }
       ],
       "triggerReport": true,
-      "reportType": "comprehensive_task_update",
-      "reportTemplate": "task_comprehensive_update_completion"
+      "reportType": "comprehensive_task_creation",
+      "reportTemplate": "task_comprehensive_creation_completion"
     },
     {
       "name": "research_decision_framework_with_validation",

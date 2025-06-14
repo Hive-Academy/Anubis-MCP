@@ -1,15 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { WorkflowStep, StepAction } from 'generated/prisma';
-import * as fs from 'fs/promises';
-import * as path from 'path';
 
 // ===================================================================
-// 🔥 STEP GUIDANCE SERVICE - COMPLETE REVAMP FOR MCP-ONLY MODEL
+// 🔥 STEP GUIDANCE SERVICE - DATABASE-ONLY MODEL
 // ===================================================================
-// Purpose: Provide MCP actions and enhanced guidance for AI execution
-// Scope: MCP_CALL action processing, enhanced guidance from workflow-steps.json
-// ZERO Legacy Support: Complete removal of all non-MCP logic
+// Purpose: Provide MCP actions and step guidance from database only
+// Scope: MCP_CALL action processing, step guidance from database
+// ZERO JSON File Dependencies: Complete database-driven approach
 
 // 🎯 STRICT TYPE DEFINITIONS - ZERO ANY USAGE
 
@@ -82,18 +80,6 @@ export interface WorkflowStepWithActions extends WorkflowStep {
   actions: StepAction[];
 }
 
-export interface WorkflowStepsConfig {
-  workflowSteps: Array<{
-    name: string;
-    behavioralContext: BehavioralGuidance;
-    approachGuidance: ApproachGuidance;
-    qualityChecklist?: string[];
-    successCriteria?: string[];
-    failureCriteria?: string[];
-    troubleshooting?: string[];
-  }>;
-}
-
 export interface McpActionData {
   serviceName: string;
   operation: string;
@@ -123,8 +109,8 @@ export class StepGuidanceService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * 🔥 COMPLETE REVAMP: Get MCP actions and enhanced guidance for AI execution
-   * ONLY processes MCP_CALL actions - zero legacy support
+   * 🔥 DATABASE-ONLY: Get MCP actions and step guidance from database
+   * No JSON file dependencies - all data from database
    */
   async getStepGuidance(
     context: StepGuidanceContext,
@@ -137,14 +123,14 @@ export class StepGuidanceService {
     // Extract MCP actions for AI execution
     const mcpActions = this.extractMcpActions(step);
 
-    // Load enhanced guidance from workflow-steps.json
-    const enhancedGuidance = await this.loadEnhancedGuidance(step);
+    // Get guidance from database step data
+    const enhancedGuidance = this.buildGuidanceFromDatabase(step);
 
     return {
       step: {
         id: step.id,
         name: step.name,
-        description: enhancedGuidance.behavioralContext.approach,
+        description: step.description || 'Execute workflow step',
         stepType: step.stepType,
         estimatedTime: step.estimatedTime || '5-10 minutes',
       },
@@ -159,7 +145,7 @@ export class StepGuidanceService {
   }
 
   /**
-   * Get step validation criteria for AI execution validation
+   * Get step validation criteria from database
    */
   async getStepValidationCriteria(stepId: string): Promise<{
     successCriteria: string[];
@@ -174,12 +160,12 @@ export class StepGuidanceService {
       throw new StepNotFoundError(`Step not found: ${stepId}`);
     }
 
-    const enhancedGuidance = await this.loadEnhancedGuidance(step);
+    const guidance = this.buildGuidanceFromDatabase(step);
 
     return {
-      successCriteria: enhancedGuidance.successCriteria,
-      failureCriteria: enhancedGuidance.failureCriteria,
-      qualityChecklist: enhancedGuidance.qualityChecklist,
+      successCriteria: guidance.successCriteria,
+      failureCriteria: guidance.failureCriteria,
+      qualityChecklist: guidance.qualityChecklist,
     };
   }
 
@@ -243,50 +229,118 @@ export class StepGuidanceService {
     };
   }
 
-  private async loadEnhancedGuidance(
-    step: WorkflowStep,
-  ): Promise<EnhancedStepGuidance> {
-    const workflowStepsPath = path.join(
-      process.cwd(),
-      'enhanced-workflow-rules/json',
-      step.roleId,
-      'workflow-steps.json',
+  /**
+   * 🆕 DATABASE-ONLY: Build guidance from database step data
+   * Replaces JSON file reading with database-driven approach
+   */
+  private buildGuidanceFromDatabase(step: WorkflowStep): EnhancedStepGuidance {
+    // Extract guidance from database fields
+    const behavioralContext = this.extractBehavioralContext(
+      step.behavioralContext,
+    );
+    const approachGuidance = this.extractApproachGuidance(
+      step.approachGuidance,
+    );
+    const qualityChecklist = this.extractQualityChecklist(
+      step.qualityChecklist,
     );
 
-    try {
-      const workflowStepsData = JSON.parse(
-        await fs.readFile(workflowStepsPath, 'utf-8'),
-      ) as WorkflowStepsConfig;
+    return {
+      behavioralContext,
+      approachGuidance,
+      qualityChecklist,
+      successCriteria: this.extractSuccessCriteria(step.actionData),
+      failureCriteria: this.extractFailureCriteria(step.actionData),
+      troubleshooting: this.extractTroubleshooting(step.actionData),
+    };
+  }
 
-      const stepConfig = workflowStepsData.workflowSteps.find(
-        (s) => s.name === step.name,
-      );
-      if (!stepConfig) {
-        throw new StepConfigNotFoundError(
-          `Step config not found: ${step.name} in role ${step.roleId}`,
-        );
-      }
-
+  private extractBehavioralContext(
+    behavioralContext: unknown,
+  ): BehavioralGuidance {
+    if (!behavioralContext || typeof behavioralContext !== 'object') {
       return {
-        behavioralContext: stepConfig.behavioralContext,
-        approachGuidance: stepConfig.approachGuidance,
-        qualityChecklist: stepConfig.qualityChecklist || [],
-        successCriteria: stepConfig.successCriteria || [],
-        failureCriteria: stepConfig.failureCriteria || [],
-        troubleshooting: stepConfig.troubleshooting || [],
+        approach: 'Execute step according to requirements',
+        principles: [],
+        methodology: 'Standard workflow execution',
+        keyFocus: [],
+        qualityStandards: [],
       };
-    } catch (error) {
-      if (error instanceof StepConfigNotFoundError) {
-        throw error;
-      }
-
-      this.logger.error(
-        `Failed to load enhanced guidance for step ${step.name}:`,
-        error,
-      );
-      throw new Error(
-        `Failed to load enhanced guidance: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
     }
+
+    const context = behavioralContext as any;
+    return {
+      approach: context.approach || 'Execute step according to requirements',
+      principles: Array.isArray(context.principles) ? context.principles : [],
+      methodology: context.methodology || 'Standard workflow execution',
+      keyFocus: Array.isArray(context.keyFocus) ? context.keyFocus : [],
+      qualityStandards: Array.isArray(context.qualityStandards)
+        ? context.qualityStandards
+        : [],
+    };
+  }
+
+  private extractApproachGuidance(approachGuidance: unknown): ApproachGuidance {
+    if (!approachGuidance || typeof approachGuidance !== 'object') {
+      return {
+        stepByStep: ['Follow standard procedure'],
+        validationSteps: ['Verify completion'],
+        errorHandling: ['Handle errors appropriately'],
+        bestPractices: ['Follow best practices'],
+      };
+    }
+
+    const guidance = approachGuidance as any;
+    return {
+      stepByStep: Array.isArray(guidance.stepByStep)
+        ? guidance.stepByStep
+        : ['Follow standard procedure'],
+      validationSteps: Array.isArray(guidance.validationSteps)
+        ? guidance.validationSteps
+        : ['Verify completion'],
+      errorHandling: Array.isArray(guidance.errorHandling)
+        ? guidance.errorHandling
+        : ['Handle errors appropriately'],
+      bestPractices: Array.isArray(guidance.bestPractices)
+        ? guidance.bestPractices
+        : ['Follow best practices'],
+    };
+  }
+
+  private extractQualityChecklist(qualityChecklist: unknown): string[] {
+    if (Array.isArray(qualityChecklist)) {
+      return qualityChecklist.filter((item) => typeof item === 'string');
+    }
+    return ['Verify step completion'];
+  }
+
+  private extractSuccessCriteria(actionData: unknown): string[] {
+    if (typeof actionData === 'object' && actionData !== null) {
+      const data = actionData as any;
+      if (Array.isArray(data.successCriteria)) {
+        return data.successCriteria;
+      }
+    }
+    return ['Step completed successfully'];
+  }
+
+  private extractFailureCriteria(actionData: unknown): string[] {
+    if (typeof actionData === 'object' && actionData !== null) {
+      const data = actionData as any;
+      if (Array.isArray(data.failureCriteria)) {
+        return data.failureCriteria;
+      }
+    }
+    return ['Step failed to complete'];
+  }
+
+  private extractTroubleshooting(actionData: unknown): string[] {
+    if (typeof actionData === 'object' && actionData !== null) {
+      const data = actionData as any;
+      if (Array.isArray(data.troubleshooting)) {
+        return data.troubleshooting;
+      }
+    }
+    return ['Check logs for errors'];
   }
 }

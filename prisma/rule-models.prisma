@@ -220,7 +220,7 @@ model WorkflowStepProgress {
 // Workflow execution state management - orchestrates rule-driven workflow execution
 model WorkflowExecution {
   id              String   @id @default(cuid())
-  taskId          Int      // Link to current task
+  taskId          Int?     // Optional - Link to current task (created later in workflow)
   currentRoleId   String   // Active role
   currentStepId   String?  // Current step being executed
   executionState  Json     // Current workflow state
@@ -246,7 +246,7 @@ model WorkflowExecution {
   maxRecoveryAttempts Int  @default(3)
   
   // Relationships
-  task            Task @relation(fields: [taskId], references: [id])
+  task            Task? @relation(fields: [taskId], references: [id]) // Optional task relation
   currentRole     WorkflowRole @relation(fields: [currentRoleId], references: [id])
   currentStep     WorkflowStep? @relation(fields: [currentStepId], references: [id])
   

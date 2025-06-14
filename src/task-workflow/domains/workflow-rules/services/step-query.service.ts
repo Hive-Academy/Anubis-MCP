@@ -111,7 +111,38 @@ export class StepQueryService {
    * Get next available step for execution
    */
   async getNextAvailableStep(
-    _executionId: string,
+    taskId: string,
+    roleId: string,
+  ): Promise<WorkflowStep | null> {
+    // Get the current step from workflow execution
+    const execution = await this.prisma.workflowExecution.findFirst({
+      where: { taskId: parseInt(taskId) },
+      include: { currentStep: true },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!execution || !execution.currentStep) {
+      // No execution or current step, return first step for role
+      return this.prisma.workflowStep.findFirst({
+        where: { roleId },
+        orderBy: { sequenceNumber: 'asc' },
+      });
+    }
+
+    // Get next step in sequence for this role
+    return this.prisma.workflowStep.findFirst({
+      where: {
+        roleId,
+        sequenceNumber: { gt: execution.currentStep.sequenceNumber },
+      },
+      orderBy: { sequenceNumber: 'asc' },
+    });
+  }
+
+  /**
+   * Get next step after completing current step
+   */
+  async getNextStepAfterCompletion(
     currentStepId: string,
   ): Promise<WorkflowStep | null> {
     const currentStep = await this.prisma.workflowStep.findUnique({
@@ -125,9 +156,6 @@ export class StepQueryService {
       where: {
         roleId: currentStep.roleId,
         sequenceNumber: { gt: currentStep.sequenceNumber },
-        stepProgress: {
-          none: { status: 'COMPLETED' },
-        },
       },
       orderBy: { sequenceNumber: 'asc' },
     });

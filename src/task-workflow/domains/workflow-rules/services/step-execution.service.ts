@@ -7,6 +7,7 @@ import { StepGuidanceService } from './step-guidance.service';
 import { StepProgressTrackerService } from './step-progress-tracker.service';
 import { StepQueryService, WorkflowStep } from './step-query.service';
 import { getErrorMessage } from '../utils/type-safety.utils';
+import { PrismaService } from '../../../../prisma/prisma.service';
 
 // ===================================================================
 // 🔥 STEP EXECUTION SERVICE - COMPLETE REVAMP FOR MCP-ONLY
@@ -61,6 +62,7 @@ export class StepExecutionService {
     private readonly guidanceService: StepGuidanceService,
     private readonly progressService: StepProgressTrackerService,
     private readonly queryService: StepQueryService,
+    private readonly prisma: PrismaService,
   ) {
     this.logger.log(
       '✅ StepExecutionService initialized - MCP-only delegation',
@@ -105,16 +107,94 @@ export class StepExecutionService {
   /**
    * Process step completion - basic delegation
    */
-  processStepCompletion(
-    _taskId: number,
+  async processStepCompletion(
+    taskId: number,
     stepId: string,
     result: 'success' | 'failure',
     executionData?: unknown,
-  ): unknown {
+  ): Promise<unknown> {
     try {
-      // Simple completion tracking
       this.logger.debug(`Processing step completion: ${stepId} -> ${result}`);
-      return { success: result === 'success', stepId, executionData };
+
+      // Update step progress
+      await this.prisma.workflowStepProgress.create({
+        data: {
+          taskId: taskId.toString(),
+          stepId,
+          roleId:
+            (
+              await this.prisma.workflowStep.findUnique({
+                where: { id: stepId },
+                select: { roleId: true },
+              })
+            )?.roleId || '',
+          status: result === 'success' ? 'COMPLETED' : 'FAILED',
+          startedAt: new Date(),
+          completedAt: result === 'success' ? new Date() : null,
+          failedAt: result === 'failure' ? new Date() : null,
+          result: result === 'success' ? 'SUCCESS' : 'FAILURE',
+          executionData: executionData
+            ? JSON.parse(JSON.stringify(executionData))
+            : null,
+        },
+      });
+
+      // If step completed successfully, advance to next step
+      if (result === 'success') {
+        const nextStep =
+          await this.queryService.getNextStepAfterCompletion(stepId);
+
+        // Update workflow execution to point to next step
+        const execution = await this.prisma.workflowExecution.findFirst({
+          where: {
+            ...(taskId ? { taskId } : {}),
+            // If no taskId provided, find by other criteria like currentStepId
+            ...(!taskId ? { currentStepId: stepId } : {}),
+          },
+          orderBy: { createdAt: 'desc' },
+        });
+
+        if (execution) {
+          await this.prisma.workflowExecution.update({
+            where: { id: execution.id },
+            data: {
+              currentStepId: nextStep?.id || null,
+              stepsCompleted: (execution.stepsCompleted || 0) + 1,
+              executionState: {
+                ...((execution.executionState as Record<string, any>) || {}),
+                lastCompletedStep: {
+                  id: stepId,
+                  completedAt: new Date().toISOString(),
+                  result,
+                },
+                ...(nextStep && {
+                  currentStep: {
+                    id: nextStep.id,
+                    name: nextStep.name,
+                    sequenceNumber: nextStep.sequenceNumber,
+                    assignedAt: new Date().toISOString(),
+                  },
+                }),
+              },
+            },
+          });
+        }
+
+        return {
+          success: true,
+          stepId,
+          executionData,
+          nextStep: nextStep
+            ? {
+                id: nextStep.id,
+                name: nextStep.name,
+                sequenceNumber: nextStep.sequenceNumber,
+              }
+            : null,
+        };
+      }
+
+      return { success: false, stepId, executionData };
     } catch (error) {
       this.logger.error(
         `Failed to process step completion: ${getErrorMessage(error)}`,

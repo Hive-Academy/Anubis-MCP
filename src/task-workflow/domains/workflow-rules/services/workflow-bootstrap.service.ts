@@ -1,29 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../../prisma/prisma.service';
 
-// Simplified configuration
-export interface BootstrapConfig {
-  validation: {
-    taskNameMaxLength: number;
-    taskNameMinLength: number;
-    validRoles: string[];
-    validExecutionModes: string[];
-  };
-  defaults: {
-    executionMode: 'GUIDED' | 'AUTOMATED' | 'HYBRID';
-  };
-}
-
+// Simplified bootstrap input - just execution setup
 export interface BootstrapWorkflowInput {
-  // Task creation data (name and slug will be used immediately, rest stored for boomerang update)
-  taskName: string;
-  taskDescription?: string;
-  businessRequirements?: string;
-  technicalRequirements?: string;
-  acceptanceCriteria?: string[];
-  priority?: 'Low' | 'Medium' | 'High' | 'Critical';
-
-  // Workflow execution setup
+  // Workflow execution setup only
   initialRole:
     | 'boomerang'
     | 'researcher'
@@ -32,90 +12,50 @@ export interface BootstrapWorkflowInput {
     | 'code-review';
   executionMode?: 'GUIDED' | 'AUTOMATED' | 'HYBRID';
   projectPath?: string;
-  executionContext?: Record<string, any>;
 }
 
 /**
- * Fixed Workflow Bootstrap Service
+ * Workflow Bootstrap Service - Simple Execution Kickoff
  *
- * NEW APPROACH (NO MORE PLACEHOLDER):
- * - Creates MINIMAL REAL TASK with just name and slug
- * - Stores additional task data in execution context for boomerang UPDATE
- * - Creates workflow execution pointing to first database step
- * - Loads first workflow step from database for the boomerang role
- * - Returns COMPREHENSIVE execution data including role context and step guidance
- * - Lets boomerang step 3 UPDATE the task with comprehensive data and analysis
+ * SIMPLIFIED APPROACH:
+ * 1. Creates workflow execution without any task details
+ * 2. Points execution to first boomerang step (git integration setup)
+ * 3. Returns comprehensive execution data for immediate step execution
+ * 4. Workflow steps handle all task gathering, analysis, and creation
  */
 @Injectable()
 export class WorkflowBootstrapService {
   private readonly logger = new Logger(WorkflowBootstrapService.name);
 
-  // Simplified configuration
-  private readonly config: BootstrapConfig = {
-    validation: {
-      taskNameMaxLength: 200,
-      taskNameMinLength: 3,
-      validRoles: [
-        'boomerang',
-        'researcher',
-        'architect',
-        'senior-developer',
-        'code-review',
-        'integration-engineer',
-      ],
-      validExecutionModes: ['GUIDED', 'AUTOMATED', 'HYBRID'],
-    },
-    defaults: {
-      executionMode: 'GUIDED',
-    },
-  };
-
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Bootstrap a workflow - CREATES MINIMAL REAL TASK + COMPREHENSIVE EXECUTION DATA
+   * Bootstrap a workflow - SIMPLE EXECUTION KICKOFF
    *
    * WHAT THIS DOES:
-   * 1. Creates MINIMAL REAL task with just name and generated slug
-   * 2. Stores additional task data in execution context for boomerang UPDATE
-   * 3. Finds the first workflow step for the boomerang role from database
-   * 4. Creates workflow execution pointing to that first step
-   * 5. Returns COMPREHENSIVE execution data including role context and step guidance
-   * 6. AI can start executing immediately without needing get_step_guidance calls
+   * 1. Creates workflow execution without task (taskId = null)
+   * 2. Points execution to first boomerang step (git integration setup)
+   * 3. Returns comprehensive execution data for immediate step execution
+   * 4. Workflow steps guide the agent through everything else
    *
-   * WHAT THE BOOMERANG STEP 3 WILL DO:
-   * - Read the additional task data from execution context
-   * - Perform codebase analysis and git setup (steps 1-2)
-   * - UPDATE the REAL task with comprehensive data and analysis (step 3)
-   * - Continue with normal workflow
+   * WHAT THE BOOMERANG WORKFLOW WILL DO:
+   * - Step 1: Git integration setup and verification
+   * - Step 2: Source code analysis with functional testing
+   * - Step 3: Gather task requirements and create comprehensive task
+   * - Step 4: Research decision framework
+   * - Step 5: Role delegation
    */
   async bootstrapWorkflow(input: BootstrapWorkflowInput): Promise<any> {
     const startTime = Date.now();
 
     try {
       this.logger.log(
-        `Bootstrapping workflow with minimal real task: ${input.taskName}`,
+        `Starting workflow execution with role: ${input.initialRole}`,
       );
 
-      // Single transaction for all operations
+      // Single transaction for workflow execution creation
       const result = await this.prisma.$transaction(async (tx) => {
-        // Step 1: Generate unique slug from task name
-        const taskSlug = await this.generateUniqueSlug(tx, input.taskName);
-
-        // Step 2: Create MINIMAL REAL task with just name and slug
-        const task = await tx.task.create({
-          data: {
-            name: input.taskName, // ✅ Real name, not placeholder
-            slug: taskSlug, // ✅ Real slug, not placeholder
-            status: 'not-started',
-            priority: input.priority || 'Medium', // ✅ Use provided priority or default
-            dependencies: [],
-            owner: 'boomerang',
-            currentMode: 'boomerang',
-          },
-        });
-
-        // Step 3: Get boomerang role with FULL CONTEXT and its FIRST workflow step from database
+        // Step 1: Get role with full context
         const role = await tx.workflowRole.findUnique({
           where: { name: input.initialRole },
           select: {
@@ -133,7 +73,7 @@ export class WorkflowBootstrapService {
           throw new Error(`Role '${input.initialRole}' not found`);
         }
 
-        // Step 4: Get the FIRST workflow step for this role with COMPLETE DETAILS
+        // Step 2: Get the first workflow step for this role
         const firstStep = await tx.workflowStep.findFirst({
           where: {
             roleId: role.id,
@@ -162,46 +102,25 @@ export class WorkflowBootstrapService {
           );
         }
 
-        // Step 5: Create workflow execution with ADDITIONAL task data for UPDATE
+        // Step 3: Create workflow execution - simple kickoff
         const workflowExecution = await tx.workflowExecution.create({
           data: {
-            taskId: task.id,
+            taskId: null, // No task yet - will be created by workflow
             currentRoleId: role.id,
             currentStepId: firstStep.id,
-            executionMode:
-              input.executionMode || this.config.defaults.executionMode,
-            autoCreatedTask: true,
-            // ✅ Store ADDITIONAL data for boomerang step 3 to UPDATE the task with
-            taskCreationData: {
-              // Additional data for task UPDATE (not initial creation)
-              taskDescription: input.taskDescription,
-              businessRequirements: input.businessRequirements,
-              technicalRequirements: input.technicalRequirements,
-              acceptanceCriteria: input.acceptanceCriteria,
-              projectPath: input.projectPath,
-              // Task info for reference
-              taskId: task.id,
-              taskName: input.taskName,
-              taskSlug: taskSlug,
-            },
+            executionMode: input.executionMode || 'GUIDED',
+            autoCreatedTask: false,
             executionContext: {
               bootstrapped: true,
               bootstrapTime: new Date().toISOString(),
               projectPath: input.projectPath,
               initialRoleName: input.initialRole,
               firstStepName: firstStep.name,
-              realTaskCreated: true, // ✅ Real task already created
-              taskUpdatePending: true, // ✅ Flag for boomerang step 3 to UPDATE
-              taskInfo: {
-                id: task.id,
-                name: task.name,
-                slug: taskSlug,
-              },
-              ...input.executionContext,
+              workflowPhase: 'kickoff',
             },
             executionState: {
               phase: 'initialized',
-              currentContext: input.executionContext || {},
+              currentContext: {},
               progressMarkers: [],
               currentStep: {
                 id: firstStep.id,
@@ -210,16 +129,10 @@ export class WorkflowBootstrapService {
                 sequenceNumber: firstStep.sequenceNumber,
                 assignedAt: new Date().toISOString(),
               },
-              realTask: {
-                id: task.id,
-                name: task.name,
-                slug: taskSlug,
-                isMinimal: true, // ✅ Indicates it needs to be updated with comprehensive data
-              },
             },
           },
           include: {
-            task: true,
+            task: true, // Will be null
             currentRole: {
               select: {
                 id: true,
@@ -249,7 +162,6 @@ export class WorkflowBootstrapService {
         });
 
         return {
-          task,
           workflowExecution,
           role,
           firstStep,
@@ -258,119 +170,36 @@ export class WorkflowBootstrapService {
 
       const duration = Date.now() - startTime;
       this.logger.log(
-        `Workflow bootstrapped in ${duration}ms - Comprehensive execution data ready`,
+        `Workflow execution started in ${duration}ms - Ready for step execution`,
       );
 
-      // ✅ RETURN COMPREHENSIVE DATA - Everything needed to start execution
-      // Just return the full execution object since Prisma includes give us everything
+      // Return execution data for immediate workflow start
       return {
         success: true,
-        message: `Workflow successfully bootstrapped with minimal real task. Boomerang workflow will update task with comprehensive data after git setup and codebase analysis.`,
+        message: `Workflow execution started successfully. Begin with: ${result.firstStep.displayName}`,
         resources: {
-          taskId: result.task.id.toString(),
+          taskId: null, // Will be created by workflow
           executionId: result.workflowExecution.id,
           firstStepId: result.firstStep.id,
         },
-        // Return the full objects directly - no manual field mapping needed
-        ...result.workflowExecution,
+        execution: result.workflowExecution,
+        currentStep: result.firstStep,
+        currentRole: result.role,
       };
     } catch (error) {
       this.logger.error(`Bootstrap failed:`, error);
       return {
         success: false,
-        task: null,
-        workflowExecution: null,
-        firstStep: null,
         message: `Bootstrap failed: ${error.message}`,
         resources: {
-          taskId: '',
+          taskId: null,
           executionId: '',
           firstStepId: null,
         },
-        currentStep: {
-          stepId: '',
-          name: '',
-          displayName: '',
-        },
         execution: null,
+        currentStep: null,
         currentRole: null,
       };
     }
-  }
-
-  /**
-   * Validate bootstrap input
-   */
-  validateBootstrapInput(input: BootstrapWorkflowInput): {
-    valid: boolean;
-    errors: string[];
-  } {
-    const errors: string[] = [];
-
-    if (!input.taskName || input.taskName.trim().length === 0) {
-      errors.push('Task name is required');
-    }
-
-    if (
-      input.taskName &&
-      input.taskName.length > this.config.validation.taskNameMaxLength
-    ) {
-      errors.push(
-        `Task name must be less than ${this.config.validation.taskNameMaxLength} characters`,
-      );
-    }
-
-    if (
-      input.taskName &&
-      input.taskName.length < this.config.validation.taskNameMinLength
-    ) {
-      errors.push(
-        `Task name must be at least ${this.config.validation.taskNameMinLength} characters`,
-      );
-    }
-
-    const validRoles = this.config.validation.validRoles;
-    if (!validRoles.includes(input.initialRole)) {
-      errors.push(`Initial role must be one of: ${validRoles.join(', ')}`);
-    }
-
-    const validExecutionModes = this.config.validation.validExecutionModes;
-    if (
-      input.executionMode &&
-      !validExecutionModes.includes(input.executionMode)
-    ) {
-      errors.push(
-        `Execution mode must be one of: ${validExecutionModes.join(', ')}`,
-      );
-    }
-
-    return {
-      valid: errors.length === 0,
-      errors,
-    };
-  }
-
-  /**
-   * Generate unique slug from task name
-   */
-  private async generateUniqueSlug(tx: any, taskName: string): Promise<string> {
-    const baseSlug = taskName
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .substring(0, 50);
-
-    // Try the base slug first
-    const existing = await tx.task.findUnique({
-      where: { slug: baseSlug },
-      select: { id: true },
-    });
-
-    if (!existing) {
-      return baseSlug;
-    }
-
-    // If exists, append timestamp for uniqueness
-    return `${baseSlug}-${Date.now()}`;
   }
 }

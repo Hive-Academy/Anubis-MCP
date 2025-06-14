@@ -163,51 +163,6 @@ AI collects task data, then calls:
     }
   }
 
-  @Tool({
-    name: 'list_supported_mcp_operations',
-    description: `List all supported MCP services and their operations.
-
-🎯 SERVICE DISCOVERY - Find available operations
-
-**Returns:**
-- All supported services
-- Available operations per service
-- Service descriptions and capabilities`,
-    parameters: z.object({
-      serviceFilter: z
-        .string()
-        .optional()
-        .describe('Optional service name filter'),
-    }) as ZodSchema<{ serviceFilter?: string }>,
-  })
-  listSupportedMcpOperations(input: { serviceFilter?: string }) {
-    try {
-      this.logger.log('Listing supported MCP operations');
-
-      const supportedServices =
-        this.coreServiceOrchestrator.getSupportedServices();
-
-      // Filter by service if requested
-      const filteredServices = input.serviceFilter
-        ? { [input.serviceFilter]: supportedServices[input.serviceFilter] }
-        : supportedServices;
-
-      return this.buildMinimalResponse({
-        supportedServices: filteredServices,
-        totalServices: Object.keys(filteredServices).length,
-        serviceNames: Object.keys(filteredServices),
-        usage:
-          'Use execute_mcp_operation with any of these serviceName/operation combinations',
-      });
-    } catch (error) {
-      return this.buildErrorResponse(
-        'Failed to list supported operations',
-        getErrorMessage(error),
-        'SERVICE_DISCOVERY_ERROR',
-      );
-    }
-  }
-
   // ===================================================================
   // 🔧 PRIVATE HELPER METHODS
   // ===================================================================

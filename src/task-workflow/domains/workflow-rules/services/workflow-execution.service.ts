@@ -29,7 +29,7 @@ export interface ExecutionServiceConfig {
 }
 
 export interface CreateWorkflowExecutionInput {
-  taskId: number;
+  taskId?: number;
   currentRoleId: string;
   executionMode?: WorkflowExecutionMode;
   autoCreatedTask?: boolean;
@@ -128,10 +128,7 @@ export class WorkflowExecutionService {
    * Validate input parameters
    */
   private validateInput(input: CreateWorkflowExecutionInput): void {
-    if (this.config.validation.requireTaskId && !input.taskId) {
-      throw new Error('taskId is required');
-    }
-
+    // taskId is now optional for bootstrap workflows
     if (this.config.validation.requireRoleId && !input.currentRoleId) {
       throw new Error('currentRoleId is required');
     }
@@ -154,7 +151,9 @@ export class WorkflowExecutionService {
   ): Promise<WorkflowExecutionWithRelations> {
     try {
       this.validateInput(input);
-      this.logger.debug(`Creating workflow execution for task ${input.taskId}`);
+      this.logger.debug(
+        `Creating workflow execution for ${input.taskId ? `task ${input.taskId}` : 'bootstrap workflow'}`,
+      );
 
       // Get the first step for the role to assign as currentStepId
       const firstStep = await this.prisma.workflowStep.findFirst({
@@ -166,30 +165,36 @@ export class WorkflowExecutionService {
         this.logger.warn(`No steps found for role ${input.currentRoleId}`);
       }
 
-      const execution = await this.prisma.workflowExecution.create({
-        data: {
-          taskId: input.taskId,
-          currentRoleId: input.currentRoleId,
-          currentStepId: firstStep?.id || null, // Assign first step if available
-          executionMode:
-            input.executionMode || this.config.defaults.executionMode,
-          autoCreatedTask: input.autoCreatedTask || false,
-          executionContext: input.executionContext || {},
-          executionState: {
-            phase: this.config.phases.initialized,
-            currentContext: input.executionContext || {},
-            progressMarkers: [],
-            // Include current step information in execution state
-            ...(firstStep && {
-              currentStep: {
-                id: firstStep.id,
-                name: firstStep.name,
-                sequenceNumber: firstStep.sequenceNumber,
-                assignedAt: new Date().toISOString(),
-              },
-            }),
-          },
+      // Build create data with optional taskId
+      const createData: any = {
+        currentRoleId: input.currentRoleId,
+        currentStepId: firstStep?.id || null,
+        executionMode:
+          input.executionMode || this.config.defaults.executionMode,
+        autoCreatedTask: input.autoCreatedTask || false,
+        executionContext: input.executionContext || {},
+        executionState: {
+          phase: this.config.phases.initialized,
+          currentContext: input.executionContext || {},
+          progressMarkers: [],
+          ...(firstStep && {
+            currentStep: {
+              id: firstStep.id,
+              name: firstStep.name,
+              sequenceNumber: firstStep.sequenceNumber,
+              assignedAt: new Date().toISOString(),
+            },
+          }),
         },
+      };
+
+      // Only add taskId if provided
+      if (input.taskId !== undefined) {
+        createData.taskId = input.taskId;
+      }
+
+      const execution = await this.prisma.workflowExecution.create({
+        data: createData,
         include: {
           task: true,
           currentRole: true,
