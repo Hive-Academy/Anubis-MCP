@@ -551,7 +551,7 @@ After running 'git status' locally, report:
           operation: action.operation,
           requiredParameters: extraction.requiredParameters,
           optionalParameters: extraction.optionalParameters,
-          schemaStructure: extraction.schemaStructure,
+          schemaStructure: extraction.schemaStructure || {},
           usage: `Execute ${action.serviceName}.${action.operation} with these parameters`,
         });
       } catch (error) {

@@ -12,6 +12,7 @@ import { WorkflowBootstrapMcpService } from './mcp-operations/workflow-bootstrap
 // Services
 import { WorkflowGuidanceService } from './services/workflow-guidance.service';
 import { RequiredInputExtractorService } from './services/required-input-extractor.service';
+import { SchemaDefinitionGeneratorService } from './services/schema-definition-generator.service';
 import { ProgressCalculatorService } from './services/progress-calculator.service';
 import { StepExecutionService } from './services/step-execution.service';
 import { StepExecutionCoreService } from './services/step-execution-core.service';
@@ -44,6 +45,7 @@ import { McpOperationExecutionMcpService } from './mcp-operations/mcp-operation-
     // Core Services
     WorkflowGuidanceService,
     RequiredInputExtractorService,
+    SchemaDefinitionGeneratorService,
     ProgressCalculatorService,
     StepExecutionService,
     StepExecutionCoreService,
@@ -70,6 +72,7 @@ import { McpOperationExecutionMcpService } from './mcp-operations/mcp-operation-
 
     // Core Services
     WorkflowGuidanceService,
+    SchemaDefinitionGeneratorService,
     StepExecutionService,
     StepExecutionCoreService,
     StepGuidanceService,

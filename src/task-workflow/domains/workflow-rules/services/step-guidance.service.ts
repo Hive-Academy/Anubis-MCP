@@ -1,13 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../../prisma/prisma.service';
+import { RequiredInputExtractorService } from './required-input-extractor.service';
 import { WorkflowStep, StepAction } from 'generated/prisma';
 
 // ===================================================================
-// 🔥 STEP GUIDANCE SERVICE - DATABASE-ONLY MODEL
+// 🔥 STEP GUIDANCE SERVICE - DATABASE-ONLY MODEL + DYNAMIC PARAMETERS
 // ===================================================================
 // Purpose: Provide MCP actions and step guidance from database only
 // Scope: MCP_CALL action processing, step guidance from database
 // ZERO JSON File Dependencies: Complete database-driven approach
+// ✅ FIXED: Integrated RequiredInputExtractorService for dynamic parameter extraction
 
 // 🎯 STRICT TYPE DEFINITIONS - ZERO ANY USAGE
 
@@ -43,6 +45,10 @@ export interface McpCallAction {
   operation: string;
   parameters: ServiceParameters;
   sequenceOrder: number;
+  // ✅ NEW: Dynamic parameter information
+  requiredParameters?: string[];
+  optionalParameters?: string[];
+  schemaStructure?: Record<string, any>;
 }
 
 export interface ServiceParameters {
@@ -83,7 +89,8 @@ export interface WorkflowStepWithActions extends WorkflowStep {
 export interface McpActionData {
   serviceName: string;
   operation: string;
-  parameters: ServiceParameters;
+  // ✅ FIXED: Parameters are now optional since they're generated dynamically
+  parameters?: ServiceParameters;
   sequenceOrder?: number;
 }
 
@@ -106,11 +113,15 @@ export class StepConfigNotFoundError extends Error {
 export class StepGuidanceService {
   private readonly logger = new Logger(StepGuidanceService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    // ✅ NEW: Inject RequiredInputExtractorService for dynamic parameter extraction
+    private readonly requiredInputExtractorService: RequiredInputExtractorService,
+  ) {}
 
   /**
    * 🔥 DATABASE-ONLY: Get MCP actions and step guidance from database
-   * No JSON file dependencies - all data from database
+   * ✅ FIXED: Now uses dynamic parameter extraction
    */
   async getStepGuidance(
     context: StepGuidanceContext,
@@ -120,8 +131,11 @@ export class StepGuidanceService {
       throw new StepNotFoundError(`Step not found: ${context.stepId}`);
     }
 
-    // Extract MCP actions for AI execution
-    const mcpActions = this.extractMcpActions(step);
+    // ✅ FIXED: Extract MCP actions with dynamic parameter information
+    const mcpActions = this.extractMcpActionsWithDynamicParameters(
+      step,
+      context,
+    );
 
     // Get guidance from database step data
     const enhancedGuidance = this.buildGuidanceFromDatabase(step);
@@ -187,20 +201,37 @@ export class StepGuidanceService {
     });
   }
 
-  private extractMcpActions(step: WorkflowStepWithActions): McpCallAction[] {
+  // ✅ NEW: Extract MCP actions with dynamic parameter information
+  private extractMcpActionsWithDynamicParameters(
+    step: WorkflowStepWithActions,
+    context: StepGuidanceContext,
+  ): McpCallAction[] {
     return step.actions.map((action) => {
       const actionData = this.parseMcpActionData(action.actionData);
+
+      // ✅ NEW: Generate dynamic parameters using RequiredInputExtractorService
+      const dynamicParameterInfo = this.generateDynamicParameterInfo(
+        actionData.serviceName,
+        actionData.operation,
+        context,
+      );
+
       return {
         id: action.id,
         name: action.name,
         serviceName: actionData.serviceName,
         operation: actionData.operation,
-        parameters: actionData.parameters,
+        parameters: dynamicParameterInfo.parameters,
         sequenceOrder: actionData.sequenceOrder || 1,
+        // ✅ NEW: Include dynamic parameter schema information
+        requiredParameters: dynamicParameterInfo.requiredParameters,
+        optionalParameters: dynamicParameterInfo.optionalParameters,
+        schemaStructure: dynamicParameterInfo.schemaStructure,
       };
     });
   }
 
+  // ✅ FIXED: Remove hardcoded parameter validation
   private parseMcpActionData(actionData: unknown): McpActionData {
     if (!actionData || typeof actionData !== 'object') {
       throw new Error('Invalid MCP action data: not an object');
@@ -216,17 +247,80 @@ export class StepGuidanceService {
       throw new Error('Invalid MCP action data: operation must be string');
     }
 
-    if (!data.parameters || typeof data.parameters !== 'object') {
-      throw new Error('Invalid MCP action data: parameters must be object');
-    }
-
+    // ✅ FIXED: Parameters are no longer required - they're generated dynamically
     return {
       serviceName: data.serviceName,
       operation: data.operation,
-      parameters: data.parameters as ServiceParameters,
+      parameters: data.parameters as ServiceParameters, // Optional now
       sequenceOrder:
         typeof data.sequenceOrder === 'number' ? data.sequenceOrder : undefined,
     };
+  }
+
+  // ✅ NEW: Generate dynamic parameter information using RequiredInputExtractorService
+  private generateDynamicParameterInfo(
+    serviceName: string,
+    operation: string,
+    context: StepGuidanceContext,
+  ): {
+    parameters: ServiceParameters;
+    requiredParameters: string[];
+    optionalParameters: string[];
+    schemaStructure: Record<string, any>;
+  } {
+    try {
+      // Use RequiredInputExtractorService for dynamic parameter extraction
+      const extraction =
+        this.requiredInputExtractorService.extractFromServiceSchema(
+          serviceName,
+          operation,
+        );
+
+      // Generate basic parameters with context
+      const parameters: ServiceParameters = {
+        taskId: context.taskId,
+        stepId: context.stepId,
+        roleId: context.roleId,
+      };
+
+      this.logger.debug(
+        `Generated dynamic parameters for ${serviceName}.${operation}: ${extraction.requiredParameters.length} required, ${extraction.optionalParameters.length} optional`,
+      );
+
+      return {
+        parameters,
+        requiredParameters: extraction.requiredParameters,
+        optionalParameters: extraction.optionalParameters,
+        schemaStructure: extraction.schemaStructure || {},
+      };
+    } catch (error) {
+      this.logger.warn(
+        `Failed to extract dynamic parameters for ${serviceName}.${operation}: ${error}`,
+      );
+
+      // Fallback to basic parameters
+      return {
+        parameters: {
+          taskId: context.taskId,
+          stepId: context.stepId,
+          roleId: context.roleId,
+        },
+        requiredParameters: ['operation', 'executionData'],
+        optionalParameters: [],
+        schemaStructure: {
+          operation: {
+            type: 'string',
+            required: true,
+            description: 'Operation name',
+          },
+          executionData: {
+            type: 'any',
+            required: true,
+            description: 'Operation data',
+          },
+        },
+      };
+    }
   }
 
   /**
@@ -318,7 +412,7 @@ export class StepGuidanceService {
     if (typeof actionData === 'object' && actionData !== null) {
       const data = actionData as any;
       if (Array.isArray(data.successCriteria)) {
-        return data.successCriteria;
+        return data.successCriteria as string[];
       }
     }
     return ['Step completed successfully'];
@@ -328,7 +422,7 @@ export class StepGuidanceService {
     if (typeof actionData === 'object' && actionData !== null) {
       const data = actionData as any;
       if (Array.isArray(data.failureCriteria)) {
-        return data.failureCriteria;
+        return data.failureCriteria as string[];
       }
     }
     return ['Step failed to complete'];
@@ -338,7 +432,7 @@ export class StepGuidanceService {
     if (typeof actionData === 'object' && actionData !== null) {
       const data = actionData as any;
       if (Array.isArray(data.troubleshooting)) {
-        return data.troubleshooting;
+        return data.troubleshooting as string[];
       }
     }
     return ['Check logs for errors'];
