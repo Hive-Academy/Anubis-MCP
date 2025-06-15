@@ -2,11 +2,102 @@
 
 **Transform chaotic development into organized, quality-driven workflows with MCP-compliant AI guidance.**
 
+![Docker Pulls](https://img.shields.io/docker/pulls/hiveacademy/mcp-workflow-manager)
+![Docker Image Size](https://img.shields.io/docker/image-size/hiveacademy/mcp-workflow-manager)
+![Docker Image Version](https://img.shields.io/docker/v/hiveacademy/mcp-workflow-manager)
+[![MCP Server](https://img.shields.io/badge/MCP-Server-blue?style=for-the-badge&logo=docker)](https://hub.docker.com/r/hiveacademy/mcp-workflow-manager)
+
+- **NPM Package**: [@hive-academy/mcp-workflow-manager](https://www.npmjs.com/package/@hive-academy/mcp-workflow-manager)
+
 A sophisticated **Model Context Protocol (MCP) server** that provides intelligent workflow guidance for AI agents in software development. Built with NestJS v11.0.1 + Prisma v6.9.0 + @rekog/mcp-nest v1.5.2, this system follows MCP protocol standards by providing guidance instead of execution.
 
 ## 🏆 **ENTERPRISE-GRADE MCP WORKFLOW SYSTEM**
 
 **✅ PRODUCTION READY**: Version 1.0.14 with full MCP protocol compliance and enterprise-grade architecture.
+
+## 🚀 **QUICK START**
+
+### **Prerequisites**
+
+```bash
+# Required versions
+Node.js >= 18.0.0
+npm >= 8.0.0
+```
+
+### **NPX Setup (Recommended)**
+
+```json
+// Add to your MCP client config (Cursor, Claude Desktop, etc.)
+{
+  "mcpServers": {
+    "workflow-manager": {
+      "command": "npx",
+      "args": ["-y", "@hive-academy/mcp-workflow-manager"]
+    }
+  }
+}
+```
+
+**Benefits:**
+
+- ✅ Zero installation required
+- ✅ Automatic dependency management (Prisma client generation)
+- ✅ Always latest version (v1.0.14)
+- ✅ Project isolation (each project gets its own database)
+
+### **Docker Setup**
+
+```json
+{
+  "mcpServers": {
+    "workflow-manager": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "-v",
+        "project-workflow:/app/data",
+        "--rm",
+        "hiveacademy/mcp-workflow-manager"
+      ]
+    }
+  }
+}
+```
+
+### **Local Development Setup**
+
+```bash
+# Clone the repository
+git clone https://github.com/Hive-Academy/Workflow_Manager_MCP.git
+cd Workflow_Manager_MCP
+
+# Install dependencies
+npm install
+
+# Setup database (automatic Prisma client generation)
+npx prisma generate
+npx prisma db push
+
+# Start development server
+npm run start:dev
+
+# Alternative: Start with debugging
+npm run start:debug
+```
+
+## 🎭 **AI ROLE SPECIALIZATIONS**
+
+Our system provides specialized guidance for different development roles:
+
+| Role                    | Purpose                      | Guidance Focus                            | Key Capabilities                                    |
+| ----------------------- | ---------------------------- | ----------------------------------------- | --------------------------------------------------- |
+| **🎯 Boomerang**        | Strategic orchestration      | Project analysis, coordination, delivery  | Git setup, codebase analysis, task creation         |
+| **🔍 Researcher**       | Evidence-based investigation | Technology research, feasibility analysis | Research operations, evidence tracking              |
+| **🏗️ Architect**        | Technical design & planning  | System architecture, design patterns      | Implementation planning, batch subtask creation     |
+| **👨‍💻 Senior Developer** | Implementation excellence    | Code development, SOLID principles        | Iterative implementation, testing, quality gates    |
+| **✅ Code Review**      | Quality assurance            | Testing, validation, acceptance criteria  | Manual testing, security validation, final approval |
 
 ### **🎯 What Makes This Special**
 
@@ -121,90 +212,6 @@ report_step_completion({
   },
 });
 ```
-
-## 🚀 **QUICK START**
-
-### **Prerequisites**
-
-```bash
-# Required versions
-Node.js >= 18.0.0
-npm >= 8.0.0
-```
-
-### **NPX Setup (Recommended)**
-
-```json
-// Add to your MCP client config (Cursor, Claude Desktop, etc.)
-{
-  "mcpServers": {
-    "workflow-manager": {
-      "command": "npx",
-      "args": ["-y", "@hive-academy/mcp-workflow-manager"]
-    }
-  }
-}
-```
-
-**Benefits:**
-
-- ✅ Zero installation required
-- ✅ Automatic dependency management (Prisma client generation)
-- ✅ Always latest version (v1.0.14)
-- ✅ Project isolation (each project gets its own database)
-
-### **Docker Setup**
-
-```json
-{
-  "mcpServers": {
-    "workflow-manager": {
-      "command": "docker",
-      "args": [
-        "run",
-        "-i",
-        "-v",
-        "project-workflow:/app/data",
-        "--rm",
-        "hiveacademy/mcp-workflow-manager"
-      ]
-    }
-  }
-}
-```
-
-### **Local Development Setup**
-
-```bash
-# Clone the repository
-git clone https://github.com/Hive-Academy/Workflow_Manager_MCP.git
-cd Workflow_Manager_MCP
-
-# Install dependencies
-npm install
-
-# Setup database (automatic Prisma client generation)
-npx prisma generate
-npx prisma db push
-
-# Start development server
-npm run start:dev
-
-# Alternative: Start with debugging
-npm run start:debug
-```
-
-## 🎭 **AI ROLE SPECIALIZATIONS**
-
-Our system provides specialized guidance for different development roles:
-
-| Role                    | Purpose                      | Guidance Focus                            | Key Capabilities                                    |
-| ----------------------- | ---------------------------- | ----------------------------------------- | --------------------------------------------------- |
-| **🎯 Boomerang**        | Strategic orchestration      | Project analysis, coordination, delivery  | Git setup, codebase analysis, task creation         |
-| **🔍 Researcher**       | Evidence-based investigation | Technology research, feasibility analysis | Research operations, evidence tracking              |
-| **🏗️ Architect**        | Technical design & planning  | System architecture, design patterns      | Implementation planning, batch subtask creation     |
-| **👨‍💻 Senior Developer** | Implementation excellence    | Code development, SOLID principles        | Iterative implementation, testing, quality gates    |
-| **✅ Code Review**      | Quality assurance            | Testing, validation, acceptance criteria  | Manual testing, security validation, final approval |
 
 ## 🔧 **MCP TOOL ARCHITECTURE**
 

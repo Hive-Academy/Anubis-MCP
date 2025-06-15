@@ -37,7 +37,8 @@
     "npm": ">=8.0.0"
   },
   "prisma": {
-    "schema": "./prisma"
+    "schema": "./prisma",
+    "seed": "ts-node scripts/prisma-seed.ts"
   },
   "files": [
     "dist/**/*",
@@ -58,7 +59,8 @@
     "start:prod": "node dist/main",
     "db:migrate": "npx prisma migrate deploy",
     "db:generate": "npx prisma generate",
-    "db:init": "npm run db:generate && npm run db:migrate",
+    "db:init": "npm run db:generate && npm run db:migrate && npm run db:seed",
+    "db:seed": "npx prisma db seed",
     "postinstall": "npm run db:generate && echo '📦 @hive-academy/mcp-workflow-manager installed successfully' && echo '🔧 Prisma client generated automatically'",
     "setup:force": "npm run db:generate",
     "lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",

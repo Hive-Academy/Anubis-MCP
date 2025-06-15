@@ -68,7 +68,7 @@ async function bootstrap() {
     };
 
     const dependencyStatus =
-      dependencyManager.initializeAllDependencies(setupOptions);
+      await dependencyManager.initializeAllDependencies(setupOptions);
 
     // Report any errors but continue if possible
     if (dependencyStatus.errors.length > 0) {

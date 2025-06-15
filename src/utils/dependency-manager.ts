@@ -13,6 +13,7 @@ import { getDatabaseConfig, DatabaseConfig } from './database-config';
 export interface DependencyCheckResult {
   prismaClientExists: boolean;
   databaseExists: boolean;
+  databaseSeeded: boolean;
   errors: string[];
 }
 
@@ -119,6 +120,40 @@ export class DependencyManager {
   }
 
   /**
+   * Check if database has been seeded with workflow rules
+   */
+  async checkDatabaseSeeding(): Promise<boolean> {
+    try {
+      // Check if seeding is already done (Docker build-time seeding)
+      if (process.env.BUILD_TIME_SEEDING_DEPLOYED === 'true') {
+        this.log('Database seeding completed during Docker build');
+        return true;
+      }
+
+      // Dynamically import PrismaClient to avoid issues if not generated yet
+      const { PrismaClient } = await import('../../generated/prisma');
+      const prisma = new PrismaClient();
+
+      try {
+        const roleCount = await prisma.workflowRole.count();
+        const stepCount = await prisma.workflowStep.count();
+
+        const isSeeded = roleCount > 0 && stepCount > 0;
+        this.log(
+          `Database seeding check: ${isSeeded ? 'SEEDED' : 'NOT SEEDED'} (${roleCount} roles, ${stepCount} steps)`,
+        );
+
+        return isSeeded;
+      } finally {
+        await prisma.$disconnect();
+      }
+    } catch (error) {
+      this.log(`Database seeding check failed: ${error}`);
+      return false;
+    }
+  }
+
+  /**
    * Generate Prisma client from schema
    */
   generatePrismaClient(): void {
@@ -195,14 +230,46 @@ export class DependencyManager {
   }
 
   /**
+   * Run database seeding to populate workflow rules
+   */
+  runDatabaseSeeding(): void {
+    console.log('🌱 Seeding database with workflow rules...');
+
+    try {
+      // Set the database URL for this operation
+      const oldDatabaseUrl = process.env.DATABASE_URL;
+      process.env.DATABASE_URL = this.databaseUrl;
+
+      execSync('npx prisma db seed', {
+        stdio: this.verbose ? 'inherit' : 'pipe',
+        cwd: this.packageRoot,
+        timeout: 120000, // 2 minute timeout for seeding
+      });
+
+      // Restore original DATABASE_URL
+      if (oldDatabaseUrl !== undefined) {
+        process.env.DATABASE_URL = oldDatabaseUrl;
+      } else {
+        delete process.env.DATABASE_URL;
+      }
+
+      console.log('✅ Database seeding completed successfully');
+    } catch (error) {
+      console.warn('⚠️  Database seeding failed:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Perform comprehensive dependency check
    */
-  checkAllDependencies(
+  async checkAllDependencies(
     _options: DependencySetupOptions = {},
-  ): DependencyCheckResult {
+  ): Promise<DependencyCheckResult> {
     const result: DependencyCheckResult = {
       prismaClientExists: false,
       databaseExists: false,
+      databaseSeeded: false,
       errors: [],
     };
 
@@ -218,18 +285,24 @@ export class DependencyManager {
       result.errors.push(`Database check failed: ${error}`);
     }
 
+    try {
+      result.databaseSeeded = await this.checkDatabaseSeeding();
+    } catch (error) {
+      result.errors.push(`Database seeding check failed: ${error}`);
+    }
+
     return result;
   }
 
   /**
    * Initialize all dependencies automatically
    */
-  initializeAllDependencies(
+  async initializeAllDependencies(
     options: DependencySetupOptions = {},
-  ): DependencyCheckResult {
+  ): Promise<DependencyCheckResult> {
     console.log('🔍 Checking MCP server dependencies...');
 
-    const status = this.checkAllDependencies(options);
+    const status = await this.checkAllDependencies(options);
 
     // Ensure bundled Prisma client is available
     if (!status.prismaClientExists) {
@@ -248,6 +321,16 @@ export class DependencyManager {
         status.databaseExists = true;
       } catch (error) {
         status.errors.push(`Database initialization failed: ${error}`);
+      }
+    }
+
+    // Seed database with workflow rules if not already seeded
+    if (!status.databaseSeeded) {
+      try {
+        this.runDatabaseSeeding();
+        status.databaseSeeded = true;
+      } catch (error) {
+        status.errors.push(`Database seeding failed: ${error}`);
       }
     }
 

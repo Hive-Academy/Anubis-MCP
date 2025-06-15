@@ -28,8 +28,8 @@ RUN npm run build
 RUN mkdir -p temp/reports temp/rendered-reports templates/reports
 
 # ================================================================================================
-# BUILD-TIME MIGRATION DEPLOYMENT STAGE - Strategic UX Enhancement
-# Deploy migrations during image build for instant container startup (following Prisma generate pattern)
+# BUILD-TIME MIGRATION AND SEEDING DEPLOYMENT STAGE - Strategic UX Enhancement
+# Deploy migrations and seed data during image build for instant container startup
 # ================================================================================================
 FROM builder AS migration-deployer
 
@@ -39,14 +39,16 @@ ENV DATABASE_URL="file:./build-time-migration-db.db"
 # Create build-time database directory
 RUN mkdir -p ./build-time-db
 
-# STRATEGIC BUILD-TIME MIGRATION DEPLOYMENT
-# Deploy all migrations during build following npx prisma generate pattern
-RUN echo "🔧 DEPLOYING MIGRATIONS AT BUILD-TIME for instant startup UX..." && \
+# STRATEGIC BUILD-TIME MIGRATION AND SEEDING DEPLOYMENT
+# Deploy all migrations and seed essential workflow data during build
+RUN echo "🔧 DEPLOYING MIGRATIONS AND SEEDING DATA AT BUILD-TIME for instant startup UX..." && \
     npx prisma migrate deploy --schema=./prisma/schema.prisma && \
     echo "✅ BUILD-TIME MIGRATION DEPLOYMENT SUCCESSFUL" && \
+    npx prisma db seed && \
+    echo "✅ BUILD-TIME DATABASE SEEDING SUCCESSFUL" && \
     ls -la ./build-time-db/ && \
     npx prisma db pull --schema=./prisma/schema.prisma --print && \
-    echo "📊 Migration deployment verification complete"
+    echo "📊 Migration deployment and seeding verification complete"
 
 # ================================================================================================
 # Production stage with PRE-DEPLOYED migrations for INSTANT STARTUP
@@ -90,6 +92,9 @@ COPY --from=builder --chown=nestjs:nodejs /app/prisma/schema.prisma ./prisma/sch
 COPY --from=builder --chown=nestjs:nodejs /app/prisma/migrations ./prisma/migrations
 COPY --from=builder --chown=nestjs:nodejs /app/generated ./generated
 
+# Copy essential workflow rules data for seeding
+COPY --from=builder --chown=nestjs:nodejs /app/enhanced-workflow-rules ./enhanced-workflow-rules
+
 # STRATEGIC ENHANCEMENT: Copy pre-deployed migration validation data from migration-deployer stage
 # This enables instant startup verification without migration deployment delay
 COPY --from=migration-deployer --chown=nestjs:nodejs /app/build-time-db ./build-time-db
@@ -126,6 +131,7 @@ ENV PORT="3000"
 # STRATEGIC UX ENHANCEMENT: Mark image as having pre-deployed migrations
 ENV MIGRATIONS_PRE_DEPLOYED="true"
 ENV BUILD_TIME_MIGRATION_DEPLOYED="true"
+ENV BUILD_TIME_SEEDING_DEPLOYED="true"
 
 # Switch to non-root user
 USER nestjs

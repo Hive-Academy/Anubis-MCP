@@ -2,6 +2,13 @@
 
 ## 🎯 Complete Guide for Publishing MCP Workflow Manager to Docker Hub on Windows
 
+### 🆕 What's New in This Version
+
+- **🌱 Integrated Database Seeding**: Workflow rules are automatically seeded during Docker build
+- **⚡ Instant Startup**: No manual `npm run rules:gen` required - everything is pre-configured
+- **🔧 Enhanced Build Process**: Improved multi-stage build with validation and testing
+- **📦 Production Ready**: Optimized for both development and production deployments
+
 ### 📋 Prerequisites
 
 1. **Docker Desktop for Windows** - Installed and running
@@ -57,18 +64,29 @@ docker run --rm test-mcp-workflow --help
 
 ### 🚀 Publication Process
 
-#### Option A: Quick Publication (PowerShell Script)
+#### Option A: Quick Publication (Enhanced PowerShell Script)
 
 ```powershell
-# Set your Docker Hub username
+# Set your Docker Hub username (optional - defaults to hiveacademy)
 $env:DOCKER_HUB_USERNAME = "hiveacademy"  # Replace with your username
 
-# Run the publication script
+# Run the enhanced publication script
 .\scripts\docker-publish.ps1
 
-# Or with a specific version
-.\scripts\docker-publish.ps1 -Version "1.0.0"
+# Or with specific options
+.\scripts\docker-publish.ps1 -Version "1.0.0" -Verbose -DockerHubUsername "yourusername"
+
+# Skip pre-build tests for faster builds
+.\scripts\docker-publish.ps1 -SkipTests
 ```
+
+**New Features in Enhanced Script:**
+
+- ✅ **Automatic validation** of required files and Docker status
+- ✅ **Integrated testing** of the published image
+- ✅ **Multi-platform builds** (AMD64 + ARM64)
+- ✅ **Comprehensive error handling** with troubleshooting tips
+- ✅ **Build-time database seeding** verification
 
 #### Option B: Manual Step-by-Step
 
@@ -347,3 +365,43 @@ volumes:
 4. Verify at https://hub.docker.com/r/hiveacademy/mcp-workflow-manager
 
 **Total time**: ~10-15 minutes for first publication! 🚀
+
+### 🌱 Database Seeding Integration
+
+#### How It Works
+
+The new Docker build process automatically handles database seeding:
+
+1. **Build-Time Seeding**: During Docker image creation, the workflow rules are seeded into a build-time database
+2. **Runtime Detection**: When the container starts, it detects if seeding is already complete
+3. **Automatic Fallback**: If seeding is needed at runtime, it happens automatically using `npx prisma db seed`
+
+#### Key Benefits
+
+- **⚡ Instant Startup**: No waiting for database initialization
+- **🔄 Consistent State**: Every container starts with the same workflow rules
+- **🛡️ Error Resilient**: Automatic fallback if build-time seeding fails
+- **📦 Self-Contained**: No external dependencies or manual setup required
+
+#### Environment Variables
+
+```powershell
+# These are automatically set in the Docker image
+BUILD_TIME_SEEDING_DEPLOYED=true    # Indicates seeding completed during build
+MIGRATIONS_PRE_DEPLOYED=true        # Indicates migrations completed during build
+```
+
+#### Troubleshooting Seeding
+
+If you encounter seeding issues:
+
+```powershell
+# Force re-seeding in development
+docker run --rm -e FORCE_RESET=true -v mcp-data:/app/data hiveacademy/mcp-workflow-manager
+
+# Check seeding status
+docker run --rm -v mcp-data:/app/data hiveacademy/mcp-workflow-manager --verbose
+
+# Manual seeding (if needed)
+docker exec -it <container-id> npx prisma db seed
+```
