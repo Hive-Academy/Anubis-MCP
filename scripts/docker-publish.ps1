@@ -204,4 +204,4 @@ try {
     Write-ColorOutput "   3. Verify network connectivity" $Yellow
     Write-ColorOutput "   4. Check disk space for Docker builds" $Yellow
     exit 1
-} 
+}

@@ -1,0 +1,45 @@
+# Development files
+src/
+test/
+coverage/
+.env*
+.vscode/
+.idea/
+*.log
+*.tmp*
+
+# Database files (exclude actual data, keep schema)
+prisma/data/
+prisma/*.db*
+
+# Generated Prisma files (exclude large binaries, keep essentials)
+generated/prisma/query_engine-*
+generated/prisma/*.tmp*
+generated/prisma/runtime/
+generated/prisma/edge.js
+generated/prisma/index-browser.js
+generated/prisma/wasm.js
+generated/prisma/*.dll.node*
+
+# Build artifacts
+node_modules/
+dist/tsconfig.build.tsbuildinfo
+
+# Documentation (keep main README)
+docs/
+*.md
+!README.md
+
+# Git and CI
+.git/
+.github/
+.gitignore
+.dockerignore
+
+# Docker files
+Dockerfile*
+docker-compose*
+
+# Scripts (keep only essential ones)
+scripts/
+!scripts/prisma-seed.ts 

@@ -1,11 +1,19 @@
 {
   "mcpServers": {
     "workflow-manager": {
-      "command": "node",
-      "args": ["D:/projects/cursor-workflow/dist/main.js"],      
-      "env": {
-        "PROJECT_ROOT": "D:/projects/cursor-workflow"
-      }
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "--volume",
+        "D:/projects/cursor-workflow:/workspace",
+        "--env",
+        "PROJECT_ROOT=/workspace",
+        "--env",
+        "DATABASE_URL=file:/workspace/prisma/data/workflow.db",
+        "hiveacademy/mcp-workflow-manager:1.0.15-test"
+      ]
     }
   }
 }

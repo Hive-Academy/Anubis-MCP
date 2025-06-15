@@ -68,7 +68,6 @@ tmp/
 # Documentation that's not needed in container
 docs/
 memory-bank/
-enhanced-workflow-rules/
 
 # Test files
 test/

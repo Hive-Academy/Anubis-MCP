@@ -4,7 +4,7 @@ FROM node:22-alpine AS builder
 # Add metadata labels for Docker Hub
 LABEL org.opencontainers.image.title="MCP Workflow Manager"
 LABEL org.opencontainers.image.description="A comprehensive Model Context Protocol server for AI workflow automation and task management"
-LABEL org.opencontainers.image.version="1.0.0"
+LABEL org.opencontainers.image.version="1.0.15"
 LABEL org.opencontainers.image.authors="Hive Academy <abdallah@nghive.tech>"
 LABEL org.opencontainers.image.source="https://github.com/Hive-Academy/Workflow_Manager_MCP"
 LABEL org.opencontainers.image.documentation="https://github.com/Hive-Academy/Workflow_Manager_MCP/blob/main/README.md"
@@ -58,7 +58,7 @@ FROM node:22-alpine AS production
 # Add same metadata to final image
 LABEL org.opencontainers.image.title="MCP Workflow Manager"
 LABEL org.opencontainers.image.description="A comprehensive Model Context Protocol server for AI workflow automation and task management"
-LABEL org.opencontainers.image.version="1.0.0"
+LABEL org.opencontainers.image.version="1.0.15"
 LABEL org.opencontainers.image.authors="Hive Academy <abdallah@nghive.tech>"
 LABEL org.opencontainers.image.source="https://github.com/Hive-Academy/Workflow_Manager_MCP"
 LABEL org.opencontainers.image.documentation="https://github.com/Hive-Academy/Workflow_Manager_MCP/blob/main/README.md"
@@ -85,8 +85,13 @@ RUN npm ci --only=production --ignore-scripts && npm cache clean --force
 RUN chown -R nestjs:nodejs /app/node_modules
 
 # Copy built application and generated Prisma client from builder stage
+# NOTE: Unlike npm package, Docker includes full generated client for immediate runtime availability
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nestjs:nodejs /app/prisma/schema.prisma ./prisma/schema.prisma
+COPY --from=builder --chown=nestjs:nodejs /app/prisma/onboarding-models.prisma ./prisma/onboarding-models.prisma
+COPY --from=builder --chown=nestjs:nodejs /app/prisma/rule-models.prisma ./prisma/rule-models.prisma
+COPY --from=builder --chown=nestjs:nodejs /app/prisma/task-models.prisma ./prisma/task-models.prisma
+COPY --from=builder --chown=nestjs:nodejs /app/prisma/workflow-enums.prisma ./prisma/workflow-enums.prisma
 # STRATEGIC: Migrations folder REQUIRED for verification commands (migrate status, etc.)
 # Even with build-time deployment, runtime verification compares deployed vs migration files
 COPY --from=builder --chown=nestjs:nodejs /app/prisma/migrations ./prisma/migrations
@@ -123,10 +128,11 @@ RUN chown -R nestjs:nodejs /app/temp /app/templates
 # Set default environment variables with unified database configuration
 ENV RUNNING_IN_DOCKER="true"
 ENV MCP_SERVER_NAME="MCP-Workflow-Manager"
-ENV MCP_SERVER_VERSION="1.0.0"
+ENV MCP_SERVER_VERSION="1.0.15"
 ENV MCP_TRANSPORT_TYPE="STDIO"
 ENV NODE_ENV="production"
 ENV PORT="3000"
+ENV DATABASE_URL="file:/app/data/workflow.db"
 
 # STRATEGIC UX ENHANCEMENT: Mark image as having pre-deployed migrations
 ENV MIGRATIONS_PRE_DEPLOYED="true"
