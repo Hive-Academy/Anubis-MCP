@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 // ===================================================================
 // 🔧 STEP SERVICE SHARED UTILITIES - CONSOLIDATED PATTERNS
 // ===================================================================
@@ -6,6 +7,8 @@
 // Phase: 2 Extended - Additional Step Service Analysis
 
 import { Logger } from '@nestjs/common';
+import { WorkflowStep, WorkflowStepProgress } from 'generated/prisma';
+import { getErrorMessage } from './type-safety.utils';
 
 // ===================================================================
 // 🚨 CUSTOM ERROR CLASSES - CONSOLIDATED
@@ -61,51 +64,56 @@ export class StepExecutionError extends StepServiceError {
 /**
  * Safely extract behavioral context from step data
  */
-export function extractBehavioralContext(stepData: any): string | null {
-  if (!stepData?.behavioralContext) return null;
+export function extractBehavioralContext(
+  stepData: WorkflowStep,
+): Record<string, any> | null {
+  if (!stepData.behavioralContext) return null;
 
   if (typeof stepData.behavioralContext === 'string') {
-    return stepData.behavioralContext;
+    try {
+      return JSON.parse(stepData.behavioralContext);
+    } catch {
+      return null;
+    }
   }
 
-  if (typeof stepData.behavioralContext === 'object') {
-    return JSON.stringify(stepData.behavioralContext);
-  }
-
-  return null;
+  // Return object as-is
+  return stepData.behavioralContext as Record<string, any>;
 }
 
 /**
  * Safely extract approach guidance from step data
  */
-export function extractApproachGuidance(stepData: any): string | null {
-  if (!stepData?.approachGuidance) return null;
+export function extractApproachGuidance(
+  stepData: WorkflowStep,
+): Record<string, any> | null {
+  if (!stepData.approachGuidance) return null;
 
   if (typeof stepData.approachGuidance === 'string') {
-    return stepData.approachGuidance;
+    try {
+      return JSON.parse(stepData.approachGuidance);
+    } catch {
+      return null;
+    }
   }
 
-  if (typeof stepData.approachGuidance === 'object') {
-    return JSON.stringify(stepData.approachGuidance);
-  }
-
-  return null;
+  // Return object as-is
+  return stepData.approachGuidance as Record<string, any>;
 }
 
 /**
  * Transform progress record with null safety
  */
-export function transformProgressRecord(record: any): any {
+export function transformProgressRecord(
+  record: WorkflowStepProgress | null,
+): WorkflowStepProgress | null {
   if (!record) return null;
 
   return {
-    id: record.id || null,
-    stepId: record.stepId || null,
-    executionId: record.executionId || null,
-    progress: safeJsonCast(record.progress),
-    metadata: safeJsonCast(record.metadata),
-    createdAt: record.createdAt || null,
-    updatedAt: record.updatedAt || null,
+    ...record,
+    executionData: safeJsonCast(record.executionData),
+    validationResults: safeJsonCast(record.validationResults),
+    errorDetails: safeJsonCast(record.errorDetails),
   };
 }
 
@@ -161,35 +169,8 @@ export interface MinimalResponse<T = any> {
   metadata?: any;
 }
 
-/**
- * Build minimal success response
- */
-export function buildMinimalResponse<T>(
-  data: T,
-  metadata?: any,
-): MinimalResponse<T> {
-  return {
-    success: true,
-    data,
-    ...(metadata && { metadata }),
-  };
-}
-
-/**
- * Build minimal error response
- */
-export function buildErrorResponse(
-  error: string | Error,
-  metadata?: any,
-): MinimalResponse {
-  const errorMessage = error instanceof Error ? error.message : error;
-
-  return {
-    success: false,
-    error: errorMessage,
-    ...(metadata && { metadata }),
-  };
-}
+// NOTE: buildMinimalResponse and buildErrorResponse moved to mcp-response.utils.ts
+// Use BaseMcpService.buildMinimalResponse() instead
 
 /**
  * Build guidance response from database data
@@ -214,17 +195,8 @@ export function buildGuidanceFromDatabase(stepData: any): any {
 // 🚨 ERROR HANDLING UTILITIES - CONSOLIDATED
 // ===================================================================
 
-/**
- * Get error message with type safety
- */
-export function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  if (typeof error === 'string') return error;
-  if (error && typeof error === 'object' && 'message' in error) {
-    return String(error.message);
-  }
-  return 'Unknown error occurred';
-}
+// NOTE: getErrorMessage moved to type-safety.utils.ts
+// Import from '../utils/type-safety.utils' instead
 
 /**
  * Log error with consistent format across step services
@@ -272,14 +244,20 @@ export async function handleStepServiceOperation<T>(
 /**
  * Extract MCP actions with dynamic parameters
  */
-export function extractMcpActionsWithDynamicParameters(actionData: any): any[] {
+export function extractMcpActionsWithDynamicParameters(actionData: any): Array<{
+  operation: string;
+  serviceName: string;
+  parameters: Record<string, any>;
+  description: string;
+}> {
   if (!actionData?.mcpActions) return [];
 
   const actions = Array.isArray(actionData.mcpActions)
     ? actionData.mcpActions
     : [actionData.mcpActions];
 
-  return actions.map((action) => ({
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return actions.map((action: any) => ({
     operation: action.operation || 'unknown',
     serviceName: action.serviceName || 'unknown',
     parameters: safeJsonCast(action.parameters) || {},

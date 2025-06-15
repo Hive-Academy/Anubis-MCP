@@ -170,7 +170,7 @@ export const TaskOperationsSchema = z
     operation: z.enum(['create', 'update', 'get', 'list']),
 
     // Required for get and update operations
-    id: z.number().optional(),
+    taskId: z.number().optional(),
     slug: z.string().optional().describe('Human-readable task slug for lookup'),
 
     // Execution linking - REQUIRED for create operations
@@ -233,14 +233,15 @@ export const TaskOperationsSchema = z
   })
   .refine(
     (data) => {
-      // For 'get' operations, require either id or slug
+      // For 'get' operations, require either taskId or slug
       if (data.operation === 'get') {
-        return data.id !== undefined || data.slug !== undefined;
+        return data.taskId !== undefined || data.slug !== undefined;
       }
       return true;
     },
     {
-      message: "For 'get' operations, either 'id' or 'slug' must be provided",
+      message:
+        "For 'get' operations, either 'taskId' or 'slug' must be provided",
     },
   )
   .refine(
@@ -270,14 +271,14 @@ export const TaskOperationsSchema = z
   )
   .refine(
     (data) => {
-      // For 'update' operations, require id
+      // For 'update' operations, require taskId
       if (data.operation === 'update') {
-        return data.id !== undefined;
+        return data.taskId !== undefined;
       }
       return true;
     },
     {
-      message: "For 'update' operations, 'id' is required",
+      message: "For 'update' operations, 'taskId' is required",
     },
   );
 

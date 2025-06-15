@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { getErrorMessage } from '../utils/type-safety.utils';
+import { ExecutionDataUtils } from '../utils/execution-data.utils';
 import { RoleTransitionService } from './role-transition.service';
 import { StepExecutionService } from './step-execution.service';
 import { WorkflowExecutionWithRelations } from './workflow-execution.service';
@@ -52,6 +53,11 @@ export interface ProgressMetrics {
   stepsCompleted: number;
   totalSteps: number;
   estimatedCompletion: string | null;
+}
+
+export interface ProgressOverview {
+  averageProgress: number;
+  totalActive: number;
 }
 
 export interface EnrichedExecutionData {
@@ -246,42 +252,142 @@ export class ExecutionDataEnricherService extends ConfigurableService<DataEnrich
   calculateProgressMetrics(
     execution: WorkflowExecutionWithRelations,
   ): ProgressMetrics {
-    const percentage = this.safeGetNumber(execution, 'progressPercentage', 0);
-    const stepsCompleted = this.safeGetNumber(execution, 'stepsCompleted', 0);
-    const totalSteps = this.safeGetNumber(execution, 'totalSteps', 0);
+    const percentage = ExecutionDataUtils.safeGetNumber(
+      execution,
+      'progressPercentage',
+      0,
+    );
+    const stepsCompleted = ExecutionDataUtils.safeGetNumber(
+      execution,
+      'stepsCompleted',
+      0,
+    );
+    const totalSteps = ExecutionDataUtils.safeGetNumber(
+      execution,
+      'totalSteps',
+      0,
+    );
 
     return {
       percentage,
       stepsCompleted,
       totalSteps,
-      estimatedCompletion: this.estimateCompletion(totalSteps, stepsCompleted),
+      estimatedCompletion: ExecutionDataUtils.formatTimeEstimate(
+        totalSteps,
+        stepsCompleted,
+      ),
     };
   }
 
   /**
-   * Estimate completion time
+   * CENTRALIZED PROGRESS CALCULATIONS
+   *
+   * All progress calculation logic centralized here for DRY compliance.
+   * ExecutionAnalyticsService will consume these enriched calculations.
    */
-  private estimateCompletion(
-    totalSteps: number,
-    stepsCompleted: number,
-  ): string | null {
-    if (!totalSteps || totalSteps === 0) return null;
 
-    const remaining = totalSteps - stepsCompleted;
-    return remaining > 0
-      ? `${remaining} ${this.getConfigValue('defaults').completionMessages.stepsRemaining}`
-      : this.getConfigValue('defaults').completionMessages.nearCompletion;
+  /**
+   * Calculate overall progress using centralized utility (DRY compliance)
+   *
+   * DEPENDENCY REDUCTION: Now uses ExecutionDataUtils.calculateOverallProgress
+   * to maintain consistency with ExecutionAnalyticsService and eliminate duplication.
+   */
+  calculateOverallProgress(
+    executions: WorkflowExecutionWithRelations[],
+  ): ProgressOverview {
+    return ExecutionDataUtils.calculateOverallProgress(
+      executions,
+      (exec) => ExecutionDataUtils.safeGetNumber(exec, 'progressPercentage', 0),
+      0,
+    );
   }
 
   /**
-   * Safely get number property from execution object
+   * Calculate enhanced progress metrics with additional context
    */
-  private safeGetNumber(
+  calculateEnhancedProgressMetrics(
     execution: WorkflowExecutionWithRelations,
-    key: keyof WorkflowExecutionWithRelations,
-    fallback: number,
-  ): number {
-    const value = execution[key];
-    return typeof value === 'number' ? value : fallback;
+    options: {
+      includeEstimation?: boolean;
+      roundingPrecision?: number;
+    } = {},
+  ): ProgressMetrics & {
+    progressPhase: 'starting' | 'in-progress' | 'near-completion' | 'completed';
+    efficiency: number;
+  } {
+    const basicMetrics = this.calculateProgressMetrics(execution);
+    const { includeEstimation = true, roundingPrecision = 0 } = options;
+
+    // Determine progress phase
+    let progressPhase:
+      | 'starting'
+      | 'in-progress'
+      | 'near-completion'
+      | 'completed';
+    if (basicMetrics.percentage >= 100) {
+      progressPhase = 'completed';
+    } else if (basicMetrics.percentage >= 80) {
+      progressPhase = 'near-completion';
+    } else if (basicMetrics.percentage > 10) {
+      progressPhase = 'in-progress';
+    } else {
+      progressPhase = 'starting';
+    }
+
+    // Calculate efficiency (steps completed vs expected based on time)
+    const startedAt = ExecutionDataUtils.safeGetDate(execution, 'startedAt');
+    const now = new Date();
+    const hoursElapsed =
+      (now.getTime() - startedAt.getTime()) / (1000 * 60 * 60);
+    const expectedStepsPerHour = 2; // Configurable assumption
+    const expectedSteps = Math.max(1, hoursElapsed * expectedStepsPerHour);
+    const efficiency = ExecutionDataUtils.calculatePercentage(
+      basicMetrics.stepsCompleted,
+      expectedSteps,
+      roundingPrecision,
+    );
+
+    return {
+      ...basicMetrics,
+      percentage: ExecutionDataUtils.roundProgress(
+        basicMetrics.percentage,
+        roundingPrecision,
+      ),
+      progressPhase,
+      efficiency: Math.min(efficiency, 200), // Cap at 200% efficiency
+      estimatedCompletion: includeEstimation
+        ? basicMetrics.estimatedCompletion
+        : null,
+    };
+  }
+
+  /**
+   * Batch calculate progress metrics for multiple executions
+   */
+  batchCalculateProgressMetrics(
+    executions: WorkflowExecutionWithRelations[],
+  ): Map<string, ProgressMetrics> {
+    const results = new Map<string, ProgressMetrics>();
+
+    executions.forEach((execution) => {
+      try {
+        const metrics = this.calculateProgressMetrics(execution);
+        results.set(execution.id, metrics);
+      } catch (error) {
+        this.logger.warn(
+          `Failed to calculate progress for execution ${execution.id}:`,
+          getErrorMessage(error),
+        );
+        // Set fallback metrics
+        results.set(execution.id, {
+          percentage: 0,
+          stepsCompleted: 0,
+          totalSteps: 0,
+          estimatedCompletion: null,
+        });
+      }
+    });
+
+    return results;
   }
 }

@@ -88,7 +88,7 @@ export class TaskOperationsService {
 
     try {
       this.logger.debug(`Task Operation: ${input.operation}`, {
-        id: input.id ?? 'unknown',
+        taskId: input.taskId ?? 'unknown',
         operation: input.operation,
       });
 
@@ -120,7 +120,7 @@ export class TaskOperationsService {
         `Task operation completed in ${responseTime.toFixed(2)}ms`,
         {
           operation: input.operation,
-          id: input.id ?? 'unknown',
+          taskId: input.taskId ?? 'unknown',
           responseTime,
         },
       );
@@ -131,7 +131,7 @@ export class TaskOperationsService {
         data: result,
         metadata: {
           operation: input.operation,
-          id: input.id ?? 'unknown',
+          id: input.taskId ?? 'unknown',
           responseTime: Math.round(responseTime),
         },
       };
@@ -228,9 +228,9 @@ export class TaskOperationsService {
   private async updateTask(
     input: TaskOperationsInput,
   ): Promise<TaskWithRelations> {
-    const { id, taskData, description, codebaseAnalysis } = input;
+    const { taskId, taskData, description, codebaseAnalysis } = input;
 
-    if (!id) {
+    if (!taskId) {
       throw new Error('Task ID is required for updates');
     }
 
@@ -251,7 +251,7 @@ export class TaskOperationsService {
         if (taskData.gitBranch) updateData.gitBranch = taskData.gitBranch;
 
         task = await tx.task.update({
-          where: { id },
+          where: { id: taskId },
           data: updateData,
         });
       }
@@ -272,10 +272,10 @@ export class TaskOperationsService {
           descriptionData.acceptanceCriteria = description.acceptanceCriteria;
 
         taskDescription = await tx.taskDescription.upsert({
-          where: { taskId: id },
+          where: { taskId: taskId },
           update: descriptionData,
           create: {
-            taskId: id,
+            taskId: taskId,
             description: description.description || '',
             businessRequirements: description.businessRequirements || '',
             technicalRequirements: description.technicalRequirements || '',
@@ -308,10 +308,10 @@ export class TaskOperationsService {
           analysisData.analyzedBy = codebaseAnalysis.analyzedBy;
 
         analysis = await tx.codebaseAnalysis.upsert({
-          where: { taskId: id },
+          where: { taskId: taskId },
           update: analysisData,
           create: {
-            taskId: id,
+            taskId: taskId,
             architectureFindings: codebaseAnalysis.architectureFindings || {},
             problemsIdentified: codebaseAnalysis.problemsIdentified || {},
             implementationContext: codebaseAnalysis.implementationContext || {},
@@ -326,9 +326,9 @@ export class TaskOperationsService {
 
       // If no task data was provided, fetch the current task
       if (!task) {
-        task = await tx.task.findUnique({ where: { id } });
+        task = await tx.task.findUnique({ where: { id: taskId } });
         if (!task) {
-          throw new Error(`Task with id ${id} not found`);
+          throw new Error(`Task with id ${taskId} not found`);
         }
       }
 
@@ -346,9 +346,9 @@ export class TaskOperationsService {
   private async getTask(
     input: TaskOperationsInput,
   ): Promise<TaskWithRelations> {
-    const { id, slug, includeDescription, includeAnalysis } = input;
+    const { taskId, slug, includeDescription, includeAnalysis } = input;
 
-    if (!id && !slug) {
+    if (!taskId && !slug) {
       throw new Error('Either Task ID or Task Slug is required for retrieval');
     }
 
@@ -361,7 +361,7 @@ export class TaskOperationsService {
     }
 
     // Use slug first, fallback to taskId
-    const whereClause = slug ? { slug } : { id };
+    const whereClause = slug ? { slug } : { id: taskId };
 
     const task = await this.prisma.task.findFirst({
       where: whereClause,
@@ -369,7 +369,7 @@ export class TaskOperationsService {
     });
 
     if (!task) {
-      throw new Error(`Task not found: ${slug || id}`);
+      throw new Error(`Task not found: ${slug || taskId}`);
     }
 
     return task as TaskWithRelations;

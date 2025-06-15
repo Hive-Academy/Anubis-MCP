@@ -1,62 +1,62 @@
 {
   "workflowSteps": [
     {
-      "name": "comprehensive_context_and_redelegation_analysis",
-      "displayName": "Comprehensive Context and Redelegation Analysis",
-      "description": "Retrieve task context, analyze redelegation issues, and integrate existing analysis",
+      "name": "comprehensive_context_validation_and_implementation_planning",
+      "displayName": "Comprehensive Context Validation and Implementation Planning",
+      "description": "Retrieve task context with codebase analysis, validate requirements, and create strategic implementation plan",
       "sequenceNumber": 1,
       "isRequired": true,
-      "estimatedTime": "8-12 minutes",
-      "stepType": "ANALYSIS",
+      "estimatedTime": "25-35 minutes",
+      "stepType": "ACTION",
       "behavioralContext": {
-        "approach": "Comprehensive context acquisition with redelegation issue analysis",
+        "approach": "Intelligent context consumption with validation and strategic implementation planning",
         "principles": [
-          "Use TaskOperations with comprehensive inclusion for complete context",
-          "Extract and validate ALL redelegation context provided",
-          "Build upon existing codebase analysis rather than re-analyzing",
-          "Focus on evidence-based issue validation"
+          "Consume boomerang's comprehensive codebase analysis and task details",
+          "Validate task requirements and technical feasibility quickly",
+          "Create strategic implementation plan with SOLID principles",
+          "Focus on architectural enhancement rather than re-analysis"
         ],
-        "methodology": "MCP-driven context acquisition with redelegation-aware analysis",
-        "analysisMethod": {
-          "contextExtraction": "Extract redelegation context from handoff message including issue root cause, existing work, and testing results",
-          "validationApproach": "Validate redelegation issues through focused verification rather than full re-analysis",
-          "integrationStrategy": "Leverage existing boomerang codebase analysis as strategic foundation",
-          "gapIdentification": "Identify strategic gaps requiring architectural enhancement"
+        "methodology": "Context-driven planning with evidence-based validation",
+        "planningStrategy": {
+          "contextConsumption": "Extract task description, codebase analysis, and requirements from boomerang",
+          "quickValidation": "Validate technical feasibility and architectural alignment",
+          "strategicPlanning": "Create implementation plan with SOLID principles and existing patterns",
+          "qualityIntegration": "Define quality gates and success criteria"
         },
-        "validationCriteria": {
-          "issueConfirmation": "Verify reported issue through testing and evidence",
-          "patternValidation": "Test that existing patterns support the planned enhancement",
-          "solutionAlignment": "Confirm enhancement aligns with current architecture",
-          "contextCompleteness": "Ensure all redelegation context is captured and understood"
+        "solidPrinciples": {
+          "singleResponsibility": "Each class/service has one reason to change",
+          "openClosed": "Extensible through inheritance/composition, not modification",
+          "liskovSubstitution": "Derived classes substitutable for base classes",
+          "interfaceSegregation": "Clients depend only on interfaces they use",
+          "dependencyInversion": "Depend on abstractions, not concretions"
         }
       },
       "approachGuidance": {
         "stepByStep": [
-          "Execute TaskOperations.get with comprehensive parameters including plans and subtasks",
-          "Extract redelegation context: issue root cause, existing work, testing results",
-          "Validate redelegation issues through focused verification (not full re-analysis)",
-          "Leverage existing boomerang codebase analysis as strategic foundation",
-          "Identify strategic gaps requiring architectural enhancement"
-        ],
-        "analysisSteps": [
-          "Parse handoff message for detailed context and analysis results",
-          "Extract specific refactoring targets and patterns identified",
-          "Validate reported issues through focused testing and verification",
-          "Map existing analysis to current architectural decisions needed"
+          "Execute TaskOperations.get with comprehensive inclusion to get task details and codebase analysis",
+          "Validate task requirements against existing codebase analysis and architectural patterns",
+          "Design solution approach using SOLID principles and existing patterns",
+          "Check for existing implementation plan and update or create new one",
+          "Document architectural decisions with evidence-based rationale"
         ],
         "validationSteps": [
-          "Verify reported issue through direct testing or code inspection",
-          "Test that existing patterns support the enhancement approach",
-          "Confirm enhancement aligns with established architecture principles",
-          "Validate that redelegation context provides sufficient detail for decisions"
+          "Verify task requirements are clear and technically feasible",
+          "Confirm codebase analysis provides sufficient architectural context",
+          "Validate solution approach aligns with existing patterns and constraints"
+        ],
+        "planningSteps": [
+          "Design implementation approach using SOLID principles",
+          "Create or update implementation plan with strategic guidance",
+          "Define quality constraints and success criteria",
+          "Establish architectural rationale and verification evidence"
         ]
       },
       "qualityChecklist": [
-        "Complete task context retrieved including research findings and plans",
-        "Redelegation issues extracted and root cause validated through evidence",
-        "Existing codebase analysis integrated as foundation for decisions",
-        "Strategic gaps identified for architectural solution with clear rationale",
-        "Evidence-based issue verification completed with documentation"
+        "Task context and codebase analysis retrieved and validated",
+        "Technical feasibility confirmed with architectural alignment",
+        "Implementation plan created or updated with SOLID principles",
+        "Quality constraints and success criteria defined",
+        "Architectural decisions documented with evidence-based rationale"
       ],
       "conditions": [],
       "actions": [
@@ -68,161 +68,7 @@
             "operation": "get"
           },
           "sequenceOrder": 1
-        }
-      ],
-      "triggerReport": true,
-      "reportType": "context_and_redelegation_analysis",
-      "reportTemplate": "comprehensive_context_analysis"
-    },
-    {
-      "name": "strategic_pattern_enhancement_and_solution_design",
-      "displayName": "Strategic Pattern Enhancement and Solution Design",
-      "description": "Design evidence-based solutions using SOLID principles and existing architectural patterns",
-      "sequenceNumber": 2,
-      "isRequired": true,
-      "estimatedTime": "20-30 minutes",
-      "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Evidence-based solution design with SOLID principles and pattern enhancement",
-        "principles": [
-          "Build upon existing codebase analysis patterns rather than re-discovery",
-          "Design solutions based on VERIFIED problems, not assumptions",
-          "Apply SOLID principles to all architectural decisions",
-          "Enhance existing patterns rather than creating new ones"
-        ],
-        "methodology": "Strategic enhancement design with evidence-based validation",
-        "designMethod": {
-          "solutionApproach": "Design evidence-based architectural solutions addressing verified issues",
-          "patternEnhancement": "Enhance existing patterns rather than replacing them",
-          "architecturalConsistency": "Maintain service boundaries and established patterns",
-          "implementationGuidance": "Provide specific code examples and detailed instructions"
         },
-        "solidPrinciples": {
-          "singleResponsibility": "Each class/service has one reason to change",
-          "openClosed": "Extensible through inheritance/composition, not modification",
-          "liskovSubstitution": "Derived classes substitutable for base classes",
-          "interfaceSegregation": "Clients depend only on interfaces they use",
-          "dependencyInversion": "Depend on abstractions, not concretions"
-        },
-        "documentationRequirements": {
-          "fileSpecificInstructions": "Document exact files to modify with clear reasons",
-          "methodImplementation": "Provide complete code examples following existing patterns",
-          "architecturalRationale": "Explain why approach maintains consistency",
-          "qualityConstraints": "Define specific validation requirements",
-          "successCriteria": "Specify how to validate correct implementation",
-          "antiPatternPrevention": "Document what to avoid and why"
-        }
-      },
-      "approachGuidance": {
-        "stepByStep": [
-          "Leverage existing architectural patterns from codebase analysis",
-          "Identify strategic enhancement opportunities based on verified issues",
-          "Apply SOLID principles to solution design decisions",
-          "Design pattern enhancements that maintain architectural consistency",
-          "Create detailed implementation guidance with code examples",
-          "Establish quality constraints and success criteria"
-        ],
-        "designSteps": [
-          "Analyze verified issues to understand root causes and impact",
-          "Map issues to appropriate SOLID principle violations",
-          "Design solutions that enhance rather than replace existing patterns",
-          "Create architectural blueprints with specific implementation details"
-        ],
-        "documentationSteps": [
-          "Document architectural decisions with evidence-based rationale",
-          "Create detailed implementation guidance with complete code examples",
-          "Define quality constraints and measurable success criteria",
-          "Establish anti-pattern prevention strategies and warnings"
-        ]
-      },
-      "qualityChecklist": [
-        "Solution based on verified problems with clear evidence",
-        "SOLID principles compliance verified for all design decisions",
-        "Existing architectural patterns enhanced rather than replaced",
-        "Detailed implementation guidance with specific code examples provided",
-        "Quality constraints and success criteria established with measurements",
-        "Anti-pattern prevention strategies documented with rationale"
-      ],
-      "conditions": [
-        {
-          "name": "context_analysis_completed",
-          "conditionType": "PREVIOUS_STEP_COMPLETED",
-          "logic": {
-            "check": "step_completed",
-            "parameters": {
-              "stepName": "comprehensive_context_and_redelegation_analysis"
-            }
-          },
-          "isRequired": true
-        }
-      ],
-      "actions": [],
-      "triggerReport": true,
-      "reportType": "strategic_solution_design",
-      "reportTemplate": "pattern_enhancement_and_solution_design"
-    },
-    {
-      "name": "implementation_plan_management",
-      "displayName": "Strategic Implementation Plan Management",
-      "description": "Create or update implementation plan with strategic enhancements and comprehensive guidance",
-      "sequenceNumber": 3,
-      "isRequired": true,
-      "estimatedTime": "15-20 minutes",
-      "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Strategic plan management with existing plan preservation and enhancement",
-        "principles": [
-          "Check for existing plans and update rather than recreate",
-          "Include task-slug for human-readable reference",
-          "Preserve existing work while adding strategic enhancements",
-          "Document architectural rationale and verification evidence"
-        ],
-        "methodology": "Adaptive plan management with strategic context integration",
-        "planManagementStrategy": {
-          "existingPlanCheck": "Always check for existing implementation plans before creating new ones",
-          "updateApproach": "If existing plan found, update with strategic enhancements rather than recreate",
-          "creationApproach": "If no existing plan, create comprehensive new plan with full context",
-          "contextIntegration": "Include redelegation context and issue resolution strategy"
-        }
-      },
-      "approachGuidance": {
-        "stepByStep": [
-          "Check for existing implementation plan before creating new one",
-          "If existing plan found, update with strategic enhancements",
-          "If no existing plan, create comprehensive new plan",
-          "Include redelegation context and issue resolution strategy",
-          "Document architectural decisions with evidence-based rationale",
-          "Establish verification evidence and strategic context"
-        ],
-        "planManagementSteps": [
-          "Execute PlanningOperations.get_plan to check for existing plans",
-          "Evaluate existing plan quality and completeness if found",
-          "Determine whether to update existing or create new plan",
-          "Integrate strategic enhancements while preserving valuable existing work"
-        ]
-      },
-      "qualityChecklist": [
-        "Existing plan checked and appropriately updated or new plan created",
-        "Strategic enhancements integrated with existing work preserved",
-        "Architectural decisions documented with evidence-based rationale",
-        "Task-slug included for human-readable reference",
-        "Redelegation context and issue resolution strategy documented",
-        "Verification evidence and strategic context established"
-      ],
-      "conditions": [
-        {
-          "name": "solution_design_completed",
-          "conditionType": "PREVIOUS_STEP_COMPLETED",
-          "logic": {
-            "check": "step_completed",
-            "parameters": {
-              "stepName": "strategic_pattern_enhancement_and_solution_design"
-            }
-          },
-          "isRequired": true
-        }
-      ],
-      "actions": [
         {
           "name": "check_existing_plan",
           "actionType": "MCP_CALL",
@@ -230,7 +76,7 @@
             "serviceName": "PlanningOperations",
             "operation": "get_plan"
           },
-          "sequenceOrder": 1
+          "sequenceOrder": 2
         },
         {
           "name": "create_or_update_plan",
@@ -239,18 +85,18 @@
             "serviceName": "PlanningOperations",
             "operation": "{{create_or_update_based_on_existing}}"
           },
-          "sequenceOrder": 2
+          "sequenceOrder": 3
         }
       ],
       "triggerReport": true,
-      "reportType": "implementation_plan",
-      "reportTemplate": "strategic_implementation_plan"
+      "reportType": "comprehensive_context_validation_and_planning",
+      "reportTemplate": "context_validation_and_implementation_planning"
     },
     {
       "name": "strategic_subtask_creation_with_quality_gates",
       "displayName": "Strategic Subtask Creation with Quality Gates",
       "description": "Create strategic implementation subtasks with comprehensive guidance and quality gates",
-      "sequenceNumber": 4,
+      "sequenceNumber": 2,
       "isRequired": true,
       "estimatedTime": "20-25 minutes",
       "stepType": "ACTION",
@@ -260,20 +106,38 @@
           "Create subtasks with detailed strategic guidance and architectural context",
           "Include specific implementation guidance with code examples",
           "Define measurable quality gates and validation criteria",
-          "Ensure SOLID principles compliance and pattern consistency"
+          "Ensure SOLID principles compliance and pattern consistency",
+          "NEVER create documentation subtasks - documentation is handled by integration-engineer role"
         ],
         "methodology": "Detailed subtask planning with quality assurance integration",
         "subtaskCreationStrategy": {
           "batchOrganization": "Create strategic batches with 3-8 subtasks following dependency order",
           "guidanceDetail": "Provide comprehensive strategic guidance for each subtask",
           "implementationSpecifics": "Include architectural context, implementation specifics, and code examples",
-          "qualityIntegration": "Define quality constraints, success criteria, and anti-pattern prevention"
+          "qualityIntegration": "Define quality constraints, success criteria, and anti-pattern prevention",
+          "documentationExclusion": "NEVER create subtasks for documentation updates - integration-engineer role handles all documentation"
         },
         "qualityGateDefinition": {
           "codeQuality": "SOLID compliance, test coverage, documentation standards",
           "performance": "Response times, query efficiency, resource usage metrics",
           "security": "Input validation, authentication, authorization requirements",
           "integration": "API contracts, error handling, monitoring requirements"
+        },
+        "subtaskScope": {
+          "includeInSubtasks": [
+            "Code implementation and refactoring",
+            "Unit and integration testing",
+            "Performance optimization",
+            "Security implementation",
+            "Error handling and validation",
+            "Configuration and setup changes"
+          ],
+          "excludeFromSubtasks": [
+            "Documentation updates (README, memory bank, etc.)",
+            "Pull request creation",
+            "Git operations and commits",
+            "Deployment and integration tasks"
+          ]
         }
       },
       "approachGuidance": {
@@ -283,13 +147,16 @@
           "Include architectural context, implementation specifics, and code examples",
           "Define quality constraints, success criteria, and anti-pattern prevention",
           "Establish measurable quality gates and validation criteria",
-          "Document performance targets and security requirements"
+          "Document performance targets and security requirements",
+          "EXCLUDE documentation subtasks - integration-engineer handles all documentation"
         ],
         "subtaskCreationSteps": [
           "Organize implementation work into logical dependency-ordered batches",
           "For each subtask, provide architectural context and problem being solved",
           "Include specific implementation guidance with complete code examples",
-          "Define measurable success criteria and validation requirements"
+          "Define measurable success criteria and validation requirements",
+          "Focus ONLY on code implementation, testing, and technical tasks",
+          "Do NOT create subtasks for documentation, git operations, or deployment"
         ],
         "qualityGateSteps": [
           "Define comprehensive quality gates covering code, performance, security",
@@ -304,16 +171,17 @@
         "Implementation specifics with code examples provided",
         "Quality constraints and success criteria clearly defined",
         "Measurable quality gates established for all phases",
-        "Performance targets and security requirements specified"
+        "Performance targets and security requirements specified",
+        "NO documentation subtasks created - integration-engineer role handles documentation"
       ],
       "conditions": [
         {
-          "name": "implementation_plan_ready",
+          "name": "context_validation_and_planning_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "implementation_plan_management"
+              "stepName": "comprehensive_context_validation_and_implementation_planning"
             }
           },
           "isRequired": true
@@ -335,76 +203,10 @@
       "reportTemplate": "strategic_subtask_creation"
     },
     {
-      "name": "delegation_preparation_and_context_documentation",
-      "displayName": "Delegation Preparation and Strategic Context Documentation",
-      "description": "Prepare comprehensive delegation context with architectural decisions and implementation guidance",
-      "sequenceNumber": 5,
-      "isRequired": true,
-      "estimatedTime": "10-15 minutes",
-      "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Comprehensive delegation preparation with strategic context and architectural guidance",
-        "principles": [
-          "Document all architectural decisions with evidence-based rationale",
-          "Prepare strategic context for seamless role transition",
-          "Summarize quality requirements and validation criteria",
-          "Ensure implementation guidance is comprehensive and actionable"
-        ],
-        "methodology": "Strategic context preparation with comprehensive handoff documentation",
-        "delegationPreparation": {
-          "decisionDocumentation": "Document all architectural decisions with rationale and evidence",
-          "contextSummary": "Prepare strategic context summary for implementation teams",
-          "qualityConsolidation": "Consolidate quality requirements and validation criteria",
-          "handoffDocumentation": "Create comprehensive handoff documentation with implementation guidance"
-        }
-      },
-      "approachGuidance": {
-        "stepByStep": [
-          "Document all architectural decisions with rationale and evidence",
-          "Prepare strategic context summary for implementation teams",
-          "Consolidate quality requirements and validation criteria",
-          "Create comprehensive handoff documentation with implementation guidance",
-          "Ensure all anti-pattern prevention strategies are clearly communicated",
-          "Validate that delegation context enables immediate implementation start"
-        ],
-        "preparationSteps": [
-          "Consolidate all architectural decisions made during design phase",
-          "Create summary of strategic context for next role",
-          "Document quality requirements and success criteria clearly",
-          "Ensure handoff documentation enables immediate productive work"
-        ]
-      },
-      "qualityChecklist": [
-        "All architectural decisions documented with evidence-based rationale",
-        "Strategic context prepared for implementation teams",
-        "Quality requirements and validation criteria consolidated",
-        "Comprehensive handoff documentation created",
-        "Anti-pattern prevention strategies clearly communicated",
-        "Delegation context enables immediate implementation start"
-      ],
-      "conditions": [
-        {
-          "name": "subtasks_and_quality_gates_ready",
-          "conditionType": "PREVIOUS_STEP_COMPLETED",
-          "logic": {
-            "check": "step_completed",
-            "parameters": {
-              "stepName": "strategic_subtask_creation_with_quality_gates"
-            }
-          },
-          "isRequired": true
-        }
-      ],
-      "actions": [],
-      "triggerReport": true,
-      "reportType": "delegation_preparation",
-      "reportTemplate": "strategic_delegation_context"
-    },
-    {
       "name": "strategic_senior_developer_delegation",
       "displayName": "Strategic Senior Developer Delegation with Context",
       "description": "Delegate to senior developer with comprehensive strategic context and implementation readiness",
-      "sequenceNumber": 6,
+      "sequenceNumber": 3,
       "isRequired": true,
       "estimatedTime": "5-8 minutes",
       "stepType": "ACTION",
@@ -438,12 +240,12 @@
       ],
       "conditions": [
         {
-          "name": "delegation_preparation_completed",
+          "name": "subtasks_and_quality_gates_ready",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "delegation_preparation_and_context_documentation"
+              "stepName": "strategic_subtask_creation_with_quality_gates"
             }
           },
           "isRequired": true

@@ -111,29 +111,45 @@
       "reportTemplate": "mandatory_context_consumption_validation"
     },
     {
-      "name": "strategic_implementation_execution_with_decision_matrix",
-      "displayName": "Strategic Implementation Execution with Decision Matrix and Subtask Tracking",
-      "description": "Execute implementation following architectural guidance with strategic decision matrix and subtask completion tracking",
+      "name": "iterative_subtask_implementation_cycle",
+      "displayName": "Iterative Subtask Implementation Cycle",
+      "description": "Execute implementation in iterative cycles: get next subtask → implement → test → commit → update status → repeat",
       "sequenceNumber": 2,
       "isRequired": true,
       "estimatedTime": "60-120 minutes",
-      "stepType": "ACTION",
+      "stepType": "ITERATIVE_ACTION",
       "behavioralContext": {
-        "approach": "Strategic implementation following architectural guidance with decision matrix for escalation and mandatory subtask completion tracking",
+        "approach": "Iterative subtask completion with individual commits and validation after each subtask",
         "principles": [
-          "Follow architect's code examples exactly for implementation",
-          "Apply SOLID principles and existing patterns consistently",
-          "Use strategic decision matrix for implementation vs escalation decisions",
-          "MANDATORY: Update subtask status as each subtask is completed",
-          "MANDATORY: Complete ALL subtasks before proceeding to code review",
-          "Maintain architectural consistency throughout implementation"
+          "MANDATORY: Get next subtask using SubtaskOperations.get_next_subtask",
+          "MANDATORY: Update subtask to 'in-progress' before starting implementation",
+          "MANDATORY: Implement following architect's code examples exactly",
+          "MANDATORY: Test each subtask implementation thoroughly",
+          "MANDATORY: Commit changes after each subtask completion",
+          "MANDATORY: Update subtask to 'completed' with evidence after commit",
+          "MANDATORY: Repeat cycle until no more subtasks available"
         ],
-        "methodology": "Pattern-driven implementation with evidence-based decision making and comprehensive subtask tracking",
-        "subtaskTracking": {
-          "statusUpdates": "Update each subtask status to 'in-progress' when starting, 'completed' when finished",
-          "completionEvidence": "Document implementation evidence for each completed subtask",
-          "progressValidation": "Validate all subtasks are completed before delegation to code review",
-          "batchCompletion": "Track batch completion automatically when all subtasks in batch are done"
+        "methodology": "Iterative development cycle with individual subtask tracking and commits",
+        "iterativeCycle": {
+          "getNextSubtask": "Use SubtaskOperations.get_next_subtask to get next available subtask",
+          "updateToInProgress": "Update subtask status to 'in-progress' using SubtaskOperations.update_subtask",
+          "implement": "Follow architect's strategic guidance and code examples for implementation",
+          "test": "Test the specific subtask implementation (unit tests, integration tests, manual validation)",
+          "commit": "Commit changes with descriptive message referencing subtask",
+          "updateToCompleted": "Update subtask status to 'completed' with completion evidence",
+          "repeatCycle": "Continue cycle until SubtaskOperations.get_next_subtask returns no more subtasks"
+        },
+        "commitStrategy": {
+          "commitAfterEachSubtask": "Individual commit for each completed subtask",
+          "commitMessageFormat": "feat(subtask): [subtask-name] - [brief description of implementation]",
+          "includeSubtaskReference": "Include subtask ID and name in commit message",
+          "descriptiveMessages": "Clear description of what was implemented in the subtask"
+        },
+        "testingPerSubtask": {
+          "unitTests": "Test the specific functionality implemented in the subtask",
+          "integrationTests": "Test integration points affected by the subtask",
+          "manualValidation": "Validate subtask success criteria are met",
+          "errorScenarios": "Test error handling for the subtask implementation"
         },
         "solidPrinciples": {
           "singleResponsibility": "Each class/service has one clear purpose and reason to change",
@@ -141,81 +157,55 @@
           "liskovSubstitution": "Derived classes substitutable for base classes without breaking functionality",
           "interfaceSegregation": "Focused interfaces with specific responsibilities and dependencies",
           "dependencyInversion": "Depend on abstractions and interfaces, not concrete implementations"
-        },
-        "decisionMatrix": {
-          "implementDirectly": [
-            "following_provided_code_examples_exactly",
-            "implementing_methods_with_complete_architectural_guidance",
-            "making_configuration_changes_with_clear_patterns",
-            "adding_simple_functionality_following_established_examples"
-          ],
-          "redelegateToArchitect": [
-            "multiple_implementation_approaches_possible_without_clear_guidance",
-            "performance_optimization_requiring_architectural_decisions",
-            "integration_patterns_not_covered_in_current_guidance",
-            "service_structure_decisions_affecting_system_architecture"
-          ],
-          "escalateToBoomerang": [
-            "acceptance_criteria_conflicts_with_implementation",
-            "business_logic_unclear_or_contradictory",
-            "scope_changes_discovered_during_implementation"
-          ]
-        },
-        "validationCheckpoints": {
-          "patternCompliance": "Follows discovered architectural patterns exactly",
-          "technologyAlignment": "Uses established technology stack conventions",
-          "errorHandling": "Implements same error handling patterns discovered",
-          "dataTransformation": "Follows established conventions from analysis",
-          "integrationConsistency": "Follows discovered service patterns",
-          "architecturalConsistency": "Validated at each implementation step",
-          "subtaskCompletion": "All subtasks completed and tracked before code review"
         }
       },
       "approachGuidance": {
         "stepByStep": [
-          "For each subtask: Update status to 'in-progress' using SubtaskOperations.update_subtask",
-          "Implement core functionality following architect's strategic guidance and code examples exactly",
-          "Apply SOLID principles (Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion)",
-          "Use strategic decision matrix for implementation decisions: IMPLEMENT DIRECTLY vs REDELEGATE TO ARCHITECT vs ESCALATE TO BOOMERANG",
-          "For each completed subtask: Update status to 'completed' with completion evidence using SubtaskOperations.update_subtask",
-          "Maintain pattern consistency with existing codebase analysis throughout implementation",
-          "Validate architectural consistency at each implementation checkpoint",
-          "MANDATORY: Ensure ALL subtasks are completed before proceeding to code review"
+          "Execute SubtaskOperations.get_next_subtask with taskId to get next available subtask",
+          "If subtask available: Update status to 'in-progress' using SubtaskOperations.update_subtask",
+          "Implement the subtask following architect's strategic guidance and code examples exactly",
+          "Test the subtask implementation (unit tests, integration tests, manual validation)",
+          "Commit changes with descriptive message referencing the completed subtask",
+          "Update subtask status to 'completed' with completion evidence using SubtaskOperations.update_subtask",
+          "Repeat from step 1 until SubtaskOperations.get_next_subtask returns no more subtasks"
         ],
-        "subtaskTrackingSteps": [
-          "Before starting each subtask: Call SubtaskOperations.update_subtask with status 'in-progress'",
-          "During implementation: Follow subtask's strategic guidance and quality constraints",
-          "After completing each subtask: Call SubtaskOperations.update_subtask with status 'completed' and completion evidence",
-          "Validate all subtasks in all batches are completed before delegation"
+        "iterativeCycleSteps": [
+          "Call SubtaskOperations.get_next_subtask with taskId parameter",
+          "If subtask returned: Call SubtaskOperations.update_subtask with status 'in-progress'",
+          "Implement subtask following strategic guidance and SOLID principles",
+          "Create and run tests specific to the subtask implementation",
+          "Execute git add and git commit with subtask-specific message",
+          "Call SubtaskOperations.update_subtask with status 'completed' and completion evidence",
+          "Loop back to get next subtask until none available"
         ],
         "implementationSteps": [
-          "Follow architect's code examples exactly for core functionality implementation",
-          "Apply SOLID principles consistently across all code components",
+          "Follow architect's code examples exactly for the specific subtask",
+          "Apply SOLID principles consistently in the subtask implementation",
           "Use established patterns from codebase analysis for consistency",
-          "Implement error handling following discovered patterns"
+          "Implement error handling following discovered patterns for the subtask"
         ],
-        "decisionSteps": [
-          "Apply decision matrix for complex implementation decisions",
-          "Implement directly when following provided examples and clear guidance",
-          "Redelegate to architect for architectural decisions not covered in guidance",
-          "Escalate to boomerang for business logic conflicts or scope changes"
+        "testingSteps": [
+          "Create unit tests for the specific subtask functionality",
+          "Run integration tests for affected components",
+          "Perform manual validation of subtask success criteria",
+          "Test error scenarios specific to the subtask implementation"
         ],
-        "validationSteps": [
-          "Validate pattern compliance at each implementation checkpoint",
-          "Ensure technology alignment with established stack conventions",
-          "Verify error handling follows discovered patterns",
-          "Confirm architectural consistency throughout implementation",
-          "Validate ALL subtasks are completed with proper evidence"
+        "commitSteps": [
+          "Stage changes related to the completed subtask using git add",
+          "Commit with format: 'feat(subtask): [subtask-name] - [implementation description]'",
+          "Include subtask ID and brief description of what was implemented",
+          "Verify commit success before updating subtask status"
         ]
       },
       "qualityChecklist": [
+        "SubtaskOperations.get_next_subtask used to systematically get each subtask",
+        "Each subtask updated to 'in-progress' before implementation starts",
         "Implementation follows architect's strategic guidance and code examples exactly",
-        "SOLID principles compliance maintained throughout all code components",
-        "Strategic decision matrix applied correctly for complex implementation decisions",
-        "ALL subtasks updated to 'completed' status with proper completion evidence",
-        "Pattern consistency maintained with existing architectural analysis",
-        "Architectural consistency validated at implementation checkpoints",
-        "MANDATORY: All subtasks in all batches completed before proceeding"
+        "SOLID principles compliance maintained for each subtask implementation",
+        "Testing completed for each subtask (unit, integration, manual validation)",
+        "Individual commit made after each subtask completion with descriptive message",
+        "Each subtask updated to 'completed' status with proper completion evidence",
+        "Cycle continues until SubtaskOperations.get_next_subtask returns no more subtasks"
       ],
       "conditions": [
         {
@@ -232,204 +222,84 @@
       ],
       "actions": [],
       "triggerReport": true,
-      "reportType": "strategic_implementation_execution",
-      "reportTemplate": "implementation_with_decision_matrix_and_subtask_tracking"
+      "reportType": "iterative_subtask_implementation",
+      "reportTemplate": "iterative_implementation_cycle_report"
     },
     {
-      "name": "comprehensive_testing_and_quality_validation",
-      "displayName": "Comprehensive Testing and Quality Validation",
-      "description": "Implement comprehensive testing strategy and validate quality against strategic requirements",
+      "name": "final_subtask_completion_validation",
+      "displayName": "MANDATORY: Final Subtask Completion Validation",
+      "description": "WORKFLOW BLOCKER: Validate ALL subtasks are completed before proceeding to delegation",
       "sequenceNumber": 3,
       "isRequired": true,
-      "estimatedTime": "40-60 minutes",
-      "stepType": "ACTION",
+      "estimatedTime": "10-15 minutes",
+      "stepType": "VALIDATION",
       "behavioralContext": {
-        "approach": "Comprehensive testing with quality validation against strategic requirements and SOLID principles",
+        "approach": "MANDATORY final validation - WORKFLOW STOPPER if any subtask remains incomplete",
         "principles": [
-          "Achieve minimum test coverage targets from quality constraints",
-          "Validate SOLID principles compliance in all code components",
-          "Test all success criteria and error scenarios comprehensively",
-          "Verify performance targets and security requirements"
+          "CRITICAL WORKFLOW BLOCKER: Cannot proceed to delegation without ALL subtasks completed",
+          "ALWAYS use PlanningOperations.get_plan with includeBatches: true to get complete subtask status",
+          "ALWAYS use SubtaskOperations.get_next_subtask to verify no remaining subtasks",
+          "ALWAYS verify each subtask has status 'completed' and proper completion evidence",
+          "NEVER allow workflow to proceed if any subtask is not completed",
+          "STOP execution immediately if incomplete subtasks are found"
         ],
-        "methodology": "Multi-layer testing with architectural quality validation",
-        "testingStrategy": {
-          "unitTests": "Happy path, edge cases, error scenarios with mocks and meaningful assertions",
-          "integrationTests": "Service interactions, repository layer, API endpoints, data flow validation",
-          "manualValidation": "Success criteria, user workflows, error scenarios, architect requirements",
-          "performanceTesting": "Response times, resource usage, optimization, baseline validation"
+        "methodology": "Comprehensive final validation with multiple verification methods and workflow blocking",
+        "validationProtocol": {
+          "primaryValidation": "Use PlanningOperations.get_plan with includeBatches: true to get all subtasks with current status",
+          "secondaryValidation": "Use SubtaskOperations.get_next_subtask to confirm no remaining subtasks exist",
+          "statusVerification": "Verify every subtask across all batches has status 'completed'",
+          "evidenceValidation": "Ensure each completed subtask has proper completion evidence documented",
+          "workflowBlocking": "STOP workflow and report error if any subtask is not completed"
         },
-        "coverageTargets": {
-          "minimumCoverage": "Quality constraints coverage requirements",
-          "criticalPathCoverage": "100 percent for core business logic",
-          "errorScenarioCoverage": "Comprehensive error handling validation"
-        },
-        "qualityGates": {
-          "solidPrinciplesCompliance": "Verified for all code components",
-          "performanceTargets": "Achieved within established baseline",
-          "securityRequirements": "Implemented following verified patterns",
-          "patternAdherence": "Maintained with architectural consistency",
-          "codeQuality": "Follows strategic guidance and verified standards",
-          "testingQuality": "Coverage targets met with meaningful validation"
+        "completionCriteria": {
+          "allSubtasksCompleted": "Every subtask in every batch must have status 'completed'",
+          "noRemainingSubtasks": "SubtaskOperations.get_next_subtask must return no available subtasks",
+          "evidenceDocumented": "Each completed subtask must have completion evidence",
+          "batchesCompleted": "All batches must be fully completed",
+          "readyForDelegation": "Implementation is complete and ready for delegation"
         }
       },
       "approachGuidance": {
         "stepByStep": [
-          "Implement unit tests with comprehensive coverage (happy path, edge cases, error scenarios)",
-          "Create integration tests for service interactions and data flow validation",
-          "Execute manual validation against architect's success criteria",
-          "Validate SOLID principles compliance throughout codebase",
-          "Verify performance targets and security requirements implementation",
-          "Validate pattern adherence and architectural consistency"
-        ],
-        "testingSteps": [
-          "Implement unit tests covering happy path, edge cases, and error scenarios",
-          "Create integration tests for service interactions and API endpoints",
-          "Execute manual validation against all architect's success criteria",
-          "Perform performance testing to validate response times and resource usage"
+          "MANDATORY: Execute PlanningOperations.get_plan with taskId and includeBatches: true",
+          "MANDATORY: Iterate through all batches and verify every subtask has status 'completed'",
+          "MANDATORY: Execute SubtaskOperations.get_next_subtask with taskId to confirm no remaining subtasks",
+          "MANDATORY: Verify each completed subtask has proper completion evidence",
+          "MANDATORY: If ANY subtask is not completed, STOP workflow and report error",
+          "MANDATORY: If ALL subtasks are completed, document completion summary for delegation",
+          "MANDATORY: Only proceed to next step if 100% subtask completion is verified"
         ],
         "validationSteps": [
-          "Validate SOLID principles compliance for all implemented code components",
-          "Verify performance targets are achieved within established baseline",
-          "Confirm security requirements are implemented following verified patterns",
-          "Validate pattern adherence and architectural consistency throughout"
+          "Call PlanningOperations.get_plan with parameters: { taskId: [TASK_ID], includeBatches: true }",
+          "Parse response to extract all subtasks across all batches",
+          "For each subtask, verify status === 'completed'",
+          "For each completed subtask, verify completion evidence exists",
+          "Call SubtaskOperations.get_next_subtask with parameters: { taskId: [TASK_ID] }",
+          "Verify response indicates no next subtask available (all completed)"
         ],
-        "qualitySteps": [
-          "Ensure minimum coverage targets are met with meaningful assertions",
-          "Validate critical path coverage is 100% for core business logic",
-          "Confirm comprehensive error scenario coverage and handling",
-          "Verify all quality gates are satisfied before completion"
+        "errorReportingSteps": [
+          "If any subtask status !== 'completed', collect all incomplete subtasks",
+          "Report specific subtask names, IDs, current status, and batch information",
+          "Provide clear remediation steps: complete remaining subtasks before proceeding",
+          "STOP workflow execution - do not proceed to next step"
         ]
       },
       "qualityChecklist": [
-        "Unit tests achieve minimum coverage targets with meaningful assertions and error scenario testing",
-        "Integration tests validate service interactions, data flow, and API endpoints functionality",
-        "Manual validation confirms all architect's success criteria are met completely",
-        "SOLID principles compliance verified for all implemented code components",
-        "Performance targets achieved within established baseline requirements",
-        "Security requirements implemented following verified patterns and standards"
+        "MANDATORY: PlanningOperations.get_plan executed with includeBatches: true to get all subtasks",
+        "MANDATORY: Every subtask across ALL batches verified to have status 'completed'",
+        "MANDATORY: SubtaskOperations.get_next_subtask confirms no remaining subtasks available",
+        "MANDATORY: Each completed subtask has proper completion evidence documented",
+        "MANDATORY: If any subtask is incomplete, workflow is STOPPED with clear error message",
+        "MANDATORY: 100% subtask completion verified before proceeding to delegation"
       ],
       "conditions": [
         {
-          "name": "implementation_execution_completed",
+          "name": "iterative_implementation_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "strategic_implementation_execution_with_decision_matrix"
-            }
-          },
-          "isRequired": true
-        }
-      ],
-      "actions": [],
-      "triggerReport": true,
-      "reportType": "comprehensive_testing_and_quality",
-      "reportTemplate": "testing_quality_validation_report"
-    },
-    {
-      "name": "subtask_completion_validation_and_git_operations",
-      "displayName": "MANDATORY: Subtask Completion Validation and Git Operations",
-      "description": "Validate ALL subtasks are completed, perform Git operations, and delegate to code review with comprehensive context",
-      "sequenceNumber": 4,
-      "isRequired": true,
-      "estimatedTime": "15-20 minutes",
-      "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "MANDATORY subtask completion validation, Git operations with comprehensive delegation context and strategic implementation evidence",
-        "principles": [
-          "WORKFLOW STOPPER: Cannot delegate without ALL subtasks completed",
-          "WORKFLOW STOPPER: Cannot delegate without successful Git commit operations",
-          "ALWAYS verify all subtasks in all batches are completed before delegation",
-          "ALWAYS verify commit success before delegation to code review",
-          "ALWAYS include comprehensive strategic implementation evidence",
-          "ALWAYS use task-slug for human-readable reference"
-        ],
-        "methodology": "Subtask validation first, then Git-first completion with evidence-based delegation",
-        "subtaskValidation": {
-          "completionCheck": "Verify ALL subtasks across ALL batches are marked as 'completed'",
-          "evidenceValidation": "Ensure each completed subtask has proper completion evidence",
-          "batchValidation": "Confirm all batches are fully completed",
-          "blockingValidation": "STOP workflow if any subtask is not completed"
-        },
-        "gitProtocol": {
-          "checkStatus": "git status to verify working directory state",
-          "addChanges": "git add all implementation changes",
-          "commitChanges": "git commit with conventional commits descriptive message",
-          "verifyCommit": "git log to verify commit success and clean state"
-        },
-        "commitMessageStandards": {
-          "feat": "New feature implementation following architectural guidance",
-          "fix": "Bug fixes and corrections following existing patterns",
-          "refactor": "Code improvements maintaining architectural consistency",
-          "test": "Test additions following comprehensive testing strategy",
-          "docs": "Documentation updates reflecting implementation changes"
-        },
-        "evidenceCategories": {
-          "subtaskCompletionEvidence": "All subtasks completed with proper evidence and tracking",
-          "architecturalGuidanceImplementation": "Root cause solved, pattern compliance, elegant implementation",
-          "implementationSpecificsCompleted": "Files modified, methods implemented, pattern references followed",
-          "technologyStackCompliance": "Technology alignment, project structure, integration, performance",
-          "qualityConstraintsSatisfied": "Pattern compliance, performance targets, quality gates, anti-pattern avoidance",
-          "gitOperationsCompleted": "Changes committed, verified, working directory clean"
-        }
-      },
-      "approachGuidance": {
-        "stepByStep": [
-          "MANDATORY: Validate ALL subtasks across ALL batches are completed using PlanningOperations.get_plan",
-          "MANDATORY: Block workflow if any subtask is not completed - cannot proceed to code review",
-          "Execute mandatory Git operations protocol (status check, add all changes, commit with descriptive message)",
-          "Verify commit success and clean working directory state",
-          "Document strategic implementation completion with comprehensive evidence including subtask completion",
-          "Prepare delegation context with architectural guidance compliance and quality validation",
-          "Execute delegation to code review with task-slug and implementation evidence",
-          "Include Git context (commit hash, message, working directory status) in delegation"
-        ],
-        "subtaskValidationSteps": [
-          "Call PlanningOperations.get_plan with includeBatches: true to get all subtasks",
-          "Verify every subtask in every batch has status 'completed'",
-          "Check that each completed subtask has proper completion evidence",
-          "STOP and report error if any subtask is not completed - cannot proceed",
-          "Document subtask completion summary for delegation evidence"
-        ],
-        "gitOperationSteps": [
-          "Check git status to verify working directory state",
-          "Add all implementation changes using git add",
-          "Commit changes with conventional commits descriptive message",
-          "Verify commit success and clean working directory state"
-        ],
-        "evidenceDocumentationSteps": [
-          "Document subtask completion evidence with all subtasks completed",
-          "Document architectural guidance implementation with root cause solved",
-          "Record implementation specifics completed with files and methods",
-          "Validate technology stack compliance and integration",
-          "Confirm quality constraints satisfied and anti-patterns avoided"
-        ],
-        "delegationSteps": [
-          "Prepare comprehensive delegation context with implementation evidence",
-          "Execute WorkflowOperations.delegate to code review with task-slug",
-          "Include strategic implementation context and evidence",
-          "Include subtask completion summary and evidence",
-          "Provide git context with commit hash, message, and status"
-        ]
-      },
-      "qualityChecklist": [
-        "MANDATORY: ALL subtasks across ALL batches verified as completed with proper evidence",
-        "Git operations completed successfully (add, commit, verify) with clean working directory",
-        "Commit message follows conventional commits standard with descriptive implementation details",
-        "Strategic implementation evidence documented with architectural guidance compliance",
-        "Subtask completion evidence documented with comprehensive tracking summary",
-        "Delegation context includes comprehensive quality validation and testing results",
-        "Task-slug included for human-readable reference and tracking",
-        "Git context (commit hash, message, status) included in delegation for code review"
-      ],
-      "conditions": [
-        {
-          "name": "testing_and_quality_validated",
-          "conditionType": "PREVIOUS_STEP_COMPLETED",
-          "logic": {
-            "check": "step_completed",
-            "parameters": {
-              "stepName": "comprehensive_testing_and_quality_validation"
+              "stepName": "iterative_subtask_implementation_cycle"
             }
           },
           "isRequired": true
@@ -443,11 +313,113 @@
             "serviceName": "PlanningOperations",
             "operation": "get_plan",
             "parameters": {
+              "taskId": "[TASK_ID]",
               "includeBatches": true
             }
           },
           "sequenceOrder": 1
         },
+        {
+          "name": "verify_no_remaining_subtasks",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "SubtaskOperations",
+            "operation": "get_next_subtask",
+            "parameters": {
+              "taskId": "[TASK_ID]"
+            }
+          },
+          "sequenceOrder": 2
+        }
+      ],
+      "triggerReport": true,
+      "reportType": "final_subtask_completion_validation",
+      "reportTemplate": "final_subtask_validation_report"
+    },
+    {
+      "name": "final_git_operations_and_delegation",
+      "displayName": "MANDATORY: Final Git Operations and Code Review Delegation",
+      "description": "Complete final git operations and delegate to code review with comprehensive implementation evidence",
+      "sequenceNumber": 4,
+      "isRequired": true,
+      "estimatedTime": "15-20 minutes",
+      "stepType": "ACTION",
+      "behavioralContext": {
+        "approach": "Final git operations with comprehensive delegation context and complete implementation evidence",
+        "principles": [
+          "WORKFLOW STOPPER: Cannot delegate without clean git state verification",
+          "ALWAYS verify all subtask commits are properly recorded",
+          "ALWAYS include comprehensive implementation evidence in delegation",
+          "ALWAYS use task-slug for human-readable reference",
+          "ALWAYS provide complete commit history and implementation summary"
+        ],
+        "methodology": "Git state verification with evidence-based delegation",
+        "gitProtocol": {
+          "checkStatus": "git status to verify working directory is clean",
+          "verifyCommits": "git log to verify all subtask commits are recorded",
+          "pushChanges": "git push to ensure remote repository is updated",
+          "verifyPush": "Verify push success and remote synchronization"
+        },
+        "delegationEvidence": {
+          "implementationSummary": "Complete summary of all implemented subtasks",
+          "commitHistory": "List of all commits made during implementation",
+          "testingResults": "Summary of testing performed for each subtask",
+          "qualityValidation": "Confirmation of SOLID principles and pattern compliance",
+          "architecturalCompliance": "Evidence of following architect's strategic guidance"
+        }
+      },
+      "approachGuidance": {
+        "stepByStep": [
+          "Execute git status to verify working directory is clean (no uncommitted changes)",
+          "Execute git log to verify all subtask commits are properly recorded",
+          "Execute git push to update remote repository with all implementation commits",
+          "Document complete implementation evidence including all subtasks and commits",
+          "Prepare comprehensive delegation context with implementation summary",
+          "Execute delegation to code review with task-slug and complete evidence",
+          "Include git context (commit history, push status, implementation summary) in delegation"
+        ],
+        "gitVerificationSteps": [
+          "Check git status to confirm no uncommitted changes remain",
+          "Review git log to verify all subtask commits are present",
+          "Execute git push to synchronize with remote repository",
+          "Verify push success and remote repository is up to date"
+        ],
+        "evidencePreparationSteps": [
+          "Compile summary of all completed subtasks with implementation details",
+          "Document commit history showing iterative implementation progress",
+          "Summarize testing results and quality validation for each subtask",
+          "Confirm architectural compliance and SOLID principles adherence"
+        ],
+        "delegationSteps": [
+          "Prepare comprehensive delegation context with complete implementation evidence",
+          "Execute WorkflowOperations.delegate to code review with task-slug",
+          "Include complete implementation summary and commit history",
+          "Provide git context with push status and repository synchronization"
+        ]
+      },
+      "qualityChecklist": [
+        "Git status confirms working directory is clean with no uncommitted changes",
+        "Git log shows all subtask commits are properly recorded with descriptive messages",
+        "Git push completed successfully and remote repository is synchronized",
+        "Complete implementation evidence documented including all subtasks and testing",
+        "Delegation context includes comprehensive quality validation and architectural compliance",
+        "Task-slug included for human-readable reference and tracking",
+        "Git context (commit history, push status) included in delegation for code review"
+      ],
+      "conditions": [
+        {
+          "name": "final_validation_completed",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "check": "step_completed",
+            "parameters": {
+              "stepName": "final_subtask_completion_validation"
+            }
+          },
+          "isRequired": true
+        }
+      ],
+      "actions": [
         {
           "name": "delegate_to_code_review",
           "actionType": "MCP_CALL",
@@ -455,12 +427,12 @@
             "serviceName": "WorkflowOperations",
             "operation": "delegate"
           },
-          "sequenceOrder": 2
+          "sequenceOrder": 1
         }
       ],
       "triggerReport": true,
-      "reportType": "subtask_validation_and_delegation",
-      "reportTemplate": "subtask_completion_git_operations_and_code_review_delegation"
+      "reportType": "final_implementation_completion_and_delegation",
+      "reportTemplate": "final_git_operations_and_delegation"
     }
   ]
 }

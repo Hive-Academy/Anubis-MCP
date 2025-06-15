@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { WorkflowExecution, WorkflowExecutionMode } from 'generated/prisma';
 import { PrismaService } from '../../../../prisma/prisma.service';
+import { ExecutionDataUtils } from '../utils/execution-data.utils';
 import {
   ConfigurableService,
   BaseServiceConfig,
@@ -268,7 +269,7 @@ export class WorkflowExecutionService extends ConfigurableService<ExecutionServi
   }
 
   /**
-   * Update execution progress
+   * Update execution progress using centralized calculation (DRY compliance)
    */
   async updateProgress(
     executionId: string,
@@ -278,8 +279,13 @@ export class WorkflowExecutionService extends ConfigurableService<ExecutionServi
     const currentExecution = await this.getExecutionById(executionId);
     let progressPercentage = currentExecution.progressPercentage;
 
+    // Use centralized progress calculation from ExecutionDataUtils
     if (totalSteps && totalSteps > 0) {
-      progressPercentage = Math.round((stepsCompleted / totalSteps) * 100);
+      progressPercentage = ExecutionDataUtils.calculatePercentage(
+        stepsCompleted,
+        totalSteps,
+        0, // No decimal precision for execution progress
+      );
     }
 
     return this.updateExecution(executionId, {

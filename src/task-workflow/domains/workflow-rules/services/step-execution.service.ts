@@ -3,6 +3,7 @@ import { StepGuidanceService } from './step-guidance.service';
 import { StepProgressTrackerService } from './step-progress-tracker.service';
 import { StepQueryService, WorkflowStep } from './step-query.service';
 import { getErrorMessage } from '../utils/type-safety.utils';
+import { StepDataUtils } from '../utils/step-data.utils';
 import { PrismaService } from '../../../../prisma/prisma.service';
 
 // ===================================================================
@@ -379,24 +380,16 @@ export class StepExecutionService {
   // ===================================================================
 
   /**
-   * Validate MCP execution results
+   * Validate MCP execution results - using shared utilities
    */
   private validateExecutionResults(
     results: McpExecutionResult[],
   ): ValidationResult {
-    const errors: string[] = [];
-
-    for (const result of results) {
-      if (!result.success) {
-        errors.push(
-          `MCP action failed: ${result.actionName} - ${result.error}`,
-        );
-      }
-    }
+    const validation = StepDataUtils.validateExecutionResults(results);
 
     return {
-      isValid: errors.length === 0,
-      errors,
+      isValid: validation.isValid,
+      errors: validation.errors,
     };
   }
 

@@ -107,6 +107,7 @@
           "Extract requirements from user request",
           "Structure analysis findings for downstream consumption",
           "Call TaskOperations.create with ALL required parameters",
+          "Immediately update task status to 'in-progress' using TaskOperations.update",
           "Verify task creation and execution linking"
         ]
       },
@@ -114,6 +115,7 @@
         "Architecture patterns and technology stack documented",
         "Current functionality tested and verified",
         "Task created with comprehensive description and requirements",
+        "Task status updated to 'in-progress' immediately after creation",
         "Codebase analysis properly structured in task",
         "CRITICAL: executionId included in TaskOperations.create call",
         "Task successfully linked to current workflow execution",
@@ -149,6 +151,20 @@
             ]
           },
           "sequenceOrder": 1
+        },
+        {
+          "name": "update_task_status_to_in_progress",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "TaskOperations",
+            "operation": "update",
+            "requiredParameters": ["operation", "taskId", "taskData"],
+            "parameterGuidance": {
+              "taskId": "Use the task ID returned from the create operation",
+              "taskData": "Set status to 'in-progress' to indicate work has begun"
+            }
+          },
+          "sequenceOrder": 2
         }
       ],
       "triggerReport": true,

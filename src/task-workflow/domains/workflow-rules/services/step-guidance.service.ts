@@ -2,14 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { RequiredInputExtractorService } from './required-input-extractor.service';
 import { WorkflowStep, StepAction } from 'generated/prisma';
+import { StepDataUtils } from '../utils/step-data.utils';
 import {
   StepNotFoundError,
   buildGuidanceFromDatabase,
-  extractMcpActionsWithDynamicParameters,
-  handleStepServiceOperation,
-  safeJsonCast,
-  extractBehavioralContext,
-  extractApproachGuidance,
 } from '../utils/step-service-shared.utils';
 
 // ===================================================================
@@ -144,16 +140,10 @@ export class StepGuidanceService {
     );
 
     // Get guidance from database step data
-    const enhancedGuidance = this.buildGuidanceFromDatabase(step);
+    const enhancedGuidance = buildGuidanceFromDatabase(step);
 
     return {
-      step: {
-        id: step.id,
-        name: step.name,
-        description: step.description || 'Execute workflow step',
-        stepType: step.stepType,
-        estimatedTime: step.estimatedTime || '5-10 minutes',
-      },
+      step: StepDataUtils.extractStepInfo(step),
       mcpActions,
       behavioralGuidance: enhancedGuidance.behavioralContext,
       approachGuidance: enhancedGuidance.approachGuidance,
@@ -184,7 +174,7 @@ export class StepGuidanceService {
       );
     }
 
-    const guidance = this.buildGuidanceFromDatabase(step);
+    const guidance = buildGuidanceFromDatabase(step);
 
     return {
       successCriteria: guidance.successCriteria,
@@ -241,26 +231,22 @@ export class StepGuidanceService {
     });
   }
 
-  // ✅ FIXED: Remove hardcoded parameter validation
+  // ✅ FIXED: Remove hardcoded parameter validation - using shared utilities
   private parseMcpActionData(actionData: unknown): McpActionData {
-    if (!actionData || typeof actionData !== 'object') {
-      throw new Error('Invalid MCP action data: not an object');
+    const validation = StepDataUtils.validateMcpActionData(actionData);
+
+    if (!validation.isValid) {
+      throw new Error(
+        `Invalid MCP action data: ${validation.errors.join(', ')}`,
+      );
     }
 
     const data = actionData as Record<string, unknown>;
 
-    if (typeof data.serviceName !== 'string') {
-      throw new Error('Invalid MCP action data: serviceName must be string');
-    }
-
-    if (typeof data.operation !== 'string') {
-      throw new Error('Invalid MCP action data: operation must be string');
-    }
-
     // ✅ FIXED: Parameters are no longer required - they're generated dynamically
     return {
-      serviceName: data.serviceName,
-      operation: data.operation,
+      serviceName: validation.serviceName!,
+      operation: validation.operation!,
       parameters: data.parameters as ServiceParameters, // Optional now
       sequenceOrder:
         typeof data.sequenceOrder === 'number' ? data.sequenceOrder : undefined,
@@ -336,23 +322,13 @@ export class StepGuidanceService {
   /**
    * 🆕 DATABASE-ONLY: Build guidance from database step data
    * Replaces JSON file reading with database-driven approach
+   * Uses shared utilities for data extraction
    */
   private buildGuidanceFromDatabase(step: WorkflowStep): EnhancedStepGuidance {
-    // Extract guidance from database fields
-    const behavioralContext = this.extractBehavioralContext(
-      step.behavioralContext,
-    );
-    const approachGuidance = this.extractApproachGuidance(
-      step.approachGuidance,
-    );
-    const qualityChecklist = this.extractQualityChecklist(
-      step.qualityChecklist,
-    );
-
     return {
-      behavioralContext,
-      approachGuidance,
-      qualityChecklist,
+      behavioralContext: this.extractBehavioralContext(step.behavioralContext),
+      approachGuidance: this.extractApproachGuidance(step.approachGuidance),
+      qualityChecklist: this.extractQualityChecklist(step.qualityChecklist),
       successCriteria: this.extractSuccessCriteria(step.actionData),
       failureCriteria: this.extractFailureCriteria(step.actionData),
       troubleshooting: this.extractTroubleshooting(step.actionData),
@@ -362,89 +338,26 @@ export class StepGuidanceService {
   private extractBehavioralContext(
     behavioralContext: unknown,
   ): BehavioralGuidance {
-    if (!behavioralContext || typeof behavioralContext !== 'object') {
-      return {
-        approach: 'Execute step according to requirements',
-        principles: [],
-        methodology: 'Standard workflow execution',
-        keyFocus: [],
-        qualityStandards: [],
-      };
-    }
-
-    const context = behavioralContext as any;
-    return {
-      approach: context.approach || 'Execute step according to requirements',
-      principles: Array.isArray(context.principles) ? context.principles : [],
-      methodology: context.methodology || 'Standard workflow execution',
-      keyFocus: Array.isArray(context.keyFocus) ? context.keyFocus : [],
-      qualityStandards: Array.isArray(context.qualityStandards)
-        ? context.qualityStandards
-        : [],
-    };
+    return StepDataUtils.extractBehavioralContext(behavioralContext);
   }
 
   private extractApproachGuidance(approachGuidance: unknown): ApproachGuidance {
-    if (!approachGuidance || typeof approachGuidance !== 'object') {
-      return {
-        stepByStep: ['Follow standard procedure'],
-        validationSteps: ['Verify completion'],
-        errorHandling: ['Handle errors appropriately'],
-        bestPractices: ['Follow best practices'],
-      };
-    }
-
-    const guidance = approachGuidance as any;
-    return {
-      stepByStep: Array.isArray(guidance.stepByStep)
-        ? guidance.stepByStep
-        : ['Follow standard procedure'],
-      validationSteps: Array.isArray(guidance.validationSteps)
-        ? guidance.validationSteps
-        : ['Verify completion'],
-      errorHandling: Array.isArray(guidance.errorHandling)
-        ? guidance.errorHandling
-        : ['Handle errors appropriately'],
-      bestPractices: Array.isArray(guidance.bestPractices)
-        ? guidance.bestPractices
-        : ['Follow best practices'],
-    };
+    return StepDataUtils.extractApproachGuidance(approachGuidance);
   }
 
   private extractQualityChecklist(qualityChecklist: unknown): string[] {
-    if (Array.isArray(qualityChecklist)) {
-      return qualityChecklist.filter((item) => typeof item === 'string');
-    }
-    return ['Verify step completion'];
+    return StepDataUtils.extractQualityChecklist(qualityChecklist);
   }
 
   private extractSuccessCriteria(actionData: unknown): string[] {
-    if (typeof actionData === 'object' && actionData !== null) {
-      const data = actionData as any;
-      if (Array.isArray(data.successCriteria)) {
-        return data.successCriteria as string[];
-      }
-    }
-    return ['Step completed successfully'];
+    return StepDataUtils.extractSuccessCriteria(actionData);
   }
 
   private extractFailureCriteria(actionData: unknown): string[] {
-    if (typeof actionData === 'object' && actionData !== null) {
-      const data = actionData as any;
-      if (Array.isArray(data.failureCriteria)) {
-        return data.failureCriteria as string[];
-      }
-    }
-    return ['Step failed to complete'];
+    return StepDataUtils.extractFailureCriteria(actionData);
   }
 
   private extractTroubleshooting(actionData: unknown): string[] {
-    if (typeof actionData === 'object' && actionData !== null) {
-      const data = actionData as any;
-      if (Array.isArray(data.troubleshooting)) {
-        return data.troubleshooting as string[];
-      }
-    }
-    return ['Check logs for errors'];
+    return StepDataUtils.extractTroubleshooting(actionData);
   }
 }

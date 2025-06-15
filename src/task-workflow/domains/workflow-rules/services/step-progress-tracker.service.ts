@@ -1,13 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import {
-  StepProgressError,
-  transformProgressRecord,
-  handleStepServiceOperation,
-  getErrorMessage,
-  safeJsonCast,
   isDefined,
+  safeJsonCast,
+  StepProgressError,
 } from '../utils/step-service-shared.utils';
+import { getErrorMessage } from '../utils/type-safety.utils';
 
 // ===================================================================
 // 🔥 STEP PROGRESS TRACKER SERVICE - COMPLETE REVAMP FOR MCP-ONLY
@@ -174,11 +172,10 @@ export class StepProgressTrackerService {
 
       const currentData = safeJsonCast<McpExecutionData>(
         existing.executionData,
-        {
-          executionType: 'MCP_ONLY',
-          phase: 'EXECUTING',
-        },
-      );
+      ) || {
+        executionType: 'MCP_ONLY',
+        phase: 'EXECUTING',
+      };
 
       const progressRecord = await this.prisma.workflowStepProgress.update({
         where: { id: existing.id },
@@ -204,7 +201,9 @@ export class StepProgressTrackerService {
       this.logger.error(`Failed to update step progress:`, error);
       throw new StepProgressError(
         `Failed to update progress: ${getErrorMessage(error)}`,
-        stepId,
+        'StepProgressTrackerService',
+        'updateProgress',
+        { stepId },
       );
     }
   }
@@ -228,11 +227,10 @@ export class StepProgressTrackerService {
 
       const currentData = safeJsonCast<McpExecutionData>(
         existing.executionData,
-        {
-          executionType: 'MCP_ONLY',
-          phase: 'COMPLETED',
-        },
-      );
+      ) || {
+        executionType: 'MCP_ONLY',
+        phase: 'COMPLETED',
+      };
 
       const progressRecord = await this.prisma.workflowStepProgress.update({
         where: { id: existing.id },
@@ -261,7 +259,9 @@ export class StepProgressTrackerService {
       this.logger.error(`Failed to complete step:`, error);
       throw new StepProgressError(
         `Failed to complete step: ${getErrorMessage(error)}`,
-        stepId,
+        'StepProgressTrackerService',
+        'completeStep',
+        { stepId },
       );
     }
   }
@@ -306,7 +306,9 @@ export class StepProgressTrackerService {
       this.logger.error(`Failed to mark step as failed:`, error);
       throw new StepProgressError(
         `Failed to mark step as failed: ${getErrorMessage(error)}`,
-        stepId,
+        'StepProgressTrackerService',
+        'failStep',
+        { stepId },
       );
     }
   }
@@ -377,7 +379,9 @@ export class StepProgressTrackerService {
       this.logger.error(`Failed to get role progress summary:`, error);
       throw new StepProgressError(
         `Failed to get role progress summary: ${getErrorMessage(error)}`,
-        roleId,
+        'StepProgressTrackerService',
+        'getRoleProgressSummary',
+        { roleId },
       );
     }
   }
@@ -414,10 +418,12 @@ export class StepProgressTrackerService {
       completedAt: typedRecord.completedAt || undefined,
       failedAt: typedRecord.failedAt || undefined,
       duration: typedRecord.duration || undefined,
-      executionData: safeJsonCast<McpExecutionData>(typedRecord.executionData, {
+      executionData: safeJsonCast<McpExecutionData>(
+        typedRecord.executionData,
+      ) || {
         executionType: 'MCP_ONLY',
         phase: 'GUIDANCE_PREPARED',
-      }),
+      },
       validationResults: typedRecord.validationResults,
       errorDetails: typedRecord.errorDetails,
       result: (typedRecord.result as 'SUCCESS' | 'FAILURE') || undefined,
@@ -469,7 +475,9 @@ export class StepProgressTrackerService {
       this.logger.error(`Failed to complete step with tracking:`, error);
       throw new StepProgressError(
         `Failed to complete step with tracking: ${getErrorMessage(error)}`,
-        stepId,
+        'StepProgressTrackerService',
+        'completeStepWithTracking',
+        { stepId },
       );
     }
   }

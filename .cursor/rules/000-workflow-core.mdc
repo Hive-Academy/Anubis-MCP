@@ -3,254 +3,216 @@ description:
 globs: 
 alwaysApply: true
 ---
-# MCP Workflow Manager: AI Agent Instructions
+# MCP Workflow Manager: Mandatory AI Agent Rules
 
-## **🚨 MANDATORY FIRST ACTION**
+## **🚨 CRITICAL: MANDATORY FIRST ACTION**
 
-**⚠️ BEFORE ANY USER REQUEST:**
+**YOU MUST execute this check before ANY user request:**
 
 ```typescript
-// 🔍 CHECK ACTIVE WORKFLOWS FIRST
 const activeCheck = await workflow_execution_operations({
   operation: 'get_active_executions',
-  taskId: 0,
 });
-
-// Present options based on results
-if (activeCheck.data.length > 0) {
-  // Show: A) Continue existing B) Start new C) Quick help D) Dashboard
-} else {
-  // Ready for new workflow
-}
 ```
 
----
+**REQUIRED RESPONSE PATTERN:**
 
-## **🎯 CORE PRINCIPLE**
-
-**MCP SERVER = GUIDANCE ONLY | AI AGENT = EXECUTOR**
-
-- ✅ **MCP**: Provides guidance, tracks progress, manages data
-- ✅ **YOU**: Execute commands locally, modify files, run git operations
-- ❌ **NEVER**: Expect MCP to execute anything for you
-
-When MCP says "run `git status`" → **YOU** execute `await run_terminal_cmd({command: 'git status'})`
+- IF active workflows exist: Present options (A) Continue existing B) Start new C) Quick help D) Dashboard)
+- IF no active workflows: Proceed with new workflow initialization
 
 ---
 
-## **🚀 EXECUTION PATTERNS**
+## **🎯 CORE EXECUTION PRINCIPLE**
 
-### **🆕 PATTERN 1: NEW WORKFLOW (SIMPLIFIED)**
+**YOU ARE THE EXECUTOR - MCP PROVIDES GUIDANCE ONLY**
 
-#### **STEP 1: Bootstrap - Simple Workflow Kickoff**
+### **MANDATORY BEHAVIOR:**
+
+- ✅ **YOU EXECUTE**: All commands, file operations, git operations locally using YOUR tools
+- ✅ **MCP PROVIDES**: Guidance, tracks progress, manages workflow data
+- ❌ **NEVER EXPECT**: MCP to execute anything for you
+
+### **COMMAND EXECUTION RULE:**
+
+When MCP guidance says "run `git status`" → **YOU MUST** execute `await run_terminal_cmd({command: 'git status'})`
+
+---
+
+## **🚀 MANDATORY EXECUTION PATTERNS**
+
+### **PATTERN 1: NEW WORKFLOW INITIALIZATION**
+
+#### **STEP 1: Bootstrap Workflow**
 
 ```typescript
-// 🚀 SIMPLE BOOTSTRAP - NO TASK DETAILS NEEDED
 const bootstrap = await bootstrap_workflow({
   initialRole: 'boomerang', // ALWAYS start with boomerang
   executionMode: 'GUIDED',
-  projectPath: '/full/project/path', // Optional
+  projectPath: '/full/project/path', // Use actual project path
 });
-
-// ✅ BOOTSTRAP RETURNS:
-// - execution: Workflow execution state WITHOUT task
-// - currentRole: Role context and behavioral profile
-// - currentStep: Step 1 - Git Integration Setup (comprehensive guidance)
-// - resources: {taskId: null, executionId, firstStepId}
-// - Workflow steps contain ALL guidance for agent execution
 ```
 
-#### **STEP 2: Execute Boomerang Workflow (Complete Workflow)**
+#### **STEP 2: Execute Workflow Steps**
 
 ```typescript
-// 🔄 BOOMERANG WORKFLOW: Comprehensive step-by-step execution
-// The workflow steps contain ALL guidance and instructions
-while (true) {
-  // Current step contains comprehensive guidance
-  const currentStep =
-    bootstrap.currentStep ||
-    (await get_step_guidance({
-      executionId: bootstrap.resources.executionId,
-      stepId: currentStepId,
-    }));
-
-  // 🚨 EXECUTE STEP GUIDANCE LOCALLY
-  // Step guidance includes:
-  // - behavioralContext: How to approach the step
-  // - approachGuidance: Detailed step-by-step instructions
-  // - qualityChecklist: Success criteria
-  // - actionData: Specific commands and operations
-
-  const executionResult = await executeStepGuidance(currentStep);
-
-  // Report results back to MCP
-  const completion = await report_step_completion({
-    executionId: bootstrap.resources.executionId,
-    stepId: currentStep.id,
-    result: executionResult.success ? 'success' : 'failure',
-    executionData: executionResult.data,
+while (hasMoreSteps) {
+  // 1. GET STEP GUIDANCE
+  const stepGuidance = await get_step_guidance({
+    executionId: executionId,
+    roleId: roleId,
   });
 
-  // Check if role has more steps
+  // 2. EXECUTE GUIDANCE LOCALLY (MANDATORY)
+  const result = await executeStepGuidanceLocally(stepGuidance);
+
+  // 3. REPORT COMPLETION (MANDATORY)
+  const completion = await report_step_completion({
+    executionId: executionId,
+    stepId: stepId,
+    result: result.success ? 'success' : 'failure',
+    executionData: result.data,
+  });
+
+  // 4. CHECK FOR NEXT STEP
   if (!completion.nextGuidance.hasNextStep) break;
 }
-
-// ✅ AFTER BOOMERANG COMPLETES:
-// - Step 1: Git integration setup completed
-// - Step 2: Comprehensive codebase analysis with functional testing completed
-// - Step 3: Task requirements gathered and comprehensive task created
-// - Step 4: Research decision made based on evidence
-// - Step 5: Delegated to next role (researcher/architect)
 ```
 
-#### **STEP 3: Role Transitions (When Needed)**
+#### **STEP 3: Handle Role Transitions**
 
 ```typescript
-// When hasNextStep: false, check for role transitions
+// When no more steps in current role:
 const transitions = await get_role_transitions({
   fromRoleName: currentRole,
-  executionId: bootstrap.resources.executionId,
+  taskId: taskId,
+  roleId: roleId,
 });
+
 const validation = await validate_transition({
-  transitionId: selectedId,
-  executionId: bootstrap.resources.executionId,
-});
-const result = await execute_transition({
-  transitionId: selectedId,
-  executionId: bootstrap.resources.executionId,
+  transitionId: selectedTransitionId,
+  taskId: taskId,
+  roleId: roleId,
 });
 
-// Continue with new role context
-```
-
-### **🔄 PATTERN 2: CONTINUE EXISTING**
-
-```typescript
-// Get current execution state
-const execution = await workflow_execution_operations({
-  operation: 'get_execution',
-  executionId: existingExecutionId,
-});
-
-// Resume from current step using existing role context
-// Continue with execution loop from Pattern 1, Step 2
+if (validation.isValid) {
+  await execute_transition({
+    transitionId: selectedTransitionId,
+    taskId: taskId,
+    roleId: roleId,
+  });
+}
 ```
 
 ---
 
-## **🎭 BOOMERANG WORKFLOW STEPS (DATABASE-DRIVEN)**
+## **📋 STEP EXECUTION REQUIREMENTS**
 
-The boomerang role has 5 comprehensive steps stored in the database:
+### **FOR EVERY STEP YOU MUST:**
 
-### **Step 1: MANDATORY Git Integration Setup**
+1. **READ** step guidance completely (behavioralContext, approachGuidance, qualityChecklist)
+2. **EXECUTE** all guidance commands locally using YOUR available tools
+3. **VALIDATE** results against the qualityChecklist requirements
+4. **REPORT** completion with comprehensive execution data
+5. **HANDLE** role transitions when steps complete
 
-- **Purpose**: Complete git operations before task creation
-- **Guidance**: Verify clean state, create feature branch, handle git errors
-- **Commands**: `git status --porcelain`, `git checkout -b feature/...`
-- **Critical**: STOP workflow if any git operation fails
+### **QUALITY CHECKLIST COMPLIANCE**
 
-### **Step 2: MANDATORY Source Code Analysis with Functional Verification**
+**YOU MUST verify EVERY item in the qualityChecklist before reporting step completion.**
 
-- **Purpose**: Systematic codebase examination WITH functional testing
-- **Approach**: Multi-phase analysis (structural, functional, quality)
-- **Methods**: Pattern identification, technology mapping, capability verification
-- **Output**: Evidence-based findings with testing results
+**Example for Task Creation step:**
 
-### **Step 3: MANDATORY Comprehensive Task Creation**
+- ✅ "Task created with comprehensive description and requirements" → VERIFY task exists with complete data
+- ✅ "CRITICAL: executionId included in TaskOperations.create call" → VERIFY executionId was provided
+- ✅ "Task successfully linked to current workflow execution" → VERIFY linkage exists
 
-- **Purpose**: Create task with comprehensive data after analysis
-- **Process**: Gather requirements, integrate analysis, create structured task
-- **Data**: Link to execution, store codebase analysis, set git context
-- **Result**: Task created and linked to workflow execution
-
-### **Step 4: Research Decision Framework with Validation**
-
-- **Purpose**: Evidence-based research necessity evaluation
-- **Criteria**: Based on verified current state testing
-- **Decision**: Research needed vs. direct to implementation
-- **Output**: Specific research questions if research required
-
-### **Step 5: Role Delegation with Task Context**
-
-- **Purpose**: Delegate to appropriate next role
-- **Target**: Researcher (if research needed) or Architect (direct implementation)
-- **Context**: Comprehensive handoff with all analysis and decisions
-- **Reference**: Include task-slug for human-readable identification
+**FAILURE TO FOLLOW QUALITY CHECKLIST = STEP FAILURE**
 
 ---
 
-## **🔧 KEY TOOLS**
+## **🔧 MANDATORY TOOL USAGE**
 
-### **Workflow Initiation**
+### **Workflow Management**
 
-- `bootstrap_workflow` - **Simple kickoff without task details**
-
-### **Execution & Guidance**
-
-- `get_step_guidance` - Get current step execution details
-- `report_step_completion` - Report execution results
-- `execute_mcp_operation` - Execute internal MCP operations
+- `bootstrap_workflow` - Initialize new workflow
+- `get_step_guidance` - Get current step instructions
+- `report_step_completion` - Report step results (MANDATORY after each step)
+- `execute_mcp_operation` - Execute MCP operations with proper parameters
 
 ### **Role Transitions**
 
-- `get_role_transitions` - Available transitions when role complete
-- `validate_transition` - Check transition readiness
+- `get_role_transitions` - Get available transitions
+- `validate_transition` - Validate transition requirements
 - `execute_transition` - Perform role transition
 
-### **Workflow State**
+### **State Management**
 
-- `workflow_execution_operations` - State management (get_execution, update, etc.)
-
----
-
-## **📋 EXECUTION CHECKLIST**
-
-**For Each Step:**
-
-1. ✅ Read step guidance (behavioralContext, approachGuidance, qualityChecklist)
-2. ✅ Execute guidance commands locally using YOUR tools
-3. ✅ Validate results against success criteria
-4. ✅ Report completion with execution data
-5. ✅ Handle role transitions when steps complete
-
-**Common Commands:**
-
-- Git: `await run_terminal_cmd({command: 'git status'})`
-- Files: `await read_file({target_file: 'path'})`
-- Search: `await codebase_search({query: 'search term'})`
+- `workflow_execution_operations` - Query/update execution state
 
 ---
 
-## **❌ DON'TS | ✅ DO'S**
+## **⚠️ CRITICAL REQUIREMENTS**
 
-**❌ DON'T:**
+### **TASK CREATION REQUIREMENTS**
 
-- Provide task details to bootstrap (not needed)
-- Expect MCP to execute commands
-- Skip step guidance validation
-- Loop indefinitely on errors (3-try rule)
-- Expect task to exist immediately after bootstrap
+When creating tasks, YOU MUST:
 
-**✅ DO:**
+- Include `executionId` parameter (MANDATORY)
+- Provide comprehensive `description` object
+- Include structured `codebaseAnalysis` data
+- Verify task creation success before proceeding
 
-- Use simple bootstrap with just role and execution mode
-- Execute all commands locally per step guidance
-- Follow step-by-step approach guidance
-- Report results back to MCP
-- Let workflow steps guide everything
-- Trust database-driven step guidance
+### **STEP GUIDANCE COMPLIANCE**
 
----
+- Follow `approachGuidance` step-by-step instructions exactly
+- Execute ALL commands listed in guidance locally
+- Meet ALL `qualityChecklist` requirements
+- Report accurate `executionData` with evidence
 
-## **🔧 TROUBLESHOOTING**
+### **ERROR HANDLING**
 
-- **"No task details provided"** → Normal! Workflow steps will gather task requirements
-- **"Command didn't execute"** → YOU must run it locally with your tools
-- **"Step execution failed"** → Check step guidance, report failure details
-- **"Role transition needed"** → Use transition pattern
-- **"No taskId after bootstrap"** → Normal! Task created by boomerang step 3
-- **"Step guidance unclear"** → Follow behavioralContext and approachGuidance
+- Maximum 3 retry attempts per operation
+- Report failures with detailed error information
+- NEVER proceed if critical steps fail (e.g., git operations)
 
 ---
 
-**Remember: Bootstrap is just a simple kickoff. The database-driven workflow steps contain ALL the intelligence and guidance needed for complete execution.**
+## **❌ PROHIBITED ACTIONS**
+
+**YOU MUST NOT:**
+
+- Skip quality checklist validation
+- Expect MCP to execute commands for you
+- Proceed without reporting step completion
+- Ignore step guidance instructions
+- Create tasks without executionId
+- Continue after critical failures
+
+---
+
+## **✅ REQUIRED ACTIONS**
+
+**YOU MUST:**
+
+- Execute ALL commands locally using your tools
+- Follow step guidance instructions precisely
+- Validate against quality checklists
+- Report step completion with execution data
+- Include executionId in all task operations
+- Handle role transitions properly
+- Stop workflow on critical failures
+
+---
+
+## **🔧 TROUBLESHOOTING RESPONSES**
+
+**WHEN encountering these issues, RESPOND as follows:**
+
+- **"No step guidance"** → Call `get_step_guidance` with correct parameters
+- **"Command failed"** → Retry up to 3 times, then report failure
+- **"Quality check failed"** → Fix issues and re-validate before proceeding
+- **"Role transition needed"** → Use transition pattern above
+- **"ExecutionId missing"** → Update execution context with proper linking
+
+---
+
+**REMEMBER: You are the executor. MCP provides guidance. Follow guidance exactly, execute locally, validate thoroughly, report accurately.**

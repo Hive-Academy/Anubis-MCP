@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { CoreServiceOrchestrator } from '../services/core-service-orchestrator.service';
-import { RequiredInputExtractorService } from '../services/required-input-extractor.service';
 import { getErrorMessage } from '../utils/type-safety.utils';
 import { BaseMcpService } from '../utils/mcp-response.utils';
 
@@ -56,7 +55,6 @@ export class McpOperationExecutionMcpService extends BaseMcpService {
 
   constructor(
     private readonly coreServiceOrchestrator: CoreServiceOrchestrator,
-    private readonly requiredInputExtractorService: RequiredInputExtractorService,
   ) {
     super();
   }
@@ -83,92 +81,133 @@ export class McpOperationExecutionMcpService extends BaseMcpService {
 **TaskOperations Service:**
 - create: Create new task with comprehensive data
 - update: Update existing task properties and status
-- get: Retrieve task details with optional inclusions
+- get: Retrieve task details with optional inclusions (CONSISTENT: uses taskId)
 - list: List tasks with filtering and pagination
 
 **PlanningOperations Service:**
-- create_plan: Create implementation plan for a task
-- update_plan: Update existing implementation plan
-- get_plan: Retrieve plan with optional subtasks (use includeBatches: true)
-- create_subtasks: Create batch of subtasks for a plan
-- update_batch: Update status of entire subtask batch
-- get_batch: Retrieve specific subtask batch
+- create_plan: Create implementation plan for a task (CONSISTENT: uses taskId)
+- update_plan: Update existing implementation plan (CONSISTENT: uses taskId)
+- get_plan: Retrieve plan with optional subtasks (CONSISTENT: uses taskId)
+- create_subtasks: Create batch of subtasks for a plan (CONSISTENT: uses taskId)
+- update_batch: Update status of entire subtask batch (CONSISTENT: uses taskId)
+- get_batch: Retrieve specific subtask batch (CONSISTENT: uses taskId)
 
 **WorkflowOperations Service:**
-- delegate: Delegate task to another role with context
-- complete: Mark workflow as completed
-- escalate: Escalate task to higher authority
+- delegate: Delegate task to another role with context (CONSISTENT: uses taskId)
+- complete: Mark workflow as completed (CONSISTENT: uses taskId)
+- escalate: Escalate task to higher authority (CONSISTENT: uses taskId)
 
 **ReviewOperations Service:**
-- create_review: Create code review for completed work
-- update_review: Update review status and feedback
-- get_review: Retrieve review details
-- create_completion: Mark review as completed
+- create_review: Create code review for completed work (CONSISTENT: uses taskId)
+- update_review: Update review status and feedback (CONSISTENT: uses taskId)
+- get_review: Retrieve review details (CONSISTENT: uses taskId)
+- create_completion: Mark review as completed (CONSISTENT: uses taskId)
 
 **ResearchOperations Service:**
-- create_research: Create research task
-- update_research: Update research findings
-- get_research: Retrieve research details
-- add_comment: Add comment to research
+- create_research: Create research task (CONSISTENT: uses taskId)
+- update_research: Update research findings (CONSISTENT: uses taskId)
+- get_research: Retrieve research details (CONSISTENT: uses taskId)
+- add_comment: Add comment to research (CONSISTENT: uses taskId)
 
 **SubtaskOperations Service:**
-- create_subtask: Create individual subtask with detailed specs
-- update_subtask: Update subtask status and completion evidence
-- get_subtask: Retrieve subtask details with dependencies
-- get_next_subtask: Get next available subtask for execution
+- create_subtask: Create individual subtask with detailed specs (CONSISTENT: uses taskId)
+- update_subtask: Update subtask status and completion evidence (CONSISTENT: uses taskId AND subtaskId)
+- get_subtask: Retrieve subtask details with dependencies (CONSISTENT: uses subtaskId)
+- get_next_subtask: Get next available subtask for execution (CONSISTENT: uses taskId)
 
-**PARAMETER EXAMPLES:**
+**EXACT PARAMETER STRUCTURES USED BY AI:**
 
-TaskOperations.create:
+TaskOperations.get (CONSISTENT PARAMETERS):
 {
-  "taskName": "Task name",
-  "description": "Detailed description", 
-  "priority": "High|Medium|Low|Critical",
-  "requirements": "Specific requirements"
+  "serviceName": "TaskOperations",
+  "operation": "get",
+  "parameters": {
+    "taskId": 2,
+    "includeAnalysis": true,
+    "includePlans": true,
+    "includeSubtasks": true
+  }
 }
 
-TaskOperations.get:
+PlanningOperations.get_plan (CONSISTENT PARAMETERS):
 {
-  "taskId": 123,
-  "includeAnalysis": true,
-  "includePlans": true,
-  "includeSubtasks": true
+  "serviceName": "PlanningOperations",
+  "operation": "get_plan", 
+  "parameters": {
+    "taskId": 2,
+    "includeBatches": true
+  }
 }
 
-PlanningOperations.get_plan:
+SubtaskOperations.get_next_subtask (CONSISTENT PARAMETERS):
 {
-  "taskId": 123,
-  "includeBatches": true
+  "serviceName": "SubtaskOperations",
+  "operation": "get_next_subtask",
+  "parameters": {
+    "taskId": 2
+  }
 }
 
-SubtaskOperations.update_subtask:
+SubtaskOperations.update_subtask (CONSISTENT PARAMETERS):
 {
-  "taskId": 123,
-  "subtaskId": 456,
-  "updateData": {
-    "status": "completed|in-progress|not-started",
-    "completionEvidence": {
-      "implementationSummary": "What was implemented",
-      "filesModified": ["file1.ts", "file2.ts"],
-      "duration": "30 minutes"
+  "serviceName": "SubtaskOperations",
+  "operation": "update_subtask",
+  "parameters": {
+    "taskId": 2,
+    "subtaskId": 8,
+    "updateData": {
+      "status": "in-progress",
+      "completionEvidence": {
+        "implementationSummary": "What was implemented",
+        "filesModified": ["file1.ts", "file2.ts"],
+        "duration": "30 minutes"
+      }
     }
   }
 }
 
-WorkflowOperations.delegate:
+SubtaskOperations.get_subtask (CONSISTENT PARAMETERS):
 {
-  "taskId": 123,
-  "targetRole": "code-review",
-  "delegationContext": "Implementation completed with evidence"
+  "serviceName": "SubtaskOperations",
+  "operation": "get_subtask",
+  "parameters": {
+    "subtaskId": 8
+  }
 }
 
-**USAGE PATTERN:**
-AI collects required data, then calls:
+WorkflowOperations.delegate (CONSISTENT PARAMETERS):
+{
+  "serviceName": "WorkflowOperations",
+  "operation": "delegate",
+  "parameters": {
+    "taskId": 2,
+    "targetRole": "code-review",
+    "delegationContext": "Implementation completed with evidence"
+  }
+}
+
+TaskOperations.create (CONSISTENT PARAMETERS):
 {
   "serviceName": "TaskOperations",
-  "operation": "create", 
-  "parameters": { taskName: "...", description: "...", priority: "High" }
-}`,
+  "operation": "create",
+  "parameters": {
+    "taskName": "Task name",
+    "description": "Detailed description", 
+    "priority": "High",
+    "requirements": "Specific requirements",
+    "executionId": "execution-id-for-linking"
+  }
+}
+
+**PARAMETER CONSISTENCY RULES:**
+1. ALWAYS use "taskId" for task identification (never "id")
+2. ALWAYS use "subtaskId" for subtask identification (never "id") 
+3. ALWAYS use consistent parameter names across all operations
+4. ALWAYS match the exact parameter structure the AI sends
+5. NEVER require parameter mapping or transformation
+
+**USAGE PATTERN:**
+AI sends exact parameters as shown above, MCP server handles them directly without transformation.`,
     parameters:
       ExecuteMcpOperationInputSchema as ZodSchema<ExecuteMcpOperationInput>,
   })
@@ -176,6 +215,11 @@ AI collects required data, then calls:
     try {
       this.logger.log(
         `Executing MCP operation: ${input.serviceName}.${input.operation}`,
+      );
+
+      // Log the exact parameters received for debugging
+      this.logger.debug(
+        `Parameters received: ${JSON.stringify(input.parameters, null, 2)}`,
       );
 
       // Validate that the operation is supported
@@ -196,14 +240,12 @@ AI collects required data, then calls:
       }
 
       // Route to CoreServiceOrchestrator for actual execution
+      // IMPORTANT: Pass parameters as-is without transformation - they should match the expected structure
       const operationResult =
         await this.coreServiceOrchestrator.executeServiceCall(
           input.serviceName,
           input.operation,
-          this.requiredInputExtractorService.extractFromServiceSchema(
-            input.serviceName,
-            input.operation,
-          ),
+          (input.parameters as Record<string, unknown>) || {}, // Use parameters exactly as sent by AI
         );
 
       // ✅ MINIMAL RESPONSE: Only essential operation result
