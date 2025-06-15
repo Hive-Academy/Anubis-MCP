@@ -1,27 +1,59 @@
 {
   "workflowSteps": [
     {
-      "name": "comprehensive_context_validation_and_implementation_planning",
-      "displayName": "Comprehensive Context Validation and Implementation Planning",
-      "description": "Retrieve task context with codebase analysis, validate requirements, and create strategic implementation plan",
+      "name": "iterative_planning_and_subtask_creation",
+      "displayName": "Iterative Planning and Subtask Creation with Context Preservation",
+      "description": "Create implementation plan and subtasks iteratively in one step to maintain context and ensure alignment with actual task requirements",
       "sequenceNumber": 1,
       "isRequired": true,
-      "estimatedTime": "25-35 minutes",
-      "stepType": "ACTION",
+      "estimatedTime": "35-45 minutes",
+      "stepType": "ITERATIVE_ACTION",
       "behavioralContext": {
-        "approach": "Intelligent context consumption with validation and strategic implementation planning",
+        "approach": "Iterative planning with immediate subtask creation to preserve context and ensure task alignment",
         "principles": [
-          "Consume boomerang's comprehensive codebase analysis and task details",
-          "Validate task requirements and technical feasibility quickly",
-          "Create strategic implementation plan with SOLID, KISS and DRY principles",
-          "Focus on architectural enhancement rather than re-analysis"
+          "MANDATORY: Get comprehensive task context first (TaskOperations.get)",
+          "MANDATORY: Create or update implementation plan based on actual task requirements",
+          "MANDATORY: Immediately create subtasks while context is fresh",
+          "MANDATORY: Validate subtasks align with actual task goals (not generic validation)",
+          "MANDATORY: Focus on ACTUAL WORK needed, not meta-analysis tasks",
+          "NEVER create documentation subtasks - integration-engineer role handles all documentation"
         ],
-        "methodology": "Context-driven planning with evidence-based validation",
-        "planningStrategy": {
-          "contextConsumption": "Extract task description, codebase analysis, and requirements from boomerang",
-          "quickValidation": "Validate technical feasibility and architectural alignment",
-          "strategicPlanning": "Create implementation plan with SOLID, KISS and DRY principles and existing patterns",
-          "qualityIntegration": "Define quality gates and success criteria"
+        "methodology": "Context-preserving iterative planning with immediate subtask creation and validation",
+        "iterativePlanningCycle": {
+          "getTaskContext": "Use TaskOperations.get with comprehensive inclusion to understand actual requirements",
+          "analyzePlanNeeds": "Determine if plan exists and if it matches actual task requirements",
+          "createOrUpdatePlan": "Create new plan or update existing plan based on actual task needs",
+          "immediateSubtaskCreation": "Create subtasks immediately while context is fresh",
+          "validateAlignment": "Validate subtasks actually accomplish the task goals",
+          "refineIfNeeded": "Refine plan/subtasks if they don't match actual requirements"
+        },
+        "contextPreservation": {
+          "taskRequirements": "Keep actual task description and goals at forefront",
+          "codebaseAnalysis": "Use existing codebase analysis without re-analysis",
+          "realWork": "Focus on actual implementation work, not meta-validation",
+          "documentationExclusion": "NEVER create subtasks for documentation - integration-engineer handles this"
+        },
+        "subtaskFocus": {
+          "includeInSubtasks": [
+            "Code implementation and refactoring",
+            "Unit and integration testing",
+            "Performance optimization",
+            "Security implementation",
+            "Error handling and validation",
+            "Configuration and setup changes",
+            "Database schema changes",
+            "API endpoint implementation"
+          ],
+          "excludeFromSubtasks": [
+            "Documentation updates (README, memory bank, etc.)",
+            "Content analysis and validation scripts",
+            "Business value validation scripts",
+            "Quality gate definition scripts",
+            "Meta-analysis tasks",
+            "Pull request creation",
+            "Git operations and commits",
+            "Deployment and integration tasks"
+          ]
         },
         "solidPrinciples": {
           "singleResponsibility": "Each class/service has one reason to change",
@@ -34,29 +66,53 @@
       "approachGuidance": {
         "stepByStep": [
           "Execute TaskOperations.get with comprehensive inclusion to get task details and codebase analysis",
-          "Validate task requirements against existing codebase analysis and architectural patterns",
-          "Design solution approach using  SOLID, KISS and DRY principles and existing patterns",
-          "Check for existing implementation plan and update or create new one",
-          "Document architectural decisions with evidence-based rationale"
+          "Analyze actual task requirements - what REAL WORK needs to be done?",
+          "Check if existing plan exists using PlanningOperations.get_plan",
+          "Create new plan or update existing plan based on ACTUAL task requirements (not generic validation)",
+          "Immediately create subtasks using PlanningOperations.create_subtasks while context is fresh",
+          "Validate subtasks actually accomplish the task goals (not meta-analysis)",
+          "If subtasks don't align with actual work needed, refine plan and recreate subtasks",
+          "Ensure subtasks focus on REAL IMPLEMENTATION WORK, not documentation or validation scripts"
+        ],
+        "contextAnalysisSteps": [
+          "Read task name and description carefully - what is the user actually asking for?",
+          "Identify the REAL WORK needed (code changes, feature implementation, bug fixes)",
+          "Use existing codebase analysis without re-analyzing",
+          "Distinguish between actual implementation work vs meta-tasks",
+          "Focus on deliverables that directly satisfy user requirements"
+        ],
+        "planCreationSteps": [
+          "Design solution approach using SOLID, KISS and DRY principles",
+          "Create implementation plan focused on ACTUAL WORK needed",
+          "Include architectural context from existing codebase analysis",
+          "Define quality constraints and success criteria for REAL deliverables",
+          "Document approach that directly addresses user requirements"
+        ],
+        "subtaskCreationSteps": [
+          "Create subtasks that directly implement the required functionality",
+          "Provide comprehensive strategic guidance for each subtask",
+          "Include architectural context, implementation specifics, and code examples",
+          "Define measurable success criteria and validation requirements",
+          "Focus ONLY on code implementation, testing, and technical tasks",
+          "EXCLUDE documentation, meta-analysis, and validation script tasks"
         ],
         "validationSteps": [
-          "Verify task requirements are clear and technically feasible",
-          "Confirm codebase analysis provides sufficient architectural context",
-          "Validate solution approach aligns with existing patterns and constraints"
-        ],
-        "planningSteps": [
-          "Design implementation approach using  SOLID, KISS and DRY principles",
-          "Create or update implementation plan with strategic guidance",
-          "Define quality constraints and success criteria",
-          "Establish architectural rationale and verification evidence"
+          "Review created subtasks against original task requirements",
+          "Ensure subtasks accomplish the actual user request",
+          "Verify no meta-analysis or documentation subtasks were created",
+          "Confirm subtasks focus on real implementation work",
+          "Refine if subtasks don't directly address task goals"
         ]
       },
       "qualityChecklist": [
-        "Task context and codebase analysis retrieved and validated",
-        "Technical feasibility confirmed with architectural alignment",
-        "Implementation plan created or updated with  SOLID, KISS and DRY principles",
-        "Quality constraints and success criteria defined",
-        "Architectural decisions documented with evidence-based rationale"
+        "Task context and codebase analysis retrieved and understood",
+        "Implementation plan created or updated based on ACTUAL task requirements",
+        "Subtasks created immediately while context is fresh",
+        "Subtasks focus on REAL IMPLEMENTATION WORK, not meta-analysis",
+        "NO documentation subtasks created - integration-engineer handles documentation",
+        "Subtasks directly accomplish the user's actual request",
+        "Quality constraints and success criteria defined for real deliverables",
+        "Plan and subtasks validated against original task goals"
       ],
       "conditions": [],
       "actions": [
@@ -86,127 +142,26 @@
             "operation": "{{create_or_update_based_on_existing}}"
           },
           "sequenceOrder": 3
-        }
-      ],
-      "triggerReport": true,
-      "reportType": "comprehensive_context_validation_and_planning",
-      "reportTemplate": "context_validation_and_implementation_planning"
-    },
-    {
-      "name": "strategic_subtask_creation_with_quality_gates",
-      "displayName": "Strategic Subtask Creation with Quality Gates",
-      "description": "Create strategic implementation subtasks with comprehensive guidance and quality gates",
-      "sequenceNumber": 2,
-      "isRequired": true,
-      "estimatedTime": "20-25 minutes",
-      "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Strategic subtask creation with comprehensive guidance and measurable quality gates",
-        "principles": [
-          "Create subtasks with detailed strategic guidance and architectural context",
-          "Include specific implementation guidance with code examples",
-          "Define measurable quality gates and validation criteria",
-          "Ensure  SOLID, KISS and DRY principles compliance and pattern consistency",
-          "NEVER create documentation subtasks - documentation is handled by integration-engineer role"
-        ],
-        "methodology": "Detailed subtask planning with quality assurance integration",
-        "subtaskCreationStrategy": {
-          "batchOrganization": "Create strategic batches with 3-8 subtasks following dependency order",
-          "guidanceDetail": "Provide comprehensive strategic guidance for each subtask",
-          "implementationSpecifics": "Include architectural context, implementation specifics, and code examples",
-          "qualityIntegration": "Define quality constraints, success criteria, and anti-pattern prevention",
-          "documentationExclusion": "NEVER create subtasks for documentation updates - integration-engineer role handles all documentation"
         },
-        "qualityGateDefinition": {
-          "codeQuality": " SOLID, KISS and DRY compliance, test coverage, documentation standards",
-          "performance": "Response times, query efficiency, resource usage metrics",
-          "security": "Input validation, authentication, authorization requirements",
-          "integration": "API contracts, error handling, monitoring requirements"
-        },
-        "subtaskScope": {
-          "includeInSubtasks": [
-            "Code implementation and refactoring",
-            "Unit and integration testing",
-            "Performance optimization",
-            "Security implementation",
-            "Error handling and validation",
-            "Configuration and setup changes"
-          ],
-          "excludeFromSubtasks": [
-            "Documentation updates (README, memory bank, etc.)",
-            "Pull request creation",
-            "Git operations and commits",
-            "Deployment and integration tasks"
-          ]
-        }
-      },
-      "approachGuidance": {
-        "stepByStep": [
-          "Create strategic batches with 3-8 subtasks following dependency order",
-          "Provide comprehensive strategic guidance for each subtask",
-          "Include architectural context, implementation specifics, and code examples",
-          "Define quality constraints, success criteria, and anti-pattern prevention",
-          "Establish measurable quality gates and validation criteria",
-          "Document performance targets and security requirements",
-          "EXCLUDE documentation subtasks - integration-engineer handles all documentation"
-        ],
-        "subtaskCreationSteps": [
-          "Organize implementation work into logical dependency-ordered batches",
-          "For each subtask, provide architectural context and problem being solved",
-          "Include specific implementation guidance with complete code examples",
-          "Define measurable success criteria and validation requirements",
-          "Focus ONLY on code implementation, testing, and technical tasks",
-          "Do NOT create subtasks for documentation, git operations, or deployment"
-        ],
-        "qualityGateSteps": [
-          "Define comprehensive quality gates covering code, performance, security",
-          "Establish measurable validation criteria that are enforceable",
-          "Align quality standards with baseline metrics and security requirements",
-          "Document performance targets and monitoring requirements"
-        ]
-      },
-      "qualityChecklist": [
-        "Strategic batches created with appropriate subtask organization",
-        "Each subtask includes comprehensive strategic guidance and context",
-        "Implementation specifics with code examples provided",
-        "Quality constraints and success criteria clearly defined",
-        "Measurable quality gates established for all phases",
-        "Performance targets and security requirements specified",
-        "NO documentation subtasks created - integration-engineer role handles documentation"
-      ],
-      "conditions": [
         {
-          "name": "context_validation_and_planning_completed",
-          "conditionType": "PREVIOUS_STEP_COMPLETED",
-          "logic": {
-            "check": "step_completed",
-            "parameters": {
-              "stepName": "comprehensive_context_validation_and_implementation_planning"
-            }
-          },
-          "isRequired": true
-        }
-      ],
-      "actions": [
-        {
-          "name": "create_strategic_subtasks",
+          "name": "create_aligned_subtasks",
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "PlanningOperations",
             "operation": "create_subtasks"
           },
-          "sequenceOrder": 1
+          "sequenceOrder": 4
         }
       ],
       "triggerReport": true,
-      "reportType": "strategic_subtasks_and_quality_gates",
-      "reportTemplate": "strategic_subtask_creation"
+      "reportType": "iterative_planning_and_subtask_creation",
+      "reportTemplate": "context_preserving_planning_report"
     },
     {
       "name": "strategic_senior_developer_delegation",
       "displayName": "Strategic Senior Developer Delegation with Context",
       "description": "Delegate to senior developer with comprehensive strategic context and implementation readiness",
-      "sequenceNumber": 3,
+      "sequenceNumber": 2,
       "isRequired": true,
       "estimatedTime": "5-8 minutes",
       "stepType": "ACTION",
@@ -240,12 +195,12 @@
       ],
       "conditions": [
         {
-          "name": "subtasks_and_quality_gates_ready",
+          "name": "planning_and_subtasks_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "strategic_subtask_creation_with_quality_gates"
+              "stepName": "iterative_planning_and_subtask_creation"
             }
           },
           "isRequired": true
