@@ -1,62 +1,52 @@
 {
   "workflowSteps": [
     {
-      "name": "comprehensive_context_and_implementation_validation",
-      "displayName": "Comprehensive Context and Implementation Validation",
-      "description": "Retrieve complete implementation context and validate delivery readiness with evidence collection",
+      "name": "comprehensive_context_acquisition_for_integration",
+      "displayName": "Comprehensive Context Acquisition for Integration",
+      "description": "Retrieve complete implementation context and prepare for integration and documentation tasks",
       "sequenceNumber": 1,
       "isRequired": true,
-      "estimatedTime": "15-20 minutes",
+      "estimatedTime": "10-15 minutes",
       "stepType": "ACTION",
       "behavioralContext": {
-        "approach": "Comprehensive context acquisition with systematic implementation completeness validation",
+        "approach": "Context acquisition focused on integration needs and documentation requirements",
         "principles": [
-          "Retrieve complete task context with all implementation evidence and quality metrics",
-          "Validate all delivery components: code, testing, documentation, quality gates",
-          "Verify acceptance criteria satisfaction with documented evidence",
-          "Assess production readiness with comprehensive validation checklist"
+          "Retrieve complete task context to understand what was implemented",
+          "Gather implementation details for documentation updates",
+          "Understand changes made to determine documentation impact",
+          "Prepare context for integration and deployment activities"
         ],
-        "methodology": "Evidence-based validation with comprehensive delivery readiness assessment",
-        "validationMethod": {
-          "batchCompletion": "Confirm all planned implementation batches completed and approved",
-          "codeReviewStatus": "Validate APPROVED status with comprehensive testing evidence",
-          "acceptanceCriteria": "Verify all criteria met with documented evidence",
-          "qualityGates": "Ensure build, lint, tests, performance, security standards satisfied",
-          "integrationTesting": "Confirm integration validated and working properly"
-        },
-        "analysisMethod": {
-          "modifiedFiles": "Identify and catalog changed files with purposes and descriptions",
-          "newFiles": "Document new files and directories with comprehensive descriptions",
-          "deletedFiles": "Note removed or deprecated files with rationale",
-          "configurationChanges": "Identify config, environment, and dependency changes",
-          "databaseChanges": "Document schema migrations and data modifications"
+        "methodology": "Integration-focused context gathering with documentation preparation",
+        "contextGathering": {
+          "implementationSummary": "Understand what was built and how it works",
+          "changesAnalysis": "Identify what files were modified, added, or removed",
+          "documentationImpact": "Determine which documentation needs updates",
+          "integrationRequirements": "Understand deployment and integration needs"
         }
       },
       "approachGuidance": {
         "stepByStep": [
-          "Execute query_task_context with comprehensive inclusion (plans, subtasks, analysis, evidence)",
-          "Validate batch completion verification: all planned implementation batches completed and approved",
-          "Verify code review status: APPROVED status with comprehensive testing validation",
-          "Validate acceptance criteria: all original criteria met with documented evidence",
-          "Assess quality gates: build success, test coverage, performance, security standards",
-          "Perform file and change analysis: modified files, new files, configuration changes documentation"
+          "Execute TaskOperations.get to retrieve complete task context and implementation details",
+          "Review implementation plans and completed subtasks to understand what was built",
+          "Analyze code review results to understand approved changes and implementation quality",
+          "Identify files modified, added, or removed for documentation impact assessment",
+          "Prepare context for documentation updates and integration activities",
+          "Document integration requirements and deployment considerations"
         ],
-        "validationCriteria": [
-          "Complete implementation context retrieved with all evidence and quality metrics",
-          "Batch completion verified with all planned implementation batches completed and approved",
-          "Code review status validated as APPROVED with comprehensive testing evidence",
-          "Acceptance criteria verified as satisfied with documented evidence and validation",
-          "Quality gates assessment completed: build, lint, tests, performance, security standards",
-          "File and change analysis documented: modified, new, deleted files with purposes and rationale"
+        "contextAnalysisSteps": [
+          "Review task description and acceptance criteria to understand original requirements",
+          "Examine implementation plans to understand architectural decisions and approach",
+          "Analyze completed subtasks to understand specific changes made",
+          "Review code review feedback to understand quality validation results"
         ]
       },
       "qualityChecklist": [
-        "Complete implementation context retrieved with all evidence and quality metrics",
-        "Batch completion verified with all planned implementation batches completed and approved",
-        "Code review status validated as APPROVED with comprehensive testing evidence",
-        "Acceptance criteria verified as satisfied with documented evidence and validation",
-        "Quality gates assessment completed: build, lint, tests, performance, security standards",
-        "File and change analysis documented: modified, new, deleted files with purposes and rationale"
+        "Complete task context retrieved with implementation details and quality results",
+        "Implementation plans and subtasks reviewed to understand what was built",
+        "Code review results analyzed to understand approved changes",
+        "Files and changes identified for documentation impact assessment",
+        "Integration requirements and deployment considerations documented",
+        "Context prepared for effective documentation updates and integration activities"
       ],
       "conditions": [],
       "actions": [
@@ -71,8 +61,8 @@
         }
       ],
       "triggerReport": true,
-      "reportType": "comprehensive_context_and_validation",
-      "reportTemplate": "implementation_context_and_completeness_validation"
+      "reportType": "integration_context_acquisition",
+      "reportTemplate": "integration_context_and_preparation"
     },
     {
       "name": "mandatory_git_integration_and_remote_synchronization",
@@ -118,7 +108,7 @@
         "stepByStep": [
           "Execute git status assessment: verify working directory clean and correct feature branch",
           "Perform file staging and commit verification: stage all changes and verify no unstaged files",
-          "Create comprehensive integration commit: detailed message with implementation summary and quality gates",
+          "Create comprehensive integration commit: detailed message with implementation summary",
           "Execute remote synchronization: fetch latest, push feature branch, verify success",
           "Implement error handling protocol: document errors, attempt resolution, halt if unresolvable",
           "Validate git integration completion: clean state, successful push, ready for PR creation"
@@ -126,7 +116,7 @@
         "validationCriteria": [
           "Git status assessment completed with clean working directory and correct feature branch verified",
           "File staging and commit verification successful with all implementation changes committed",
-          "Comprehensive integration commit created with detailed message including quality gates validation",
+          "Comprehensive integration commit created with detailed message including implementation summary",
           "Remote synchronization completed with successful push and verification of feature branch",
           "Error handling protocol implemented with resolution attempts and escalation procedures",
           "Git integration completion validated with clean state and integration readiness confirmed"
@@ -135,19 +125,19 @@
       "qualityChecklist": [
         "Git status assessment completed with clean working directory and correct feature branch verified",
         "File staging and commit verification successful with all implementation changes committed",
-        "Comprehensive integration commit created with detailed message including quality gates validation",
+        "Comprehensive integration commit created with detailed message including implementation summary",
         "Remote synchronization completed with successful push and verification of feature branch",
         "Error handling protocol implemented with resolution attempts and escalation procedures",
         "Git integration completion validated with clean state and integration readiness confirmed"
       ],
       "conditions": [
         {
-          "name": "context_and_validation_completed",
+          "name": "context_acquisition_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "comprehensive_context_and_implementation_validation"
+              "stepName": "comprehensive_context_acquisition_for_integration"
             }
           },
           "isRequired": true
@@ -159,76 +149,71 @@
       "reportTemplate": "mandatory_git_integration_and_synchronization"
     },
     {
-      "name": "intelligent_documentation_and_pull_request_creation",
-      "displayName": "Intelligent Documentation and Pull Request Creation",
-      "description": "Intelligently assess documentation needs and create pull request with comprehensive validation evidence",
+      "name": "intelligent_documentation_updates_and_pull_request_creation",
+      "displayName": "Intelligent Documentation Updates and Pull Request Creation",
+      "description": "Update memory bank files and documentation based on implementation changes, then create comprehensive pull request",
       "sequenceNumber": 3,
       "isRequired": true,
-      "estimatedTime": "20-40 minutes",
+      "estimatedTime": "25-45 minutes",
       "stepType": "ACTION",
       "behavioralContext": {
         "approach": "Intelligent documentation assessment with targeted updates and comprehensive pull request creation",
         "principles": [
-          "Analyze if documentation actually needs updates based on implementation changes",
-          "Skip unnecessary documentation updates to avoid busywork",
-          "Focus on documentation that is actually outdated or missing",
-          "Create comprehensive pull request with detailed description and validation evidence"
+          "Analyze implementation changes to determine which documentation needs updates",
+          "Update memory bank files to reflect new capabilities or architectural changes",
+          "Update README and other documentation based on actual changes made",
+          "Create comprehensive pull request with detailed description and implementation summary"
         ],
         "methodology": "Smart documentation analysis with targeted updates and comprehensive pull request preparation",
         "intelligentDocumentationAssessment": {
-          "changeImpactAnalysis": "Analyze what was actually changed and if it affects user-facing documentation",
-          "documentationRelevance": "Determine if changes require README, API docs, or architecture documentation updates",
-          "skipCriteria": "Skip documentation updates if changes are internal refactoring, bug fixes, or don't affect public APIs",
-          "updateCriteria": "Update documentation only if new features, API changes, or user workflows are affected"
+          "changeImpactAnalysis": "Analyze what was implemented and how it affects user-facing documentation",
+          "memoryBankRelevance": "Determine if changes affect ProjectOverview, TechnicalArchitecture, or DeveloperGuide",
+          "readmeRelevance": "Determine if changes require README updates for installation, usage, or API documentation",
+          "updateCriteria": "Update documentation based on new features, API changes, architectural modifications, or user workflow changes"
         },
         "targetedDocumentationUpdates": {
-          "conditionalMemoryBankUpdates": "Update memory bank files ONLY if architectural changes or new capabilities added",
-          "conditionalReadmeUpdates": "Update README ONLY if installation, usage, or API documentation is affected",
-          "conditionalCleanup": "Perform cleanup ONLY if outdated information is discovered during analysis",
-          "focusedUpdates": "Focus updates on areas actually impacted by implementation changes"
+          "memoryBankUpdates": "Update ProjectOverview.md, TechnicalArchitecture.md, DeveloperGuide.md based on implementation changes",
+          "readmeUpdates": "Update README.md sections affected by implementation changes",
+          "architecturalDocumentation": "Update technical documentation to reflect new patterns or capabilities",
+          "userDocumentation": "Update user-facing documentation for new features or changed workflows"
         },
         "pullRequestCreation": {
           "preparation": "Generate file change summary, check for conflicts, create comprehensive description",
-          "prDescription": "Include task summary, changes overview, acceptance criteria verification",
-          "technicalDetails": "Document implementation changes, testing validation, quality metrics",
-          "reviewerGuidance": "Provide deployment considerations, review checklist, integration validation"
+          "prDescription": "Include task summary, implementation overview, documentation updates summary",
+          "technicalDetails": "Document implementation changes, files modified, and integration considerations",
+          "reviewerGuidance": "Provide deployment considerations, review checklist, and integration validation steps"
         }
       },
       "approachGuidance": {
         "stepByStep": [
-          "Analyze implementation changes to determine if documentation updates are actually needed",
-          "Apply intelligent criteria to decide which documentation requires updates vs can be skipped",
-          "Update only relevant documentation: memory bank files, README sections, or API docs as needed",
-          "Skip unnecessary documentation updates for internal changes that don't affect users",
+          "Analyze implementation changes to determine documentation update requirements",
+          "Update memory bank files (ProjectOverview.md, TechnicalArchitecture.md, DeveloperGuide.md) based on changes",
+          "Update README.md sections affected by implementation changes",
+          "Update any other relevant documentation based on new features or architectural changes",
           "Generate pull request preparation: file change summary, conflicts check, comprehensive description creation",
-          "Create detailed pull request with implementation summary, validation evidence, and reviewer guidance"
+          "Create detailed pull request with implementation summary, documentation updates, and reviewer guidance"
         ],
-        "intelligentAssessmentSteps": [
-          "Review implementation changes: Are these user-facing? Do they affect APIs? New features?",
-          "Assess documentation relevance: Which docs are actually outdated by these changes?",
-          "Apply skip criteria: Internal refactoring, bug fixes, code quality improvements typically don't need doc updates",
-          "Apply update criteria: New features, API changes, installation changes, usage changes require updates"
-        ],
-        "conditionalUpdateSteps": [
-          "IF architectural changes or new capabilities: Update memory bank documentation",
-          "IF API changes or new features: Update README and relevant sections",
-          "IF installation or setup changes: Update installation documentation",
-          "IF no user-facing changes: Skip documentation updates and proceed to PR creation"
+        "documentationUpdateSteps": [
+          "Review implementation to identify new features, architectural changes, or API modifications",
+          "Update ProjectOverview.md if business value or capabilities changed",
+          "Update TechnicalArchitecture.md if architectural patterns or technical stack changed",
+          "Update DeveloperGuide.md if development patterns or setup procedures changed",
+          "Update README.md if installation, usage, or API documentation is affected"
         ],
         "pullRequestSteps": [
-          "Generate comprehensive file change summary with implementation focus",
-          "Create detailed PR description with task context, changes overview, and validation evidence",
-          "Include technical implementation details and quality validation results",
-          "Provide reviewer guidance with deployment considerations and integration checklist"
+          "Generate comprehensive file change summary with implementation and documentation focus",
+          "Create detailed PR description with task context, implementation overview, and documentation updates",
+          "Include technical implementation details and integration considerations",
+          "Provide reviewer guidance with deployment considerations and validation checklist"
         ]
       },
       "qualityChecklist": [
-        "Implementation changes analyzed to determine actual documentation update needs",
-        "Intelligent criteria applied to skip unnecessary documentation updates",
-        "Only relevant documentation updated based on actual impact of implementation changes",
+        "Implementation changes analyzed to determine documentation update requirements",
+        "Memory bank files updated based on actual implementation changes and new capabilities",
+        "README and other documentation updated to reflect implementation changes",
+        "Documentation updates focused on areas actually affected by implementation",
         "Pull request preparation executed with comprehensive file change summary and description",
-        "Detailed pull request created with implementation summary, validation evidence, and reviewer guidance",
-        "Technical details and deployment considerations included for effective review process"
+        "Detailed pull request created with implementation summary, documentation updates, and reviewer guidance"
       ],
       "conditions": [
         {
@@ -245,57 +230,62 @@
       ],
       "actions": [],
       "triggerReport": true,
-      "reportType": "intelligent_documentation_and_pull_request",
-      "reportTemplate": "intelligent_documentation_and_pr_creation"
+      "reportType": "documentation_updates_and_pull_request",
+      "reportTemplate": "documentation_updates_and_pr_creation"
     },
     {
-      "name": "final_quality_validation_and_task_completion",
-      "displayName": "Final Quality Validation and Task Completion",
-      "description": "Execute final validation, complete task, and coordinate delivery with comprehensive reporting",
+      "name": "task_completion_and_delivery_coordination",
+      "displayName": "Task Completion and Delivery Coordination",
+      "description": "Complete task with comprehensive delivery documentation and coordinate final handoff",
       "sequenceNumber": 4,
       "isRequired": true,
       "estimatedTime": "15-25 minutes",
       "stepType": "ACTION",
       "behavioralContext": {
-        "approach": "Comprehensive final validation with task completion and delivery coordination",
+        "approach": "Task completion with comprehensive delivery coordination and handoff documentation",
         "principles": [
-          "Perform comprehensive validation of all deliverables with evidence collection",
-          "Complete task with detailed completion report and validation evidence",
-          "Coordinate final delivery with comprehensive handoff documentation",
-          "Prepare for workflow execution completion in next step"
+          "Complete task with detailed completion report and delivery documentation",
+          "Coordinate final delivery with comprehensive handoff information",
+          "Document deployment considerations and integration requirements",
+          "Prepare comprehensive delivery package for stakeholders"
         ],
-        "methodology": "Evidence-based completion with comprehensive delivery coordination and task finalization",
-        "finalValidation": {
-          "implementationQuality": "Validate functional integration, performance, security, user experience",
-          "documentationQuality": "Validate accuracy, completeness, usability, consistency, maintenance",
-          "technicalQuality": "Validate build verification, test coverage, code quality, dependencies, configuration"
+        "methodology": "Delivery-focused completion with comprehensive coordination and documentation",
+        "deliveryCoordination": {
+          "completionDocumentation": "Create comprehensive completion report with implementation summary and delivery details",
+          "deploymentGuidance": "Document deployment considerations, requirements, and procedures",
+          "integrationDocumentation": "Provide integration guidance and validation procedures",
+          "handoffPreparation": "Prepare comprehensive handoff documentation for stakeholders"
         }
       },
       "approachGuidance": {
         "stepByStep": [
-          "Execute final quality validation: implementation, documentation, and technical quality with comprehensive checklists",
-          "Create integration completion report: comprehensive validation evidence, acceptance criteria verification, delivery evidence",
-          "Complete task with comprehensive completion data including all validation evidence",
-          "Prepare delivery coordination: comprehensive delivery documentation, success metrics, monitoring procedures",
-          "Complete knowledge preservation: implementation evidence, architectural patterns, lessons learned documentation",
-          "Validate final handoff: actionable next steps, comprehensive context preservation, production readiness confirmation"
+          "Create comprehensive completion report with implementation summary and delivery documentation",
+          "Document deployment considerations, requirements, and integration procedures",
+          "Prepare delivery coordination documentation with stakeholder handoff information",
+          "Complete task with comprehensive completion data and delivery evidence",
+          "Coordinate final handoff with actionable next steps and deployment guidance",
+          "Validate delivery package completeness and stakeholder readiness"
         ],
-        "validationCriteria": [
-          "Final quality validation completed with implementation, documentation, and technical quality verification",
-          "Integration completion report created with comprehensive validation evidence and acceptance criteria verification",
-          "Task completion executed with comprehensive completion data and validation evidence",
-          "Delivery coordination prepared with comprehensive documentation, success metrics, and monitoring procedures",
-          "Knowledge preservation completed with implementation evidence and architectural patterns documentation",
-          "Final handoff validated with actionable next steps and production readiness confirmation"
+        "completionSteps": [
+          "Create integration completion report with implementation summary and delivery details",
+          "Document all files modified, features implemented, and integration considerations",
+          "Prepare deployment guidance and integration validation procedures",
+          "Complete task with comprehensive completion data and evidence"
+        ],
+        "deliveryCoordinationSteps": [
+          "Prepare comprehensive delivery documentation for stakeholders",
+          "Document deployment considerations and integration requirements",
+          "Provide actionable next steps and handoff guidance",
+          "Validate delivery package completeness and readiness"
         ]
       },
       "qualityChecklist": [
-        "Final quality validation completed with implementation, documentation, and technical quality verification",
-        "Integration completion report created with comprehensive validation evidence and acceptance criteria verification",
-        "Task completion executed with comprehensive completion data and validation evidence",
-        "Delivery coordination prepared with comprehensive documentation, success metrics, and monitoring procedures",
-        "Knowledge preservation completed with implementation evidence and architectural patterns documentation",
-        "Final handoff validated with actionable next steps and production readiness confirmation"
+        "Comprehensive completion report created with implementation summary and delivery documentation",
+        "Deployment considerations and integration procedures documented",
+        "Delivery coordination prepared with comprehensive stakeholder handoff information",
+        "Task completion executed with comprehensive completion data and delivery evidence",
+        "Final handoff coordinated with actionable next steps and deployment guidance",
+        "Delivery package validated for completeness and stakeholder readiness"
       ],
       "conditions": [
         {
@@ -304,7 +294,7 @@
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "intelligent_documentation_and_pull_request_creation"
+              "stepName": "intelligent_documentation_updates_and_pull_request_creation"
             }
           },
           "isRequired": true
@@ -331,8 +321,8 @@
         }
       ],
       "triggerReport": true,
-      "reportType": "final_validation_and_task_completion",
-      "reportTemplate": "integration_completion_and_task_finalization"
+      "reportType": "task_completion_and_delivery",
+      "reportTemplate": "task_completion_and_delivery_coordination"
     },
     {
       "name": "workflow_execution_completion",
@@ -395,7 +385,7 @@
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "final_quality_validation_and_task_completion"
+              "stepName": "task_completion_and_delivery_coordination"
             }
           },
           "isRequired": true
