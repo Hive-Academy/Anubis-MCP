@@ -152,7 +152,7 @@ export class TaskOperationsService {
   private async createTask(
     input: TaskOperationsInput,
   ): Promise<TaskWithRelations> {
-    const { taskData, description, codebaseAnalysis } = input;
+    const { taskData, description, codebaseAnalysis, executionId } = input;
 
     if (!taskData?.name) {
       throw new Error('Task name is required for creation');
@@ -181,6 +181,25 @@ export class TaskOperationsService {
 
       // Use the auto-generated taskId for related records
       const taskId = task.id;
+
+      // CRITICAL: Link task to workflow execution if executionId provided
+      if (executionId) {
+        try {
+          await tx.workflowExecution.update({
+            where: { id: executionId },
+            data: { taskId: taskId },
+          });
+          this.logger.debug(
+            `Linked task ${taskId} to execution ${executionId}`,
+          );
+        } catch (error) {
+          this.logger.error(
+            `Failed to link task to execution: ${error.message}`,
+          );
+          // Don't fail the entire transaction, but log the error
+          // The task creation should still succeed even if linking fails
+        }
+      }
 
       // Create task description if provided
       let taskDescription: TaskDescription | null = null;

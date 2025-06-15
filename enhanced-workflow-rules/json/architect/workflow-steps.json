@@ -13,14 +13,14 @@
         "principles": [
           "Consume boomerang's comprehensive codebase analysis and task details",
           "Validate task requirements and technical feasibility quickly",
-          "Create strategic implementation plan with SOLID principles",
+          "Create strategic implementation plan with SOLID, KISS and DRY principles",
           "Focus on architectural enhancement rather than re-analysis"
         ],
         "methodology": "Context-driven planning with evidence-based validation",
         "planningStrategy": {
           "contextConsumption": "Extract task description, codebase analysis, and requirements from boomerang",
           "quickValidation": "Validate technical feasibility and architectural alignment",
-          "strategicPlanning": "Create implementation plan with SOLID principles and existing patterns",
+          "strategicPlanning": "Create implementation plan with SOLID, KISS and DRY principles and existing patterns",
           "qualityIntegration": "Define quality gates and success criteria"
         },
         "solidPrinciples": {
@@ -35,7 +35,7 @@
         "stepByStep": [
           "Execute TaskOperations.get with comprehensive inclusion to get task details and codebase analysis",
           "Validate task requirements against existing codebase analysis and architectural patterns",
-          "Design solution approach using SOLID principles and existing patterns",
+          "Design solution approach using  SOLID, KISS and DRY principles and existing patterns",
           "Check for existing implementation plan and update or create new one",
           "Document architectural decisions with evidence-based rationale"
         ],
@@ -45,7 +45,7 @@
           "Validate solution approach aligns with existing patterns and constraints"
         ],
         "planningSteps": [
-          "Design implementation approach using SOLID principles",
+          "Design implementation approach using  SOLID, KISS and DRY principles",
           "Create or update implementation plan with strategic guidance",
           "Define quality constraints and success criteria",
           "Establish architectural rationale and verification evidence"
@@ -54,7 +54,7 @@
       "qualityChecklist": [
         "Task context and codebase analysis retrieved and validated",
         "Technical feasibility confirmed with architectural alignment",
-        "Implementation plan created or updated with SOLID principles",
+        "Implementation plan created or updated with  SOLID, KISS and DRY principles",
         "Quality constraints and success criteria defined",
         "Architectural decisions documented with evidence-based rationale"
       ],
@@ -106,7 +106,7 @@
           "Create subtasks with detailed strategic guidance and architectural context",
           "Include specific implementation guidance with code examples",
           "Define measurable quality gates and validation criteria",
-          "Ensure SOLID principles compliance and pattern consistency",
+          "Ensure  SOLID, KISS and DRY principles compliance and pattern consistency",
           "NEVER create documentation subtasks - documentation is handled by integration-engineer role"
         ],
         "methodology": "Detailed subtask planning with quality assurance integration",
@@ -118,7 +118,7 @@
           "documentationExclusion": "NEVER create subtasks for documentation updates - integration-engineer role handles all documentation"
         },
         "qualityGateDefinition": {
-          "codeQuality": "SOLID compliance, test coverage, documentation standards",
+          "codeQuality": " SOLID, KISS and DRY compliance, test coverage, documentation standards",
           "performance": "Response times, query efficiency, resource usage metrics",
           "security": "Input validation, authentication, authorization requirements",
           "integration": "API contracts, error handling, monitoring requirements"
