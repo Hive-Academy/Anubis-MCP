@@ -1,19 +1,21 @@
-# 🎯 MCP Workflow-Manager: AI-Guided Development Intelligence
+# 🎯 MCP Workflow Manager: AI-Guided Development Intelligence
 
 **Transform chaotic development into organized, quality-driven workflows with MCP-compliant AI guidance.**
 
-A revolutionary **Model Context Protocol (MCP) server** that provides intelligent workflow guidance for AI agents in software development. Built with NestJS + Prisma, this system follows MCP protocol standards correctly by providing guidance instead of plain text documents.
+A sophisticated **Model Context Protocol (MCP) server** that provides intelligent workflow guidance for AI agents in software development. Built with NestJS v11.0.1 + Prisma v6.9.0 + @rekog/mcp-nest v1.5.2, this system follows MCP protocol standards by providing guidance instead of execution.
 
-## 🏆 **MAJOR ACHIEVEMENT: MCP PROTOCOL COMPLIANCE**
+## 🏆 **ENTERPRISE-GRADE MCP WORKFLOW SYSTEM**
 
-**✅ BREAKTHROUGH**: We've achieved full MCP protocol compliance by eliminating all execution violations and establishing a true guidance-only architecture.
+**✅ PRODUCTION READY**: Version 1.0.14 with full MCP protocol compliance and enterprise-grade architecture.
 
 ### **🎯 What Makes This Special**
 
 - **✅ MCP Compliant**: Server provides guidance, AI agents execute locally
 - **✅ Zero Execution Violations**: No server-side command execution
-- **✅ Intelligent Guidance**: Context-aware recommendations for AI agents
-- **✅ Clean Architecture**: Proper separation between guidance and execution
+- **✅ Database-Driven Intelligence**: Dynamic workflow rules with embedded guidance
+- **✅ Domain-Driven Design**: Clean architecture with clear boundaries
+- **✅ Feature-Based Organization**: Embedded workflow intelligence
+- **✅ 12 Specialized MCP Tools**: Comprehensive workflow management
 
 ## 🚀 **BUSINESS VALUE**
 
@@ -22,7 +24,7 @@ A revolutionary **Model Context Protocol (MCP) server** that provides intelligen
 - **🎯 Structured Workflows**: Transform chaotic development into organized processes
 - **📈 Quality Assurance**: Built-in quality gates and validation criteria
 - **⚡ Faster Delivery**: AI-guided development with intelligent recommendations
-- **📊 Analytics**: Comprehensive tracking and performance insights
+- **📊 Analytics**: Interactive dashboards with Chart.js visualizations
 
 ### **For AI Agents**
 
@@ -33,7 +35,7 @@ A revolutionary **Model Context Protocol (MCP) server** that provides intelligen
 
 ### **For Organizations**
 
-- **🏗️ Scalable Architecture**: MCP-compliant design for enterprise use
+- **🏗️ Scalable Architecture**: Enterprise-grade NestJS + Prisma stack
 - **🔒 Security**: No server-side execution reduces security risks
 - **📈 ROI**: Faster development cycles with higher quality output
 - **🎯 Standardization**: Consistent development practices across teams
@@ -45,9 +47,9 @@ A revolutionary **Model Context Protocol (MCP) server** that provides intelligen
 ```javascript
 // AI agent calls MCP server for guidance
 get_step_guidance({
-  taskId: 123,
-  roleId: 'senior-developer',
-  stepId: 'implementation-setup',
+  executionId: 'cmbx4tkoo0001mtuogbz69myc',
+  roleId: 'cmbx4owap0003mtxkfbov68jb',
+  stepId: 'iterative_subtask_implementation_cycle',
 });
 ```
 
@@ -55,53 +57,82 @@ get_step_guidance({
 
 ```json
 {
-  "success": true,
-  "guidance": {
-    "description": "Set up implementation environment with proper structure",
-    "expectedOutput": "Clean project structure with all dependencies configured",
-    "suggestedTools": ["codebase_search", "read_file", "edit_file"],
-    "localExecution": {
-      "commands": [
-        "Analyze existing project structure",
-        "Install required dependencies",
-        "Configure development environment"
-      ],
-      "aiIntelligence": "Apply senior developer expertise to create optimal setup"
-    },
-    "successCriteria": [
-      "All dependencies installed and configured",
-      "Project structure follows best practices",
-      "Development environment ready for implementation"
+  "stepInfo": {
+    "stepId": "iterative_subtask_implementation_cycle",
+    "name": "iterative_subtask_implementation_cycle",
+    "description": "Execute implementation in iterative cycles: get next subtask → implement → test → commit → update status → repeat"
+  },
+  "behavioralContext": {
+    "approach": "Iterative subtask completion with individual commits and validation after each subtask",
+    "principles": [
+      "MANDATORY: Get next subtask using SubtaskOperations.get_next_subtask",
+      "MANDATORY: Update subtask to 'in-progress' before starting implementation",
+      "MANDATORY: Implement following architect's code examples exactly",
+      "MANDATORY: Test each subtask implementation thoroughly",
+      "MANDATORY: Commit changes after each subtask completion",
+      "MANDATORY: Update subtask to 'completed' with evidence after commit"
     ]
-  }
+  },
+  "approachGuidance": {
+    "stepByStep": [
+      "Execute SubtaskOperations.get_next_subtask with taskId to get next available subtask",
+      "If subtask available: Update status to 'in-progress' using SubtaskOperations.update_subtask",
+      "Implement the subtask following architect's strategic guidance and code examples exactly",
+      "Test the subtask implementation (unit tests, integration tests, manual validation)",
+      "Commit changes with descriptive message referencing the completed subtask",
+      "Update subtask status to 'completed' with completion evidence using SubtaskOperations.update_subtask"
+    ]
+  },
+  "qualityChecklist": [
+    "SubtaskOperations.get_next_subtask used to systematically get each subtask",
+    "Each subtask updated to 'in-progress' before implementation starts",
+    "Implementation follows architect's strategic guidance and code examples exactly",
+    "SOLID principles compliance maintained for each subtask implementation",
+    "Testing completed for each subtask (unit, integration, manual validation)",
+    "Individual commit made after each subtask completion with descriptive message",
+    "Each subtask updated to 'completed' status with proper completion evidence"
+  ]
 }
 ```
 
 ### **3. AI Agent Executes Locally**
 
-- AI agent receives structured guidance
-- Uses its own tools (codebase_search, read_file, edit_file, etc.)
+- AI agent receives structured guidance with behavioral context
+- Uses its own tools (codebase_search, read_file, edit_file, run_terminal_cmd, etc.)
 - Executes commands locally in the development environment
-- Reports results back to MCP server
+- Reports results back to MCP server with completion evidence
 
 ### **4. Progress Tracking & Analytics**
 
 ```javascript
 // AI agent reports completion
 report_step_completion({
-  taskId: 123,
-  stepId: 'implementation-setup',
+  executionId: 'cmbx4tkoo0001mtuogbz69myc',
+  stepId: 'iterative_subtask_implementation_cycle',
   result: 'success',
   executionData: {
-    /* results */
+    subtasksCompleted: 4,
+    filesModified: [
+      'memory-bank/TechnicalArchitecture.md',
+      'memory-bank/DeveloperGuide.md',
+    ],
+    implementationEvidence:
+      'All documentation files updated with current implementation details',
   },
-  executionTime: 1500,
 });
 ```
 
 ## 🚀 **QUICK START**
 
-### NPX Setup (Recommended)
+### **Prerequisites**
+
+```bash
+# Required versions
+Node.js >= 18.0.0
+npm >= 8.0.0
+```
+
+### **NPX Setup (Recommended)**
 
 ```json
 // Add to your MCP client config (Cursor, Claude Desktop, etc.)
@@ -118,11 +149,11 @@ report_step_completion({
 **Benefits:**
 
 - ✅ Zero installation required
-- ✅ Automatic dependency management
-- ✅ Always latest version
-- ✅ Project isolation
+- ✅ Automatic dependency management (Prisma client generation)
+- ✅ Always latest version (v1.0.14)
+- ✅ Project isolation (each project gets its own database)
 
-### Docker Setup
+### **Docker Setup**
 
 ```json
 {
@@ -142,53 +173,115 @@ report_step_completion({
 }
 ```
 
+### **Local Development Setup**
+
+```bash
+# Clone the repository
+git clone https://github.com/Hive-Academy/Workflow_Manager_MCP.git
+cd Workflow_Manager_MCP
+
+# Install dependencies
+npm install
+
+# Setup database (automatic Prisma client generation)
+npx prisma generate
+npx prisma db push
+
+# Start development server
+npm run start:dev
+
+# Alternative: Start with debugging
+npm run start:debug
+```
+
 ## 🎭 **AI ROLE SPECIALIZATIONS**
 
 Our system provides specialized guidance for different development roles:
 
-| Role                    | Purpose                      | Guidance Focus                            |
-| ----------------------- | ---------------------------- | ----------------------------------------- |
-| **🎯 Boomerang**        | Strategic orchestration      | Project analysis, coordination, delivery  |
-| **🔍 Researcher**       | Evidence-based investigation | Technology research, feasibility analysis |
-| **🏗️ Architect**        | Technical design & planning  | System architecture, design patterns      |
-| **👨‍💻 Senior Developer** | Implementation excellence    | Code development, SOLID principles        |
-| **✅ Code Review**      | Quality assurance            | Testing, validation, acceptance criteria  |
+| Role                    | Purpose                      | Guidance Focus                            | Key Capabilities                                    |
+| ----------------------- | ---------------------------- | ----------------------------------------- | --------------------------------------------------- |
+| **🎯 Boomerang**        | Strategic orchestration      | Project analysis, coordination, delivery  | Git setup, codebase analysis, task creation         |
+| **🔍 Researcher**       | Evidence-based investigation | Technology research, feasibility analysis | Research operations, evidence tracking              |
+| **🏗️ Architect**        | Technical design & planning  | System architecture, design patterns      | Implementation planning, batch subtask creation     |
+| **👨‍💻 Senior Developer** | Implementation excellence    | Code development, SOLID principles        | Iterative implementation, testing, quality gates    |
+| **✅ Code Review**      | Quality assurance            | Testing, validation, acceptance criteria  | Manual testing, security validation, final approval |
 
 ## 🔧 **MCP TOOL ARCHITECTURE**
 
-### **Core Workflow Tools (8 Tools)**
+### **Workflow Management Tools (8 tools)**
 
-- `bootstrap_workflow` - Initialize new workflows with task creation
-- `get_workflow_guidance` - Get role-specific behavioral context
-- `get_step_guidance` - Get specific guidance for step execution
-- `report_step_completion` - Report AI execution results back to server
-- `get_next_available_step` - Get AI-powered next step recommendations
-- `get_step_progress` - Get step execution history and analytics
-- `workflow_execution_operations` - Complete execution lifecycle management
+- `get_workflow_guidance` - Context-aware role behavior with embedded intelligence
+- `get_step_guidance` - Step-by-step execution guidance with validation
+- `report_step_completion` - Step completion reporting and progress tracking
+- `get_step_progress` - Step execution history and analytics
+- `get_next_available_step` - AI-powered next step recommendations
+- `get_role_transitions` - Intelligent transition recommendations
+- `validate_transition` - Comprehensive transition requirement checking
+- `execute_transition` - Intelligent role transition execution
 
-### **Analytics & Reporting Tools (3 Tools)**
+### **Execution Management Tools (2 tools)**
 
-- `generate_workflow_report` - Interactive HTML dashboards with Chart.js
-- `get_report_status` - Monitor report generation progress
-- `cleanup_report` - Clean up report files
+- `workflow_execution_operations` - Query/update execution state
+- `bootstrap_workflow` - Workflow initialization and setup
+
+### **Service Operations Tool (1 tool)**
+
+- `execute_mcp_operation` - Execute core service operations (TaskOperations, PlanningOperations, SubtaskOperations, WorkflowOperations, ReviewOperations, ResearchOperations)
+
+### **Reporting Tools (4 tools)**
+
+- `generate_workflow_report` - Interactive dashboards with Chart.js visualizations
+- `get_report_status` - Report generation status and progress
+- `cleanup_report` - Report file management and cleanup
 
 ## 💡 **BEST PRACTICES FOR AI AGENTS**
 
 ### **MCP-Compliant Development**
 
-- ✅ **DO**: Request guidance from MCP server
-- ✅ **DO**: Execute commands locally using your own tools
-- ✅ **DO**: Report results back to MCP server
-- ✅ **DO**: Follow structured guidance recommendations
+- ✅ **DO**: Request guidance from MCP server using workflow tools
+- ✅ **DO**: Execute commands locally using your own tools (run_terminal_cmd, edit_file, etc.)
+- ✅ **DO**: Report results back to MCP server with completion evidence
+- ✅ **DO**: Follow structured guidance recommendations and quality checklists
+- ✅ **DO**: Use execute_mcp_operation for core service operations
 - ❌ **DON'T**: Expect MCP server to execute commands
 - ❌ **DON'T**: Skip guidance requests for complex tasks
 
 ### **Quality Standards**
 
-- **Evidence-Based Development**: Validate all changes with testing
-- **SOLID Principles**: Follow clean code practices
+- **Evidence-Based Development**: Validate all changes with testing and completion evidence
+- **SOLID Principles**: Follow clean code practices (Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion)
 - **Documentation**: Maintain comprehensive project documentation
-- **Progress Tracking**: Report completion status for analytics
+- **Progress Tracking**: Report completion status with detailed execution data
+
+### **Workflow Execution Pattern**
+
+```javascript
+// 1. Bootstrap workflow
+const bootstrap = await bootstrap_workflow({
+  initialRole: 'boomerang',
+  executionMode: 'GUIDED',
+  projectPath: '/full/project/path',
+});
+
+// 2. Get step guidance
+const guidance = await get_step_guidance({
+  executionId: bootstrap.executionId,
+  roleId: bootstrap.currentRoleId,
+});
+
+// 3. Execute locally using your tools
+// ... execute guidance using run_terminal_cmd, edit_file, etc.
+
+// 4. Report completion
+await report_step_completion({
+  executionId: bootstrap.executionId,
+  stepId: guidance.stepInfo.stepId,
+  result: 'success',
+  executionData: {
+    /* your execution results */
+  },
+});
+```
 
 ## 📊 **INTERACTIVE ANALYTICS**
 
@@ -199,38 +292,64 @@ Generate beautiful HTML dashboards with:
 - **✅ Quality Gate Monitoring**: Compliance and validation tracking
 - **📊 Interactive Charts**: Chart.js visualizations with filtering
 - **📱 Mobile Responsive**: Modern Tailwind CSS design
+- **🔧 Vanilla JavaScript**: No framework dependencies, pure DOM manipulation
 
 ## 🏗️ **TECHNICAL ARCHITECTURE**
+
+### **Technology Stack**
+
+- **Backend**: NestJS v11.0.1 with TypeScript for enterprise-grade scalability
+- **Database**: Prisma ORM v6.9.0 with SQLite (default) and PostgreSQL support
+- **MCP Integration**: @rekog/mcp-nest v1.5.2 for seamless protocol compliance
+- **Validation**: Zod v3.24.4 for comprehensive parameter validation
+- **Runtime**: Node.js >=18.0.0 with npm >=8.0.0
+- **Package**: @hive-academy/mcp-workflow-manager v1.0.14
+
+### **Domain-Driven Design**
+
+```
+src/task-workflow/
+├── domains/
+│   ├── workflow-rules/              # PRIMARY MCP INTERFACE
+│   │   ├── services/                # Core workflow services
+│   │   ├── mcp-operations/          # MCP tool implementations
+│   │   └── utils/                   # Shared utilities
+│   ├── core-workflow/               # INTERNAL BUSINESS LOGIC
+│   │   ├── task-operations.service.ts
+│   │   ├── planning-operations.service.ts
+│   │   ├── individual-subtask-operations.service.ts
+│   │   ├── workflow-operations.service.ts
+│   │   ├── review-operations.service.ts
+│   │   ├── research-operations.service.ts
+│   │   └── schemas/                 # Zod validation schemas
+│   └── reporting/                   # ANALYTICS & DASHBOARDS
+│       ├── shared/                  # Core shared services
+│       ├── workflow-analytics/      # Workflow analysis
+│       ├── task-management/         # Task reporting
+│       └── dashboard/               # Interactive dashboards
+```
 
 ### **MCP-Compliant Design**
 
 ```
 AI Agent ←→ MCP Protocol ←→ Guidance Server
     ↓                           ↓
-Local Execution            Intelligent Guidance
+Local Execution            Database-Driven Intelligence
     ↓                           ↓
-Own Tools                  Database-Driven Rules
+Own Tools                  Workflow Rules & Steps
 ```
-
-### **Technology Stack**
-
-- **Backend**: NestJS with TypeScript
-- **Database**: Prisma ORM (SQLite/PostgreSQL)
-- **MCP Integration**: @rekog/mcp-nest
-- **Validation**: Zod schemas
-- **Reports**: Direct HTML generation with Chart.js
-- **Transport**: STDIO, SSE, HTTP support
 
 ### **Key Architectural Principles**
 
-- **Guidance-Only**: No server-side execution
-- **Intelligence**: Context-aware recommendations
-- **Scalability**: Database-driven workflow rules
-- **Quality**: Built-in validation and tracking
+- **Guidance-Only**: No server-side execution, pure MCP compliance
+- **Database-Driven Intelligence**: Dynamic workflow rules with embedded guidance
+- **Feature-Based Organization**: Embedded workflow intelligence
+- **Clean Architecture**: Proper dependency injection and separation of concerns
+- **Performance Optimization**: Two-layer caching system with 25-75% token savings
 
 ## 🎯 **PROJECT ISOLATION**
 
-### NPX (Automatic)
+### **NPX (Automatic)**
 
 Each project gets its own database automatically:
 
@@ -240,31 +359,34 @@ Each project gets its own database automatically:
 /project-c/workflow.db
 ```
 
-### Docker (Manual)
+### **Docker (Manual)**
 
 Configure volume names for project isolation:
 
 ```json
 // Project A
 "args": ["run", "-i", "-v", "project-a-workflow:/app/data", "--rm", "..."]
+
+// Project B
+"args": ["run", "-i", "-v", "project-b-workflow:/app/data", "--rm", "..."]
 ```
 
 ## 🚀 **DEVELOPMENT STATUS**
 
-**✅ PRODUCTION READY - MCP COMPLIANT**
+**✅ PRODUCTION READY - MCP COMPLIANT v1.0.14**
 
 - **✅ Architecture**: MCP-compliant guidance-only design
-- **✅ Performance**: Optimized with intelligent caching
+- **✅ Performance**: Optimized with intelligent caching (25-75% token savings)
 - **✅ Quality**: Comprehensive testing and validation
 - **✅ Compliance**: Zero execution violations
 - **✅ Documentation**: Complete system instructions
+- **✅ Enterprise-Grade**: NestJS + Prisma + TypeScript stack
 
 ## 📚 **DOCUMENTATION**
 
-- **MCP Architecture Fix**: `docs/MCP_ARCHITECTURE_FIX.md`
-- **Technical Architecture**: `memory-bank/TechnicalArchitecture.md`
-- **Developer Guide**: `memory-bank/DeveloperGuide.md`
-- **Project Overview**: `memory-bank/ProjectOverview.md`
+- **Technical Architecture**: `memory-bank/TechnicalArchitecture.md` - Comprehensive technical documentation
+- **Developer Guide**: `memory-bank/DeveloperGuide.md` - Development patterns and setup procedures
+- **Project Overview**: `memory-bank/ProjectOverview.md` - Business context and strategic overview
 
 ## 🤝 **CONTRIBUTING**
 
@@ -274,6 +396,28 @@ This project follows MCP protocol standards and clean architecture principles:
 - **SOLID Principles**: Clean, maintainable code
 - **Domain-Driven Design**: Clear domain boundaries
 - **Evidence-Based Development**: Comprehensive testing
+- **TypeScript Strict Mode**: Comprehensive type checking
+- **ESLint + Prettier**: Code formatting and linting
+- **Jest Testing**: Unit and integration testing with 75% coverage
+
+### **Development Setup**
+
+```bash
+# Install dependencies
+npm install
+
+# Setup database
+npm run db:init
+
+# Start development server
+npm run start:dev
+
+# Run tests
+npm run test
+
+# Run linting
+npm run lint
+```
 
 ## 📄 **LICENSE**
 
@@ -283,6 +427,8 @@ MIT License - see LICENSE file for details.
 
 ## 🎯 **THE BOTTOM LINE**
 
-**This MCP server transforms AI development by providing intelligent guidance instead of trying to execute commands itself. It's the difference between a GPS that gives you directions (correct) vs. a GPS that tries to drive your car (wrong).**
+**This MCP server transforms AI development by providing intelligent, database-driven guidance instead of trying to execute commands itself. It's the difference between a GPS that gives you directions (correct) vs. a GPS that tries to drive your car (wrong).**
 
-**Result**: Faster, higher-quality development with proper MCP protocol compliance and clean separation of concerns.
+**Built with enterprise-grade technology stack (NestJS v11.0.1 + Prisma v6.9.0 + @rekog/mcp-nest v1.5.2), this system delivers sophisticated workflow intelligence while maintaining perfect MCP protocol compliance.**
+
+**Result**: Faster, higher-quality development with proper MCP protocol compliance, clean separation of concerns, and enterprise-grade architecture.
