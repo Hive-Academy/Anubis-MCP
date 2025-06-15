@@ -256,7 +256,6 @@ export function extractMcpActionsWithDynamicParameters(actionData: any): Array<{
     ? actionData.mcpActions
     : [actionData.mcpActions];
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return actions.map((action: any) => ({
     operation: action.operation || 'unknown',
     serviceName: action.serviceName || 'unknown',

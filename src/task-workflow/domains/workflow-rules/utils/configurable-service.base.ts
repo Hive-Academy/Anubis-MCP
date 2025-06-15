@@ -124,12 +124,12 @@ export abstract class ConfigurableService<T extends BaseServiceConfig> {
    * Performs validation, applies changes, and triggers change hooks.
    * Maintains immutability by creating new configuration objects.
    *
-   * @param configUpdate - Partial configuration object with updates
+   * @param _configUpdate - Partial configuration object with updates
    * @throws Error if configuration validation fails
    */
-  updateConfig(configUpdate: Partial<T>): void {
+  updateConfig(_configUpdate: Partial<T>): void {
     // Validate configuration update
-    const validationResult = this.validateConfig(configUpdate);
+    const validationResult = this.validateConfig(_configUpdate);
     if (!validationResult.isValid) {
       throw new Error(
         `Configuration validation failed: ${validationResult.errors.join(', ')}`,
@@ -142,11 +142,11 @@ export abstract class ConfigurableService<T extends BaseServiceConfig> {
     // Apply configuration update (immutable merge)
     const newConfig = {
       ...this.config,
-      ...configUpdate,
+      ..._configUpdate,
     };
 
     // Identify changed keys
-    const changedKeys = Object.keys(configUpdate) as (keyof T)[];
+    const changedKeys = Object.keys(_configUpdate) as (keyof T)[];
 
     // Update current configuration
     this.config = newConfig;
@@ -248,7 +248,7 @@ export abstract class ConfigurableService<T extends BaseServiceConfig> {
    * @returns Validation result with errors and warnings
    */
   protected validateConfig(
-    configUpdate: Partial<T>,
+    _configUpdate: Partial<T>,
   ): ConfigurationValidationResult {
     // Default implementation: no validation
     return {
@@ -274,6 +274,7 @@ export abstract class ConfigurableService<T extends BaseServiceConfig> {
     }
 
     if (Array.isArray(obj)) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return obj.map((item) => this.deepClone(item)) as unknown as U;
     }
 
@@ -320,7 +321,12 @@ export abstract class ConfigurableService<T extends BaseServiceConfig> {
         return false;
       }
 
-      if (!this.deepEqual((obj1 as any)[key], (obj2 as any)[key])) {
+      if (
+        !this.deepEqual(
+          (obj1 as Record<string, unknown>)[key],
+          (obj2 as Record<string, unknown>)[key],
+        )
+      ) {
         return false;
       }
     }

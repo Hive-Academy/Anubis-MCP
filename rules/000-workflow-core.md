@@ -100,6 +100,80 @@ if (validation.isValid) {
 
 ---
 
+## **🔄 POST-COMPLETION INTEGRATION WORKFLOWS**
+
+### **INTEGRATION DELEGATION PATTERN**
+
+**When code review completes with APPROVED status:**
+
+```typescript
+// Code Review Step 4: Review Decision and Workflow Action
+const reviewDecision = await execute_mcp_operation({
+  serviceName: "ReviewOperations",
+  operation: "create_review",
+  parameters: { taskId, reviewData: { status: "APPROVED", ... } }
+});
+
+// Delegate to Integration Engineer for deployment preparation
+const delegation = await execute_mcp_operation({
+  serviceName: "WorkflowOperations",
+  operation: "delegate",
+  parameters: {
+    taskId: taskId,
+    targetRole: "integration-engineer",
+    delegationContext: "Task approved - ready for integration, documentation, and deployment"
+  }
+});
+```
+
+### **EXECUTION COMPLETION PATTERN**
+
+**Integration Engineer final step uses workflow_execution_operations tool:**
+
+```typescript
+// Integration Engineer Step 5: Workflow Execution Completion
+const executionCompletion = await workflow_execution_operations({
+  operation: 'complete_execution',
+  executionId: currentExecutionId,
+});
+
+// Validate completion success
+if (executionCompletion.success) {
+  // Document final status and provide closure summary
+  // Entire workflow process completed successfully
+}
+```
+
+### **INTELLIGENT DOCUMENTATION PATTERN**
+
+**Integration Engineer assesses documentation needs intelligently:**
+
+```typescript
+// Step 3: Intelligent Documentation Assessment
+const changeAnalysis = analyzeImplementationChanges();
+const documentationNeeds = assessDocumentationRelevance(changeAnalysis);
+
+if (documentationNeeds.requiresUpdates) {
+  // Update only relevant documentation
+  updateTargetedDocumentation(documentationNeeds.targets);
+} else {
+  // Skip unnecessary documentation updates
+  proceedToPullRequestCreation();
+}
+```
+
+### **WORKFLOW COMPLETION SEQUENCE**
+
+**Complete workflow execution sequence:**
+
+1. **Code Review** → Delegate to Integration Engineer (if APPROVED)
+2. **Integration Engineer** → Complete task AND execution
+3. **Execution Completion** → Use `workflow_execution_operations` tool directly
+
+**CRITICAL: Integration Engineer handles BOTH task completion AND execution completion**
+
+---
+
 ## **📋 STEP EXECUTION REQUIREMENTS**
 
 ### **FOR EVERY STEP YOU MUST:**

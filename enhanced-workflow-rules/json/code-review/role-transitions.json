@@ -2,8 +2,8 @@
   "roleTransitions": [
     {
       "fromRoleId": "code-review",
-      "toRoleId": "boomerang",
-      "transitionName": "code_review_to_boomerang",
+      "toRoleId": "integration-engineer",
+      "transitionName": "code_review_to_integration_engineer",
       "conditions": {
         "reviewCompleted": true,
         "qualityGatesPassed": true,
