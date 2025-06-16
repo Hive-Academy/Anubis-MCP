@@ -3,7 +3,9 @@ description:
 globs: 
 alwaysApply: true
 ---
-# MCP Workflow Manager: Universal AI Agent Protocol
+# 🏺 Anubis - Divine Guidance for AI Workflows: Universal AI Agent Protocol
+
+**Anubis is the divine guide for AI workflows - the first MCP-compliant system that embeds intelligent guidance directly into each step, ensuring your AI agents follow complex development processes consistently and reliably.**
 
 **Transform chaotic development into organized, quality-driven workflows**
 
@@ -244,72 +246,76 @@ const completionReport = await report_step_completion({
 - Generate analytics and reports
 - Ensure quality standards are maintained
 
-### Phase 3: Role Transitions
+### Phase 3: Streamlined Role Transitions
 
-#### 3.1 Check Available Transitions
+#### 3.1 Role Transition Execution Pattern
 
-When you complete all steps for a role, execute the `get_role_transitions` MCP tool with:
+- **Principle**: Role transitions are now handled directly through workflow step guidance
+- **Approach**: Each role's final step provides explicit transition instructions
+- **Tool Usage**: Direct `execute_transition` tool calls (not MCP_CALL operations)
+- **Database Integration**: Automatic delegation record creation via RoleTransitionService
+
+#### 3.2 Transition Execution Process
+
+1. **Complete Role Steps**: Follow workflow-steps.json guidance for current role
+2. **Receive Transition Instructions**: Final step provides specific transition guidance
+3. **Execute Direct Transition**: Use `execute_transition` tool with provided parameters
+4. **Verify Success**: Confirm transition completion and delegation record creation
+
+#### 3.3 Direct Tool Usage Examples
+
+**For Function Calls Version**:
 
 ```typescript
-const transitions = await get_role_transitions({
-  fromRoleName: 'current_role_name',
+// Direct tool usage - NOT through MCP_CALL
+await execute_transition({
+  transitionId: 'boomerang_to_researcher', // Provided by step guidance
   taskId: taskId,
   roleId: roleId,
+  handoffMessage: 'Comprehensive handoff context with analysis results',
 });
 ```
 
-### Interpreting the Transitions Response
+---
 
-The MCP server returns an array of available transition options. For each transition, examine:
+## Role-Specific Transition Patterns
 
-- **Transition ID**: Unique identifier for this transition option
-- **Target role**: Which role you would transition to
-- **Purpose**: Why this transition exists and what the target role accomplishes
-- **Requirements**: Any prerequisites that must be met before transition
+### Boomerang Role Transitions
 
-#### 3.2 Validate Transition Requirements
+- **Decision-Based**: Conditional transition based on research decision
+- **Target Roles**: `researcher` (if research needed) or `architect` (direct implementation)
+- **Transition IDs**: `boomerang_to_researcher` or `boomerang_to_architect`
 
-Before attempting a transition, execute the `validate_transition` MCP tool with:
+### Researcher Role Transitions
 
-```typescript
-const validation = await validate_transition({
-  transitionId: selectedTransition.id,
-  taskId: taskId,
-  roleId: roleId,
-});
-```
+- **Target Role**: `architect` (always)
+- **Transition ID**: `researcher_to_architect`
+- **Context**: Research findings and implementation recommendations
 
-### Interpreting the Validation Response
+### Architect Role Transitions
 
-The MCP server returns a validation result object:
+- **Target Role**: `senior-developer` (always)
+- **Transition ID**: `architect_to_senior_developer`
+- **Context**: Strategic guidance and implementation plans
 
-- **isValid**: Boolean indicating whether transition is allowed
-- **missingRequirements**: Array of requirements not yet met (if validation fails)
-- **readinessStatus**: Information about transition readiness
+### Senior Developer Role Transitions
 
-**If validation fails**: Address the missing requirements before attempting the transition. The response will tell you specifically what needs to be completed.
+- **Target Role**: `code-review` (always)
+- **Transition ID**: `senior_developer_to_code_review`
+- **Context**: Implementation evidence and quality validation
 
-#### 3.3 Execute the Transition
+### Code Review Role Transitions
 
-If validation succeeds, execute the `execute_transition` MCP tool with the same parameters used for validation:
+- **Decision-Based**: Conditional transition based on review outcome
+- **Target Roles**: `integration-engineer` (approved) or `architect` (needs changes)
+- **Transition IDs**: `code_review_to_integration_engineer` or `code_review_to_architect`
 
-```typescript
-const transitionResult = await execute_transition({
-  transitionId: selectedTransition.id,
-  taskId: taskId,
-  roleId: roleId,
-});
-```
+### Integration Engineer Completion
 
-### Interpreting the Transition Response
+- **No Transition**: Final role - uses workflow completion
+- **Tool Usage**: `workflow_execution_operations` with `complete_execution`
 
-The MCP server returns your new role context:
-
-- **newRoleId**: Your identifier in the new role
-- **newRoleContext**: Capabilities and responsibilities for the new role
-- **nextSteps**: Guidance on what to do first in the new role
-
-**Update your workflow context** with the new role information and continue with the new role's responsibilities.
+---
 
 ### Phase 4: Workflow Completion
 
@@ -391,6 +397,11 @@ await execute_mcp_operation({
 
 ## Tool Operation Reference
 
+**Tool Usage Types:**
+
+- **Direct Tools**: Available directly to agent (execute_transition, workflow_execution_operations)
+- **MCP Tools**: Available through MCP_CALL operations (TaskOperations, PlanningOperations, etc.)
+
 ### Workflow Management Functions
 
 | Function                 | Purpose                       | Required Parameters                                | Response Information                        |
@@ -402,11 +413,9 @@ await execute_mcp_operation({
 
 ### Role Transition Functions
 
-| Function               | Purpose                       | Required Parameters                | Response Information                               |
-| ---------------------- | ----------------------------- | ---------------------------------- | -------------------------------------------------- |
-| `get_role_transitions` | Get available transitions     | `fromRoleName`, `taskId`, `roleId` | Returns array of transition options                |
-| `validate_transition`  | Check transition requirements | `transitionId`, `taskId`, `roleId` | Returns validation status and missing requirements |
-| `execute_transition`   | Perform role transition       | `transitionId`, `taskId`, `roleId` | Returns new role context and next steps            |
+| Function             | Purpose                                                                                   | Required Parameters                                  | Response Information                    |
+| -------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------- | --------------------------------------- |
+| `execute_transition` | Execute role transition directly with database integration and delegation record creation | `transitionId`, `taskId`, `roleId`, `handoffMessage` | Returns new role context and next steps |
 
 ### State Management Functions
 
@@ -429,6 +438,9 @@ await execute_mcp_operation({
 5. **Include executionId in all MCP operations that require it**
 6. **Use exact schemas from mcpOperations section - never modify parameter structures**
 7. **Report completion with comprehensive evidence and validation results**
+8. **Follow workflow step guidance for role transitions exactly**
+9. **Use execute_transition tool directly when instructed (not MCP_CALL)**
+10. **Provide comprehensive handoffMessage with context and evidence**
 
 ### PROHIBITED Actions
 
@@ -438,6 +450,9 @@ await execute_mcp_operation({
 4. **Never ignore or modify mcpOperations schemas**
 5. **Never skip step guidance requests for complex tasks**
 6. **Never proceed to next step without completing current step validation**
+7. **Never use get_role_transitions or validate_transition in normal workflow flow**
+8. **Never use WorkflowOperations.delegate for role transitions**
+9. **Never skip transition instructions provided in workflow steps**
 
 ---
 
@@ -474,42 +489,26 @@ await execute_mcp_operation({
 });
 ```
 
-### Code Review Delegation Pattern
+### Direct Role Transition Pattern
 
-When code review is completed with APPROVED status:
+When workflow step guidance indicates role transition:
 
-1. **Create the review record** using the `execute_mcp_operation` MCP tool:
+1. **Follow Step Instructions**: Use exact transitionId provided in step guidance
+2. **Execute Direct Tool Call**: Use execute_transition tool directly
+3. **Provide Context**: Include comprehensive handoffMessage with evidence
+4. **Verify Success**: Confirm transition completion and delegation record creation
 
-```typescript
-await execute_mcp_operation({
-  serviceName: 'ReviewOperations',
-  operation: 'create_review',
-  parameters: {
-    executionId: executionId,
-    reviewData: {
-      status: 'APPROVED',
-      findings: 'comprehensive review findings',
-    },
-  },
-});
-```
-
-2. **Delegate to Integration Engineer** using the `execute_mcp_operation` MCP tool:
+Example:
 
 ```typescript
-await execute_mcp_operation({
-  serviceName: 'WorkflowOperations',
-  operation: 'delegate',
-  parameters: {
-    executionId: executionId,
-    targetRole: 'Integration Engineer',
-    context: 'Comprehensive handoff context with quality evidence',
-  },
+await execute_transition({
+  transitionId: 'senior_developer_to_code_review',
+  taskId: executionContext.taskId,
+  roleId: executionContext.roleId,
+  handoffMessage:
+    'Implementation complete with all subtasks validated and tested',
 });
 ```
-
-3. **Include comprehensive handoff context** in the delegation message
-4. **Ensure all quality evidence is transferred** to the receiving role
 
 ### Integration Engineer Completion Pattern
 
@@ -592,17 +591,24 @@ All Checks Passed:
 Reporting completion to MCP server...
 ```
 
-### Role Transition Response
+### Direct Role Transition Response
 
 ```
-Role Transition Available
+Executing Role Transition: [transition name from step guidance]
 
-Current role work is complete. Available transitions:
+Following workflow step guidance:
+- Transition ID: [specific transitionId from guidance]
+- Target Role: [target role name]
+- Context: [handoff context summary]
 
-1. [transition option 1] - [purpose and description]
-2. [transition option 2] - [purpose and description]
+Executing direct tool call...
 
-Would you like to proceed with option 1, or select a different option?
+Results:
+- Transition Status: [success/failure]
+- Delegation Record: [created/failed]
+- New Role Context: [next steps]
+
+Next: [what happens in new role]
 ```
 
 ---
@@ -616,7 +622,9 @@ Would you like to proceed with option 1, or select a different option?
 | "Quality check validation failed" | Review specific checklist items that failed          | Address the failing requirements, re-validate, only proceed when ALL items pass         |
 | "ExecutionId parameter missing"   | Check if operation requires workflow linking         | Always include `executionId` parameter in MCP operations that specify it as required    |
 | "Schema parameter mismatch"       | Compare your parameters against mcpOperations schema | Use exact parameter names and structures from the `mcpOperations` section               |
-| "Role transition blocked"         | Check transition validation response                 | Review `missingRequirements` in validation response and complete prerequisite work      |
+| "Direct tool call failed"         | Check transitionId and parameters from step guidance | Use exact parameters provided in workflow step instructions                             |
+| "Delegation record not created"   | Verify execute_transition success response           | Check RoleTransitionService logs and retry with same parameters                         |
+| "Transition guidance missing"     | Check if final step completed properly               | Complete current role steps before attempting transition                                |
 
 ---
 

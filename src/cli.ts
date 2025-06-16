@@ -25,13 +25,6 @@ async function bootstrap() {
     verbose: args.includes('--verbose') || args.includes('-v'),
   });
 
-  if (process.env.NODE_ENV !== 'production') {
-    console.log(
-      `📁 Project root: ${dbConfig.projectRoot} (${dbConfig.deploymentMethod} deployment)`,
-    );
-    console.log(`🗄️ Database: ${dbConfig.databaseUrl}`);
-  }
-
   // Set default environment variables if not provided
   if (!process.env.MCP_TRANSPORT_TYPE) {
     process.env.MCP_TRANSPORT_TYPE = 'STDIO';
@@ -54,11 +47,25 @@ async function bootstrap() {
     }
   }
 
-  try {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('🚀 Starting Anubis...');
-    }
+  // Enhanced debugging for VS Code extensions
+  if (
+    verbose ||
+    process.env.VSCODE_PID ||
+    process.env.TERM_PROGRAM === 'vscode'
+  ) {
+    console.error('🔍 Anubis MCP Server Debug Information:');
+    console.error(`   Deployment Method: ${dbConfig.deploymentMethod}`);
+    console.error(`   Project Root: ${dbConfig.projectRoot}`);
+    console.error(`   Database URL: ${dbConfig.databaseUrl}`);
+    console.error(`   Data Directory: ${dbConfig.dataDirectory}`);
+    console.error(`   VS Code PID: ${process.env.VSCODE_PID || 'not set'}`);
+    console.error(`   Term Program: ${process.env.TERM_PROGRAM || 'not set'}`);
+    console.error(`   Working Directory: ${process.cwd()}`);
+    console.error(`   Node Version: ${process.version}`);
+    console.error('');
+  }
 
+  try {
     // Initialize dependency manager with database configuration
     const dependencyManager = new DependencyManager({
       verbose,
@@ -71,49 +78,20 @@ async function bootstrap() {
       databaseUrl: dbConfig.databaseUrl,
     };
 
-    const dependencyStatus =
+    const _dependencyStatus =
       await dependencyManager.initializeAllDependencies(setupOptions);
-
-    // Report any errors but continue if possible
-    if (
-      dependencyStatus.errors.length > 0 &&
-      process.env.NODE_ENV !== 'production'
-    ) {
-      console.warn('⚠️  Some dependency setup issues encountered:');
-      dependencyStatus.errors.forEach((error) => console.warn(`   - ${error}`));
-    }
-
-    // Report final status
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('📊 Report generation: ENABLED (Simplified HTML)');
-      console.log(`🔄 Transport: ${process.env.MCP_TRANSPORT_TYPE}`);
-    }
 
     // Create NestJS application context for MCP server
     const app = await NestFactory.createApplicationContext(AppModule, {
       logger: false, // Use our custom logger
     });
 
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('✅ Anubis started successfully');
-      console.log('📡 Listening for MCP protocol messages...');
-    }
-
     // Handle graceful shutdown
-    const gracefulShutdown = async (signal: string) => {
-      if (process.env.NODE_ENV !== 'production') {
-        console.log(`\n🛑 Received ${signal}, shutting down gracefully...`);
-      }
+    const gracefulShutdown = async (_signal: string) => {
       try {
         await app.close();
-        if (process.env.NODE_ENV !== 'production') {
-          console.log('✅ MCP server stopped successfully');
-        }
         process.exit(0);
-      } catch (error) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.error('❌ Error during shutdown:', error);
-        }
+      } catch (_error) {
         process.exit(1);
       }
     };
@@ -125,70 +103,38 @@ async function bootstrap() {
     // Keep the process alive
     process.stdin.resume();
   } catch (error) {
-    console.error('❌ Failed to start MCP server:', error);
-
-    // Provide helpful error messages based on error type (only in non-production)
-    if (error instanceof Error && process.env.NODE_ENV !== 'production') {
-      if (error.message.includes('Prisma')) {
-        console.error(
-          '💡 Tip: Ensure your prisma/schema.prisma file exists and is properly configured',
-        );
-        console.error(
-          '💡 Try: npm run setup:force to regenerate Prisma client',
-        );
-      } else if (error.message.includes('database')) {
-        console.error(
-          '💡 Tip: Check your DATABASE_URL environment variable and database permissions',
-        );
-        console.error('💡 Current DATABASE_URL:', process.env.DATABASE_URL);
-        console.error('💡 Database path:', dbConfig.databasePath);
-        console.error('💡 Data directory:', dbConfig.dataDirectory);
-      } else if (
-        error.message.includes('ENOENT') ||
-        error.message.includes('command not found')
-      ) {
-        console.error(
-          '💡 Tip: Ensure Node.js and npm are properly installed and accessible',
-        );
-      }
-    }
-
-    if (process.env.NODE_ENV !== 'production') {
-      console.error('\n🔧 Troubleshooting:');
-      console.error('   1. Verify Node.js version >= 18.0.0');
+    // Enhanced error reporting for VS Code extensions
+    if (
+      verbose ||
+      process.env.VSCODE_PID ||
+      process.env.TERM_PROGRAM === 'vscode'
+    ) {
+      console.error('❌ Failed to start MCP server:', error);
+      console.error('');
+      console.error('🔧 Troubleshooting Tips:');
+      console.error('   1. Check if the data directory is writable');
+      console.error('   2. Verify database path permissions');
+      console.error('   3. Try running with --verbose flag for more details');
       console.error(
-        '   2. Check if all dependencies are installed: npm install',
+        '   4. Check VS Code extension logs for additional context',
       );
-      console.error('   3. Try rebuilding: npm run build');
-      console.error(
-        `   4. Check data directory permissions: ${dbConfig.dataDirectory}`,
-      );
+      console.error('');
     }
-
     process.exit(1);
   }
 }
 
 // Handle unhandled promise rejections
-process.on('unhandledRejection', (reason, promise) => {
-  if (process.env.NODE_ENV !== 'production') {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  }
+process.on('unhandledRejection', (_reason, _promise) => {
   process.exit(1);
 });
 
 // Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-  if (process.env.NODE_ENV !== 'production') {
-    console.error('Uncaught Exception:', error);
-  }
+process.on('uncaughtException', (_error) => {
   process.exit(1);
 });
 
 // Start the server
-bootstrap().catch((error) => {
-  if (process.env.NODE_ENV !== 'production') {
-    console.error('Bootstrap failed:', error);
-  }
+bootstrap().catch((_error) => {
   process.exit(1);
 });

@@ -54,15 +54,6 @@ export class DependencyManager {
     if (!this.databaseUrl) {
       this.databaseUrl = this.dbConfig.databaseUrl;
     }
-
-    this.log(`Package root: ${this.packageRoot}`);
-    this.log(`Database URL: ${this.databaseUrl}`);
-  }
-
-  private log(message: string): void {
-    if (this.verbose && process.env.NODE_ENV !== 'production') {
-      console.log(`[DependencyManager] ${message}`);
-    }
   }
 
   /**
@@ -74,16 +65,14 @@ export class DependencyManager {
       const bundledPrismaPath = path.join(this.packageRoot, 'generated/prisma');
 
       if (fs.existsSync(bundledPrismaPath)) {
-        this.log('Bundled Prisma client: FOUND');
         return true;
       }
 
       // Fallback: check if we can require @prisma/client
       require.resolve('@prisma/client');
-      this.log('System Prisma client: AVAILABLE');
+
       return true;
-    } catch (error) {
-      this.log(`Prisma client check failed: ${error}`);
+    } catch (_error) {
       return false;
     }
   }
@@ -101,20 +90,17 @@ export class DependencyManager {
           : path.resolve(process.cwd(), dbPath);
 
         if (fs.existsSync(absoluteDbPath)) {
-          this.log(`Database file exists: ${absoluteDbPath}`);
           return true;
         } else {
-          this.log(`Database file not found: ${absoluteDbPath}`);
           return false;
         }
       } else {
         // Remote database - assume accessible for now
         // In production, you might want to test connection
-        this.log('Remote database URL configured');
+
         return true;
       }
-    } catch (error) {
-      this.log(`Database check failed: ${error}`);
+    } catch (_error) {
       return false;
     }
   }
@@ -126,7 +112,6 @@ export class DependencyManager {
     try {
       // Check if seeding is already done (Docker build-time seeding)
       if (process.env.BUILD_TIME_SEEDING_DEPLOYED === 'true') {
-        this.log('Database seeding completed during Docker build');
         return true;
       }
 
@@ -139,16 +124,12 @@ export class DependencyManager {
         const stepCount = await prisma.workflowStep.count();
 
         const isSeeded = roleCount > 0 && stepCount > 0;
-        this.log(
-          `Database seeding check: ${isSeeded ? 'SEEDED' : 'NOT SEEDED'} (${roleCount} roles, ${stepCount} steps)`,
-        );
 
         return isSeeded;
       } finally {
         await prisma.$disconnect();
       }
-    } catch (error) {
-      this.log(`Database seeding check failed: ${error}`);
+    } catch (_error) {
       return false;
     }
   }
@@ -194,50 +175,86 @@ export class DependencyManager {
    * Run database migrations to ensure schema is up to date
    */
   runDatabaseMigrations(): void {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('🗄️  Running database migrations...');
+    // Set the database URL for this operation
+    const oldDatabaseUrl = process.env.DATABASE_URL;
+    process.env.DATABASE_URL = this.databaseUrl;
+
+    // Create data directory if it doesn't exist (for SQLite)
+    if (this.databaseUrl.includes('file:')) {
+      const dbPath = this.databaseUrl.replace('file:', '');
+      const absoluteDbPath = path.isAbsolute(dbPath)
+        ? dbPath
+        : path.resolve(process.cwd(), dbPath);
+      const dbDir = path.dirname(absoluteDbPath);
+
+      try {
+        if (!fs.existsSync(dbDir)) {
+          fs.mkdirSync(dbDir, { recursive: true });
+        }
+
+        // Test write permissions
+        const testFile = path.join(dbDir, '.write-test');
+        fs.writeFileSync(testFile, 'test');
+        fs.unlinkSync(testFile);
+      } catch (error) {
+        // Enhanced error handling for VS Code extensions
+        if (this.verbose) {
+          console.warn(
+            `⚠️ Database directory creation/write test failed: ${error}`,
+          );
+          console.warn(`   Database path: ${absoluteDbPath}`);
+          console.warn(`   Directory: ${dbDir}`);
+        }
+
+        // Try alternative approach for VS Code extensions
+        const homeDir = process.env.USERPROFILE || process.env.HOME;
+        if (homeDir) {
+          const fallbackDir = path.join(homeDir, '.anubis', 'data');
+          const fallbackDbPath = path.join(fallbackDir, 'workflow.db');
+
+          try {
+            if (!fs.existsSync(fallbackDir)) {
+              fs.mkdirSync(fallbackDir, { recursive: true });
+            }
+
+            // Update database URL to use fallback path
+            this.databaseUrl = `file:${fallbackDbPath}`;
+            process.env.DATABASE_URL = this.databaseUrl;
+
+            if (this.verbose) {
+              console.log(`✅ Using fallback database path: ${fallbackDbPath}`);
+            }
+          } catch (fallbackError) {
+            throw new Error(
+              `Cannot create database directory. Original: ${dbDir}, Fallback: ${fallbackDir}. Error: ${fallbackError}`,
+            );
+          }
+        } else {
+          throw error;
+        }
+      }
     }
 
     try {
-      // Set the database URL for this operation
-      const oldDatabaseUrl = process.env.DATABASE_URL;
-      process.env.DATABASE_URL = this.databaseUrl;
-
-      // Create data directory if it doesn't exist (for SQLite)
-      if (this.databaseUrl.includes('file:')) {
-        const dbPath = this.databaseUrl.replace('file:', '');
-        const absoluteDbPath = path.isAbsolute(dbPath)
-          ? dbPath
-          : path.resolve(process.cwd(), dbPath);
-        const dbDir = path.dirname(absoluteDbPath);
-
-        if (!fs.existsSync(dbDir)) {
-          fs.mkdirSync(dbDir, { recursive: true });
-          this.log(`Created database directory: ${dbDir}`);
-        }
-      }
-
       execSync('npx prisma migrate deploy', {
         stdio: this.verbose ? 'inherit' : 'pipe',
         cwd: this.packageRoot,
         timeout: 60000, // 1 minute timeout
       });
-
-      // Restore original DATABASE_URL
-      if (oldDatabaseUrl !== undefined) {
-        process.env.DATABASE_URL = oldDatabaseUrl;
-      } else {
-        delete process.env.DATABASE_URL;
-      }
-
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('✅ Database migrations completed successfully');
-      }
     } catch (error) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn('⚠️  Database migration failed:', error);
+      if (this.verbose) {
+        console.error('❌ Prisma migrate deploy failed:', error);
+        console.error('   Database URL:', this.databaseUrl);
+        console.error('   Package root:', this.packageRoot);
       }
       throw error;
+    }
+
+    // Restore original DATABASE_URL
+    if (oldDatabaseUrl !== undefined) {
+      process.env.DATABASE_URL = oldDatabaseUrl;
+    } else {
+      delete process.env.DATABASE_URL;
     }
   }
 
@@ -245,36 +262,25 @@ export class DependencyManager {
    * Run database seeding to populate workflow rules
    */
   runDatabaseSeeding(): void {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('🌱 Seeding database with workflow rules...');
+    // Set the database URL for this operation
+    const oldDatabaseUrl = process.env.DATABASE_URL;
+    process.env.DATABASE_URL = this.databaseUrl;
+
+    execSync('npx prisma db seed', {
+      stdio: this.verbose ? 'inherit' : 'pipe',
+      cwd: this.packageRoot,
+      timeout: 120000, // 2 minute timeout for seeding
+    });
+
+    // Restore original DATABASE_URL
+    if (oldDatabaseUrl !== undefined) {
+      process.env.DATABASE_URL = oldDatabaseUrl;
+    } else {
+      delete process.env.DATABASE_URL;
     }
 
-    try {
-      // Set the database URL for this operation
-      const oldDatabaseUrl = process.env.DATABASE_URL;
-      process.env.DATABASE_URL = this.databaseUrl;
-
-      execSync('npx prisma db seed', {
-        stdio: this.verbose ? 'inherit' : 'pipe',
-        cwd: this.packageRoot,
-        timeout: 120000, // 2 minute timeout for seeding
-      });
-
-      // Restore original DATABASE_URL
-      if (oldDatabaseUrl !== undefined) {
-        process.env.DATABASE_URL = oldDatabaseUrl;
-      } else {
-        delete process.env.DATABASE_URL;
-      }
-
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('✅ Database seeding completed successfully');
-      }
-    } catch (error) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn('⚠️  Database seeding failed:', error);
-      }
-      throw error;
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('✅ Database seeding completed successfully');
     }
   }
 
@@ -318,10 +324,6 @@ export class DependencyManager {
   async initializeAllDependencies(
     options: DependencySetupOptions = {},
   ): Promise<DependencyCheckResult> {
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('🔍 Checking MCP server dependencies...');
-    }
-
     const status = await this.checkAllDependencies(options);
 
     // Ensure bundled Prisma client is available

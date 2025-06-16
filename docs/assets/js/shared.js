@@ -261,7 +261,7 @@ function getCursorConfig() {
   "mcpServers": {
     "anubis": {
       "command": "npx",
-      "args": ["-y", "@hive-academy/mcp-anubis"]
+      "args": ["-y", "@hive-academy/anubis"]
     }
   }
 }`;
@@ -272,7 +272,7 @@ function getClaudeConfig() {
   "mcpServers": {
     "anubis": {
       "command": "npx",
-      "args": ["-y", "@hive-academy/mcp-anubis"]
+      "args": ["-y", "@hive-academy/anubis"]
     }
   }
 }`;
@@ -283,7 +283,7 @@ function getVSCodeConfig() {
   "mcpServers": {
     "anubis": {
       "command": "npx",
-      "args": ["-y", "@hive-academy/mcp-anubis"]
+      "args": ["-y", "@hive-academy/anubis"]
     }
   }
 }`;
@@ -294,7 +294,7 @@ function getMCPConfig() {
   "mcpServers": {
     "anubis": {
       "command": "npx",
-      "args": ["-y", "@hive-academy/mcp-anubis"]
+      "args": ["-y", "@hive-academy/anubis"]
     }
   }
 }`;

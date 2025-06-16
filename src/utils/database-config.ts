@@ -36,9 +36,6 @@ export class DatabaseConfigManager {
     const deploymentMethod = this.detectDeploymentMethod();
     const projectRoot = this.resolveProjectRoot(options.projectRoot);
 
-    this.log(`🔍 Detected deployment method: ${deploymentMethod}`);
-    this.log(`📁 Project root: ${projectRoot}`);
-
     switch (deploymentMethod) {
       case 'docker':
         return this.getDockerDatabaseConfig(projectRoot, options);
@@ -66,13 +63,21 @@ export class DatabaseConfigManager {
       return 'docker';
     }
 
-    // NPX detection: Check if running from global or temporary NPX cache
+    // NPX detection: Enhanced detection for VS Code extensions and various npx scenarios
     const execPath = process.argv[1] || '';
-    if (
+    const isNpxExecution =
       execPath.includes('.npm/_npx') ||
+      execPath.includes('npm-cache/_npx') ||
       execPath.includes('npm/global') ||
-      process.env.npm_execpath?.includes('npx')
-    ) {
+      process.env.npm_execpath?.includes('npx') ||
+      process.env.npm_config_user_config?.includes('.npmrc') ||
+      // VS Code extension specific detection
+      process.env.VSCODE_PID !== undefined ||
+      process.env.TERM_PROGRAM === 'vscode' ||
+      // GitHub Copilot and other MCP clients
+      process.env.MCP_CLIENT_NAME !== undefined;
+
+    if (isNpxExecution) {
       return 'npx';
     }
 
@@ -111,10 +116,6 @@ export class DatabaseConfigManager {
     const databasePath = path.join(dataDirectory, 'workflow.db');
     const databaseUrl = `file:${databasePath}`;
 
-    this.log(
-      `🐳 Docker config - Data dir: ${dataDirectory}, DB path: ${databasePath}`,
-    );
-
     return {
       databaseUrl,
       databasePath,
@@ -133,19 +134,64 @@ export class DatabaseConfigManager {
     projectRoot: string,
     _options: DatabaseConfigOptions,
   ): DatabaseConfig {
-    const dataDirectory = path.join(projectRoot, 'data');
+    // Enhanced path resolution for VS Code extensions and MCP clients
+    let resolvedProjectRoot = projectRoot;
+
+    // If running in VS Code extension context, try to find a better project root
+    if (process.env.VSCODE_PID || process.env.TERM_PROGRAM === 'vscode') {
+      // Try to use workspace folder if available
+      const workspaceFolder =
+        process.env.VSCODE_WORKSPACE_FOLDER || process.env.PWD || process.cwd();
+
+      if (workspaceFolder && fs.existsSync(workspaceFolder)) {
+        resolvedProjectRoot = workspaceFolder;
+      }
+    }
+
+    // Fallback to user home directory if project root is not writable
+    let dataDirectory = path.join(resolvedProjectRoot, 'data');
+
+    try {
+      // Test if we can create the data directory
+      if (!fs.existsSync(dataDirectory)) {
+        fs.mkdirSync(dataDirectory, { recursive: true });
+      }
+
+      // Test write permissions
+      const testFile = path.join(dataDirectory, '.write-test');
+      fs.writeFileSync(testFile, 'test');
+      fs.unlinkSync(testFile);
+    } catch (error) {
+      // Fallback to user home directory for VS Code extensions
+      const homeDir =
+        process.env.USERPROFILE || process.env.HOME || process.cwd();
+      dataDirectory = path.join(homeDir, '.anubis', 'data');
+
+      if (this.verbose) {
+        console.warn(`⚠️ Using fallback data directory: ${dataDirectory}`);
+        console.warn(`   Original error: ${error}`);
+      }
+
+      // Ensure fallback directory exists
+      try {
+        if (!fs.existsSync(dataDirectory)) {
+          fs.mkdirSync(dataDirectory, { recursive: true });
+        }
+      } catch (fallbackError) {
+        throw new Error(
+          `Cannot create data directory. Tried: ${path.join(resolvedProjectRoot, 'data')} and ${dataDirectory}. Error: ${fallbackError}`,
+        );
+      }
+    }
+
     const databasePath = path.join(dataDirectory, 'workflow.db');
     const databaseUrl = `file:${databasePath}`;
-
-    this.log(
-      `📦 NPX config - Data dir: ${dataDirectory}, DB path: ${databasePath}`,
-    );
 
     return {
       databaseUrl,
       databasePath,
       dataDirectory,
-      projectRoot,
+      projectRoot: resolvedProjectRoot,
       deploymentMethod: 'npx',
       isProjectIsolated: true, // Achieved via project-specific paths
     };
@@ -165,10 +211,6 @@ export class DatabaseConfigManager {
       const dataDirectory = path.dirname(customPath);
       const databaseUrl = `file:${customPath}`;
 
-      this.log(
-        `🏠 Local config (custom) - Data dir: ${dataDirectory}, DB path: ${customPath}`,
-      );
-
       return {
         databaseUrl,
         databasePath: customPath,
@@ -183,10 +225,6 @@ export class DatabaseConfigManager {
     const dataDirectory = path.join(projectRoot, 'data');
     const databasePath = path.join(dataDirectory, 'workflow.db');
     const databaseUrl = `file:${databasePath}`;
-
-    this.log(
-      `🏠 Local config (default) - Data dir: ${dataDirectory}, DB path: ${databasePath}`,
-    );
 
     return {
       databaseUrl,
@@ -203,10 +241,7 @@ export class DatabaseConfigManager {
    */
   ensureDataDirectory(config: DatabaseConfig): void {
     if (!fs.existsSync(config.dataDirectory)) {
-      this.log(`📁 Creating data directory: ${config.dataDirectory}`);
       fs.mkdirSync(config.dataDirectory, { recursive: true });
-    } else {
-      this.log(`✅ Data directory exists: ${config.dataDirectory}`);
     }
   }
 
@@ -289,15 +324,6 @@ export class DatabaseConfigManager {
       containerPath: '/app/data',
       hostPath: hostDataPath,
     };
-  }
-
-  /**
-   * Logging utility - respects production environment
-   */
-  private log(message: string): void {
-    if (this.verbose && process.env.NODE_ENV !== 'production') {
-      console.log(`[DatabaseConfig] ${message}`);
-    }
   }
 }
 
