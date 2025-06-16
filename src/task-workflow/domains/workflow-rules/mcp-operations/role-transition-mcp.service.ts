@@ -205,7 +205,7 @@ export class RoleTransitionMcpService extends BaseMcpService {
         success: result.success,
         status: result.success ? 'completed' : 'failed',
         message: result.message,
-        newRole: result.newRoleId,
+        newRoleId: result.newRoleId,
         handoffMessage: input.handoffMessage,
         // ❌ REMOVED: nextAction (hardcoded flow control)
       });

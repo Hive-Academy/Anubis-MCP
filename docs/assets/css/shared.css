@@ -1,5 +1,16 @@
 :root {
-  /* Hive Academy Color Palette */
+  /* Anubis Divine Color Palette */
+  --anubis-honey-amber: #F4A460;
+  --anubis-deep-navy: #1a237e;
+  --anubis-electric-blue: #00BFFF;
+  --anubis-soft-white: #F8F9FA;
+  --anubis-charcoal: #2C3E50;
+  --anubis-coral-red: #FF6B6B;
+  --anubis-mint-green: #4ECDC4;
+  --anubis-warm-orange: #FF8C42;
+  --anubis-dark-purple: #6C5CE7;
+  
+  /* Legacy Hive Academy Color Palette */
   --honey-amber: #f5a623;
   --deep-navy: #1a2c42;
   --electric-blue: #0096ff;
@@ -9,17 +20,16 @@
   --mint-green: #4cd4a0;
   --warm-orange: #ff7a00;
   --dark-purple: #2d1b4e;
-
   /* Theme Variables - Light Theme Default */
-  --primary: var(--honey-amber);
-  --primary-dark: var(--warm-orange);
-  --secondary: var(--electric-blue);
-  --accent: var(--mint-green);
-  --error: var(--coral-red);
-  --background: var(--soft-white);
+  --primary: var(--anubis-honey-amber);
+  --primary-dark: var(--anubis-warm-orange);
+  --secondary: var(--anubis-electric-blue);
+  --accent: var(--anubis-mint-green);
+  --error: var(--anubis-coral-red);
+  --background: var(--anubis-soft-white);
   --background-secondary: #ffffff;
   --surface: #ffffff;
-  --text-primary: var(--charcoal);
+  --text-primary: var(--anubis-charcoal);
   --text-secondary: #4a5568;
   --text-muted: #718096;
   --border: #e2e8f0;
@@ -28,10 +38,10 @@
 
 /* Dark Theme */
 [data-theme='dark'] {
-  --background: var(--deep-navy);
-  --background-secondary: var(--charcoal);
+  --background: var(--anubis-deep-navy);
+  --background-secondary: var(--anubis-charcoal);
   --surface: #374151;
-  --text-primary: var(--soft-white);
+  --text-primary: var(--anubis-soft-white);
   --text-secondary: #d1d5db;
   --text-muted: #9ca3af;
   --border: #4b5563;
@@ -80,6 +90,7 @@ body {
 .gradient-text {
   background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 

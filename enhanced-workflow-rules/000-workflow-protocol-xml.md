@@ -78,6 +78,32 @@ Please select an option (A/B/C/D) to proceed.
 
 **Important**: Wait for the user's choice before proceeding. Do not make assumptions about what they want to do with the existing workflow.
 
+### When User Selects to Continue Existing Workflow (Option A)
+
+Before proceeding to step execution, you must establish role context:
+
+```xml
+<use_mcp_tool>
+<server_name>anubis</server_name>
+<tool_name>get_workflow_guidance</tool_name>
+<arguments>
+{
+  "roleName": "current-role-name-from-active-execution",
+  "taskId": "task-id-from-active-execution",
+  "roleId": "current-role-id-from-active-execution"
+}
+</arguments>
+</use_mcp_tool>
+```
+
+**Extract these parameters from the active execution response:**
+
+- **roleName**: Use the role name from `currentRole.name` field
+- **taskId**: Use the numeric task ID from `task.id` field
+- **roleId**: Use the role ID from `currentRoleId` field
+
+This call provides essential context including current role capabilities, step parameters, and guidance for continuing the workflow.
+
 ---
 
 ## Workflow Execution Phases
