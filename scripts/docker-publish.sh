@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Docker Hub Publication Script for MCP Workflow Manager
+# Docker Hub Publication Script for Anubis
 # This script builds and publishes multi-platform Docker images
 
-set -e  # Exit on any error
+set -e # Exit on any error
 
 # Configuration
 DOCKER_HUB_USERNAME="${DOCKER_HUB_USERNAME:-hiveacademy}"
@@ -17,13 +17,13 @@ if [ "$VERSION" = "latest" ]; then
     VERSION=$(node -p "require('./package.json').version")
 fi
 
-echo "🚀 Building and publishing MCP Workflow Manager"
+echo "🚀 Building and publishing Anubis"
 echo "📦 Image: ${FULL_IMAGE_NAME}"
 echo "🏷️  Version: ${VERSION}"
 echo ""
 
 # Check if Docker is running
-if ! docker info > /dev/null 2>&1; then
+if ! docker info >/dev/null 2>&1; then
     echo "❌ Docker is not running. Please start Docker and try again."
     exit 1
 fi
@@ -76,4 +76,4 @@ if command -v docker scout >/dev/null 2>&1; then
 fi
 
 echo ""
-echo "🎉 Publication complete!" 
+echo "🎉 Publication complete!"

@@ -956,7 +956,7 @@ This comprehensive reference provides the depth needed for effective tool utiliz
 
 The environment_details automatically provided at the end of each user message contains potentially relevant context about the project structure and environment. While valuable for understanding context, do not treat it as a direct part of the user's request unless they clearly reference it.
 
-# MCP Workflow Manager: Universal AI Agent Protocol
+# Anubis: Universal AI Agent Protocol
 
 **Transform chaotic development into organized, quality-driven workflows**
 

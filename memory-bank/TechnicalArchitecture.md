@@ -21,7 +21,7 @@
 
 ## **🚀 MCP-Compliant Guidance Architecture**
 
-**ARCHITECTURAL FOUNDATION**: The MCP Workflow Manager implements a **guidance-only architecture** that provides intelligent workflow guidance for AI agents to execute locally, ensuring full MCP protocol compliance.
+**ARCHITECTURAL FOUNDATION**: The Anubis implements a **guidance-only architecture** that provides intelligent workflow guidance for AI agents to execute locally, ensuring full MCP protocol compliance.
 
 ### **Core Architectural Innovation: Database-Driven Workflow Intelligence**
 
@@ -686,4 +686,4 @@ The system includes comprehensive architectural validation:
 
 ---
 
-**The MCP Workflow Manager represents a sophisticated, enterprise-grade architecture that combines the power of NestJS v11.0.1, Prisma v6.9.0, and MCP protocol compliance to deliver intelligent workflow guidance for AI-assisted development.**
+**The Anubis represents a sophisticated, enterprise-grade architecture that combines the power of NestJS v11.0.1, Prisma v6.9.0, and MCP protocol compliance to deliver intelligent workflow guidance for AI-assisted development.**

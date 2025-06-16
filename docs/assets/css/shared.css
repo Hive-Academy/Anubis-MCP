@@ -1,25 +1,15 @@
 :root {
   /* Anubis Divine Color Palette */
-  --anubis-honey-amber: #F4A460;
+  --anubis-honey-amber: #f4a460;
   --anubis-deep-navy: #1a237e;
-  --anubis-electric-blue: #00BFFF;
-  --anubis-soft-white: #F8F9FA;
-  --anubis-charcoal: #2C3E50;
-  --anubis-coral-red: #FF6B6B;
-  --anubis-mint-green: #4ECDC4;
-  --anubis-warm-orange: #FF8C42;
-  --anubis-dark-purple: #6C5CE7;
-  
-  /* Legacy Hive Academy Color Palette */
-  --honey-amber: #f5a623;
-  --deep-navy: #1a2c42;
-  --electric-blue: #0096ff;
-  --soft-white: #f9f9fb;
-  --charcoal: #2d3748;
-  --coral-red: #ff5a5f;
-  --mint-green: #4cd4a0;
-  --warm-orange: #ff7a00;
-  --dark-purple: #2d1b4e;
+  --anubis-electric-blue: #00bfff;
+  --anubis-soft-white: #f8f9fa;
+  --anubis-charcoal: #2c3e50;
+  --anubis-coral-red: #ff6b6b;
+  --anubis-mint-green: #4ecdc4;
+  --anubis-warm-orange: #ff8c42;
+  --anubis-dark-purple: #6c5ce7;
+
   /* Theme Variables - Light Theme Default */
   --primary: var(--anubis-honey-amber);
   --primary-dark: var(--anubis-warm-orange);
