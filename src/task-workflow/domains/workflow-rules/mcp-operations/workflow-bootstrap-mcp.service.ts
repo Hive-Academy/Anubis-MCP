@@ -32,25 +32,7 @@ export class WorkflowBootstrapMcpService {
 
   @Tool({
     name: 'bootstrap_workflow',
-    description: `Start a new workflow execution - Simple kickoff without task details.
-
-**🚀 WORKFLOW KICKOFF - Pure execution starter**
-
-Starts a workflow execution pointing to the first boomerang step. 
-The boomerang workflow steps will guide the agent to:
-1. Perform git setup and verification
-2. Analyze the codebase with functional testing
-3. Gather task requirements and create comprehensive task
-4. Make research decisions
-5. Delegate to appropriate next role
-
-**Returns:**
-- Execution ID and first step ID for workflow execution
-- Current step guidance for immediate execution
-- Complete execution context to start boomerang workflow
-
-**Usage:**
-Just call bootstrap_workflow() and start executing the returned step guidance.`,
+    description: `Initializes a new workflow execution with boomerang role, starting from git setup through task creation and delegation.`,
     parameters:
       BootstrapWorkflowInputSchema as ZodSchema<BootstrapWorkflowInputType>,
   })

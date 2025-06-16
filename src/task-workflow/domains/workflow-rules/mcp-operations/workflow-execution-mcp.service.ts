@@ -250,42 +250,7 @@ export class WorkflowExecutionMcpService {
 
   @Tool({
     name: 'workflow_execution_operations',
-    description: `
-**⚙️ WORKFLOW STATE MANAGEMENT - Query and manage execution state only**
-
-**FOCUSED OPERATIONS:**
-- get_active_executions: List all active executions (no parameters required)
-- get_execution: Get current execution state (requires taskId OR executionId) 
-- update_execution: Update execution state and progress (requires executionId + updateData)
-- complete_execution: Mark execution as completed (requires executionId)
-- get_execution_context: Get execution context data (requires executionId, optional dataKey)
-- update_execution_context: Update execution context (requires executionId + contextUpdates)
-
-**✅ STRONGLY TYPED: All parameters are properly validated - no z.any() usage**
-
-**updateData fields (all optional):**
-- currentRoleId: string (role ID)
-- currentStepId: string (step ID) 
-- executionState: object (workflow state)
-- stepsCompleted: number (completed step count)
-- totalSteps: number (total steps)
-- progressPercentage: number (0-100)
-- executionContext: object (additional context)
-- lastError: object (error details)
-- completedAt: string (ISO date)
-
-**Does NOT provide:**
-❌ Workflow guidance (use get_workflow_guidance)
-❌ Step guidance (use get_step_guidance)  
-❌ Role recommendations (use role transition tools)
-❌ MCP operations (use execute_mcp_operation)
-
-**Examples:**
-- List active: { "operation": "get_active_executions" }
-- Get by taskId: { "operation": "get_execution", "taskId": 123 }
-- Update progress: { "operation": "update_execution", "executionId": "exec-123", "updateData": { "stepsCompleted": 1, "progressPercentage": 20 } }
-- Get context: { "operation": "get_execution_context", "executionId": "exec-123" }
-`,
+    description: `Manages workflow execution state through strongly-typed operations for creating, querying, updating, and completing workflow executions. Handles execution context and progress tracking with validated parameters.`,
     parameters: WorkflowExecutionSchema,
   })
   async executeWorkflowOperation(input: WorkflowExecutionInputSchema): Promise<{

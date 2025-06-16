@@ -2,12 +2,12 @@
 FROM node:22-alpine AS builder
 
 # Add metadata labels for Docker Hub
-LABEL org.opencontainers.image.title="MCP Workflow Manager"
-LABEL org.opencontainers.image.description="A comprehensive Model Context Protocol server for AI workflow automation and task management"
+LABEL org.opencontainers.image.title="Anubis"
+LABEL org.opencontainers.image.description="🏺 Anubis - Divine Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development"
 LABEL org.opencontainers.image.version="1.0.15"
 LABEL org.opencontainers.image.authors="Hive Academy <abdallah@nghive.tech>"
-LABEL org.opencontainers.image.source="https://github.com/Hive-Academy/Workflow_Manager_MCP"
-LABEL org.opencontainers.image.documentation="https://github.com/Hive-Academy/Workflow_Manager_MCP/blob/main/README.md"
+LABEL org.opencontainers.image.source="https://github.com/Hive-Academy/Anubis"
+LABEL org.opencontainers.image.documentation="https://github.com/Hive-Academy/Anubis/blob/main/README.md"
 LABEL org.opencontainers.image.licenses="MIT"
 
 # Set working directory
@@ -56,12 +56,12 @@ RUN echo "🔧 DEPLOYING MIGRATIONS AND SEEDING DATA AT BUILD-TIME for instant s
 FROM node:22-alpine AS production
 
 # Add same metadata to final image
-LABEL org.opencontainers.image.title="MCP Workflow Manager"
-LABEL org.opencontainers.image.description="A comprehensive Model Context Protocol server for AI workflow automation and task management"
+LABEL org.opencontainers.image.title="Anubis"
+LABEL org.opencontainers.image.description="🏺 Anubis - Divine Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development"
 LABEL org.opencontainers.image.version="1.0.15"
 LABEL org.opencontainers.image.authors="Hive Academy <abdallah@nghive.tech>"
-LABEL org.opencontainers.image.source="https://github.com/Hive-Academy/Workflow_Manager_MCP"
-LABEL org.opencontainers.image.documentation="https://github.com/Hive-Academy/Workflow_Manager_MCP/blob/main/README.md"
+LABEL org.opencontainers.image.source="https://github.com/Hive-Academy/Anubis"
+LABEL org.opencontainers.image.documentation="https://github.com/Hive-Academy/Anubis/blob/main/README.md"
 LABEL org.opencontainers.image.licenses="MIT"
 
 # Install system dependencies: dumb-init for proper signal handling, curl for health checks, bash for entrypoint script
@@ -115,8 +115,8 @@ COPY --chown=nestjs:nodejs README.md ./
 RUN mkdir -p /app/data && chown -R nestjs:nodejs /app/data
 
 # Create the actual report directory structure where reports are generated
-RUN mkdir -p /app/data/workflow-manager-mcp-reports/temp \
-    && chown -R nestjs:nodejs /app/data/workflow-manager-mcp-reports
+RUN mkdir -p /app/data/anubis-reports/temp \
+    && chown -R nestjs:nodejs /app/data/anubis-reports
 
 # Create the reports directory that ReportRenderingService expects
 RUN mkdir -p /app/reports/rendered \
@@ -127,7 +127,7 @@ RUN chown -R nestjs:nodejs /app/temp /app/templates
 
 # Set default environment variables with unified database configuration
 ENV RUNNING_IN_DOCKER="true"
-ENV MCP_SERVER_NAME="MCP-Workflow-Manager"
+ENV MCP_SERVER_NAME="Anubis"
 ENV MCP_SERVER_VERSION="1.0.15"
 ENV MCP_TRANSPORT_TYPE="STDIO"
 ENV NODE_ENV="production"

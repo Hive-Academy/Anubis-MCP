@@ -41,9 +41,9 @@ project-b/
 ```json
 {
   "mcpServers": {
-    "workflow-manager": {
+    "anubis": {
       "command": "npx",
-      "args": ["-y", "@hive-academy/mcp-workflow-manager"]
+      "args": ["-y", "@hive-academy/anubis"]
     }
   }
 }
@@ -73,7 +73,7 @@ C:\Users\Dev\project-c\data\workflow.db
 ```json
 {
   "mcpServers": {
-    "workflow-manager": {
+    "anubis": {
       "command": "docker",
       "args": [
         "run",
@@ -81,7 +81,7 @@ C:\Users\Dev\project-c\data\workflow.db
         "-i",
         "-v",
         "/absolute/path/to/your-project/data:/app/data",
-        "hiveacademy/mcp-workflow-manager"
+        "hiveacademy/anubis"
       ]
     }
   }
@@ -102,7 +102,7 @@ C:\Users\Dev\project-c\data\workflow.db
 ```json
 {
   "mcpServers": {
-    "workflow-manager": {
+    "anubis": {
       "command": "docker",
       "args": [
         "run",
@@ -110,7 +110,7 @@ C:\Users\Dev\project-c\data\workflow.db
         "-i",
         "-v",
         "D:/projects/my-project/data:/app/data",
-        "hiveacademy/mcp-workflow-manager"
+        "hiveacademy/anubis"
       ]
     }
   }
@@ -122,7 +122,7 @@ C:\Users\Dev\project-c\data\workflow.db
 ```json
 {
   "mcpServers": {
-    "workflow-manager": {
+    "anubis": {
       "command": "docker",
       "args": [
         "run",
@@ -130,7 +130,7 @@ C:\Users\Dev\project-c\data\workflow.db
         "-i",
         "-v",
         "/Users/username/projects/my-project/data:/app/data",
-        "hiveacademy/mcp-workflow-manager"
+        "hiveacademy/anubis"
       ]
     }
   }
@@ -276,7 +276,7 @@ pwd
 export PROJECT_ROOT="$(pwd)"
 
 # Verify detection
-npx @hive-academy/mcp-workflow-manager --verbose
+npx @hive-academy/anubis --verbose
 ```
 
 #### Docker Volume Mount Issues
@@ -302,7 +302,7 @@ npx prisma validate
 
 # Reset database (development only!)
 rm ./data/workflow.db
-npx @hive-academy/mcp-workflow-manager
+npx @hive-academy/anubis
 
 # Manual migration (if needed)
 npx prisma migrate deploy

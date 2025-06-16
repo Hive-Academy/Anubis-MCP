@@ -140,28 +140,7 @@ export class StepExecutionMcpService extends BaseMcpService {
 
   @Tool({
     name: 'get_step_guidance',
-    description: `Get FOCUSED guidance for the current step execution only.
-
-🎯 FOCUSED STEP GUIDANCE - No role context, no redundancy
-
-**Returns ONLY:**
-- Current step details and description  
-- Specific commands to execute locally
-- Success/failure criteria
-- Quality checklist for validation
-
-**Does NOT return:**
-- Role context (get that from get_workflow_guidance once per role)
-- Project context (not needed for individual steps)
-- Historical data (focus on current action)
-- Envelope wrappers (minimal response)
-
-**Parameters:**
-- taskId OR executionId: Either task ID (number) or execution ID (string) is required
-- roleId: Role ID for context (string)
-- stepId: Optional specific step ID (string, if not provided uses current step from execution)
-
-**Pattern:** get_workflow_guidance (once) → get_step_guidance (per step) → execute locally → report_step_completion`,
+    description: `Provides focused guidance for executing the current workflow step, including commands and validation checklist.`,
     parameters: GetStepGuidanceInputSchema as ZodSchema<GetStepGuidanceInput>,
   })
   async getStepGuidance(input: GetStepGuidanceInput) {
@@ -266,26 +245,8 @@ export class StepExecutionMcpService extends BaseMcpService {
 
   @Tool({
     name: 'report_step_completion',
-    description: `Report step completion results and get next step guidance.
-
-🎯 RESULT REPORTING - Report what you accomplished locally
-
-**Use this AFTER executing step guidance locally:**
-- Report success/failure of local execution
-- Provide execution results and data
-- Get minimal info about next step (no role context)
-
-**Returns:**
-- Completion confirmation
-- Next step availability status
-- Minimal next action guidance (use get_step_guidance for details)
-
-**Example:**
-After running 'git status' locally, report:
-{
-  "result": "success", 
-  "executionData": {"gitStatus": "clean", "output": ""}
-}`,
+    description: `Report step completion results and get next step guidance. Returns ( Completion confirmation, Next step availability status, Minimal next action guidance (use get_step_guidance for details) )
+`,
     parameters:
       ReportStepCompletionInputSchema as ZodSchema<ReportStepCompletionInput>,
   })
@@ -358,22 +319,11 @@ After running 'git status' locally, report:
   @Tool({
     name: 'get_step_progress',
     description: `Get focused step progress summary for a task.
-
-🎯 FOCUSED PROGRESS - Essential progress data only
-
-**Returns ONLY:**
 - Current step status
 - Basic progress metrics
 - Step completion status
 - Simple next action guidance
-
-**Does NOT return:**
-- Complex progress analytics
-- Redundant step details
-- Over-detailed metrics
-- Debug progress data
-
-**Pattern:** Simple progress overview for monitoring`,
+`,
     parameters: GetStepProgressInputSchema as ZodSchema<GetStepProgressInput>,
   })
   async getStepProgress(input: GetStepProgressInput) {
@@ -424,21 +374,12 @@ After running 'git status' locally, report:
     name: 'get_next_available_step',
     description: `Get focused next step information for role progression.
 
-🎯 FOCUSED NEXT STEP - Essential step progression only
-
 **Returns ONLY:**
 - Next step basic details
 - Step availability status  
 - Simple progression guidance
 - Role transition hint if needed
-
-**Does NOT return:**
-- Complex step analytics
-- Redundant step metadata
-- Over-detailed step information
-- Debug step data
-
-**Pattern:** Simple next step discovery for workflow progression`,
+`,
     parameters: GetNextStepInputSchema as ZodSchema<GetNextStepInput>,
   })
   async getNextAvailableStep(input: GetNextStepInput) {

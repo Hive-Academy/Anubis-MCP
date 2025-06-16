@@ -1,16 +1,16 @@
 {
-  "name": "@hive-academy/mcp-workflow-manager",
+  "name": "@hive-academy/anubis",
   "version": "1.0.15",
-  "description": "A comprehensive Model Context Protocol server for AI workflow automation and task management in Cursor IDE and other MCP-compatible clients. Provides structured, role-based workflow coordination between different AI modes with persistent task tracking and implementation planning.",
+  "description": "🏺 Anubis - Divine Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development",
   "author": "Hive Academy <abdallah@nghive.tech>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Hive-Academy/Workflow_Manager_MCP.git"
+    "url": "git+https://github.com/Hive-Academy/Anubis.git"
   },
-  "homepage": "https://github.com/Hive-Academy/Workflow_Manager_MCP#readme",
+  "homepage": "https://github.com/Hive-Academy/Anubis#readme",
   "bugs": {
-    "url": "https://github.com/Hive-Academy/Workflow_Manager_MCP/issues"
+    "url": "https://github.com/Hive-Academy/Anubis/issues"
   },
   "keywords": [
     "mcp",
@@ -29,7 +29,7 @@
   ],
   "main": "dist/cli.js",
   "bin": {
-    "mcp-workflow-manager": "./dist/cli.js"
+    "anubis": "./dist/cli.js"
   },
   "preferGlobal": false,
   "engines": {
@@ -67,7 +67,7 @@
     "db:generate": "npx prisma generate",
     "db:init": "npm run db:generate && npm run db:migrate && npm run db:seed",
     "db:seed": "npx prisma db seed",
-    "postinstall": "npm run db:generate && echo '📦 @hive-academy/mcp-workflow-manager installed successfully' && echo '🔧 Prisma client generated automatically'",
+    "postinstall": "npm run db:generate && echo '📦 @hive-academy/anubis installed successfully' && echo '🔧 Prisma client generated automatically'",
     "setup:force": "npm run db:generate",
     "lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
     "test": "jest",

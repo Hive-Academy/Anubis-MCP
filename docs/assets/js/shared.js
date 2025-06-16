@@ -259,9 +259,9 @@ function copyToClipboard(text) {
 function getCursorConfig() {
   return `{
   "mcpServers": {
-    "workflow-manager": {
+    "anubis": {
       "command": "npx",
-      "args": ["-y", "@hive-academy/mcp-workflow-manager"]
+      "args": ["-y", "@hive-academy/mcp-anubis"]
     }
   }
 }`;
@@ -270,9 +270,9 @@ function getCursorConfig() {
 function getClaudeConfig() {
   return `{
   "mcpServers": {
-    "workflow-manager": {
+    "anubis": {
       "command": "npx",
-      "args": ["-y", "@hive-academy/mcp-workflow-manager"]
+      "args": ["-y", "@hive-academy/mcp-anubis"]
     }
   }
 }`;
@@ -281,9 +281,9 @@ function getClaudeConfig() {
 function getVSCodeConfig() {
   return `{
   "mcpServers": {
-    "workflow-manager": {
+    "anubis": {
       "command": "npx",
-      "args": ["-y", "@hive-academy/mcp-workflow-manager"]
+      "args": ["-y", "@hive-academy/mcp-anubis"]
     }
   }
 }`;
@@ -292,9 +292,9 @@ function getVSCodeConfig() {
 function getMCPConfig() {
   return `{
   "mcpServers": {
-    "workflow-manager": {
+    "anubis": {
       "command": "npx",
-      "args": ["-y", "@hive-academy/mcp-workflow-manager"]
+      "args": ["-y", "@hive-academy/mcp-anubis"]
     }
   }
 }`;

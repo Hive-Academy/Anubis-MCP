@@ -36,7 +36,7 @@ async function bootstrap() {
   }
 
   if (!process.env.MCP_SERVER_NAME) {
-    process.env.MCP_SERVER_NAME = 'MCP-Workflow-Manager';
+    process.env.MCP_SERVER_NAME = 'Anubis';
   }
 
   if (!process.env.NODE_ENV) {
@@ -53,7 +53,7 @@ async function bootstrap() {
   }
 
   try {
-    console.log('🚀 Starting MCP Workflow Manager...');
+    console.log('🚀 Starting Anubis...');
 
     // Initialize dependency manager with database configuration
     const dependencyManager = new DependencyManager({
@@ -85,7 +85,7 @@ async function bootstrap() {
       logger: false, // Use our custom logger
     });
 
-    console.log('✅ MCP Workflow Manager started successfully');
+    console.log('✅ Anubis started successfully');
     console.log('📡 Listening for MCP protocol messages...');
 
     // Handle graceful shutdown

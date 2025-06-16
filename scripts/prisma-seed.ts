@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Prisma Seed Script for MCP Workflow Manager
+ * Prisma Seed Script for Anubis
  *
  * This script seeds the database with essential workflow rules, roles, steps, and transitions.
  * It's designed to work in both development and production environments, including Docker.
@@ -438,7 +438,7 @@ async function validateSeeding() {
 
 async function main() {
   try {
-    console.log('🚀 Starting MCP Workflow Manager database seeding...\n');
+    console.log('🚀 Starting Anubis database seeding...\n');
 
     // Check if already seeded (for production environments)
     const isAlreadySeeded = await checkIfSeeded();
@@ -475,9 +475,7 @@ async function main() {
     await validateSeeding();
     console.log('');
 
-    console.log(
-      '🎉 MCP Workflow Manager database seeding completed successfully!',
-    );
+    console.log('🎉 Anubis database seeding completed successfully!');
   } catch (error) {
     console.error('💥 Error during database seeding:', error);
     process.exit(1);

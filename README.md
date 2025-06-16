@@ -1,19 +1,21 @@
-# 🎯 MCP Workflow Manager: AI-Guided Development Intelligence
+# 🏺 Anubis - Divine Guidance for AI Workflows
 
-**Transform chaotic development into organized, quality-driven workflows with MCP-compliant AI guidance.**
+**Anubis is the divine guide for AI workflows - the first MCP-compliant system that embeds intelligent guidance directly into each step, ensuring your AI agents follow complex development processes consistently and reliably.**
 
-![Docker Pulls](https://img.shields.io/docker/pulls/hiveacademy/mcp-workflow-manager)
-![Docker Image Size](https://img.shields.io/docker/image-size/hiveacademy/mcp-workflow-manager)
-![Docker Image Version](https://img.shields.io/docker/v/hiveacademy/mcp-workflow-manager)
-[![MCP Server](https://img.shields.io/badge/MCP-Server-blue?style=for-the-badge&logo=docker)](https://hub.docker.com/r/hiveacademy/mcp-workflow-manager)
+_Transform chaotic development into organized, quality-driven workflows with MCP-compliant AI guidance._
 
-- **NPM Package**: [@hive-academy/mcp-workflow-manager](https://www.npmjs.com/package/@hive-academy/mcp-workflow-manager)
+![Docker Pulls](https://img.shields.io/docker/pulls/hiveacademy/anubis)
+![Docker Image Size](https://img.shields.io/docker/image-size/hiveacademy/anubis)
+![Docker Image Version](https://img.shields.io/docker/v/hiveacademy/anubis)
+[![MCP Server](https://img.shields.io/badge/MCP-Server-blue?style=for-the-badge&logo=docker)](https://hub.docker.com/r/hiveacademy/anubis)
 
-A sophisticated **Model Context Protocol (MCP) server** that provides intelligent workflow guidance for AI agents in software development. Built with NestJS v11.0.1 + Prisma v6.9.0 + @rekog/mcp-nest v1.5.2, this system follows MCP protocol standards by providing guidance instead of execution.
+- **NPM Package**: [@hive-academy/anubis](https://www.npmjs.com/package/@hive-academy/anubis)
+
+A sophisticated **Model Context Protocol (MCP) server** that embeds intelligent guidance directly into each workflow step, ensuring AI agents follow complex development processes consistently and reliably. Built with NestJS v11.0.1 + Prisma v6.9.0 + @rekog/mcp-nest v1.5.2, this system follows MCP protocol standards by providing divine guidance instead of execution.
 
 ## 🏆 **ENTERPRISE-GRADE MCP WORKFLOW SYSTEM**
 
-**✅ PRODUCTION READY**: Version 1.0.14 with full MCP protocol compliance and enterprise-grade architecture.
+**✅ PRODUCTION READY**: Version 1.0.15 with full MCP protocol compliance and enterprise-grade architecture.
 
 ## 🚀 **QUICK START**
 
@@ -31,9 +33,9 @@ npm >= 8.0.0
 // Add to your MCP client config (Cursor, Claude Desktop, etc.)
 {
   "mcpServers": {
-    "workflow-manager": {
+    "anubis": {
       "command": "npx",
-      "args": ["-y", "@hive-academy/mcp-workflow-manager"]
+      "args": ["-y", "@hive-academy/anubis"]
     }
   }
 }
@@ -43,7 +45,7 @@ npm >= 8.0.0
 
 - ✅ Zero installation required
 - ✅ Automatic dependency management (Prisma client generation)
-- ✅ Always latest version (v1.0.14)
+- ✅ Always latest version (v1.0.15)
 - ✅ Project isolation (each project gets its own database)
 
 ### **Docker Setup**
@@ -51,15 +53,15 @@ npm >= 8.0.0
 ```json
 {
   "mcpServers": {
-    "workflow-manager": {
+    "anubis": {
       "command": "docker",
       "args": [
         "run",
         "-i",
         "-v",
-        "project-workflow:/app/data",
+        "project-anubis:/app/data",
         "--rm",
-        "hiveacademy/mcp-workflow-manager"
+        "hiveacademy/anubis"
       ]
     }
   }
@@ -70,8 +72,8 @@ npm >= 8.0.0
 
 ```bash
 # Clone the repository
-git clone https://github.com/Hive-Academy/Workflow_Manager_MCP.git
-cd Workflow_Manager_MCP
+git clone https://github.com/Hive-Academy/Anubis.git
+cd Anubis
 
 # Install dependencies
 npm install
@@ -310,7 +312,7 @@ Generate beautiful HTML dashboards with:
 - **MCP Integration**: @rekog/mcp-nest v1.5.2 for seamless protocol compliance
 - **Validation**: Zod v3.24.4 for comprehensive parameter validation
 - **Runtime**: Node.js >=18.0.0 with npm >=8.0.0
-- **Package**: @hive-academy/mcp-workflow-manager v1.0.14
+- **Package**: @hive-academy/anubis v1.0.15
 
 ### **Domain-Driven Design**
 
@@ -372,15 +374,15 @@ Configure volume names for project isolation:
 
 ```json
 // Project A
-"args": ["run", "-i", "-v", "project-a-workflow:/app/data", "--rm", "..."]
+"args": ["run", "-i", "-v", "project-a-anubis:/app/data", "--rm", "..."]
 
 // Project B
-"args": ["run", "-i", "-v", "project-b-workflow:/app/data", "--rm", "..."]
+"args": ["run", "-i", "-v", "project-b-anubis:/app/data", "--rm", "..."]
 ```
 
 ## 🚀 **DEVELOPMENT STATUS**
 
-**✅ PRODUCTION READY - MCP COMPLIANT v1.0.14**
+**✅ PRODUCTION READY - MCP COMPLIANT v1.0.15**
 
 - **✅ Architecture**: MCP-compliant guidance-only design
 - **✅ Performance**: Optimized with intelligent caching (25-75% token savings)

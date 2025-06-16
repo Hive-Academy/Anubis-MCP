@@ -7,7 +7,7 @@ set -e  # Exit on any error
 
 # Configuration
 DOCKER_HUB_USERNAME="${DOCKER_HUB_USERNAME:-hiveacademy}"
-IMAGE_NAME="mcp-workflow-manager"
+IMAGE_NAME="anubis"
 FULL_IMAGE_NAME="${DOCKER_HUB_USERNAME}/${IMAGE_NAME}"
 
 # Version management
@@ -56,7 +56,7 @@ echo ""
 echo "Claude Desktop:"
 echo '{'
 echo '  "mcpServers": {'
-echo '    "workflow-manager": {'
+echo '    "anubis": {'
 echo '      "command": "docker",'
 echo '      "args": ["run", "--rm", "-i", "-v", "mcp-workflow-data:/app/data", "'${FULL_IMAGE_NAME}'"]'
 echo '    }'

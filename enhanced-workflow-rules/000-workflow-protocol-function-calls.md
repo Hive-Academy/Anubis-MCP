@@ -1,4 +1,6 @@
-# MCP Workflow Manager: Universal AI Agent Protocol
+# 🏺 Anubis - Divine Guidance for AI Workflows: Universal AI Agent Protocol
+
+**Anubis is the divine guide for AI workflows - the first MCP-compliant system that embeds intelligent guidance directly into each step, ensuring your AI agents follow complex development processes consistently and reliably.**
 
 **Transform chaotic development into organized, quality-driven workflows**
 
@@ -6,7 +8,7 @@ _Follow these rules precisely to ensure successful workflow execution_
 
 ---
 
-## **Core Principles**
+## Core Principles
 
 ### The MCP Contract
 
@@ -21,7 +23,7 @@ _Follow these rules precisely to ensure successful workflow execution_
 
 ---
 
-## **MANDATORY STARTUP PROTOCOL**
+## MANDATORY STARTUP PROTOCOL
 
 ### Before ANY user request, execute this sequence:
 
@@ -33,15 +35,15 @@ const activeCheck = await workflow_execution_operations({
 });
 ```
 
-**Interpreting the Response:**
+### Interpreting the Response
 
-When you receive the response, examine the returned array carefully:
+When you receive the response from this tool call, examine the returned data structure carefully:
 
 - **If the array is empty**: No active workflows exist. Proceed directly to workflow initialization for the user's request.
 
 - **If the array contains one or more execution objects**: Active workflows exist. Each execution object contains important information you must extract and present to the user.
 
-**For each active execution in the response, extract these key details:**
+### For each active execution in the response, extract these key details:
 
 - **Execution ID**: The unique identifier for the workflow session
 - **Task information**: Look for task name, description, and current status
@@ -49,31 +51,32 @@ When you receive the response, examine the returned array carefully:
 - **Current step**: What step is currently being executed or next to execute
 - **Progress indicators**: Any status or progress information available
 
-**Present the user with these specific options:**
+### Present the user with these specific options:
 
-"**Active Workflow Detected**
+```
+Active Workflow Detected
 
 I found an active workflow in progress:
+- Workflow: [Extract and display the task name or workflow description]
+- Status: [Display current status and role information]
+- Progress: [Show current step or progress indicators]
 
-- **Workflow**: [Extract and display the task name or workflow description]
-- **Status**: [Display current status and role information]
-- **Progress**: [Show current step or progress indicators]
+Your Options:
+A) Continue existing workflow - Resume from the current step
+B) Start new workflow - Archive current workflow and begin fresh
+C) Get quick help - View current step guidance and assistance
+D) View dashboard - See detailed analytics and progress
 
-**Your Options:**
-A) **Continue existing workflow** - Resume from the current step
-B) **Start new workflow** - Archive current workflow and begin fresh
-C) **Get quick help** - View current step guidance and assistance
-D) **View dashboard** - See detailed analytics and progress
-
-Please select an option (A/B/C/D) to proceed."
+Please select an option (A/B/C/D) to proceed.
+```
 
 **Important**: Wait for the user's choice before proceeding. Do not make assumptions about what they want to do with the existing workflow.
 
 ---
 
-## **Workflow Execution Phases**
+## Workflow Execution Phases
 
-### **Phase 1: Workflow Initialization**
+### Phase 1: Workflow Initialization
 
 Execute the `bootstrap_workflow` MCP tool with these exact parameters:
 
@@ -85,7 +88,7 @@ const initResult = await bootstrap_workflow({
 });
 ```
 
-**Interpreting the Bootstrap Response:**
+### Interpreting the Bootstrap Response
 
 The MCP server will return an object containing several critical identifiers that you must store and use throughout the workflow:
 
@@ -96,9 +99,7 @@ The MCP server will return an object containing several critical identifiers tha
 
 **Store these values immediately** - you will need them for every subsequent operation. Consider these as your "session tokens" for the workflow.
 
----
-
-### **Phase 2: Step Execution Cycle**
+### Phase 2: Step Execution Cycle
 
 #### 2.1 Request Intelligent Guidance
 
@@ -224,7 +225,7 @@ const completionReport = await report_step_completion({
 });
 ```
 
-**Structure your executionData object to include:**
+### Structure your executionData object to include:
 
 - **filesModified**: Array of file paths that were changed or created
 - **commandsExecuted**: Array of terminal commands that were run
@@ -233,16 +234,14 @@ const completionReport = await report_step_completion({
 - **evidenceDetails**: Specific proof for each requirement that was met
 - **qualityChecksComplete**: Boolean confirming all quality checks passed
 
-**The MCP server uses this information to:**
+### The MCP server uses this information to:
 
 - Track workflow progress and maintain state
 - Provide context for subsequent steps
 - Generate analytics and reports
 - Ensure quality standards are maintained
 
----
-
-### **Phase 3: Role Transitions**
+### Phase 3: Role Transitions
 
 #### 3.1 Check Available Transitions
 
@@ -256,7 +255,7 @@ const transitions = await get_role_transitions({
 });
 ```
 
-**Interpreting the Transitions Response:**
+### Interpreting the Transitions Response
 
 The MCP server returns an array of available transition options. For each transition, examine:
 
@@ -277,7 +276,7 @@ const validation = await validate_transition({
 });
 ```
 
-**Interpreting the Validation Response:**
+### Interpreting the Validation Response
 
 The MCP server returns a validation result object:
 
@@ -299,7 +298,7 @@ const transitionResult = await execute_transition({
 });
 ```
 
-**Interpreting the Transition Response:**
+### Interpreting the Transition Response
 
 The MCP server returns your new role context:
 
@@ -309,9 +308,7 @@ The MCP server returns your new role context:
 
 **Update your workflow context** with the new role information and continue with the new role's responsibilities.
 
----
-
-### **Phase 4: Workflow Completion**
+### Phase 4: Workflow Completion
 
 When you reach the final role (typically Integration Engineer), execute the `workflow_execution_operations` MCP tool with:
 
@@ -330,7 +327,7 @@ await workflow_execution_operations({
 });
 ```
 
-**Structure your completionData to include:**
+### Structure your completionData to include:
 
 - **finalStatus**: `'success'` or `'failure'` with detailed explanation
 - **deliverables**: Array of completed items and their locations
@@ -339,30 +336,32 @@ await workflow_execution_operations({
 
 ---
 
-## **Understanding MCP Operations**
+## Understanding MCP Operations
 
 ### Critical: Schema Compliance
 
 The `mcpOperations` section in step guidance provides exact schemas for any MCP operations needed. **You must follow these schemas precisely**.
 
-**When guidance provides an mcpOperation schema:**
+### When guidance provides an mcpOperation schema:
 
 1. **Use the exact service name** specified in the schema
 2. **Use the exact operation name** specified in the schema
 3. **Include all required parameters** with correct names and types
 4. **Include the executionId** when specified as required (this links operations to your workflow)
 
-**Schema Example Interpretation:**
+### Schema Example Interpretation
 
 If guidance provides:
 
-```
-serviceName: "TaskOperations"
-operation: "create"
-parameters: {
-  executionId: "required",
-  taskData: { title: "string", status: "string" },
-  description: { objective: "string" }
+```json
+{
+  "serviceName": "TaskOperations",
+  "operation": "create",
+  "parameters": {
+    "executionId": "required",
+    "taskData": { "title": "string", "status": "string" },
+    "description": { "objective": "string" }
+  }
 }
 ```
 
@@ -387,7 +386,7 @@ await execute_mcp_operation({
 
 ---
 
-## **Tool Operation Reference**
+## Tool Operation Reference
 
 ### Workflow Management Functions
 
@@ -412,21 +411,23 @@ await execute_mcp_operation({
 | ------------------------------- | ---------------------------- | -------------------------------------------------------------- | ----------------------------------- |
 | `workflow_execution_operations` | Query/update execution state | `get_active_executions`, `get_execution`, `complete_execution` | Returns execution state and history |
 
+**Note**: All functions are called using `await function_name({parameters})` syntax.
+
 ---
 
-## **Critical Success Patterns**
+## Critical Success Patterns
 
-### **REQUIRED Actions**
+### REQUIRED Actions
 
 1. **Always check for active workflows before starting new work**
 2. **Execute ALL commands locally using YOUR tools - never expect MCP to execute**
 3. **Read and follow ALL sections of step guidance completely**
 4. **Validate against EVERY quality checklist item before reporting completion**
 5. **Include executionId in all MCP operations that require it**
-6. **Report completion with comprehensive evidence and validation results**
-7. **Use exact schemas from mcpOperations section - never modify parameter structures**
+6. **Use exact schemas from mcpOperations section - never modify parameter structures**
+7. **Report completion with comprehensive evidence and validation results**
 
-### **PROHIBITED Actions**
+### PROHIBITED Actions
 
 1. **Never skip quality checklist validation**
 2. **Never expect MCP server to execute commands for you**
@@ -437,7 +438,7 @@ await execute_mcp_operation({
 
 ---
 
-## **Special Workflow Patterns**
+## Special Workflow Patterns
 
 ### Task Creation Pattern
 
@@ -481,7 +482,11 @@ await execute_mcp_operation({
   serviceName: 'ReviewOperations',
   operation: 'create_review',
   parameters: {
-    /* review parameters from guidance */
+    executionId: executionId,
+    reviewData: {
+      status: 'APPROVED',
+      findings: 'comprehensive review findings',
+    },
   },
 });
 ```
@@ -493,10 +498,15 @@ await execute_mcp_operation({
   serviceName: 'WorkflowOperations',
   operation: 'delegate',
   parameters: {
-    /* delegation parameters from guidance */
+    executionId: executionId,
+    targetRole: 'Integration Engineer',
+    context: 'Comprehensive handoff context with quality evidence',
   },
 });
 ```
+
+3. **Include comprehensive handoff context** in the delegation message
+4. **Ensure all quality evidence is transferred** to the receiving role
 
 ### Integration Engineer Completion Pattern
 
@@ -505,27 +515,42 @@ Integration Engineer responsibilities include:
 1. **Assess documentation needs** based on the changes made during the workflow
 2. **Update relevant documentation** if modifications are needed for user understanding
 3. **Create and validate pull request** with proper review and testing
-4. **Complete BOTH task AND workflow execution** using the completion operations
+4. **Complete BOTH task AND workflow execution** using the completion operations:
+
+```typescript
+await workflow_execution_operations({
+  operation: 'complete_execution',
+  executionId: executionId,
+  completionData: {
+    finalStatus: 'success',
+    deliverables: ['list', 'of', 'completed', 'items'],
+    qualityMetrics: {
+      /* comprehensive metrics */
+    },
+    documentation: 'links to updated docs',
+  },
+});
+```
 
 **Critical**: Integration Engineer must complete both the task itself AND the workflow execution to properly close the workflow session.
 
 ---
 
-## **Response Templates**
+## Response Templates
 
 ### Active Workflow Response
 
 ```
-**Active Workflow Detected**
+Active Workflow Detected
 
 I found an active workflow: "[workflow name from response]"
 Status: [current status] | Progress: [progress information]
 
-**Your Options:**
-A) **Continue existing workflow** - Resume from step "[current step name]"
-B) **Start new workflow** - Archive current and begin fresh
-C) **Get quick help** - View current step guidance
-D) **View dashboard** - See detailed analytics
+Your Options:
+A) Continue existing workflow - Resume from step "[current step name]"
+B) Start new workflow - Archive current and begin fresh
+C) Get quick help - View current step guidance
+D) View dashboard - See detailed analytics
 
 Please select A, B, C, or D to proceed.
 ```
@@ -533,7 +558,7 @@ Please select A, B, C, or D to proceed.
 ### Step Execution Response
 
 ```
-**Executing: [step name from guidance]**
+Executing: [step name from guidance]
 
 Following MCP guidance, I will:
 1. [first action from approachGuidance]
@@ -542,7 +567,7 @@ Following MCP guidance, I will:
 
 Executing locally with my tools and validating against quality checklist...
 
-**Results:**
+Results:
 - [result 1 with evidence]
 - [result 2 with evidence]
 - [any failures or issues]
@@ -554,20 +579,20 @@ Next: [what happens next]
 ### Validation Report
 
 ```
-**Quality Validation Complete**
+Quality Validation Complete
 
-**All Checks Passed:**
+All Checks Passed:
 • [checklist item 1] - Evidence: [specific evidence]
 • [checklist item 2] - Evidence: [specific evidence]
 • [checklist item 3] - Evidence: [specific evidence]
 
-**Reporting completion to MCP server...**
+Reporting completion to MCP server...
 ```
 
 ### Role Transition Response
 
 ```
-**Role Transition Available**
+Role Transition Available
 
 Current role work is complete. Available transitions:
 
@@ -579,11 +604,11 @@ Would you like to proceed with option 1, or select a different option?
 
 ---
 
-## **Troubleshooting Guide**
+## Troubleshooting Guide
 
 | Issue                             | Diagnostic Steps                                     | Solution                                                                                |
 | --------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| "No step guidance available"      | Verify `executionId` and `roleId` are correct        | Call `get_step_guidance` with valid parameters from your workflow session               |
+| "No step guidance available"      | Verify `executionId` and `roleId` are correct        | Execute `await get_step_guidance({executionId, roleId})` with valid parameters          |
 | "Command execution failed"        | Check command syntax and environment requirements    | Retry up to 3 times with error handling, report failure with detailed error information |
 | "Quality check validation failed" | Review specific checklist items that failed          | Address the failing requirements, re-validate, only proceed when ALL items pass         |
 | "ExecutionId parameter missing"   | Check if operation requires workflow linking         | Always include `executionId` parameter in MCP operations that specify it as required    |
@@ -592,7 +617,7 @@ Would you like to proceed with option 1, or select a different option?
 
 ---
 
-## **Success Metrics**
+## Success Metrics
 
 **You're succeeding when:**
 
@@ -602,11 +627,8 @@ Would you like to proceed with option 1, or select a different option?
 - Role transitions follow proper validation before execution
 - Workflow completion delivers quality results that meet all requirements
 - User receives clear progress updates and options throughout the process
+- All MCP tool calls follow the proper `await tool_name({parameters})` syntax
 
 **Remember**: You are the EXECUTOR. MCP provides GUIDANCE. Execute locally using your tools, validate thoroughly against all requirements, report accurately with comprehensive evidence.
 
 ---
-
-**MCP WORKFLOW SUCCESS FORMULA**
-
-**Get Guidance → Execute Locally → Validate Thoroughly → Report Accurately**

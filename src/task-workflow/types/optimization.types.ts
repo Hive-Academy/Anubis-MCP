@@ -1,5 +1,5 @@
 /**
- * Optimization Types for MCP Workflow Management System
+ * Optimization Types for Anubis
  *
  * Provides configurable optimization levels to balance token efficiency
  * with data completeness based on specific use case requirements.

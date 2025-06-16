@@ -4,7 +4,7 @@
 param(
     [string]$Version = "latest",
     [string]$DockerHubUsername = "hiveacademy",
-    [string]$ImageName = "mcp-workflow-manager",
+    [string]$ImageName = "anubis",
     [switch]$SkipTests = $false,
     [switch]$Verbose = $false
 )
@@ -189,7 +189,7 @@ try {
     Write-ColorOutput '   Add to your Claude Desktop config:' $Blue
     Write-ColorOutput '   {' $Blue
     Write-ColorOutput '     "mcpServers": {' $Blue
-    Write-ColorOutput '       "workflow-manager": {' $Blue
+    Write-ColorOutput '       "anubis": {' $Blue
     Write-ColorOutput '         "command": "docker",' $Blue
     Write-ColorOutput '         "args": ["run", "--rm", "-i", "-v", "mcp-workflow-data:/app/data", "' + $LatestTag + '"]' $Blue
     Write-ColorOutput '       }' $Blue

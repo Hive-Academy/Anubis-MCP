@@ -1,8 +1,19 @@
-# Developer Guide - MCP Workflow Manager
+# 🏺 Developer Guide - Anubis
 
-## **🚀 CURRENT IMPLEMENTATION STATUS (June 2025)**
+**Divine Guidance for AI Workflows | Enterprise-Grade MCP Workflow Intelligence System**
 
-This guide documents the **MCP Workflow Manager** v1.0.14 - a sophisticated, enterprise-grade workflow management system built with NestJS v11.0.1, Prisma v6.9.0, and @rekog/mcp-nest v1.5.2.
+**Anubis is the divine guide for AI workflows - the first MCP-compliant system that embeds intelligent guidance directly into each step, ensuring your AI agents follow complex development processes consistently and reliably.**
+
+This guide documents the **Anubis** v1.0.15 - a sophisticated, enterprise-grade workflow management system built with NestJS v11.0.1, Prisma v6.9.0, and @rekog/mcp-nest v1.5.2.
+
+## Quick Reference
+
+- **Version**: v1.0.15
+- **Package**: @hive-academy/anubis v1.0.15
+- **Docker**: hiveacademy/anubis
+- **MCP Protocol**: Fully compliant guidance-only architecture
+- **Database**: SQLite (default) / PostgreSQL (production)
+- **Node.js**: >=18.0.0 required
 
 ### **🎯 Architecture Overview**
 
@@ -12,7 +23,7 @@ This guide documents the **MCP Workflow Manager** v1.0.14 - a sophisticated, ent
 - **Database**: Prisma ORM v6.9.0 with SQLite (default) and PostgreSQL support
 - **MCP Integration**: @rekog/mcp-nest v1.5.2 for seamless protocol compliance
 - **Validation**: Zod v3.24.4 for comprehensive parameter validation
-- **Package**: @hive-academy/mcp-workflow-manager v1.0.14
+- **Package**: @hive-academy/anubis v1.0.15
 
 **Key Features:**
 
@@ -36,8 +47,8 @@ npm >= 8.0.0
 
 ```bash
 # Clone the repository
-git clone https://github.com/Hive-Academy/Workflow_Manager_MCP.git
-cd Workflow_Manager_MCP
+git clone https://github.com/Hive-Academy/Anubis.git
+cd Anubis
 
 # Install dependencies
 npm install
@@ -76,14 +87,14 @@ npm run rules:gen
 
 ```bash
 # Use as NPX package (no local installation needed)
-npx -y @hive-academy/mcp-workflow-manager
+npx -y @hive-academy/anubis
 
 # Configure in MCP client (Cursor IDE)
 {
   "mcpServers": {
-    "workflow-manager": {
+    "anubis": {
       "command": "npx",
-      "args": ["-y", "@hive-academy/mcp-workflow-manager"]
+      "args": ["-y", "@hive-academy/anubis"]
     }
   }
 }
@@ -844,4 +855,4 @@ async customOperation(): Promise<any> {
 
 ---
 
-**🚀 This developer guide provides comprehensive guidance for working with the MCP Workflow Manager. The system represents a sophisticated, enterprise-grade architecture that combines NestJS v11.0.1, Prisma v6.9.0, and MCP protocol compliance to deliver intelligent workflow guidance for AI-assisted development.**
+**🚀 This developer guide provides comprehensive guidance for working with the Anubis. The system represents a sophisticated, enterprise-grade architecture that combines NestJS v11.0.1, Prisma v6.9.0, and MCP protocol compliance to deliver intelligent workflow guidance for AI agents in software development.**

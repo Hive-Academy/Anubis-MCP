@@ -9,7 +9,7 @@
 - **MCP Integration**: @rekog/mcp-nest v1.5.2 for seamless protocol compliance
 - **Validation Framework**: Zod v3.24.4 for comprehensive parameter validation
 - **Runtime Environment**: Node.js >=18.0.0 with npm >=8.0.0
-- **Package Version**: @hive-academy/mcp-workflow-manager v1.0.14
+- **Package Version**: @hive-academy/anubis v1.0.15
 
 ### Architecture Patterns
 
@@ -592,9 +592,9 @@ The system is distributed as a self-contained NPX package with automatic depende
 ```json
 {
   "mcpServers": {
-    "workflow-manager": {
+    "anubis": {
       "command": "npx",
-      "args": ["-y", "@hive-academy/mcp-workflow-manager"]
+      "args": ["-y", "@hive-academy/anubis"]
     }
   }
 }
@@ -614,7 +614,7 @@ For production environments, Docker containers are available:
 ```json
 {
   "mcpServers": {
-    "workflow-manager": {
+    "anubis": {
       "command": "docker",
       "args": [
         "run",
@@ -622,7 +622,7 @@ For production environments, Docker containers are available:
         "-v",
         "project-workflow:/app/data",
         "--rm",
-        "hiveacademy/mcp-workflow-manager"
+        "hiveacademy/anubis"
       ]
     }
   }

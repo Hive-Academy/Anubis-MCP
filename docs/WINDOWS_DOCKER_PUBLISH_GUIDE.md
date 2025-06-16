@@ -1,6 +1,6 @@
 # 🪟 Windows Docker Publication Guide
 
-## 🎯 Complete Guide for Publishing MCP Workflow Manager to Docker Hub on Windows
+## 🎯 Complete Guide for Publishing Anubis to Docker Hub on Windows
 
 ### 🆕 What's New in This Version
 
@@ -99,8 +99,8 @@ $env:DOCKER_HUB_USERNAME = "hiveacademy"  # Replace with your username
    # Build and push for multiple platforms
    docker buildx build `
      --platform linux/amd64,linux/arm64 `
-     --tag hiveacademy/mcp-workflow-manager:latest `
-     --tag hiveacademy/mcp-workflow-manager:1.0.0 `
+     --tag hiveacademy/anubis:latest `
+   --tag hiveacademy/anubis:1.0.0 `
      --push .
    ```
 
@@ -108,10 +108,10 @@ $env:DOCKER_HUB_USERNAME = "hiveacademy"  # Replace with your username
 
    ```powershell
    # Check the image was published
-   docker pull hiveacademy/mcp-workflow-manager:latest
+   docker pull hiveacademy/anubis:latest
 
    # Test the published image
-   docker run --rm hiveacademy/mcp-workflow-manager:latest --help
+   docker run --rm hiveacademy/anubis:latest --help
    ```
 
 ### 🔧 Configuration Options
@@ -124,7 +124,7 @@ $env:DOCKER_HUB_USERNAME = "hiveacademy"  # Replace with your username
 # For Claude Desktop integration
 docker run --rm -i `
   -v mcp-workflow-data:/app/data `
-  hiveacademy/mcp-workflow-manager:latest
+  hiveacademy/anubis:latest
 ```
 
 **2. HTTP Server Mode**:
@@ -136,7 +136,7 @@ docker run --rm `
   -e MCP_TRANSPORT_TYPE=SSE `
   -e NODE_ENV=production `
   -v mcp-workflow-data:/app/data `
-  hiveacademy/mcp-workflow-manager:latest
+  hiveacademy/anubis:latest
 ```
 
 **3. Production with PostgreSQL**:
@@ -148,14 +148,14 @@ docker run --rm `
   -e DATABASE_URL="postgresql://user:pass@postgres:5432/workflow_db" `
   -e MCP_TRANSPORT_TYPE=SSE `
   -e NODE_ENV=production `
-  hiveacademy/mcp-workflow-manager:latest
+  hiveacademy/anubis:latest
 ```
 
 ### 📝 Docker Hub Configuration
 
 #### Repository Settings on Docker Hub
 
-1. **Repository Name**: `mcp-workflow-manager`
+1. **Repository Name**: `anubis`
 2. **Description**: "A comprehensive Model Context Protocol server for AI workflow automation and task management"
 3. **README**: Copy content from `DOCKER_HUB_README.md`
 4. **Tags**:
@@ -178,10 +178,10 @@ Link your GitHub repository for automatic builds:
 ```powershell
 # Test different configurations
 # 1. Basic functionality
-docker run --rm -v mcp-test-data:/app/data hiveacademy/mcp-workflow-manager:latest --help
+docker run --rm -v mcp-test-data:/app/data hiveacademy/anubis:latest --help
 
 # 2. HTTP mode
-docker run --rm -p 3000:3000 -e MCP_TRANSPORT_TYPE=SSE hiveacademy/mcp-workflow-manager:latest &
+docker run --rm -p 3000:3000 -e MCP_TRANSPORT_TYPE=SSE hiveacademy/anubis:latest &
 Start-Sleep 5
 Invoke-WebRequest http://localhost:3000/health -UseBasicParsing
 Stop-Process -Name node
@@ -193,9 +193,9 @@ Stop-Process -Name node
 # Test with Claude Desktop configuration
 $claudeConfig = @{
     mcpServers = @{
-        "workflow-manager" = @{
+        "anubis" = @{
             command = "docker"
-            args = @("run", "--rm", "-i", "-v", "mcp-workflow-data:/app/data", "hiveacademy/mcp-workflow-manager:latest")
+            args = @("run", "--rm", "-i", "-v", "mcp-workflow-data:/app/data", "hiveacademy/anubis:latest")
         }
     }
 } | ConvertTo-Json -Depth 3
@@ -210,7 +210,7 @@ Write-Host $claudeConfig
 
 ```powershell
 # Check container health
-docker run --rm --health-cmd "npm run health-check" hiveacademy/mcp-workflow-manager:latest
+docker run --rm --health-cmd "npm run health-check" hiveacademy/anubis:latest
 
 # Monitor running containers
 docker stats
@@ -227,7 +227,7 @@ npm version patch  # or minor/major
 .\scripts\docker-publish.ps1 -Version $(node -p "require('./package.json').version")
 
 # 3. Test the new version
-docker pull hiveacademy/mcp-workflow-manager:latest
+docker pull hiveacademy/anubis:latest
 ```
 
 ### 🛡️ Security Considerations
@@ -248,7 +248,7 @@ docker run --rm `
   --network mcp-network `
   --restart unless-stopped `
   -v mcp-workflow-data:/app/data `
-  hiveacademy/mcp-workflow-manager:latest
+  hiveacademy/anubis:latest
 ```
 
 ### 🌟 Best Practices
@@ -264,18 +264,18 @@ docker run --rm `
 
 ```powershell
 # Optimize image size
-docker images hiveacademy/mcp-workflow-manager
+docker images hiveacademy/anubis
 
 # Check layer sizes
-docker history hiveacademy/mcp-workflow-manager:latest
+docker history hiveacademy/anubis:latest
 ```
 
 ### 🎉 Success Verification
 
 After successful publication, verify:
 
-1. **Docker Hub Page**: https://hub.docker.com/r/hiveacademy/mcp-workflow-manager
-2. **Image Pull**: `docker pull hiveacademy/mcp-workflow-manager`
+1. **Docker Hub Page**: https://hub.docker.com/r/hiveacademy/anubis
+2. **Image Pull**: `docker pull hiveacademy/anubis`
 3. **Multi-Platform**: Check AMD64 and ARM64 support
 4. **Documentation**: Verify README displays correctly
 5. **Tags**: Confirm version tags are available
@@ -287,7 +287,7 @@ After successful publication, verify:
 ```json
 {
   "mcpServers": {
-    "workflow-manager": {
+    "anubis": {
       "command": "docker",
       "args": [
         "run",
@@ -295,7 +295,7 @@ After successful publication, verify:
         "-i",
         "-v",
         "mcp-workflow-data:/app/data",
-        "hiveacademy/mcp-workflow-manager"
+        "hiveacademy/anubis"
       ]
     }
   }
@@ -307,8 +307,8 @@ After successful publication, verify:
 ```yaml
 version: '3.8'
 services:
-  mcp-workflow-manager:
-    image: hiveacademy/mcp-workflow-manager:latest
+  anubis:
+    image: hiveacademy/anubis:latest
     container_name: mcp-workflow
     environment:
       - MCP_TRANSPORT_TYPE=SSE
@@ -362,7 +362,7 @@ volumes:
 1. `.\scripts\clean-for-publish.ps1` - Clean repository
 2. `docker login` - Login to Docker Hub
 3. `.\scripts\docker-publish.ps1` - Publish image
-4. Verify at https://hub.docker.com/r/hiveacademy/mcp-workflow-manager
+4. Verify at https://hub.docker.com/r/hiveacademy/anubis
 
 **Total time**: ~10-15 minutes for first publication! 🚀
 
@@ -397,10 +397,10 @@ If you encounter seeding issues:
 
 ```powershell
 # Force re-seeding in development
-docker run --rm -e FORCE_RESET=true -v mcp-data:/app/data hiveacademy/mcp-workflow-manager
+docker run --rm -e FORCE_RESET=true -v mcp-data:/app/data hiveacademy/anubis
 
 # Check seeding status
-docker run --rm -v mcp-data:/app/data hiveacademy/mcp-workflow-manager --verbose
+docker run --rm -v mcp-data:/app/data hiveacademy/anubis --verbose
 
 # Manual seeding (if needed)
 docker exec -it <container-id> npx prisma db seed

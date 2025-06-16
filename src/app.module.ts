@@ -30,10 +30,10 @@ const getTransportType = (): McpTransportType => {
     }),
     PrismaModule,
     McpModule.forRoot({
-      name: process.env.MCP_SERVER_NAME || 'MCP-Workflow-Manager',
+      name: process.env.MCP_SERVER_NAME || 'Anubis',
       version: process.env.MCP_SERVER_VERSION || '1.0.0',
       instructions:
-        'MCP Server for AI Workflow Manager - provides comprehensive workflow automation and task management for AI development in Cursor IDE and other MCP-compatible clients.',
+        '🏺 Anubis - Divine Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development',
       transport: getTransportType(),
       // Additional configuration for HTTP/SSE transports
       ...(getTransportType() === McpTransportType.SSE && {

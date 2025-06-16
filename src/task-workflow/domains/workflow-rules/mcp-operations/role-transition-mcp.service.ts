@@ -80,23 +80,7 @@ export class RoleTransitionMcpService extends BaseMcpService {
 
   @Tool({
     name: 'get_role_transitions',
-    description: `Get available role transitions with focused recommendations.
-
-🎯 FOCUSED ROLE TRANSITIONS - No complex envelopes, minimal data
-
-**Returns ONLY:**
-- Available transition options
-- Recommended transitions with scores
-- Basic transition requirements
-- Simple next action guidance
-
-**Does NOT return:**
-- Complex envelope structures
-- Redundant metadata
-- Over-detailed validation context
-- Debug information
-
-**Pattern:** Focused transition data for decision making`,
+    description: `Gets available role transitions with recommendations, scores, and basic requirements for workflow progression.`,
     parameters:
       GetRoleTransitionsInputSchema as ZodSchema<GetRoleTransitionsInput>,
   })
@@ -153,23 +137,7 @@ export class RoleTransitionMcpService extends BaseMcpService {
 
   @Tool({
     name: 'validate_transition',
-    description: `Validate role transition requirements with focused results.
-
-🎯 FOCUSED VALIDATION - Essential requirement checking only
-
-**Returns ONLY:**
-- Validation status (valid/invalid)
-- Essential error messages
-- Required actions to fix issues
-- Simple proceed/block guidance
-
-**Does NOT return:**
-- Complex validation contexts
-- Redundant requirement details
-- Over-detailed quality gates
-- Debug validation data
-
-**Pattern:** Simple pass/fail with actionable feedback`,
+    description: `Validates role transition requirements and provides pass/fail status with actionable feedback.`,
     parameters:
       ValidateTransitionInputSchema as ZodSchema<ValidateTransitionInput>,
   })
@@ -213,23 +181,7 @@ export class RoleTransitionMcpService extends BaseMcpService {
 
   @Tool({
     name: 'execute_transition',
-    description: `Execute role transition with focused confirmation.
-
-🎯 FOCUSED EXECUTION - Essential execution results only
-
-**Returns ONLY:**
-- Execution status (success/failure)
-- New role information
-- Essential transition details
-- Simple next step guidance
-
-**Does NOT return:**
-- Complex execution contexts
-- Redundant handoff details
-- Over-detailed progress tracking
-- Debug execution data
-
-**Pattern:** Simple success confirmation with next actions`,
+    description: `Executes role transition and returns execution status with essential details for next steps.`,
     parameters:
       ExecuteTransitionInputSchema as ZodSchema<ExecuteTransitionInput>,
   })
@@ -275,23 +227,7 @@ export class RoleTransitionMcpService extends BaseMcpService {
 
   @Tool({
     name: 'get_transition_history',
-    description: `Get transition history with focused summary.
-
-🎯 FOCUSED HISTORY - Essential transition timeline only
-
-**Returns ONLY:**
-- Recent transition summary
-- Basic transition statistics
-- Simple timeline overview
-- Current transition context
-
-**Does NOT return:**
-- Complex history analytics
-- Redundant transition details
-- Over-detailed performance metrics
-- Debug history data
-
-**Pattern:** Simple history overview for context`,
+    description: `Retrieves transition history with timeline overview and basic statistics for task context.`,
     parameters:
       GetTransitionHistoryInputSchema as ZodSchema<GetTransitionHistoryInput>,
   })

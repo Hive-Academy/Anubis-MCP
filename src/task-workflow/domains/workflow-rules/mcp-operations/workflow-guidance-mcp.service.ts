@@ -40,15 +40,7 @@ export class WorkflowGuidanceMcpService {
 
   @Tool({
     name: 'get_workflow_guidance',
-    description: `Get role/persona context for workflow execution.
-
-**🎯 ROLE PERSONA CONTEXT - Call ONCE per role switch**
-
-✅ **Role Definition** - Current role capabilities and behavior
-✅ **Quality Standards** - Role-specific quality reminders
-✅ **Project Context** - Project-specific behavioral profile
-✅ **Rule Enforcement** - Required patterns and anti-patterns
-`,
+    description: `Provides role-specific context, quality standards, and behavioral guidelines for workflow execution.`,
     parameters:
       GetWorkflowGuidanceInputSchema as ZodSchema<GetWorkflowGuidanceInput>,
   })
