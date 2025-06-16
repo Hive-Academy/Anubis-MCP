@@ -345,17 +345,18 @@
       "estimatedTime": "10-15 minutes",
       "stepType": "ACTION",
       "behavioralContext": {
-        "approach": "Direct role transition execution using the execute_transition tool available to the agent",
+        "approach": "Two-step role transition: get correct transition ID first, then execute transition",
         "principles": [
-          "Use execute_transition tool directly (NOT through MCP_CALL)",
-          "Transition to code review with complete implementation summary and evidence",
+          "MANDATORY: Use get_role_transitions tool first to get correct transition ID",
+          "NEVER use placeholder transition IDs - always get the actual ID from get_role_transitions",
+          "Execute transition with proper transition ID obtained from get_role_transitions",
           "Provide comprehensive implementation evidence for code review in handoffMessage",
           "Include detailed testing results and quality validation with database delegation record creation"
         ],
-        "methodology": "Direct tool usage for efficient role transition with evidence-based implementation documentation",
+        "methodology": "Two-step transition process: ID retrieval then execution with evidence-based implementation documentation",
         "transitionStrategy": {
-          "targetRole": "code-review",
-          "transitionExecution": "Use execute_transition tool with 'senior_developer_to_code_review' transitionId",
+          "step1": "Use get_role_transitions to get available transitions and correct transitionId",
+          "step2": "Use execute_transition tool with the obtained transitionId (not placeholder)",
           "contextPreservation": "Include complete implementation evidence and quality validation in handoffMessage",
           "databaseIntegration": "Ensure delegation record is created in database via RoleTransitionService"
         }
@@ -365,14 +366,15 @@
           "Document complete implementation summary including all completed subtasks",
           "Compile comprehensive testing results and quality validation evidence",
           "Prepare implementation evidence showing architectural compliance and SOLID, KISS and DRY principles",
-          "Execute the execute_transition tool directly with 'senior_developer_to_code_review' transitionId",
-          "Include taskId and roleId from current workflow context",
-          "Provide comprehensive handoffMessage with implementation summary, testing results, and quality validation"
+          "STEP 1: Execute get_role_transitions tool with fromRoleName: 'senior-developer', taskId, and roleId to get available transitions",
+          "Extract the correct transitionId from the get_role_transitions response (likely 'senior_developer_to_code_review')",
+          "STEP 2: Execute execute_transition tool with the obtained transitionId, taskId, roleId, and comprehensive handoffMessage",
+          "Include implementation summary, testing results, and quality validation in handoffMessage"
         ],
         "transitionExecutionSteps": [
-          "Call execute_transition tool directly (available to agent, not MCP_CALL)",
-          "Use transitionId: 'senior_developer_to_code_review'",
-          "Include taskId and roleId from current workflow context",
+          "Call get_role_transitions with fromRoleName: 'senior-developer', taskId, and roleId to get transition options",
+          "Use the transitionId returned in the response (NEVER use placeholder IDs)",
+          "Call execute_transition tool with the obtained transitionId",
           "Provide comprehensive handoffMessage with complete implementation evidence and context"
         ]
       },
@@ -380,7 +382,9 @@
         "Complete implementation summary documented with all subtasks and evidence",
         "Comprehensive testing results compiled showing validation for each subtask",
         "Quality validation documented including SOLID, KISS and DRY principles and architectural compliance",
-        "execute_transition tool executed directly with 'senior_developer_to_code_review' transitionId",
+        "get_role_transitions tool executed first with fromRoleName: 'senior-developer', taskId, and roleId",
+        "Correct transitionId obtained from get_role_transitions response (not placeholder)",
+        "execute_transition tool executed with proper transitionId from get_role_transitions",
         "TaskId and roleId provided from current workflow context",
         "Comprehensive handoffMessage includes complete implementation evidence and quality validation for code review"
       ],

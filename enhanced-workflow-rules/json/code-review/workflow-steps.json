@@ -247,14 +247,16 @@
       "estimatedTime": "15-25 minutes",
       "stepType": "ACTION",
       "behavioralContext": {
-        "approach": "Evidence-based decision making with direct role transition execution based on review outcome",
+        "approach": "Evidence-based decision making with two-step role transition execution based on review outcome",
         "principles": [
           "Make review decision based on comprehensive evidence and risk assessment",
           "Use deterministic criteria to decide between integration delegation or escalation",
-          "Execute appropriate role transition directly using execute_transition tool",
+          "MANDATORY: Use get_role_transitions tool first to get correct transition ID",
+          "NEVER use placeholder transition IDs - always get the actual ID from get_role_transitions",
+          "Execute appropriate role transition using proper transition ID obtained from get_role_transitions",
           "Provide clear rationale and context for decision made in handoffMessage"
         ],
-        "methodology": "Decision matrix application with direct role transition execution",
+        "methodology": "Decision matrix application with two-step role transition execution",
         "decisionFramework": {
           "approvalCriteria": "All acceptance criteria met, quality standards satisfied, no significant risks",
           "conditionalApproval": "Requirements met with minor issues that don't block production",
@@ -286,7 +288,9 @@
           "Apply deterministic decision criteria to determine APPROVED or NEEDS_CHANGES",
           "Create comprehensive review report with findings, evidence, and decision rationale",
           "Determine appropriate role transition based on decision outcome",
-          "Execute the appropriate execute_transition tool directly with proper context",
+          "STEP 1: Execute get_role_transitions tool with fromRoleName: 'code-review', taskId, and roleId to get available transitions",
+          "Extract the correct transitionId from the get_role_transitions response based on decision",
+          "STEP 2: Execute execute_transition tool with the obtained transitionId, taskId, roleId, and comprehensive handoffMessage",
           "Ensure comprehensive documentation of decision rationale and next steps"
         ],
         "decisionMakingSteps": [
@@ -296,15 +300,17 @@
           "Apply decision criteria to determine APPROVED or NEEDS_CHANGES outcome"
         ],
         "roleTransitionSelectionSteps": [
-          "IF decision is APPROVED: Use execute_transition with 'code_review_to_integration_engineer' transitionId",
-          "IF decision is NEEDS_CHANGES: Use execute_transition with 'code_review_to_architect' transitionId",
+          "Call get_role_transitions with fromRoleName: 'code-review', taskId, and roleId to get available transitions",
+          "IF decision is APPROVED: Use transitionId for integration-engineer transition (from get_role_transitions response)",
+          "IF decision is NEEDS_CHANGES: Use transitionId for architect transition (from get_role_transitions response)",
+          "NEVER use placeholder IDs - always use the actual transitionId from get_role_transitions",
           "Document specific reasons for transition selection based on review findings",
           "Include clear guidance for next steps in handoffMessage"
         ],
         "transitionExecutionSteps": [
           "Create detailed review report with findings, evidence, and decision rationale",
-          "Call execute_transition tool directly (available to agent, not MCP_CALL)",
-          "Use appropriate transitionId based on decision outcome",
+          "Call get_role_transitions to get available transitions and correct transitionIds",
+          "Call execute_transition tool with the obtained transitionId (not placeholder)",
           "Provide comprehensive handoffMessage with review context and next steps"
         ]
       },
@@ -313,7 +319,9 @@
         "Deterministic criteria applied to select appropriate role transition",
         "Implementation quality, requirements satisfaction, and production readiness considered",
         "Comprehensive review report created with findings, evidence, and decision rationale",
-        "Correct role transition executed directly using execute_transition tool",
+        "get_role_transitions tool executed first with fromRoleName: 'code-review', taskId, and roleId",
+        "Correct transitionId obtained from get_role_transitions response (not placeholder)",
+        "Correct role transition executed using execute_transition tool with proper transitionId",
         "Context preservation comprehensive with clear rationale and handoff information for receiving role"
       ],
       "conditions": [

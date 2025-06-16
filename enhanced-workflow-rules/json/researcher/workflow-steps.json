@@ -551,42 +551,44 @@
       "estimatedTime": "2-3 minutes",
       "stepType": "ACTION",
       "behavioralContext": {
-        "approach": "Direct role transition execution using the execute_transition tool available to the agent",
+        "approach": "Two-step role transition: get correct transition ID first, then execute transition",
         "principles": [
-          "Use execute_transition tool directly (NOT through MCP_CALL)",
-          "Transition to architect role with complete research context",
+          "MANDATORY: Use get_role_transitions tool first to get correct transition ID",
+          "NEVER use placeholder transition IDs - always get the actual ID from get_role_transitions",
+          "Execute transition with proper transition ID obtained from get_role_transitions",
           "Provide validated recommendations and evidence-based guidance in handoffMessage",
           "Ensure implementation readiness with clear next steps and database delegation record creation"
         ],
-        "methodology": "Direct tool usage for efficient role transition with comprehensive research handoff",
+        "methodology": "Two-step transition process: ID retrieval then execution with comprehensive research handoff",
         "transitionStrategy": {
-          "targetRole": "architect",
-          "transitionExecution": "Use execute_transition tool with 'researcher_to_architect' transitionId",
+          "step1": "Use get_role_transitions to get available transitions and correct transitionId",
+          "step2": "Use execute_transition tool with the obtained transitionId (not placeholder)",
           "contextPreservation": "Include complete research findings and strategic context in handoffMessage",
           "databaseIntegration": "Ensure delegation record is created in database via RoleTransitionService"
         }
       },
       "approachGuidance": {
         "stepByStep": [
-          "Prepare comprehensive handoff message with research findings and recommendations",
-          "Execute the execute_transition tool directly with 'researcher_to_architect' transitionId",
-          "Include taskId and roleId from current workflow context",
-          "Provide clear handoff message with research summary and implementation guidance",
+          "STEP 1: Execute get_role_transitions tool with fromRoleName: 'researcher', taskId, and roleId to get available transitions",
+          "Extract the correct transitionId from the get_role_transitions response (likely 'researcher_to_architect')",
+          "STEP 2: Execute execute_transition tool with the obtained transitionId, taskId, roleId, and comprehensive handoffMessage",
+          "Include research findings, recommendations, and implementation guidance in handoffMessage",
           "Verify transition success and confirm delegation record creation",
           "Document completion of research phase and context preservation for implementation planning"
         ],
         "transitionExecutionSteps": [
-          "Call execute_transition tool directly (available to agent, not MCP_CALL)",
-          "Use transitionId: 'researcher_to_architect'",
-          "Include taskId and roleId from current workflow context",
+          "Call get_role_transitions with fromRoleName: 'researcher', taskId, and roleId to get transition options",
+          "Use the transitionId returned in the response (NEVER use placeholder IDs)",
+          "Call execute_transition tool with the obtained transitionId",
           "Provide comprehensive handoffMessage with research findings and strategic guidance"
         ]
       },
       "qualityChecklist": [
-        "Comprehensive handoff message prepared with research findings and recommendations",
-        "execute_transition tool executed directly with 'researcher_to_architect' transitionId",
+        "get_role_transitions tool executed first with fromRoleName: 'researcher', taskId, and roleId",
+        "Correct transitionId obtained from get_role_transitions response (not placeholder)",
+        "execute_transition tool executed with proper transitionId from get_role_transitions",
+        "Comprehensive handoffMessage includes research findings and implementation recommendations",
         "TaskId and roleId provided from current workflow context",
-        "Clear handoff message with research summary and implementation guidance provided",
         "Transition success verified and delegation record creation confirmed",
         "Research phase completion documented with context preservation for next phase"
       ],

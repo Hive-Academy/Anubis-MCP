@@ -268,17 +268,20 @@
       "estimatedTime": "2-3 minutes",
       "stepType": "ACTION",
       "behavioralContext": {
-        "approach": "Direct role transition execution using the execute_transition tool available to the agent",
+        "approach": "Two-step role transition: get correct transition ID first, then execute transition based on research decision",
         "principles": [
-          "Use execute_transition tool directly (NOT through MCP_CALL)",
+          "MANDATORY: Use get_role_transitions tool first to get correct transition ID",
+          "NEVER use placeholder transition IDs - always get the actual ID from get_role_transitions",
           "Select appropriate target role based on research decision",
+          "Execute transition with proper transition ID obtained from get_role_transitions",
           "Provide comprehensive handoff context in handoffMessage",
           "Ensure proper workflow continuity and database delegation record creation"
         ],
-        "methodology": "Direct tool usage for efficient role transition with database integration",
+        "methodology": "Two-step transition process: ID retrieval then execution with database integration",
         "transitionStrategy": {
+          "step1": "Use get_role_transitions to get available transitions and correct transitionId",
+          "step2": "Use execute_transition tool with the obtained transitionId (not placeholder)",
           "roleSelection": "Determine target role: 'researcher' if research needed, 'architect' if direct implementation",
-          "transitionExecution": "Use execute_transition tool with appropriate transitionId",
           "contextPreservation": "Include comprehensive handoff context in handoffMessage parameter",
           "databaseIntegration": "Ensure delegation record is created in database via RoleTransitionService"
         }
@@ -286,29 +289,32 @@
       "approachGuidance": {
         "stepByStep": [
           "Determine target role based on research decision from previous step",
-          "Identify the appropriate transitionId for the target role transition",
-          "Prepare comprehensive handoff message with task context and analysis results",
-          "Execute the execute_transition tool directly with required parameters",
+          "STEP 1: Execute get_role_transitions tool with fromRoleName: 'boomerang', taskId, and roleId to get available transitions",
+          "Extract the correct transitionId from the get_role_transitions response based on target role decision",
+          "STEP 2: Execute execute_transition tool with the obtained transitionId, taskId, roleId, and comprehensive handoffMessage",
+          "Include task context and analysis results in handoffMessage",
           "Verify transition success and confirm delegation record creation",
           "Document transition completion and context handoff"
         ],
         "roleSelectionGuidance": [
-          "If research decision indicates research needed: transition to 'researcher' role",
-          "If research decision indicates direct implementation: transition to 'architect' role",
-          "Use appropriate transitionId: 'boomerang_to_researcher' or 'boomerang_to_architect'"
+          "If research decision indicates research needed: look for researcher transition in get_role_transitions response",
+          "If research decision indicates direct implementation: look for architect transition in get_role_transitions response",
+          "Use the actual transitionId from get_role_transitions response (NEVER use placeholder IDs)"
         ],
         "transitionExecutionSteps": [
-          "Call execute_transition tool directly (available to agent, not MCP_CALL)",
-          "Provide transitionId based on target role selection",
-          "Include taskId and roleId from current workflow context",
+          "Call get_role_transitions with fromRoleName: 'boomerang', taskId, and roleId to get transition options",
+          "Select appropriate transitionId from response based on target role decision",
+          "Call execute_transition tool with the obtained transitionId (not placeholder)",
           "Provide comprehensive handoffMessage with analysis results and context"
         ]
       },
       "qualityChecklist": [
         "Target role determined based on evidence-based research decision",
-        "Appropriate transitionId identified for the target role transition",
+        "get_role_transitions tool executed first with fromRoleName: 'boomerang', taskId, and roleId",
+        "Correct transitionId obtained from get_role_transitions response (not placeholder)",
+        "Appropriate transitionId selected based on target role decision",
         "Comprehensive handoff message prepared with task context and analysis",
-        "execute_transition tool executed directly with all required parameters",
+        "execute_transition tool executed with proper transitionId from get_role_transitions",
         "Transition success verified and delegation record creation confirmed",
         "Workflow continuity ensured with proper context handoff"
       ],
