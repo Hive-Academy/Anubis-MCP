@@ -72,19 +72,83 @@ async function bootstrap() {
       databaseUrl: dbConfig.databaseUrl,
     });
 
-    // Initialize dependencies with unified configuration
+    // Initialize dependencies with unified configuration BEFORE creating NestJS app
     const setupOptions: DependencySetupOptions = {
       verbose,
       databaseUrl: dbConfig.databaseUrl,
     };
 
-    const _dependencyStatus =
+    if (
+      verbose ||
+      process.env.VSCODE_PID ||
+      process.env.TERM_PROGRAM === 'vscode'
+    ) {
+      console.error('🔧 Initializing dependencies...');
+    }
+
+    const dependencyStatus =
       await dependencyManager.initializeAllDependencies(setupOptions);
 
-    // Create NestJS application context for MCP server
+    // Check if dependency initialization was successful
+    if (dependencyStatus.errors.length > 0) {
+      if (
+        verbose ||
+        process.env.VSCODE_PID ||
+        process.env.TERM_PROGRAM === 'vscode'
+      ) {
+        console.error('❌ Dependency initialization had issues:');
+        dependencyStatus.errors.forEach((error) =>
+          console.error(`   - ${error}`),
+        );
+      }
+
+      // For critical errors, exit early
+      const hasCriticalErrors = dependencyStatus.errors.some(
+        (error) =>
+          error.includes('Database initialization failed') ||
+          error.includes('Cannot create database directory'),
+      );
+
+      if (hasCriticalErrors) {
+        throw new Error('Critical dependency initialization failure');
+      }
+    }
+
+    if (
+      verbose ||
+      process.env.VSCODE_PID ||
+      process.env.TERM_PROGRAM === 'vscode'
+    ) {
+      console.error('✅ Dependencies initialized successfully');
+      console.error(`   Database exists: ${dependencyStatus.databaseExists}`);
+      console.error(`   Database seeded: ${dependencyStatus.databaseSeeded}`);
+      console.error(
+        `   Prisma client ready: ${dependencyStatus.prismaClientExists}`,
+      );
+      console.error('');
+    }
+
+    // Now create NestJS application context for MCP server
+    if (
+      verbose ||
+      process.env.VSCODE_PID ||
+      process.env.TERM_PROGRAM === 'vscode'
+    ) {
+      console.error('🚀 Starting NestJS application...');
+    }
+
     const app = await NestFactory.createApplicationContext(AppModule, {
       logger: false, // Use our custom logger
     });
+
+    if (
+      verbose ||
+      process.env.VSCODE_PID ||
+      process.env.TERM_PROGRAM === 'vscode'
+    ) {
+      console.error('✅ NestJS application started successfully');
+      console.error('');
+    }
 
     // Handle graceful shutdown
     const gracefulShutdown = async (_signal: string) => {
