@@ -260,55 +260,57 @@
       "reportTemplate": "evidence_based_research_decision"
     },
     {
-      "name": "role_delegation_with_task_slug",
-      "displayName": "Role Delegation with Task-Slug",
-      "description": "Delegate to appropriate role with comprehensive context and human-readable references",
+      "name": "role_transition_execution",
+      "displayName": "Role Transition Execution",
+      "description": "Execute role transition directly using the execute_transition tool based on research decision",
       "sequenceNumber": 4,
       "isRequired": true,
       "estimatedTime": "2-3 minutes",
       "stepType": "ACTION",
       "behavioralContext": {
-        "approach": "Context-rich delegation with human-readable task references",
+        "approach": "Direct role transition execution using the execute_transition tool available to the agent",
         "principles": [
-          "Include task-slug for human-readable reference",
-          "Provide comprehensive context handoff",
+          "Use execute_transition tool directly (NOT through MCP_CALL)",
           "Select appropriate target role based on research decision",
-          "Ensure proper workflow continuity"
+          "Provide comprehensive handoff context in handoffMessage",
+          "Ensure proper workflow continuity and database delegation record creation"
         ],
-        "methodology": "MCP-driven delegation with structured context preservation",
-        "delegationStrategy": {
-          "roleSelection": "Determine target role based on research decision results (researcher if research needed, architect if direct implementation)",
-          "contextPreparation": "Prepare comprehensive delegation context including task-slug and analysis results",
-          "handoffExecution": "Execute workflow delegation through MCP operations with full context",
-          "continuityEnsurance": "Ensure proper context handoff and workflow continuity"
+        "methodology": "Direct tool usage for efficient role transition with database integration",
+        "transitionStrategy": {
+          "roleSelection": "Determine target role: 'researcher' if research needed, 'architect' if direct implementation",
+          "transitionExecution": "Use execute_transition tool with appropriate transitionId",
+          "contextPreservation": "Include comprehensive handoff context in handoffMessage parameter",
+          "databaseIntegration": "Ensure delegation record is created in database via RoleTransitionService"
         }
       },
       "approachGuidance": {
         "stepByStep": [
-          "Determine target role based on research decision results",
-          "Prepare comprehensive delegation context including task-slug",
-          "Execute workflow delegation through MCP operations",
-          "Ensure proper context handoff and documentation"
+          "Determine target role based on research decision from previous step",
+          "Identify the appropriate transitionId for the target role transition",
+          "Prepare comprehensive handoff message with task context and analysis results",
+          "Execute the execute_transition tool directly with required parameters",
+          "Verify transition success and confirm delegation record creation",
+          "Document transition completion and context handoff"
         ],
-        "roleSelectionSteps": [
-          "Review research decision outcome from previous step",
-          "Select researcher role if research is needed",
-          "Select architect role if implementation can proceed directly",
-          "Prepare role-specific delegation message and context"
+        "roleSelectionGuidance": [
+          "If research decision indicates research needed: transition to 'researcher' role",
+          "If research decision indicates direct implementation: transition to 'architect' role",
+          "Use appropriate transitionId: 'boomerang_to_researcher' or 'boomerang_to_architect'"
         ],
-        "delegationSteps": [
-          "Call WorkflowOperations.delegate with target role",
-          "Include task-slug for human-readable reference",
-          "Provide comprehensive handoff message with context",
-          "Ensure all analysis results are available to next role"
+        "transitionExecutionSteps": [
+          "Call execute_transition tool directly (available to agent, not MCP_CALL)",
+          "Provide transitionId based on target role selection",
+          "Include taskId and roleId from current workflow context",
+          "Provide comprehensive handoffMessage with analysis results and context"
         ]
       },
       "qualityChecklist": [
-        "Target role selected based on evidence-based research decision",
-        "Task-slug included for human-readable reference",
-        "Comprehensive context prepared for handoff",
-        "Delegation executed successfully through MCP",
-        "Workflow continuity ensured"
+        "Target role determined based on evidence-based research decision",
+        "Appropriate transitionId identified for the target role transition",
+        "Comprehensive handoff message prepared with task context and analysis",
+        "execute_transition tool executed directly with all required parameters",
+        "Transition success verified and delegation record creation confirmed",
+        "Workflow continuity ensured with proper context handoff"
       ],
       "conditions": [
         {
@@ -323,20 +325,10 @@
           "isRequired": true
         }
       ],
-      "actions": [
-        {
-          "name": "execute_role_delegation",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "WorkflowOperations",
-            "operation": "delegate"
-          },
-          "sequenceOrder": 1
-        }
-      ],
+      "actions": [],
       "triggerReport": true,
-      "reportType": "delegation",
-      "reportTemplate": "role_delegation_with_context"
+      "reportType": "role_transition_execution",
+      "reportTemplate": "direct_role_transition_completion"
     }
   ]
 }

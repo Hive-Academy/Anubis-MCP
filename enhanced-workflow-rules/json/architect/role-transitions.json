@@ -20,13 +20,13 @@
       "validationRules": {
         "implementationPlanComplete": "Implementation plan must include strategic batch design with 3-8 subtasks",
         "qualityStandardsEstablished": "Quality gates and validation criteria must be measurable",
-        "solidComplianceVerified": "SOLID principles compliance must be verified for all design decisions",
+        "solidComplianceVerified": "SOLID, KISS and DRY principles compliance must be verified for all design decisions",
         "strategicGuidanceProvided": "Each subtask must include comprehensive strategic guidance"
       },
       "handoffGuidance": {
         "implementationContext": [
           "Strategic architecture designed with Clean Architecture principles",
-          "SOLID principles enforced throughout with specific compliance guidance",
+          "SOLID, KISS and DRY principles enforced throughout with specific compliance guidance",
           "Implementation plan organized in strategic batches with dependencies",
           "Quality constraints and success criteria established for each subtask"
         ],
@@ -44,7 +44,7 @@
         ]
       },
       "contextPreservation": {
-        "architecturalDecisions": "Complete architectural design with SOLID principles compliance",
+        "architecturalDecisions": "Complete architectural design with SOLID, KISS and DRY principles compliance",
         "implementationPlan": "Strategic batch organization with comprehensive subtask guidance",
         "qualityStandards": "Quality gates and validation criteria with measurable targets",
         "technicalGuidance": "Detailed implementation guidance with architectural context",

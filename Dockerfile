@@ -3,11 +3,11 @@ FROM node:22-alpine AS builder
 
 # Add metadata labels for Docker Hub
 LABEL org.opencontainers.image.title="Anubis"
-LABEL org.opencontainers.image.description="🏺 Anubis - Divine Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development"
+LABEL org.opencontainers.image.description="🏺 𓂀𓁢𓋹𝔸ℕ𝕌𝔹𝕀𝕊𓋹𓁢𓂀 - Divine Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development"
 LABEL org.opencontainers.image.version="1.0.15"
 LABEL org.opencontainers.image.authors="Hive Academy <abdallah@nghive.tech>"
-LABEL org.opencontainers.image.source="https://github.com/Hive-Academy/Anubis"
-LABEL org.opencontainers.image.documentation="https://github.com/Hive-Academy/Anubis/blob/main/README.md"
+LABEL org.opencontainers.image.source="https://github.com/Hive-Academy/Anubis-MCP"
+LABEL org.opencontainers.image.documentation="https://github.com/Hive-Academy/Anubis-MCP/blob/main/README.md"
 LABEL org.opencontainers.image.licenses="MIT"
 
 # Set working directory
@@ -60,8 +60,8 @@ LABEL org.opencontainers.image.title="Anubis"
 LABEL org.opencontainers.image.description="🏺 Anubis - Divine Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development"
 LABEL org.opencontainers.image.version="1.0.15"
 LABEL org.opencontainers.image.authors="Hive Academy <abdallah@nghive.tech>"
-LABEL org.opencontainers.image.source="https://github.com/Hive-Academy/Anubis"
-LABEL org.opencontainers.image.documentation="https://github.com/Hive-Academy/Anubis/blob/main/README.md"
+LABEL org.opencontainers.image.source="https://github.com/Hive-Academy/Anubis-MCP"
+LABEL org.opencontainers.image.documentation="https://github.com/Hive-Academy/Anubis-MCP/blob/main/README.md"
 LABEL org.opencontainers.image.licenses="MIT"
 
 # Install system dependencies: dumb-init for proper signal handling, curl for health checks, bash for entrypoint script

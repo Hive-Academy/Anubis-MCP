@@ -19,7 +19,7 @@ The Anubis is a sophisticated NestJS-based system that transforms how AI agents 
 ### **For Development Teams**
 
 - **Accelerated Development Cycles**: Structured workflow guidance reduces project setup time by 60-80%
-- **Consistent Quality Standards**: Embedded quality gates ensure SOLID principles compliance across all implementations
+- **Consistent Quality Standards**: Embedded quality gates ensure SOLID, KISS and DRY principles compliance across all implementations
 - **Reduced Technical Debt**: Database-driven workflow intelligence prevents common anti-patterns and architectural issues
 - **Enhanced Collaboration**: Role-based workflow transitions provide clear handoff protocols between team members
 
@@ -95,7 +95,7 @@ The Anubis is a sophisticated NestJS-based system that transforms how AI agents 
 
 ### **Software Architects**
 
-- **Pattern Enforcement**: Automated validation of SOLID principles and architectural patterns
+- **Pattern Enforcement**: Automated validation of SOLID, KISS and DRY principles and architectural patterns
 - **Design Consistency**: Embedded guidance ensures implementation aligns with architectural decisions
 - **Technical Debt Prevention**: Quality gates catch potential issues before they become technical debt
 - **Documentation Integration**: Workflow steps automatically generate implementation evidence and decision records

@@ -292,10 +292,10 @@ export class DatabaseConfigManager {
   }
 
   /**
-   * Logging utility
+   * Logging utility - respects production environment
    */
   private log(message: string): void {
-    if (this.verbose) {
+    if (this.verbose && process.env.NODE_ENV !== 'production') {
       console.log(`[DatabaseConfig] ${message}`);
     }
   }
@@ -325,7 +325,7 @@ export function setupDatabaseEnvironment(
 
   // Validate configuration
   const validation = manager.validateConfiguration(config);
-  if (!validation.isValid) {
+  if (!validation.isValid && process.env.NODE_ENV !== 'production') {
     console.warn('⚠️ Database configuration issues:');
     validation.issues.forEach((issue) => console.warn(`   - ${issue}`));
   }

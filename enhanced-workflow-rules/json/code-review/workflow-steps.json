@@ -241,28 +241,28 @@
     {
       "name": "intelligent_review_decision_and_workflow_completion",
       "displayName": "Intelligent Review Decision and Workflow Completion",
-      "description": "Make evidence-based review decision and execute appropriate workflow completion or escalation",
+      "description": "Make evidence-based review decision and execute appropriate role transition based on review outcome",
       "sequenceNumber": 4,
       "isRequired": true,
       "estimatedTime": "15-25 minutes",
       "stepType": "ACTION",
       "behavioralContext": {
-        "approach": "Evidence-based decision making with deterministic workflow action selection",
+        "approach": "Evidence-based decision making with direct role transition execution based on review outcome",
         "principles": [
           "Make review decision based on comprehensive evidence and risk assessment",
           "Use deterministic criteria to decide between integration delegation or escalation",
-          "Execute appropriate workflow action based on specific review findings",
-          "Provide clear rationale and context for decision made"
+          "Execute appropriate role transition directly using execute_transition tool",
+          "Provide clear rationale and context for decision made in handoffMessage"
         ],
-        "methodology": "Decision matrix application with deterministic workflow execution",
+        "methodology": "Decision matrix application with direct role transition execution",
         "decisionFramework": {
           "approvalCriteria": "All acceptance criteria met, quality standards satisfied, no significant risks",
           "conditionalApproval": "Requirements met with minor issues that don't block production",
           "changesRequired": "Significant gaps, quality issues, or risks requiring additional work",
           "escalationTriggers": "Complex issues requiring architectural or business stakeholder input"
         },
-        "workflowActionGuidance": {
-          "useDelegateToIntegration": [
+        "roleTransitionGuidance": {
+          "useIntegrationTransition": [
             "All acceptance criteria fully satisfied with evidence",
             "Implementation quality meets or exceeds established standards",
             "No significant risks or blockers identified for production",
@@ -270,7 +270,7 @@
             "Minor issues present but don't impact core functionality or production readiness",
             "Ready for integration, documentation updates, and deployment preparation"
           ],
-          "useEscalateAction": [
+          "useArchitectEscalation": [
             "One or more acceptance criteria not satisfied",
             "Significant quality issues or code problems identified",
             "Security vulnerabilities or performance issues discovered",
@@ -285,8 +285,8 @@
           "Evaluate all validation evidence against approval criteria for informed decision",
           "Apply deterministic decision criteria to determine APPROVED or NEEDS_CHANGES",
           "Create comprehensive review report with findings, evidence, and decision rationale",
-          "Use decision criteria to select appropriate workflow action (delegate to integration vs escalate)",
-          "Execute the determined workflow action with proper context and evidence",
+          "Determine appropriate role transition based on decision outcome",
+          "Execute the appropriate execute_transition tool directly with proper context",
           "Ensure comprehensive documentation of decision rationale and next steps"
         ],
         "decisionMakingSteps": [
@@ -295,25 +295,25 @@
           "Consider production readiness and any remaining risks or concerns",
           "Apply decision criteria to determine APPROVED or NEEDS_CHANGES outcome"
         ],
-        "actionSelectionSteps": [
-          "IF decision is APPROVED: Use 'execute_integration_delegation' action to delegate to integration-engineer",
-          "IF decision is NEEDS_CHANGES: Use 'execute_workflow_escalation' action to escalate to architect",
-          "Document specific reasons for action selection based on review findings",
-          "Include clear guidance for next steps in workflow action context"
+        "roleTransitionSelectionSteps": [
+          "IF decision is APPROVED: Use execute_transition with 'code_review_to_integration_engineer' transitionId",
+          "IF decision is NEEDS_CHANGES: Use execute_transition with 'code_review_to_architect' transitionId",
+          "Document specific reasons for transition selection based on review findings",
+          "Include clear guidance for next steps in handoffMessage"
         ],
-        "workflowExecutionSteps": [
+        "transitionExecutionSteps": [
           "Create detailed review report with findings, evidence, and decision rationale",
-          "Execute determined MCP operation (delegate to integration or escalate) based on decision criteria",
-          "Ensure comprehensive context preservation for receiving role",
-          "Document final assessment with clear next steps and handoff information"
+          "Call execute_transition tool directly (available to agent, not MCP_CALL)",
+          "Use appropriate transitionId based on decision outcome",
+          "Provide comprehensive handoffMessage with review context and next steps"
         ]
       },
       "qualityChecklist": [
         "Review decision based on comprehensive evidence evaluation and risk assessment",
-        "Deterministic criteria applied to select appropriate workflow action (delegate vs escalate)",
+        "Deterministic criteria applied to select appropriate role transition",
         "Implementation quality, requirements satisfaction, and production readiness considered",
         "Comprehensive review report created with findings, evidence, and decision rationale",
-        "Correct workflow action executed based on deterministic decision criteria",
+        "Correct role transition executed directly using execute_transition tool",
         "Context preservation comprehensive with clear rationale and handoff information for receiving role"
       ],
       "conditions": [
@@ -338,24 +338,6 @@
             "operation": "create_review"
           },
           "sequenceOrder": 1
-        },
-        {
-          "name": "execute_integration_delegation",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "WorkflowOperations",
-            "operation": "delegate"
-          },
-          "sequenceOrder": 2
-        },
-        {
-          "name": "execute_workflow_escalation",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "WorkflowOperations",
-            "operation": "escalate"
-          },
-          "sequenceOrder": 2
         }
       ],
       "triggerReport": true,

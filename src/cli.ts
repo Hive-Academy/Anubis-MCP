@@ -25,10 +25,12 @@ async function bootstrap() {
     verbose: args.includes('--verbose') || args.includes('-v'),
   });
 
-  console.log(
-    `📁 Project root: ${dbConfig.projectRoot} (${dbConfig.deploymentMethod} deployment)`,
-  );
-  console.log(`🗄️ Database: ${dbConfig.databaseUrl}`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(
+      `📁 Project root: ${dbConfig.projectRoot} (${dbConfig.deploymentMethod} deployment)`,
+    );
+    console.log(`🗄️ Database: ${dbConfig.databaseUrl}`);
+  }
 
   // Set default environment variables if not provided
   if (!process.env.MCP_TRANSPORT_TYPE) {
@@ -53,7 +55,9 @@ async function bootstrap() {
   }
 
   try {
-    console.log('🚀 Starting Anubis...');
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('🚀 Starting Anubis...');
+    }
 
     // Initialize dependency manager with database configuration
     const dependencyManager = new DependencyManager({
@@ -71,32 +75,45 @@ async function bootstrap() {
       await dependencyManager.initializeAllDependencies(setupOptions);
 
     // Report any errors but continue if possible
-    if (dependencyStatus.errors.length > 0) {
+    if (
+      dependencyStatus.errors.length > 0 &&
+      process.env.NODE_ENV !== 'production'
+    ) {
       console.warn('⚠️  Some dependency setup issues encountered:');
       dependencyStatus.errors.forEach((error) => console.warn(`   - ${error}`));
     }
 
     // Report final status
-    console.log('📊 Report generation: ENABLED (Simplified HTML)');
-    console.log(`🔄 Transport: ${process.env.MCP_TRANSPORT_TYPE}`);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('📊 Report generation: ENABLED (Simplified HTML)');
+      console.log(`🔄 Transport: ${process.env.MCP_TRANSPORT_TYPE}`);
+    }
 
     // Create NestJS application context for MCP server
     const app = await NestFactory.createApplicationContext(AppModule, {
       logger: false, // Use our custom logger
     });
 
-    console.log('✅ Anubis started successfully');
-    console.log('📡 Listening for MCP protocol messages...');
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('✅ Anubis started successfully');
+      console.log('📡 Listening for MCP protocol messages...');
+    }
 
     // Handle graceful shutdown
     const gracefulShutdown = async (signal: string) => {
-      console.log(`\n🛑 Received ${signal}, shutting down gracefully...`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`\n🛑 Received ${signal}, shutting down gracefully...`);
+      }
       try {
         await app.close();
-        console.log('✅ MCP server stopped successfully');
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('✅ MCP server stopped successfully');
+        }
         process.exit(0);
       } catch (error) {
-        console.error('❌ Error during shutdown:', error);
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('❌ Error during shutdown:', error);
+        }
         process.exit(1);
       }
     };
@@ -110,8 +127,8 @@ async function bootstrap() {
   } catch (error) {
     console.error('❌ Failed to start MCP server:', error);
 
-    // Provide helpful error messages based on error type
-    if (error instanceof Error) {
+    // Provide helpful error messages based on error type (only in non-production)
+    if (error instanceof Error && process.env.NODE_ENV !== 'production') {
       if (error.message.includes('Prisma')) {
         console.error(
           '💡 Tip: Ensure your prisma/schema.prisma file exists and is properly configured',
@@ -136,13 +153,17 @@ async function bootstrap() {
       }
     }
 
-    console.error('\n🔧 Troubleshooting:');
-    console.error('   1. Verify Node.js version >= 18.0.0');
-    console.error('   2. Check if all dependencies are installed: npm install');
-    console.error('   3. Try rebuilding: npm run build');
-    console.error(
-      `   4. Check data directory permissions: ${dbConfig.dataDirectory}`,
-    );
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('\n🔧 Troubleshooting:');
+      console.error('   1. Verify Node.js version >= 18.0.0');
+      console.error(
+        '   2. Check if all dependencies are installed: npm install',
+      );
+      console.error('   3. Try rebuilding: npm run build');
+      console.error(
+        `   4. Check data directory permissions: ${dbConfig.dataDirectory}`,
+      );
+    }
 
     process.exit(1);
   }
@@ -150,18 +171,24 @@ async function bootstrap() {
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  if (process.env.NODE_ENV !== 'production') {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  }
   process.exit(1);
 });
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
+  if (process.env.NODE_ENV !== 'production') {
+    console.error('Uncaught Exception:', error);
+  }
   process.exit(1);
 });
 
 // Start the server
 bootstrap().catch((error) => {
-  console.error('Bootstrap failed:', error);
+  if (process.env.NODE_ENV !== 'production') {
+    console.error('Bootstrap failed:', error);
+  }
   process.exit(1);
 });

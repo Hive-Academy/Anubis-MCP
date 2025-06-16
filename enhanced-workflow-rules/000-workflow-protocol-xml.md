@@ -307,68 +307,28 @@ Execute the completion reporting MCP tool using this XML format:
 - Generate analytics and reports
 - Ensure quality standards are maintained
 
-### Phase 3: Role Transitions
+### Phase 3: Streamlined Role Transitions
 
-#### 3.1 Check Available Transitions
+#### 3.1 Role Transition Execution Pattern
 
-When you complete all steps for a role, execute this MCP tool:
+- **Principle**: Role transitions are now handled directly through workflow step guidance
+- **Approach**: Each role's final step provides explicit transition instructions
+- **Tool Usage**: Direct `execute_transition` tool calls (not MCP_CALL operations)
+- **Database Integration**: Automatic delegation record creation via RoleTransitionService
 
-```xml
-<use_mcp_tool>
-<server_name>anubis</server_name>
-<tool_name>get_role_transitions</tool_name>
-<arguments>
-{
-  "fromRoleName": "current-role-name",
-  "taskId": "your-task-id",
-  "roleId": "your-role-id"
-}
-</arguments>
-</use_mcp_tool>
-```
+#### 3.2 Transition Execution Process
 
-### Interpreting the Transitions Response
+1. **Complete Role Steps**: Follow workflow-steps.json guidance for current role
+2. **Receive Transition Instructions**: Final step provides specific transition guidance
+3. **Execute Direct Transition**: Use `execute_transition` tool with provided parameters
+4. **Verify Success**: Confirm transition completion and delegation record creation
 
-The MCP server returns transition option data. For each transition in the response, examine:
+#### 3.3 Direct Tool Usage Examples
 
-- **Transition ID**: Extract the unique identifier for this transition option
-- **Target role**: Extract which role you would transition to
-- **Purpose**: Extract why this transition exists and what the target role accomplishes
-- **Requirements**: Extract any prerequisites that must be met before transition
-
-#### 3.2 Validate Transition Requirements
-
-Before attempting a transition, execute this validation MCP tool:
+**For XML Version**:
 
 ```xml
-<use_mcp_tool>
-<server_name>anubis</server_name>
-<tool_name>validate_transition</tool_name>
-<arguments>
-{
-  "transitionId": "selected-transition-id",
-  "taskId": "your-task-id",
-  "roleId": "your-role-id"
-}
-</arguments>
-</use_mcp_tool>
-```
-
-### Interpreting the Validation Response
-
-The MCP server returns validation result data containing:
-
-- **isValid**: Extract boolean value indicating whether transition is allowed
-- **missingRequirements**: Extract array of requirements not yet met (if validation fails)
-- **readinessStatus**: Extract information about transition readiness
-
-**If validation fails**: Address the missing requirements listed in the response before attempting the transition.
-
-#### 3.3 Execute the Transition
-
-If validation succeeds, execute the transition using this MCP tool:
-
-```xml
+<!-- Direct tool usage - NOT through MCP operations -->
 <use_mcp_tool>
 <server_name>anubis</server_name>
 <tool_name>execute_transition</tool_name>
@@ -382,15 +342,46 @@ If validation succeeds, execute the transition using this MCP tool:
 </use_mcp_tool>
 ```
 
-### Interpreting the Transition Response
+---
 
-The MCP server returns your new role context data:
+## Role-Specific Transition Patterns
 
-- **newRoleId**: Extract your identifier in the new role
-- **newRoleContext**: Extract capabilities and responsibilities for the new role
-- **nextSteps**: Extract guidance on what to do first in the new role
+### Boomerang Role Transitions
 
-**Update your workflow context** with the new role information and continue with the new role's responsibilities.
+- **Decision-Based**: Conditional transition based on research decision
+- **Target Roles**: `researcher` (if research needed) or `architect` (direct implementation)
+- **Transition IDs**: `boomerang_to_researcher` or `boomerang_to_architect`
+
+### Researcher Role Transitions
+
+- **Target Role**: `architect` (always)
+- **Transition ID**: `researcher_to_architect`
+- **Context**: Research findings and implementation recommendations
+
+### Architect Role Transitions
+
+- **Target Role**: `senior-developer` (always)
+- **Transition ID**: `architect_to_senior_developer`
+- **Context**: Strategic guidance and implementation plans
+
+### Senior Developer Role Transitions
+
+- **Target Role**: `code-review` (always)
+- **Transition ID**: `senior_developer_to_code_review`
+- **Context**: Implementation evidence and quality validation
+
+### Code Review Role Transitions
+
+- **Decision-Based**: Conditional transition based on review outcome
+- **Target Roles**: `integration-engineer` (approved) or `architect` (needs changes)
+- **Transition IDs**: `code_review_to_integration_engineer` or `code_review_to_architect`
+
+### Integration Engineer Completion
+
+- **No Transition**: Final role - uses workflow completion
+- **Tool Usage**: `workflow_execution_operations` with `complete_execution`
+
+---
 
 ### Phase 4: Workflow Completion
 
@@ -547,41 +538,15 @@ You must execute using this exact XML format:
 ### Role Transition Operations
 
 ```xml
-<!-- Get available transitions -->
-<use_mcp_tool>
-<server_name>anubis</server_name>
-<tool_name>get_role_transitions</tool_name>
-<arguments>
-{
-  "fromRoleName": "current-role-name",
-  "taskId": "task-identifier",
-  "roleId": "role-identifier"
-}
-</arguments>
-</use_mcp_tool>
-
-<!-- Validate transition -->
-<use_mcp_tool>
-<server_name>anubis</server_name>
-<tool_name>validate_transition</tool_name>
-<arguments>
-{
-  "transitionId": "transition-identifier",
-  "taskId": "task-identifier",
-  "roleId": "role-identifier"
-}
-</arguments>
-</use_mcp_tool>
-
-<!-- Execute transition -->
+<!-- Execute transition directly -->
 <use_mcp_tool>
 <server_name>anubis</server_name>
 <tool_name>execute_transition</tool_name>
 <arguments>
 {
-  "transitionId": "transition-identifier",
-  "taskId": "task-identifier",
-  "roleId": "role-identifier"
+  "transitionId": "selected-transition-id",
+  "taskId": "your-task-id",
+  "roleId": "your-role-id"
 }
 </arguments>
 </use_mcp_tool>
@@ -628,6 +593,9 @@ You must execute using this exact XML format:
 5. **Include executionId in all MCP operations that require it**
 6. **Use exact XML schema formats from mcpOperations guidance**
 7. **Report completion with comprehensive evidence and validation results**
+8. **Follow workflow step guidance for role transitions exactly**
+9. **Use execute_transition tool directly when instructed (not MCP operations)**
+10. **Provide comprehensive handoffMessage with context and evidence**
 
 ### PROHIBITED Actions
 
@@ -638,6 +606,9 @@ You must execute using this exact XML format:
 5. **Never use malformed XML syntax**
 6. **Never skip step guidance requests for complex tasks**
 7. **Never proceed to next step without completing current step validation**
+8. **Never use get_role_transitions or validate_transition in normal workflow flow**
+9. **Never use WorkflowOperations.delegate for role transitions**
+10. **Never skip transition instructions provided in workflow steps**
 
 ---
 
@@ -678,43 +649,26 @@ When creating tasks through MCP operations, you must **always include the execut
 </use_mcp_tool>
 ```
 
-### Code Review Delegation Pattern
+### Direct Role Transition Pattern
 
-When code review is completed with APPROVED status:
+When workflow step guidance indicates role transition:
+
+1. **Follow Step Instructions**: Use exact transitionId provided in step guidance
+2. **Execute Direct Tool Call**: Use execute_transition tool directly
+3. **Provide Context**: Include comprehensive handoffMessage with evidence
+4. **Verify Success**: Confirm transition completion and delegation record creation
+
+Example:
 
 ```xml
-<!-- Create review -->
 <use_mcp_tool>
 <server_name>anubis</server_name>
-<tool_name>execute_mcp_operation</tool_name>
+<tool_name>execute_transition</tool_name>
 <arguments>
 {
-  "serviceName": "ReviewOperations",
-  "operation": "create_review",
-  "parameters": {
-    "executionId": "your-execution-id",
-    "reviewData": {
-      "status": "APPROVED",
-      "findings": "comprehensive review findings"
-    }
-  }
-}
-</arguments>
-</use_mcp_tool>
-
-<!-- Delegate to Integration Engineer -->
-<use_mcp_tool>
-<server_name>anubis</server_name>
-<tool_name>execute_mcp_operation</tool_name>
-<arguments>
-{
-  "serviceName": "WorkflowOperations",
-  "operation": "delegate",
-  "parameters": {
-    "executionId": "your-execution-id",
-    "targetRole": "Integration Engineer",
-    "context": "Comprehensive handoff context with quality evidence"
-  }
+  "transitionId": "selected-transition-id",
+  "taskId": "your-task-id",
+  "roleId": "your-role-id"
 }
 </arguments>
 </use_mcp_tool>
@@ -856,14 +810,17 @@ Reporting completion to MCP server...
 
 ## XML Troubleshooting Guide
 
-| Issue                             | XML Diagnostic                                         | Solution                                                    |
-| --------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------- |
-| "No step guidance available"      | Verify XML syntax and parameter values                 | Use proper `<use_mcp_tool>` format with `get_step_guidance` |
-| "Command execution failed"        | Check your local tool XML syntax                       | Retry 3 times, report detailed error in executionData       |
-| "Quality check validation failed" | Review specific checklist items from guidance response | Fix issues, re-validate, only proceed when all pass         |
-| "ExecutionId parameter missing"   | Check XML parameter structure                          | Always include executionId in arguments JSON                |
-| "Schema parameter mismatch"       | Compare XML against mcpOperations guidance             | Use exact structure from guidance mcpOperations section     |
-| "Malformed XML syntax"            | Validate XML structure                                 | Use proper `<use_mcp_tool>` format with JSON arguments      |
+| Issue                             | XML Diagnostic                                         | Solution                                                        |
+| --------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------- |
+| "No step guidance available"      | Verify XML syntax and parameter values                 | Use proper `<use_mcp_tool>` format with `get_step_guidance`     |
+| "Command execution failed"        | Check your local tool XML syntax                       | Retry 3 times, report detailed error in executionData           |
+| "Quality check validation failed" | Review specific checklist items from guidance response | Fix issues, re-validate, only proceed when all pass             |
+| "ExecutionId parameter missing"   | Check XML parameter structure                          | Always include executionId in arguments JSON                    |
+| "Schema parameter mismatch"       | Compare XML against mcpOperations guidance             | Use exact structure from guidance mcpOperations section         |
+| "Malformed XML syntax"            | Validate XML structure                                 | Use proper `<use_mcp_tool>` format with JSON arguments          |
+| "Direct tool call failed"         | Check transitionId and parameters from step guidance   | Use exact parameters provided in workflow step instructions     |
+| "Delegation record not created"   | Verify execute_transition success response             | Check RoleTransitionService logs and retry with same parameters |
+| "Transition guidance missing"     | Check if final step completed properly                 | Complete current role steps before attempting transition        |
 
 ---
 

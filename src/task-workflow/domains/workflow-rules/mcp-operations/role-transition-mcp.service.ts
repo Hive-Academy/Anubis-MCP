@@ -67,10 +67,7 @@ type GetTransitionHistoryInput = z.infer<
 export class RoleTransitionMcpService extends BaseMcpService {
   private readonly logger = new Logger(RoleTransitionMcpService.name);
 
-  constructor(
-    private readonly roleTransitionService: RoleTransitionService,
-    // ✅ REMOVED: EnvelopeBuilderService dependency (source of redundancy)
-  ) {
+  constructor(private readonly roleTransitionService: RoleTransitionService) {
     super();
   }
 

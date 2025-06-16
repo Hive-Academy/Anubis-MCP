@@ -158,40 +158,52 @@
       "reportTemplate": "context_preserving_planning_report"
     },
     {
-      "name": "strategic_senior_developer_delegation",
-      "displayName": "Strategic Senior Developer Delegation with Context",
-      "description": "Delegate to senior developer with comprehensive strategic context and implementation readiness",
+      "name": "role_transition_to_senior_developer",
+      "displayName": "Role Transition to Senior Developer",
+      "description": "Execute role transition directly to senior developer with comprehensive strategic context and implementation readiness",
       "sequenceNumber": 2,
       "isRequired": true,
       "estimatedTime": "5-8 minutes",
       "stepType": "ACTION",
       "behavioralContext": {
-        "approach": "Strategic delegation with comprehensive context preservation and implementation readiness",
+        "approach": "Direct role transition execution using the execute_transition tool available to the agent",
         "principles": [
-          "Include task-slug for human-readable reference",
-          "Provide complete strategic context and architectural guidance",
-          "Ensure implementation readiness with clear quality requirements",
-          "Establish ongoing architectural support availability"
+          "Use execute_transition tool directly (NOT through MCP_CALL)",
+          "Transition to senior developer with comprehensive strategic context",
+          "Provide complete strategic context and architectural guidance in handoffMessage",
+          "Ensure implementation readiness with clear quality requirements and database delegation record creation"
         ],
-        "methodology": "Context-preserving delegation with strategic implementation guidance"
+        "methodology": "Direct tool usage for efficient role transition with strategic implementation guidance",
+        "transitionStrategy": {
+          "targetRole": "senior-developer",
+          "transitionExecution": "Use execute_transition tool with 'architect_to_senior_developer' transitionId",
+          "contextPreservation": "Include complete strategic context and architectural guidance in handoffMessage",
+          "databaseIntegration": "Ensure delegation record is created in database via RoleTransitionService"
+        }
       },
       "approachGuidance": {
         "stepByStep": [
-          "Execute delegation with comprehensive strategic context",
-          "Include task-slug for clear human-readable reference",
-          "Communicate implementation priorities and architectural guidance",
-          "Ensure quality requirements and success criteria are understood",
-          "Provide clear message about architectural support availability",
-          "Confirm delegation context enables immediate productive work"
+          "Prepare comprehensive handoff message with strategic context and architectural guidance",
+          "Execute the execute_transition tool directly with 'architect_to_senior_developer' transitionId",
+          "Include taskId and roleId from current workflow context",
+          "Communicate implementation priorities and architectural guidance in handoffMessage",
+          "Verify transition success and confirm delegation record creation",
+          "Ensure quality requirements and success criteria are understood for immediate productive work"
+        ],
+        "transitionExecutionSteps": [
+          "Call execute_transition tool directly (available to agent, not MCP_CALL)",
+          "Use transitionId: 'architect_to_senior_developer'",
+          "Include taskId and roleId from current workflow context",
+          "Provide comprehensive handoffMessage with strategic guidance and implementation context"
         ]
       },
       "qualityChecklist": [
-        "Delegation executed with comprehensive strategic context",
-        "Task-slug included for human-readable reference",
-        "Implementation priorities and architectural guidance communicated",
-        "Quality requirements and success criteria clearly understood",
-        "Architectural support availability established",
-        "Delegation enables immediate productive implementation work"
+        "Comprehensive handoff message prepared with strategic context and architectural guidance",
+        "execute_transition tool executed directly with 'architect_to_senior_developer' transitionId",
+        "TaskId and roleId provided from current workflow context",
+        "Implementation priorities and architectural guidance communicated in handoffMessage",
+        "Transition success verified and delegation record creation confirmed",
+        "Quality requirements and success criteria clearly understood for immediate productive implementation work"
       ],
       "conditions": [
         {
@@ -206,20 +218,10 @@
           "isRequired": true
         }
       ],
-      "actions": [
-        {
-          "name": "execute_strategic_delegation",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "WorkflowOperations",
-            "operation": "delegate"
-          },
-          "sequenceOrder": 1
-        }
-      ],
+      "actions": [],
       "triggerReport": true,
-      "reportType": "strategic_delegation_complete",
-      "reportTemplate": "architect_delegation_summary"
+      "reportType": "role_transition_execution",
+      "reportTemplate": "direct_role_transition_to_senior_developer"
     }
   ]
 }

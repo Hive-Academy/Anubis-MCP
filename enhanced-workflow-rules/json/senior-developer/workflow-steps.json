@@ -172,7 +172,7 @@
         "iterativeCycleSteps": [
           "Call SubtaskOperations.get_next_subtask with taskId parameter",
           "If subtask returned: Call SubtaskOperations.update_subtask with status 'in-progress'",
-          "Implement subtask following strategic guidance and SOLID principles",
+          "Implement subtask following strategic guidance and SOLID, KISS and DRY principles",
           "Create and run tests specific to the subtask implementation",
           "Execute git add and git commit with subtask-specific message",
           "Call SubtaskOperations.update_subtask with status 'completed' and completion evidence",
@@ -180,7 +180,7 @@
         ],
         "implementationSteps": [
           "Follow architect's code examples exactly for the specific subtask",
-          "Apply SOLID principles consistently in the subtask implementation",
+          "Apply SOLID, KISS and DRY principles consistently in the subtask implementation",
           "Use established patterns from codebase analysis for consistency",
           "Implement error handling following discovered patterns for the subtask"
         ],
@@ -201,7 +201,7 @@
         "SubtaskOperations.get_next_subtask used to systematically get each subtask",
         "Each subtask updated to 'in-progress' before implementation starts",
         "Implementation follows architect's strategic guidance and code examples exactly",
-        "SOLID principles compliance maintained for each subtask implementation",
+        "SOLID, KISS and DRY principles compliance maintained for each subtask implementation",
         "Testing completed for each subtask (unit, integration, manual validation)",
         "Individual commit made after each subtask completion with descriptive message",
         "Each subtask updated to 'completed' status with proper completion evidence",
@@ -337,68 +337,52 @@
       "reportTemplate": "final_subtask_validation_report"
     },
     {
-      "name": "implementation_completion_and_code_review_delegation",
-      "displayName": "Implementation Completion and Code Review Delegation",
-      "description": "Complete implementation documentation and delegate to code review with comprehensive implementation evidence",
+      "name": "role_transition_to_code_review",
+      "displayName": "Role Transition to Code Review",
+      "description": "Execute role transition directly to code review with comprehensive implementation evidence",
       "sequenceNumber": 4,
       "isRequired": true,
       "estimatedTime": "10-15 minutes",
       "stepType": "ACTION",
       "behavioralContext": {
-        "approach": "Implementation completion with comprehensive delegation context and complete implementation evidence",
+        "approach": "Direct role transition execution using the execute_transition tool available to the agent",
         "principles": [
-          "Document complete implementation summary with all subtasks completed",
-          "Provide comprehensive implementation evidence for code review",
-          "Include detailed testing results and quality validation",
-          "Delegate to code review with complete context and evidence",
-          "Focus on implementation completion, not git operations"
+          "Use execute_transition tool directly (NOT through MCP_CALL)",
+          "Transition to code review with complete implementation summary and evidence",
+          "Provide comprehensive implementation evidence for code review in handoffMessage",
+          "Include detailed testing results and quality validation with database delegation record creation"
         ],
-        "methodology": "Evidence-based delegation with comprehensive implementation documentation",
-        "delegationEvidence": {
-          "implementationSummary": "Complete summary of all implemented subtasks with details",
-          "subtaskCompletion": "Evidence of all subtasks completed with proper status updates",
-          "testingResults": "Summary of testing performed for each subtask implementation",
-          "qualityValidation": "Confirmation of SOLID principles and pattern compliance",
-          "architecturalCompliance": "Evidence of following architect's strategic guidance exactly",
-          "codeQuality": "Documentation of code quality standards adherence"
-        },
-        "delegationContext": {
-          "completionEvidence": "Comprehensive evidence that all implementation work is completed",
-          "qualityAssurance": "Documentation of quality standards and testing validation",
-          "readinessForReview": "Clear indication that implementation is ready for code review",
-          "implementationDetails": "Detailed summary of what was implemented and how"
+        "methodology": "Direct tool usage for efficient role transition with evidence-based implementation documentation",
+        "transitionStrategy": {
+          "targetRole": "code-review",
+          "transitionExecution": "Use execute_transition tool with 'senior_developer_to_code_review' transitionId",
+          "contextPreservation": "Include complete implementation evidence and quality validation in handoffMessage",
+          "databaseIntegration": "Ensure delegation record is created in database via RoleTransitionService"
         }
       },
       "approachGuidance": {
         "stepByStep": [
           "Document complete implementation summary including all completed subtasks",
           "Compile comprehensive testing results and quality validation evidence",
-          "Prepare implementation evidence showing architectural compliance and SOLID principles",
-          "Create detailed delegation context with complete implementation documentation",
-          "Execute delegation to code review with comprehensive evidence and context",
-          "Include implementation summary, testing results, and quality validation in delegation"
+          "Prepare implementation evidence showing architectural compliance and SOLID, KISS and DRY principles",
+          "Execute the execute_transition tool directly with 'senior_developer_to_code_review' transitionId",
+          "Include taskId and roleId from current workflow context",
+          "Provide comprehensive handoffMessage with implementation summary, testing results, and quality validation"
         ],
-        "evidencePreparationSteps": [
-          "Compile summary of all completed subtasks with implementation details and evidence",
-          "Document testing results showing validation for each subtask implementation",
-          "Summarize quality validation including SOLID principles and pattern adherence",
-          "Confirm architectural compliance with architect's strategic guidance",
-          "Prepare comprehensive implementation documentation for code review"
-        ],
-        "delegationSteps": [
-          "Prepare comprehensive delegation context with complete implementation evidence",
-          "Execute WorkflowOperations.delegate to code review with detailed context",
-          "Include complete implementation summary and quality validation evidence",
-          "Provide clear documentation of what was implemented and testing performed"
+        "transitionExecutionSteps": [
+          "Call execute_transition tool directly (available to agent, not MCP_CALL)",
+          "Use transitionId: 'senior_developer_to_code_review'",
+          "Include taskId and roleId from current workflow context",
+          "Provide comprehensive handoffMessage with complete implementation evidence and context"
         ]
       },
       "qualityChecklist": [
         "Complete implementation summary documented with all subtasks and evidence",
         "Comprehensive testing results compiled showing validation for each subtask",
-        "Quality validation documented including SOLID principles and architectural compliance",
-        "Implementation evidence prepared showing all work completed according to strategic guidance",
-        "Delegation context includes comprehensive documentation and quality validation",
-        "Code review delegation executed with complete implementation evidence and context"
+        "Quality validation documented including SOLID, KISS and DRY principles and architectural compliance",
+        "execute_transition tool executed directly with 'senior_developer_to_code_review' transitionId",
+        "TaskId and roleId provided from current workflow context",
+        "Comprehensive handoffMessage includes complete implementation evidence and quality validation for code review"
       ],
       "conditions": [
         {
@@ -413,20 +397,10 @@
           "isRequired": true
         }
       ],
-      "actions": [
-        {
-          "name": "delegate_to_code_review",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "WorkflowOperations",
-            "operation": "delegate"
-          },
-          "sequenceOrder": 1
-        }
-      ],
+      "actions": [],
       "triggerReport": true,
-      "reportType": "implementation_completion_and_delegation",
-      "reportTemplate": "implementation_completion_and_code_review_delegation"
+      "reportType": "role_transition_execution",
+      "reportTemplate": "direct_role_transition_to_code_review"
     }
   ]
 }

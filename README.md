@@ -72,7 +72,7 @@ npm >= 8.0.0
 
 ```bash
 # Clone the repository
-git clone https://github.com/Hive-Academy/Anubis.git
+git clone https://github.com/Hive-Academy/Anubis-MCP.git
 cd Anubis
 
 # Install dependencies
@@ -93,13 +93,13 @@ npm run start:debug
 
 Our system provides specialized guidance for different development roles:
 
-| Role                    | Purpose                      | Guidance Focus                            | Key Capabilities                                    |
-| ----------------------- | ---------------------------- | ----------------------------------------- | --------------------------------------------------- |
-| **🎯 Boomerang**        | Strategic orchestration      | Project analysis, coordination, delivery  | Git setup, codebase analysis, task creation         |
-| **🔍 Researcher**       | Evidence-based investigation | Technology research, feasibility analysis | Research operations, evidence tracking              |
-| **🏗️ Architect**        | Technical design & planning  | System architecture, design patterns      | Implementation planning, batch subtask creation     |
-| **👨‍💻 Senior Developer** | Implementation excellence    | Code development, SOLID principles        | Iterative implementation, testing, quality gates    |
-| **✅ Code Review**      | Quality assurance            | Testing, validation, acceptance criteria  | Manual testing, security validation, final approval |
+| Role                    | Purpose                      | Guidance Focus                                   | Key Capabilities                                    |
+| ----------------------- | ---------------------------- | ------------------------------------------------ | --------------------------------------------------- |
+| **🎯 Boomerang**        | Strategic orchestration      | Project analysis, coordination, delivery         | Git setup, codebase analysis, task creation         |
+| **🔍 Researcher**       | Evidence-based investigation | Technology research, feasibility analysis        | Research operations, evidence tracking              |
+| **🏗️ Architect**        | Technical design & planning  | System architecture, design patterns             | Implementation planning, batch subtask creation     |
+| **👨‍💻 Senior Developer** | Implementation excellence    | Code development, SOLID, KISS and DRY principles | Iterative implementation, testing, quality gates    |
+| **✅ Code Review**      | Quality assurance            | Testing, validation, acceptance criteria         | Manual testing, security validation, final approval |
 
 ### **🎯 What Makes This Special**
 
@@ -180,7 +180,7 @@ get_step_guidance({
     "SubtaskOperations.get_next_subtask used to systematically get each subtask",
     "Each subtask updated to 'in-progress' before implementation starts",
     "Implementation follows architect's strategic guidance and code examples exactly",
-    "SOLID principles compliance maintained for each subtask implementation",
+    "SOLID, KISS and DRY principles compliance maintained for each subtask implementation",
     "Testing completed for each subtask (unit, integration, manual validation)",
     "Individual commit made after each subtask completion with descriptive message",
     "Each subtask updated to 'completed' status with proper completion evidence"

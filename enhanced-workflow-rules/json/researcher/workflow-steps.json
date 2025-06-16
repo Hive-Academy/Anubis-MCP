@@ -543,38 +543,52 @@
       "reportTemplate": "comprehensive_research_report"
     },
     {
-      "name": "architect_delegation",
-      "displayName": "Architect Delegation",
-      "description": "Delegate to architect with validated recommendations and implementation guidance",
+      "name": "role_transition_to_architect",
+      "displayName": "Role Transition to Architect",
+      "description": "Execute role transition directly to architect with validated recommendations and implementation guidance",
       "sequenceNumber": 8,
       "isRequired": true,
       "estimatedTime": "2-3 minutes",
       "stepType": "ACTION",
       "behavioralContext": {
-        "approach": "Context-preserving delegation with comprehensive research handoff",
+        "approach": "Direct role transition execution using the execute_transition tool available to the agent",
         "principles": [
-          "Delegate to architect with complete research context",
-          "Provide validated recommendations and evidence-based guidance",
-          "Ensure implementation readiness with clear next steps",
-          "Preserve all research findings and strategic context"
+          "Use execute_transition tool directly (NOT through MCP_CALL)",
+          "Transition to architect role with complete research context",
+          "Provide validated recommendations and evidence-based guidance in handoffMessage",
+          "Ensure implementation readiness with clear next steps and database delegation record creation"
         ],
-        "methodology": "Structured delegation with comprehensive context preservation"
+        "methodology": "Direct tool usage for efficient role transition with comprehensive research handoff",
+        "transitionStrategy": {
+          "targetRole": "architect",
+          "transitionExecution": "Use execute_transition tool with 'researcher_to_architect' transitionId",
+          "contextPreservation": "Include complete research findings and strategic context in handoffMessage",
+          "databaseIntegration": "Ensure delegation record is created in database via RoleTransitionService"
+        }
       },
       "approachGuidance": {
         "stepByStep": [
-          "Prepare comprehensive delegation context with research findings",
-          "Execute workflow delegation to architect role",
-          "Provide clear handoff message with research summary",
-          "Ensure context preservation for implementation planning",
-          "Document completion of research phase"
+          "Prepare comprehensive handoff message with research findings and recommendations",
+          "Execute the execute_transition tool directly with 'researcher_to_architect' transitionId",
+          "Include taskId and roleId from current workflow context",
+          "Provide clear handoff message with research summary and implementation guidance",
+          "Verify transition success and confirm delegation record creation",
+          "Document completion of research phase and context preservation for implementation planning"
+        ],
+        "transitionExecutionSteps": [
+          "Call execute_transition tool directly (available to agent, not MCP_CALL)",
+          "Use transitionId: 'researcher_to_architect'",
+          "Include taskId and roleId from current workflow context",
+          "Provide comprehensive handoffMessage with research findings and strategic guidance"
         ]
       },
       "qualityChecklist": [
-        "Comprehensive delegation context prepared",
-        "Workflow delegation executed to architect",
-        "Clear handoff message with research summary provided",
-        "Context preservation ensured for next phase",
-        "Research phase completion properly documented"
+        "Comprehensive handoff message prepared with research findings and recommendations",
+        "execute_transition tool executed directly with 'researcher_to_architect' transitionId",
+        "TaskId and roleId provided from current workflow context",
+        "Clear handoff message with research summary and implementation guidance provided",
+        "Transition success verified and delegation record creation confirmed",
+        "Research phase completion documented with context preservation for next phase"
       ],
       "conditions": [
         {
@@ -589,20 +603,10 @@
           "isRequired": true
         }
       ],
-      "actions": [
-        {
-          "name": "execute_architect_delegation",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "WorkflowOperations",
-            "operation": "delegate"
-          },
-          "sequenceOrder": 1
-        }
-      ],
+      "actions": [],
       "triggerReport": true,
-      "reportType": "delegation",
-      "reportTemplate": "research_delegation_to_architect"
+      "reportType": "role_transition_execution",
+      "reportTemplate": "direct_role_transition_to_architect"
     }
   ]
 }

@@ -47,7 +47,7 @@ npm >= 8.0.0
 
 ```bash
 # Clone the repository
-git clone https://github.com/Hive-Academy/Anubis.git
+git clone https://github.com/Hive-Academy/Anubis-MCP.git
 cd Anubis
 
 # Install dependencies
@@ -690,7 +690,7 @@ CMD ["node", "dist/main.js"]
 
 ### **Code Review Standards**
 
-1. **SOLID Principles Compliance**: All code must follow SOLID principles
+1. **SOLID Principles Compliance**: All code must follow SOLID, KISS and DRY principles
 2. **Type Safety**: Comprehensive TypeScript typing required
 3. **Test Coverage**: Minimum 75% test coverage for new code
 4. **Documentation**: All public APIs must be documented

@@ -6,11 +6,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Hive-Academy/Anubis.git"
+    "url": "git+https://github.com/Hive-Academy/Anubis-MCP.git"
   },
-  "homepage": "https://github.com/Hive-Academy/Anubis#readme",
+  "homepage": "https://github.com/Hive-Academy/Anubis-MCP#readme",
   "bugs": {
-    "url": "https://github.com/Hive-Academy/Anubis/issues"
+    "url": "https://github.com/Hive-Academy/Anubis-MCP/issues"
   },
   "keywords": [
     "mcp",

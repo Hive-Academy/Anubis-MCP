@@ -19,7 +19,7 @@
   "coreResponsibilities": [
     "Strategic architecture analysis with MCP context integration",
     "Pattern analysis and problem-solution mapping",
-    "SOLID principles verification and design validation",
+    "SOLID, KISS and DRY principles verification and design validation",
     "Implementation plan creation with strategic batch design",
     "Quality standards definition and enforcement",
     "Technical decision making with evidence-based rationale",
@@ -29,7 +29,7 @@
   "keyCapabilities": [
     "Enhanced pattern analysis matrix with MCP context",
     "Problem-solution mapping with MCP evidence",
-    "SOLID principles verification with quality assessment",
+    "SOLID, KISS and DRY principles verification with quality assessment",
     "Strategic batch design with 3-8 subtasks per batch",
     "Implementation plan creation with comprehensive guidance",
     "Quality gate definition with validation criteria",
@@ -41,12 +41,12 @@
     "approachMethodology": "Evidence-based architectural design with strategic planning and MCP context integration",
     "decisionMakingPrinciples": [
       "Base all architectural decisions on evidence from research and MCP context",
-      "Follow SOLID principles and established design patterns",
+      "Follow SOLID, KISS and DRY principles and established design patterns",
       "Design for maintainability, scalability, and testability",
       "Ensure compatibility with existing architectural patterns and constraints"
     ],
     "qualityStandards": [
-      "SOLID principles compliance in all design decisions",
+      "SOLID, KISS and DRY principles compliance in all design decisions",
       "Comprehensive implementation planning with strategic guidance",
       "Quality gates definition with measurable validation criteria",
       "Evidence-based architectural rationale and documentation"

@@ -60,7 +60,7 @@ export class DependencyManager {
   }
 
   private log(message: string): void {
-    if (this.verbose) {
+    if (this.verbose && process.env.NODE_ENV !== 'production') {
       console.log(`[DependencyManager] ${message}`);
     }
   }
@@ -157,7 +157,9 @@ export class DependencyManager {
    * Generate Prisma client from schema
    */
   generatePrismaClient(): void {
-    console.log('🔧 Generating Prisma client...');
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('🔧 Generating Prisma client...');
+    }
 
     try {
       // Set the database URL for this operation
@@ -177,9 +179,13 @@ export class DependencyManager {
         delete process.env.DATABASE_URL;
       }
 
-      console.log('✅ Prisma client generated successfully');
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('✅ Prisma client generated successfully');
+      }
     } catch (error) {
-      console.warn('⚠️  Prisma client generation failed:', error);
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('⚠️  Prisma client generation failed:', error);
+      }
       throw error;
     }
   }
@@ -188,7 +194,9 @@ export class DependencyManager {
    * Run database migrations to ensure schema is up to date
    */
   runDatabaseMigrations(): void {
-    console.log('🗄️  Running database migrations...');
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('🗄️  Running database migrations...');
+    }
 
     try {
       // Set the database URL for this operation
@@ -222,9 +230,13 @@ export class DependencyManager {
         delete process.env.DATABASE_URL;
       }
 
-      console.log('✅ Database migrations completed successfully');
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('✅ Database migrations completed successfully');
+      }
     } catch (error) {
-      console.warn('⚠️  Database migration failed:', error);
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('⚠️  Database migration failed:', error);
+      }
       throw error;
     }
   }
@@ -233,7 +245,9 @@ export class DependencyManager {
    * Run database seeding to populate workflow rules
    */
   runDatabaseSeeding(): void {
-    console.log('🌱 Seeding database with workflow rules...');
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('🌱 Seeding database with workflow rules...');
+    }
 
     try {
       // Set the database URL for this operation
@@ -253,9 +267,13 @@ export class DependencyManager {
         delete process.env.DATABASE_URL;
       }
 
-      console.log('✅ Database seeding completed successfully');
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('✅ Database seeding completed successfully');
+      }
     } catch (error) {
-      console.warn('⚠️  Database seeding failed:', error);
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('⚠️  Database seeding failed:', error);
+      }
       throw error;
     }
   }
@@ -300,7 +318,9 @@ export class DependencyManager {
   async initializeAllDependencies(
     options: DependencySetupOptions = {},
   ): Promise<DependencyCheckResult> {
-    console.log('🔍 Checking MCP server dependencies...');
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('🔍 Checking MCP server dependencies...');
+    }
 
     const status = await this.checkAllDependencies(options);
 
