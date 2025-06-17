@@ -172,6 +172,46 @@ export class DependencyManager {
   }
 
   /**
+   * Reset database to ensure clean state (force reset for NPX installations)
+   */
+  private resetDatabase(): void {
+    // Set the database URL for this operation
+    const oldDatabaseUrl = process.env.DATABASE_URL;
+    process.env.DATABASE_URL = this.databaseUrl;
+
+    try {
+      if (this.verbose) {
+        console.log('🔄 Resetting database to ensure clean installation...');
+      }
+
+      execSync('npx prisma migrate reset --force', {
+        stdio: this.verbose ? 'inherit' : 'pipe',
+        cwd: this.packageRoot,
+        timeout: 30000, // 30 seconds timeout
+      });
+
+      if (this.verbose) {
+        console.log('✅ Database reset completed successfully');
+      }
+    } catch (error) {
+      if (this.verbose) {
+        console.warn(
+          '⚠️  Database reset failed (might be first install):',
+          error,
+        );
+      }
+      // Don't throw - this might be the first installation
+    } finally {
+      // Restore original DATABASE_URL
+      if (oldDatabaseUrl !== undefined) {
+        process.env.DATABASE_URL = oldDatabaseUrl;
+      } else {
+        delete process.env.DATABASE_URL;
+      }
+    }
+  }
+
+  /**
    * Run database migrations to ensure schema is up to date
    */
   runDatabaseMigrations(): void {
@@ -343,6 +383,16 @@ export class DependencyManager {
         status.databaseExists = true;
       } catch (error) {
         status.errors.push(`Database initialization failed: ${error}`);
+      }
+    } else {
+      // Reset database to ensure clean installation
+      try {
+        this.resetDatabase();
+        // Run migrations after reset
+        this.runDatabaseMigrations();
+        status.databaseExists = true;
+      } catch (error) {
+        status.errors.push(`Database reset and migration failed: ${error}`);
       }
     }
 
