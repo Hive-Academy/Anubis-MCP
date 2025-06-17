@@ -21,3 +21,4 @@ prisma/anubis.db
 /working-demo
 data
 /workflow-reports
+/.vscode

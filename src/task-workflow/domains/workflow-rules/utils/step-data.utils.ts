@@ -31,14 +31,12 @@ export class StepDataUtils {
     name: string;
     description: string;
     stepType: string;
-    estimatedTime: string;
   } {
     return {
       id: step.id,
       name: step.name,
       description: step.description || 'Execute workflow step',
       stepType: step.stepType,
-      estimatedTime: step.estimatedTime || '5-10 minutes',
     };
   }
 

@@ -47,11 +47,23 @@ async function completelyResetDatabase() {
     await prisma.taskDescription.deleteMany();
     await prisma.task.deleteMany();
 
-    // 5. Delete workflow rules system
-    console.log('⚙️ Deleting workflow rules...');
-    await prisma.ruleVersion.deleteMany();
-    await prisma.stepAction.deleteMany();
-    await prisma.stepCondition.deleteMany();
+    // 5. Delete streamlined workflow rules system (NEW STRUCTURE)
+    console.log('⚙️ Deleting streamlined workflow rules...');
+
+    // Delete structured transition data
+    await prisma.transitionDeliverable.deleteMany();
+    await prisma.transitionContext.deleteMany();
+    await prisma.transitionValidation.deleteMany();
+    await prisma.transitionRequirement.deleteMany();
+    await prisma.transitionCondition.deleteMany();
+
+    // Delete structured step data
+    await prisma.stepDependency.deleteMany();
+    await prisma.mcpAction.deleteMany();
+    await prisma.qualityCheck.deleteMany();
+    await prisma.stepGuidance.deleteMany();
+
+    // Delete main workflow entities
     await prisma.workflowStep.deleteMany();
     await prisma.roleTransition.deleteMany();
     await prisma.workflowRole.deleteMany();
@@ -63,6 +75,12 @@ async function completelyResetDatabase() {
     const counts = await Promise.all([
       prisma.workflowRole.count(),
       prisma.workflowStep.count(),
+      prisma.stepGuidance.count(),
+      prisma.qualityCheck.count(),
+      prisma.mcpAction.count(),
+      prisma.stepDependency.count(),
+      prisma.roleTransition.count(),
+      prisma.transitionCondition.count(),
       prisma.task.count(),
       prisma.projectOnboarding.count(),
     ]);
@@ -70,8 +88,14 @@ async function completelyResetDatabase() {
     console.log('📊 Verification - Record counts after reset:');
     console.log(`   - Workflow Roles: ${counts[0]}`);
     console.log(`   - Workflow Steps: ${counts[1]}`);
-    console.log(`   - Tasks: ${counts[2]}`);
-    console.log(`   - Project Onboarding: ${counts[3]}`);
+    console.log(`   - Step Guidance: ${counts[2]}`);
+    console.log(`   - Quality Checks: ${counts[3]}`);
+    console.log(`   - MCP Actions: ${counts[4]}`);
+    console.log(`   - Step Dependencies: ${counts[5]}`);
+    console.log(`   - Role Transitions: ${counts[6]}`);
+    console.log(`   - Transition Conditions: ${counts[7]}`);
+    console.log(`   - Tasks: ${counts[8]}`);
+    console.log(`   - Project Onboarding: ${counts[9]}`);
 
     if (counts.every((count) => count === 0)) {
       console.log('✅ Database is completely clean!');

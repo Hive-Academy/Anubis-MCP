@@ -101,23 +101,19 @@ export class RoleTransitionMcpService extends BaseMcpService {
         ),
       ]);
 
-      // ✅ MINIMAL RESPONSE: Only essential transition data
       return this.buildMinimalResponse({
         fromRole: input.fromRoleName,
         availableTransitions: availableTransitions.map((t) => ({
           transitionId: t.id,
           transitionName: t.transitionName,
           toRole: t.toRole.name,
-          toRoleDisplay: t.toRole.displayName,
         })),
         recommendedTransitions: recommendedTransitions.map((t) => ({
           transitionId: t.id,
           transitionName: t.transitionName,
           toRole: t.toRole.name,
-          toRoleDisplay: t.toRole.displayName,
           score: (t as any).recommendationScore || 0,
         })),
-        // ❌ REMOVED: nextAction (hardcoded flow control)
       });
     } catch (error) {
       return this.buildErrorResponse(
@@ -207,7 +203,6 @@ export class RoleTransitionMcpService extends BaseMcpService {
         message: result.message,
         newRoleId: result.newRoleId,
         handoffMessage: input.handoffMessage,
-        // ❌ REMOVED: nextAction (hardcoded flow control)
       });
     } catch (error) {
       return this.buildErrorResponse(

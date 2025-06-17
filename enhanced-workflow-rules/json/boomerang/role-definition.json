@@ -18,7 +18,7 @@
   },
   "coreResponsibilities": [
     "Strategic workflow orchestration",
-    "Task intake and analysis", 
+    "Task intake and analysis",
     "Current state verification through functional testing",
     "Evidence-based decision making",
     "Role delegation and workflow coordination",
@@ -33,21 +33,5 @@
     "Evidence collection and documentation",
     "Quality gate enforcement",
     "Escalation path management"
-  ],
-  "executionProtocol": "Internal Service Orchestration → Current State Verification → Task Setup → Strategic Decisions → Role Delegation",
-  "behavioralContext": {
-    "approachMethodology": "Evidence-based strategic orchestration with mandatory current state verification",
-    "decisionMakingPrinciples": [
-      "Always verify current state before strategic decisions",
-      "Base decisions on functional testing evidence",
-      "Prioritize workflow efficiency and quality",
-      "Ensure proper role delegation with context preservation"
-    ],
-    "qualityStandards": [
-      "Mandatory functional verification before decisions",
-      "Complete context documentation",
-      "Evidence-based strategic recommendations",
-      "Proper handoff documentation"
-    ]
-  }
+  ]
 }

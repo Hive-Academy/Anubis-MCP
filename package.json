@@ -38,7 +38,7 @@
   },
   "prisma": {
     "schema": "./prisma",
-    "seed": "ts-node scripts/prisma-seed.ts"
+    "seed": "node scripts/prisma-seed.js"
   },
   "files": [
     "dist/**/*",
@@ -49,7 +49,7 @@
     "prisma/workflow-enums.prisma",
     "prisma/migrations/**/*",
     "enhanced-workflow-rules/**/*",
-    "scripts/prisma-seed.ts",
+    "scripts/prisma-seed.js",
     "package.json",
     "README.md",
     "LICENSE"

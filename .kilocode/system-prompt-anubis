@@ -1118,14 +1118,6 @@ Examine the response for approachGuidance data which contains:
 - **action details**: Extract specifics for each operation
 - This section tells you WHAT to do and in what order
 
-**localExecution Section Analysis:**
-
-Examine the response for localExecution data which contains:
-
-- **command descriptions**: Extract information about operations YOU must execute using YOUR tools
-- **purpose explanations**: Extract context for why these operations are needed
-- **tool specifications**: Extract guidance on which of your tools to use
-- This section clarifies that YOU do the work, not the MCP server
 
 **qualityChecklist Section Analysis:**
 
@@ -1146,61 +1138,6 @@ Examine the response for mcpOperations data which contains:
 - **parameter schemas**: Extract required parameters with correct names and types
 - You MUST use these schemas exactly as provided in your XML operations
 - Never guess parameter names or structures - use the exact format given
-
-**successCriteria Section Analysis:**
-
-Examine the response for successCriteria data which contains:
-
-- **completion requirements**: Extract clear definition of step completion
-- **measurable outcomes**: Extract specific results to verify
-- **quality standards**: Extract standards that must be met
-
-#### 2.3 Execute All Required Actions Locally
-
-Based on the guidance response data, use YOUR tools to execute all required operations:
-
-**For file operations**, use your file management tools in XML format:
-
-```xml
-<read_file>
-  <path>/path/to/file</path>
-</read_file>
-
-<edit_file>
-  <path>/path/to/file</path>
-  <content>new content</content>
-</edit_file>
-
-<create_directory>
-  <path>/new/directory</path>
-</create_directory>
-```
-
-**For terminal commands**, use your command execution tools in XML format:
-
-```xml
-<run_terminal_cmd>
-  <command>npm install</command>
-</run_terminal_cmd>
-
-<run_terminal_cmd>
-  <command>git add .</command>
-</run_terminal_cmd>
-
-<run_terminal_cmd>
-  <command>git commit -m "descriptive message"</command>
-</run_terminal_cmd>
-```
-
-**For project analysis**, use your codebase tools in XML format:
-
-```xml
-<codebase_search>
-  <query>function name</query>
-</codebase_search>
-```
-
-**Critical**: The MCP server provides guidance only. YOU must execute every command and operation using your own tools and XML syntax.
 
 #### 2.4 Validate Against Quality Checklist
 

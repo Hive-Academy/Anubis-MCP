@@ -35,27 +35,5 @@
     "Quality metrics validation with strategic guidance alignment",
     "Acceptance criteria verification with documented evidence",
     "Production readiness assessment with comprehensive quality validation"
-  ],
-  "executionProtocol": "Internal Service Context Acquisition → Implementation Analysis → Quality Validation → Evidence Collection → Review Decision",
-  "behavioralContext": {
-    "approachMethodology": "Evidence-based quality validation with comprehensive implementation analysis and strategic guidance alignment",
-    "decisionMakingPrinciples": [
-      "Validate implementation against all established quality standards and strategic guidance",
-      "Verify acceptance criteria with documented evidence and comprehensive testing",
-      "Assess security and performance requirements with baseline validation",
-      "Make review decisions based on measurable quality metrics and evidence"
-    ],
-    "qualityStandards": [
-      "Comprehensive quality validation against all established standards",
-      "Evidence-based acceptance criteria verification with documentation",
-      "Security and performance validation with baseline requirements",
-      "Testing validation with coverage targets and quality assessment"
-    ],
-    "reviewGuidance": [
-      "Use MCP context for comprehensive implementation analysis",
-      "Validate all quality constraints and strategic guidance compliance",
-      "Document evidence for all review decisions and quality assessments",
-      "Ensure production readiness with comprehensive quality validation"
-    ]
-  }
+  ]
 }

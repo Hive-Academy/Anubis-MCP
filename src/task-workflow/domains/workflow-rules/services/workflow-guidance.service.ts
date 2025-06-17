@@ -45,23 +45,12 @@ export interface PatternImplementation {
 
 // FOCUSED: Role/Persona context only - NO step details
 export interface WorkflowGuidance {
-  currentRole: {
-    name: string;
-    displayName: string;
-    description: string;
-    capabilities: any;
-  };
+  currentRole: WorkflowRole;
   projectContext: {
     projectType?: string;
     behavioralProfile?: any;
     detectedPatterns?: any[];
     qualityStandards?: any;
-  };
-  qualityReminders: string[];
-  ruleEnforcement: {
-    requiredPatterns: string[];
-    antiPatterns: string[];
-    complianceChecks: any[];
   };
 }
 
@@ -127,12 +116,7 @@ export class WorkflowGuidanceService extends ConfigurableService<GuidanceConfig>
 
       // FOCUSED: Build role-only guidance structure (NO step details)
       const roleGuidance: WorkflowGuidance = {
-        currentRole: {
-          name: role.name,
-          displayName: role.displayName,
-          description: role.description,
-          capabilities: role.capabilities,
-        },
+        currentRole: role,
         projectContext: {
           projectType: projectContext?.projectType,
           behavioralProfile: behavioralProfile,
@@ -141,14 +125,6 @@ export class WorkflowGuidanceService extends ConfigurableService<GuidanceConfig>
             : [],
           qualityStandards: behavioralProfile?.qualityStandards,
         },
-        qualityReminders: await this.getQualityReminders(
-          role.id,
-          projectContext?.id,
-        ),
-        ruleEnforcement: await this.getRuleEnforcement(
-          role.id,
-          projectContext?.id,
-        ),
       };
 
       return roleGuidance;
@@ -192,99 +168,6 @@ export class WorkflowGuidanceService extends ConfigurableService<GuidanceConfig>
         projectContextId,
       },
     });
-  }
-
-  private async getQualityReminders(
-    roleId: string,
-    projectContextId?: number,
-  ): Promise<string[]> {
-    const reminders: string[] = [];
-
-    // Add role-specific quality reminders
-    const role = await this.prisma.workflowRole.findUnique({
-      where: { id: roleId },
-    });
-
-    // Type-safe access to JSON field
-    const capabilities = role?.capabilities as RoleCapabilities;
-    if (
-      capabilities?.qualityReminders &&
-      Array.isArray(capabilities.qualityReminders)
-    ) {
-      reminders.push(...capabilities.qualityReminders);
-    }
-
-    // Add project-specific quality reminders
-    if (projectContextId) {
-      const projectProfile =
-        await this.prisma.projectBehavioralProfile.findFirst({
-          where: { projectContextId },
-        });
-
-      // Type-safe access to JSON field
-      const qualityStandards =
-        projectProfile?.qualityStandards as QualityStandards;
-      if (
-        qualityStandards?.reminders &&
-        Array.isArray(qualityStandards.reminders)
-      ) {
-        reminders.push(...qualityStandards.reminders);
-      }
-    }
-
-    return reminders;
-  }
-
-  private async getRuleEnforcement(
-    _roleId: string,
-    projectContextId?: number,
-  ): Promise<{
-    requiredPatterns: string[];
-    antiPatterns: string[];
-    complianceChecks: any[];
-  }> {
-    const enforcement: {
-      requiredPatterns: string[];
-      antiPatterns: string[];
-      complianceChecks: any[];
-    } = {
-      requiredPatterns: [],
-      antiPatterns: [],
-      complianceChecks: [],
-    };
-
-    // Get patterns from project context
-    if (projectContextId) {
-      const patterns = await this.prisma.projectPattern.findMany({
-        where: { projectContextId },
-      });
-
-      // Use configurable keywords for pattern detection
-      enforcement.requiredPatterns = patterns
-        .filter((p) =>
-          this.getConfigValue('patternDetection').requiredPatternKeywords.some(
-            (keyword) =>
-              p.description.toLowerCase().includes(keyword.toLowerCase()),
-          ),
-        )
-        .map((p) => p.patternName);
-
-      // Use implementation field for anti-patterns with type safety
-      enforcement.antiPatterns = patterns.flatMap((p) => {
-        const impl = p.implementation as PatternImplementation;
-        return Array.isArray(impl?.antiPatterns) ? impl.antiPatterns : [];
-      });
-
-      // Use implementation field for compliance checks with type safety
-      enforcement.complianceChecks = patterns
-        .map((p) => {
-          const impl = p.implementation as PatternImplementation;
-          return impl?.complianceChecks;
-        })
-        .filter((checks): checks is any[] => Array.isArray(checks));
-    }
-
-    return enforcement;
   }
 
   private async getProjectPatterns(projectContextId: number): Promise<any[]> {
