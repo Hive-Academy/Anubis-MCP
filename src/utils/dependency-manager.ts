@@ -39,20 +39,26 @@ export class DependencyManager {
 
   constructor(options: DependencyManagerOptions = {}) {
     this.verbose = options.verbose || false;
-    this.databaseUrl = options.databaseUrl || process.env.DATABASE_URL || '';
 
     // Determine package root - where this code is running from
     this.packageRoot = path.resolve(__dirname, '../..');
 
-    // Get database configuration
+    // Get database configuration with PROJECT_ROOT priority
+    const projectRoot = process.env.PROJECT_ROOT || process.cwd();
     this.dbConfig = getDatabaseConfig({
-      projectRoot: process.env.PROJECT_ROOT || process.cwd(),
+      projectRoot: projectRoot,
       verbose: this.verbose,
     });
 
-    // Use database URL from config if not provided
-    if (!this.databaseUrl) {
-      this.databaseUrl = this.dbConfig.databaseUrl;
+    // Use database URL from config if not provided, with PROJECT_ROOT priority
+    this.databaseUrl = options.databaseUrl || this.dbConfig.databaseUrl;
+
+    if (this.verbose) {
+      console.error(`🔧 Dependency Manager initialized:`);
+      console.error(`   Package Root: ${this.packageRoot}`);
+      console.error(`   Project Root: ${this.dbConfig.projectRoot}`);
+      console.error(`   Database URL: ${this.databaseUrl}`);
+      console.error(`   Deployment Method: ${this.dbConfig.deploymentMethod}`);
     }
   }
 
@@ -228,6 +234,7 @@ export class DependencyManager {
       const dbDir = path.dirname(absoluteDbPath);
 
       try {
+        // Ensure directory exists with cross-platform approach
         if (!fs.existsSync(dbDir)) {
           fs.mkdirSync(dbDir, { recursive: true });
         }
@@ -236,42 +243,29 @@ export class DependencyManager {
         const testFile = path.join(dbDir, '.write-test');
         fs.writeFileSync(testFile, 'test');
         fs.unlinkSync(testFile);
-      } catch (error) {
-        // Enhanced error handling for VS Code extensions
+
         if (this.verbose) {
-          console.warn(
-            `⚠️ Database directory creation/write test failed: ${error}`,
-          );
-          console.warn(`   Database path: ${absoluteDbPath}`);
-          console.warn(`   Directory: ${dbDir}`);
+          console.error(`✅ Database directory ready: ${dbDir}`);
         }
+      } catch (error) {
+        // NO FALLBACK - fail with clear cross-platform error message
+        const errorMessage = [
+          `❌ Cannot create database directory: ${dbDir}`,
+          `   Database path: ${absoluteDbPath}`,
+          `   Error: ${error}`,
+          ``,
+          `💡 This indicates a permissions or disk space issue.`,
+          `   Please ensure the project directory is writable.`,
+          ``,
+          `🔧 Cross-platform troubleshooting:`,
+          `   - Windows: Check antivirus, run as administrator if needed`,
+          `   - Linux/Mac: Check permissions with 'ls -la' and 'df -h'`,
+          `   - All: Ensure sufficient disk space`,
+          ``,
+          `This tool requires project-isolated storage and will NOT use system directories.`,
+        ].join('\n');
 
-        // Try alternative approach for VS Code extensions
-        const homeDir = process.env.USERPROFILE || process.env.HOME;
-        if (homeDir) {
-          const fallbackDir = path.join(homeDir, '.anubis', 'data');
-          const fallbackDbPath = path.join(fallbackDir, 'workflow.db');
-
-          try {
-            if (!fs.existsSync(fallbackDir)) {
-              fs.mkdirSync(fallbackDir, { recursive: true });
-            }
-
-            // Update database URL to use fallback path
-            this.databaseUrl = `file:${fallbackDbPath}`;
-            process.env.DATABASE_URL = this.databaseUrl;
-
-            if (this.verbose) {
-              console.log(`✅ Using fallback database path: ${fallbackDbPath}`);
-            }
-          } catch (fallbackError) {
-            throw new Error(
-              `Cannot create database directory. Original: ${dbDir}, Fallback: ${fallbackDir}. Error: ${fallbackError}`,
-            );
-          }
-        } else {
-          throw error;
-        }
+        throw new Error(errorMessage);
       }
     }
 
@@ -281,6 +275,10 @@ export class DependencyManager {
         cwd: this.packageRoot,
         timeout: 60000, // 1 minute timeout
       });
+
+      if (this.verbose) {
+        console.error(`✅ Database migrations completed successfully`);
+      }
     } catch (error) {
       if (this.verbose) {
         console.error('❌ Prisma migrate deploy failed:', error);

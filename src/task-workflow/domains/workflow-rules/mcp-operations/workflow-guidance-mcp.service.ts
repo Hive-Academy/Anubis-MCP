@@ -67,10 +67,16 @@ export class WorkflowGuidanceMcpService {
             type: 'text',
             text: JSON.stringify(
               {
-                roleId: input.roleName,
-                taskId: parseInt(input.taskId),
                 success: true,
-                currentRole: roleGuidance.currentRole,
+                currentRole: {
+                  id: roleGuidance.currentRole.id,
+                  name: roleGuidance.currentRole.name,
+                  description: roleGuidance.currentRole.description,
+                  capabilities: roleGuidance.currentRole.capabilities,
+                  coreResponsibilities:
+                    roleGuidance.currentRole.coreResponsibilities,
+                  keyCapabilities: roleGuidance.currentRole.keyCapabilities,
+                },
                 projectContext: roleGuidance.projectContext,
               },
               null,
@@ -91,8 +97,6 @@ export class WorkflowGuidanceMcpService {
             type: 'text' as const,
             text: JSON.stringify(
               {
-                taskId: parseInt(input.taskId),
-                roleName: input.roleName,
                 success: false,
                 error: {
                   message: error.message,

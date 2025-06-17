@@ -101,19 +101,29 @@ export class RoleTransitionMcpService extends BaseMcpService {
         ),
       ]);
 
+      // Combine and prioritize transitions to eliminate redundancy
+      const recommendedIds = new Set(recommendedTransitions.map((t) => t.id));
+      const transitions = [
+        ...recommendedTransitions.map((t) => ({
+          transitionId: t.id,
+          transitionName: t.transitionName,
+          toRole: t.toRole.name,
+          recommended: true,
+          score: (t as any).recommendationScore || 0.95,
+        })),
+        ...availableTransitions
+          .filter((t) => !recommendedIds.has(t.id))
+          .map((t) => ({
+            transitionId: t.id,
+            transitionName: t.transitionName,
+            toRole: t.toRole.name,
+            recommended: false,
+            score: 0.5,
+          })),
+      ];
+
       return this.buildMinimalResponse({
-        fromRole: input.fromRoleName,
-        availableTransitions: availableTransitions.map((t) => ({
-          transitionId: t.id,
-          transitionName: t.transitionName,
-          toRole: t.toRole.name,
-        })),
-        recommendedTransitions: recommendedTransitions.map((t) => ({
-          transitionId: t.id,
-          transitionName: t.transitionName,
-          toRole: t.toRole.name,
-          score: (t as any).recommendationScore || 0,
-        })),
+        transitions,
       });
     } catch (error) {
       return this.buildErrorResponse(
@@ -202,7 +212,6 @@ export class RoleTransitionMcpService extends BaseMcpService {
         status: result.success ? 'completed' : 'failed',
         message: result.message,
         newRoleId: result.newRoleId,
-        handoffMessage: input.handoffMessage,
       });
     } catch (error) {
       return this.buildErrorResponse(

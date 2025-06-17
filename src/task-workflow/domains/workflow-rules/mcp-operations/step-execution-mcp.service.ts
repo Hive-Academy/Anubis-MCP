@@ -167,10 +167,12 @@ export class StepExecutionMcpService extends BaseMcpService {
           description: guidance.step.description,
           stepType: guidance.step.stepType,
         },
-        mcpActions: guidance.mcpActions,
-        qualityChecklist: guidance.qualityChecklist,
-        stepByStep: guidance.stepByStep,
         approach: guidance.approach,
+        approachGuidance: {
+          stepByStep: guidance.stepByStep,
+        },
+        qualityChecklist: guidance.qualityChecklist,
+        mcpActions: guidance.mcpActions,
       });
     } catch (error) {
       return this.buildErrorResponse(

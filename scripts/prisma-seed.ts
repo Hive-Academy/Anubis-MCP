@@ -193,6 +193,9 @@ async function seedWorkflowRoles(jsonBasePath: string) {
           description: roleDefinition.description,
           priority: roleDefinition.priority,
           isActive: roleDefinition.isActive,
+          capabilities: roleDefinition.capabilities,
+          coreResponsibilities: roleDefinition.coreResponsibilities,
+          keyCapabilities: roleDefinition.keyCapabilities,
         },
       });
 

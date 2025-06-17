@@ -108,17 +108,10 @@ export class McpOperationExecutionMcpService extends BaseMcpService {
 
       // ✅ MINIMAL RESPONSE: Only essential operation result
       return this.buildMinimalResponse({
-        serviceName: input.serviceName,
-        operation: input.operation,
         success: operationResult.success,
         data: operationResult.data,
         ...(operationResult.error && { error: operationResult.error }),
-        metadata: {
-          operation: input.operation,
-          serviceValidated: true,
-          supportedOperations: supportedOperations,
-          responseTime: operationResult.duration,
-        },
+        ...(operationResult.duration && { duration: operationResult.duration }),
       });
     } catch (error) {
       return this.buildErrorResponse(

@@ -144,6 +144,18 @@ export class WorkflowGuidanceService extends ConfigurableService<GuidanceConfig>
   ): Promise<WorkflowRole | null> {
     return await this.prisma.workflowRole.findUnique({
       where: { name: roleName },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        priority: true,
+        isActive: true,
+        capabilities: true,
+        coreResponsibilities: true,
+        keyCapabilities: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
   }
 

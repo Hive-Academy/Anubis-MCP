@@ -55,7 +55,7 @@ export class WorkflowBootstrapService {
 
       // Single transaction for workflow execution creation
       const result = await this.prisma.$transaction(async (tx) => {
-        // Step 1: Get role with full context
+        // Step 1: Get role with full context including capabilities
         const role = await tx.workflowRole.findUnique({
           where: { name: input.initialRole },
           select: {
@@ -64,6 +64,9 @@ export class WorkflowBootstrapService {
             description: true,
             priority: true,
             isActive: true,
+            capabilities: true,
+            coreResponsibilities: true,
+            keyCapabilities: true,
           },
         });
 
@@ -131,6 +134,9 @@ export class WorkflowBootstrapService {
                 description: true,
                 priority: true,
                 isActive: true,
+                capabilities: true,
+                coreResponsibilities: true,
+                keyCapabilities: true,
               },
             },
             currentStep: {

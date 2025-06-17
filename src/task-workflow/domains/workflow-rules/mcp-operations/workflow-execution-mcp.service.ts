@@ -334,9 +334,6 @@ export class WorkflowExecutionMcpService {
             type: 'text' as const,
             text: JSON.stringify(
               {
-                operation: input.operation,
-                taskId: input.taskId,
-                executionId: input.executionId,
                 success: true,
                 data: result,
                 timestamp: new Date().toISOString(),
@@ -358,9 +355,6 @@ export class WorkflowExecutionMcpService {
             type: 'text' as const,
             text: JSON.stringify(
               {
-                operation: input.operation,
-                taskId: input.taskId,
-                executionId: input.executionId,
                 success: false,
                 error: {
                   message: errorMessage,

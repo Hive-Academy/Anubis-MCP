@@ -10,6 +10,11 @@ model WorkflowRole {
   priority    Int      @default(0) // For role hierarchy and delegation order
   isActive    Boolean  @default(true)
   
+  // Enhanced role capabilities from JSON files
+  capabilities        Json?    // Structured capabilities object (e.g., strategicArchitectureAnalysis: true)
+  coreResponsibilities Json?   // Array of core responsibilities
+  keyCapabilities     Json?    // Array of key capabilities
+  
   // Relationships
   steps       WorkflowStep[]
   fromTransitions RoleTransition[] @relation("FromRole")
