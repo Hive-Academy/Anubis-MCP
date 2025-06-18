@@ -1,0 +1,20 @@
+<div class="text-center mb-16">
+  {{#if badge}}
+  <div class="inline-flex items-center px-6 py-3 rounded-full {{badge.class}} mb-8">
+    <i class="{{badge.icon}} {{badge.color}} mr-3"></i>
+    <span class="text-sm font-medium">{{badge.text}}</span>
+  </div>
+  {{/if}}
+  <h2 class="text-4xl md:text-5xl font-bold mb-6">
+    {{#if gradientText}}
+    <span class="gradient-text">{{title}}</span>
+    {{else}}
+    {{title}}
+    {{/if}}
+  </h2>
+  {{#if subtitle}}
+  <p class="text-xl text-slate-300 max-w-3xl mx-auto">
+    {{{subtitle}}}
+  </p>
+  {{/if}}
+</div>
