@@ -49,8 +49,7 @@
       "approach": "Analyze project systematically then create task with findings",
       "approachGuidance": {
         "stepByStep": [
-          "Analyze project structure and identify tech stack",
-          "Test current functionality to verify capabilities",
+          "Combined with the memory bank files analysis, Analyze project structure and identify tech stack",
           "Extract clear requirements from user request",
           "Create task with executionId and codebase analysis",
           "Update task status to 'in-progress'"
