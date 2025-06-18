@@ -2,7 +2,12 @@
   "mcpServers": {
     "anubis": {
       "command": "npx",
-      "args": ["--yes", "@hive-academy/anubis@latest"]
+      "args": [
+        "--yes",
+        "@hive-academy/anubis@latest"
+      ],
+      "disabled": true,
+      "alwaysAllow": []
     }
   }
 }
