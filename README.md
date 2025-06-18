@@ -1,4 +1,4 @@
-# 🏺 Anubis - Divine Guidance for AI Workflows
+# 𓂀𓁢𓋹𝔸ℕ𝕌𝔹𝕀𝕊𓋹𓁢𓂀 - Divine Guidance for AI Workflows
 
 **Anubis is the divine guide for AI workflows - the first MCP-compliant system that embeds intelligent guidance directly into each step, ensuring your AI agents follow complex development processes consistently and reliably.**
 
@@ -10,12 +10,6 @@ _Transform chaotic development into organized, quality-driven workflows with MCP
 [![MCP Server](https://img.shields.io/badge/MCP-Server-blue?style=for-the-badge&logo=docker)](https://hub.docker.com/r/hiveacademy/anubis)
 
 - **NPM Package**: [@hive-academy/anubis](https://www.npmjs.com/package/@hive-academy/anubis)
-
-A sophisticated **Model Context Protocol (MCP) server** that embeds intelligent guidance directly into each workflow step, ensuring AI agents follow complex development processes consistently and reliably. Built with NestJS v11.0.1 + Prisma v6.9.0 + @rekog/mcp-nest v1.5.2, this system follows MCP protocol standards by providing divine guidance instead of execution.
-
-## 🏆 **ENTERPRISE-GRADE MCP WORKFLOW SYSTEM**
-
-**✅ PRODUCTION READY**: Version 1.0.15 with full MCP protocol compliance and enterprise-grade architecture.
 
 ## 🚀 **QUICK START**
 
@@ -41,13 +35,6 @@ npm >= 8.0.0
 }
 ```
 
-**Benefits:**
-
-- ✅ Zero installation required
-- ✅ Automatic dependency management (Prisma client generation)
-- ✅ Always latest version (v1.0.15)
-- ✅ Project isolation (each project gets its own database)
-
 ### **Docker Setup**
 
 ```json
@@ -68,26 +55,12 @@ npm >= 8.0.0
 }
 ```
 
-### **Local Development Setup**
+**Benefits:**
 
-```bash
-# Clone the repository
-git clone https://github.com/Hive-Academy/Anubis-MCP.git
-cd Anubis
-
-# Install dependencies
-npm install
-
-# Setup database (automatic Prisma client generation)
-npx prisma generate
-npx prisma db push
-
-# Start development server
-npm run start:dev
-
-# Alternative: Start with debugging
-npm run start:debug
-```
+- ✅ Zero installation required
+- ✅ Automatic dependency management (Prisma client generation)
+- ✅ Always latest version (v1.0.15)
+- ✅ Project isolation (each project gets its own database)
 
 ## 🎭 **AI ROLE SPECIALIZATIONS**
 
