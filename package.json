@@ -38,12 +38,10 @@
   },
   "prisma": {
     "schema": "./prisma",
-    "seed": "node scripts/prisma-seed.js"
+    "seed": "ts-node scripts/prisma-seed.ts"
   },
   "files": [
     "dist/**/*",
-    "enhanced-workflow-rules/**/*",
-    "prisma/**/*",
     "data-template/**/*",
     "package.json",
     "README.md"

@@ -159,21 +159,7 @@ export class StepExecutionMcpService extends BaseMcpService {
       });
 
       // Return clean guidance without artificial fields
-      return this.buildMinimalResponse({
-        success: true,
-        stepInfo: {
-          stepId: currentStepId,
-          name: guidance.step.name,
-          description: guidance.step.description,
-          stepType: guidance.step.stepType,
-        },
-        approach: guidance.approach,
-        approachGuidance: {
-          stepByStep: guidance.stepByStep,
-        },
-        qualityChecklist: guidance.qualityChecklist,
-        mcpActions: guidance.mcpActions,
-      });
+      return this.buildMinimalResponse(guidance);
     } catch (error) {
       return this.buildErrorResponse(
         'Failed to get step guidance',
@@ -241,6 +227,7 @@ export class StepExecutionMcpService extends BaseMcpService {
         },
         nextGuidance: {
           hasNextStep: Boolean(completionResult),
+          nextStep: completionResult.nextStep,
         },
       });
     } catch (error) {
@@ -353,12 +340,11 @@ export class StepExecutionMcpService extends BaseMcpService {
         taskId: input.id,
         roleId: input.roleId,
         nextStep: nextStep
-          ? {
+          ? this.stepGuidanceService.getStepGuidance({
+              taskId: input.id,
+              roleId: nextStep.roleId,
               stepId: nextStep.id,
-              name: nextStep.name,
-              description: nextStep.description,
-              sequenceNumber: nextStep.sequenceNumber,
-            }
+            })
           : null,
         status: nextStep ? 'step_available' : 'no_steps_available',
       });

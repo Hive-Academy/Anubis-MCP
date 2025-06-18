@@ -40,18 +40,6 @@ const ExecutionStateSchema = z
   })
   .describe('Current workflow execution state');
 
-// Task Creation Data Schema - For auto-created tasks
-const TaskCreationDataSchema = z
-  .object({
-    name: z.string().optional(),
-    description: z.string().optional(),
-    requirements: z.string().optional(),
-    codebaseAnalysis: z.record(z.string(), z.unknown()).optional(),
-    gitBranch: z.string().optional(),
-    priority: z.enum(['Low', 'Medium', 'High', 'Critical']).optional(),
-  })
-  .describe('Data used for automatic task creation');
-
 // Execution Context Schema - Additional context for execution
 const ExecutionContextSchema = z
   .object({
@@ -61,7 +49,6 @@ const ExecutionContextSchema = z
     initialRoleName: z.string().optional(),
     firstStepName: z.string().optional(),
     workflowPhase: z.string().optional(),
-    taskCreationData: TaskCreationDataSchema.optional(),
   })
   .describe('Additional execution context');
 
@@ -83,8 +70,6 @@ const UpdateDataSchema = z
     currentStepId: z.string().optional(),
     executionState: ExecutionStateSchema.optional(),
     completedAt: z.string().optional(), // ISO date string
-    autoCreatedTask: z.boolean().optional(),
-    taskCreationData: TaskCreationDataSchema.optional(),
     stepsCompleted: z.number().optional(),
     totalSteps: z.number().optional(),
     progressPercentage: z.number().min(0).max(100).optional(),
@@ -128,7 +113,6 @@ const ContextUpdatesSchema = z
     initialRoleName: z.string().optional(),
     firstStepName: z.string().optional(),
     workflowPhase: z.string().optional(),
-    taskCreationData: TaskCreationDataSchema.optional(),
     // Allow additional dynamic context fields
   })
   .passthrough()
@@ -268,7 +252,6 @@ export class WorkflowExecutionMcpService {
         executionId: input.executionId,
         roleName: input.roleName,
         executionMode: input.executionMode,
-        autoCreatedTask: input.autoCreatedTask,
         executionContext: input.executionContext,
         updateData: input.updateData,
         stepId: input.stepId,

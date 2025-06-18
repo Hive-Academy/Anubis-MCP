@@ -93,33 +93,6 @@ export class StepQueryService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Get step with all MCP execution data in single query
-   */
-  async getStepWithExecutionData(
-    stepId: string,
-  ): Promise<StepWithExecutionData | null> {
-    const result = await this.prisma.workflowStep.findUnique({
-      where: { id: stepId },
-      include: {
-        mcpActions: {
-          orderBy: { sequenceOrder: 'asc' },
-        },
-        stepDependencies: true,
-        stepGuidance: true,
-        qualityChecks: {
-          orderBy: { sequenceOrder: 'asc' },
-        },
-        stepProgress: {
-          take: 1,
-          orderBy: { startedAt: 'desc' },
-        },
-      },
-    });
-
-    return result as StepWithExecutionData | null;
-  }
-
-  /**
    * Get next available step for execution
    */
   async getNextAvailableStep(
