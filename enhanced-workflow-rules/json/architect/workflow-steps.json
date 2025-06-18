@@ -9,8 +9,9 @@
       "approach": "Iterative planning with immediate subtask creation to preserve context",
       "approachGuidance": {
         "stepByStep": [
-          "Execute TaskOperations.get to retrieve comprehensive task context",
-          "Check for existing plan using PlanningOperations.get_plan",
+          "Check if task context is already available in current execution history",
+          "If context is available, analyze and validate its completeness",
+          "Only if context is missing or incomplete, execute TaskOperations.get",
           "Create or update plan based on actual task requirements",
           "Create subtasks immediately while context is fresh",
           "Focus on implementation work, exclude documentation tasks"
@@ -18,7 +19,7 @@
       },
       "qualityChecklist": [
         "Task context and requirements understood",
-        "Implementation plan created based on actual needs", 
+        "Implementation plan created based on actual needs",
         "Subtasks created focusing on real implementation work",
         "No documentation subtasks created",
         "Plan and subtasks validated against task goals"

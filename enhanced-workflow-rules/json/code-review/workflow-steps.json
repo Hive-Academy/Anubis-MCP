@@ -9,7 +9,9 @@
       "approach": "Context-driven analysis with adaptive testing strategy",
       "approachGuidance": {
         "stepByStep": [
-          "Execute TaskOperations.get to retrieve implementation context",
+          "Check if task context is already available in current execution history",
+          "If context is available, analyze and validate its completeness",
+          "Only if context is missing or incomplete, execute TaskOperations.get to retrieve implementation context and codebase analysis",
           "Analyze task type, tech stack, and implementation scope",
           "Identify highest-risk areas and integration points",
           "Formulate testing strategy appropriate for changes made",

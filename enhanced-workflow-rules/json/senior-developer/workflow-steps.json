@@ -9,8 +9,11 @@
       "approach": "Retrieve comprehensive context and setup development environment",
       "approachGuidance": {
         "stepByStep": [
-          "Execute TaskOperations.get to retrieve task context and codebase analysis",
-          "Execute PlanningOperations.get_plan to get implementation plan and subtasks",
+          "Check if task context is already available in current execution history",
+          "If context is available, analyze and validate its completeness",
+          "Only if context is missing or incomplete, execute TaskOperations.get to retrieve implementation context and codebase analysis",
+          "Check if implementation plan context is already available in current execution history",
+          "Only if context is missing or incomplete, Execute PlanningOperations.get_plan to get implementation plan and subtasks",
           "Extract architect's strategic guidance and implementation specifics",
           "Setup development environment following verified tech stack",
           "Validate implementation readiness without redundant analysis"

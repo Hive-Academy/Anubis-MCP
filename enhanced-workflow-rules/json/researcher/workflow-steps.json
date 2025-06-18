@@ -6,33 +6,24 @@
       "sequenceNumber": 1,
       "isRequired": true,
       "stepType": "ACTION",
-      "approach": "Get comprehensive task context including codebase analysis",
+      "approach": "Intelligently assess task context availability and retrieve if needed",
       "approachGuidance": {
         "stepByStep": [
-          "Execute TaskOperations.get to retrieve task context",
-          "Access existing codebase analysis and findings",
+          "Check if task context is already available in current execution history",
+          "If context is available, analyze and validate its completeness",
+          "Only if context is missing or incomplete, execute TaskOperations.get",
           "Review business and technical requirements",
           "Identify quality baselines and constraints"
         ]
       },
       "qualityChecklist": [
-        "Complete task context retrieved",
-        "Existing codebase analysis accessed",
+        "Task context availability intelligently assessed",
+        "Existing context validated for completeness",
         "Requirements and constraints documented",
         "Quality baselines identified"
       ],
       "conditions": [],
-      "actions": [
-        {
-          "name": "get_task_context",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "TaskOperations",
-            "operation": "get"
-          },
-          "sequenceOrder": 1
-        }
-      ]
+      "actions": []
     },
     {
       "name": "analyze_codebase_foundation",
@@ -109,27 +100,40 @@
       "actions": []
     },
     {
-      "name": "conduct_research",
-      "description": "Research critical questions and gather evidence",
+      "name": "conduct_research_and_report",
+      "description": "Research critical questions and generate comprehensive findings report",
       "sequenceNumber": 4,
       "isRequired": true,
       "stepType": "ACTION",
-      "approach": "Systematic research execution with evidence collection",
+      "approach": "Comprehensive research and structured report generation with actionable insights",
       "approachGuidance": {
         "stepByStep": [
-          "Research critical blocking questions first",
-          "Gather evidence from authoritative sources",
-          "Test and validate technical approaches",
-          "Document findings with supporting evidence",
-          "Synthesize results into actionable recommendations"
+          "For each critical question:",
+          "- Use web_search if available to find authoritative documentation",
+          "- Check official GitHub repositories and documentation",
+          "- Analyze NPM or relevant package registries",
+          "- Look for recent blog posts and technical articles",
+          "- Review community discussions and best practices",
+          "- Validate findings through multiple sources",
+          "- Document evidence with links and citations",
+          "- Organize findings by research question priority",
+          "- Provide clear recommendations for implementation",
+          "- Include risk assessment and mitigation strategies",
+          "- Synthesize information into clear, actionable insights",
+          "- Prepare comprehensive handoff for architect role"
         ]
       },
       "qualityChecklist": [
-        "Critical questions researched with evidence",
-        "Technical approaches tested and validated",
-        "Findings documented with sources",
-        "Recommendations synthesized from research",
-        "Evidence supports all conclusions"
+        "Multiple authoritative sources consulted per question",
+        "Latest information validated and cross-referenced",
+        "Technical claims supported by documentation",
+        "Implementation examples and patterns collected",
+        "Community best practices and recommendations gathered",
+        "All findings properly cited and linked",
+        "Findings organized by priority and impact",
+        "Clear implementation recommendations provided",
+        "Risk assessment and mitigation included",
+        "Report prepared for architect handoff"
       ],
       "conditions": [
         {
@@ -144,45 +148,17 @@
           "isRequired": true
         }
       ],
-      "actions": []
-    },
-    {
-      "name": "create_research_report",
-      "description": "Generate comprehensive research report with findings",
-      "sequenceNumber": 5,
-      "isRequired": true,
-      "stepType": "ACTION",
-      "approach": "Structured report generation with actionable insights",
-      "approachGuidance": {
-        "stepByStep": [
-          "Organize findings by research question priority",
-          "Document evidence and sources for each finding",
-          "Provide clear recommendations for implementation",
-          "Include risk assessment and mitigation strategies",
-          "Prepare comprehensive handoff for architect role"
-        ]
-      },
-      "qualityChecklist": [
-        "Findings organized by priority and impact",
-        "Evidence and sources properly documented",
-        "Clear implementation recommendations provided",
-        "Risk assessment and mitigation included",
-        "Report prepared for architect handoff"
-      ],
-      "conditions": [
+      "actions": [
         {
-          "name": "research_completed",
-          "conditionType": "PREVIOUS_STEP_COMPLETED",
-          "logic": {
-            "check": "step_completed",
-            "parameters": {
-              "stepName": "conduct_research"
-            }
+          "name": "create_comprehensive_research_report",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "ResearchOperations",
+            "operation": "create_research"
           },
-          "isRequired": true
+          "sequenceOrder": 1
         }
-      ],
-      "actions": []
+      ]
     },
     {
       "name": "role_transition",
@@ -212,7 +188,7 @@
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "create_research_report"
+              "stepName": "conduct_research_and_report"
             }
           },
           "isRequired": true
