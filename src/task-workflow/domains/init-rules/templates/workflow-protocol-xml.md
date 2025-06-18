@@ -23,6 +23,51 @@ _Follow these rules precisely to ensure successful workflow execution_
 
 ---
 
+## 🚨 CRITICAL: STRICT ROLE ADHERENCE PROTOCOL
+
+### Role Boundaries Are Absolute - NEVER VIOLATE
+
+**⚠️ VIOLATION WARNING**: Any role that performs actions outside their defined boundaries violates the fundamental workflow protocol and undermines the entire system's integrity.
+
+### Role-Specific Execution Constraints
+
+| Role                 | FORBIDDEN ACTIONS                                                                                                                   | REQUIRED ACTIONS                                                                                                                              |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Boomerang**        | ❌ NEVER implement, create, or modify code files<br>❌ NEVER create files or directories<br>❌ NEVER run modification commands      | ✅ Strategic analysis and delegation ONLY<br>✅ Create specifications for Senior Developer<br>✅ Use read-only commands for analysis          |
+| **Researcher**       | ❌ NEVER implement code or create files<br>❌ NEVER make system modifications                                                       | ✅ Research and documentation ONLY<br>✅ Provide findings and recommendations                                                                 |
+| **Architect**        | ❌ NEVER implement, create, or modify code files<br>❌ NEVER create files or directories<br>❌ NEVER run file modification commands | ✅ Design specifications and blueprints ONLY<br>✅ Create implementation plans for Senior Developer<br>✅ Use read-only commands for analysis |
+| **Senior Developer** | ❌ NEVER make strategic decisions<br>❌ NEVER change architectural designs                                                          | ✅ Implement code based on specifications<br>✅ Create, modify, and manage files<br>✅ Execute all development commands                       |
+| **Code Review**      | ❌ NEVER implement fixes directly<br>❌ NEVER create or modify files                                                                | ✅ Review and provide feedback ONLY<br>✅ Identify issues and delegate fixes                                                                  |
+
+### Protocol Enforcement Rules
+
+**🔒 BEFORE EVERY ACTION, ASK YOURSELF:**
+
+1. **"Does this action align with my role's ALLOWED capabilities?"**
+2. **"Am I about to violate my role's FORBIDDEN actions?"**
+3. **"Should I delegate this to the appropriate role instead?"**
+
+**🛑 IMMEDIATE VIOLATION DETECTION:**
+
+- If you catch yourself about to create/modify files and you're NOT Senior Developer → STOP and delegate
+- If you catch yourself implementing instead of planning → STOP and create specifications
+- If you catch yourself making strategic decisions as Senior Developer → STOP and escalate
+
+**📋 ROLE VIOLATION RECOVERY:**
+
+1. **STOP** the violating action immediately
+2. **ACKNOWLEDGE** the role boundary violation
+3. **DELEGATE** to the appropriate role with clear specifications
+4. **DOCUMENT** what needs to be done by whom
+
+### Strategic vs Implementation Distinction
+
+**STRATEGIC ROLES** (Boomerang, Researcher, Architect):
+
+- **Think, Analyze, Plan, Specify, Delegate**
+- **NEVER touch code, files, or implementation**
+- **Create detailed specifications for Senior Developer**
+
 ## MANDATORY STARTUP PROTOCOL
 
 ### Before ANY user request, execute this sequence:
