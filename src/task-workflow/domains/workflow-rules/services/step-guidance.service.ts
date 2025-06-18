@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { StepDataUtils } from '../utils/step-data.utils';
 import {
-  extractMcpActionsWithDynamicParameters,
   extractStreamlinedGuidance,
   StepNotFoundError,
 } from '../utils/step-service-shared.utils';
 import { StepQueryService } from './step-query.service';
+import { RequiredInputExtractorService } from './required-input-extractor.service';
 
 export interface StepGuidanceContext {
   taskId: number;
@@ -23,7 +23,10 @@ export class StepConfigNotFoundError extends Error {
 
 @Injectable()
 export class StepGuidanceService {
-  constructor(private readonly stepQueryService: StepQueryService) {}
+  constructor(
+    private readonly stepQueryService: StepQueryService,
+    private readonly requiredInputService: RequiredInputExtractorService,
+  ) {}
 
   /**
    * 🔥 STREAMLINED SCHEMA: Get MCP actions and step guidance from database
@@ -41,7 +44,15 @@ export class StepGuidanceService {
     }
 
     // Extract MCP actions with dynamic parameter information
-    const mcpActions = extractMcpActionsWithDynamicParameters(step);
+    const mcpActions = step.mcpActions.map((action) => {
+      return {
+        ...action,
+        schema: this.requiredInputService.extractFromServiceSchema(
+          action.serviceName,
+          action.operation,
+        ),
+      };
+    });
 
     // Get guidance from database step data
     const enhancedGuidance = extractStreamlinedGuidance(step);

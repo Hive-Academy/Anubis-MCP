@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ZodSchema } from 'zod';
-import { PrismaService } from '../../../../prisma/prisma.service';
 import { SchemaDefinitionGeneratorService } from './schema-definition-generator.service';
 
 // 🎯 PHASE 4.1: Enhanced schema imports with comprehensive core-workflow coverage
@@ -99,7 +98,6 @@ export class RequiredInputExtractorService {
   };
 
   constructor(
-    private readonly prisma: PrismaService,
     private readonly schemaDefinitionGenerator: SchemaDefinitionGeneratorService,
   ) {}
 
@@ -111,17 +109,8 @@ export class RequiredInputExtractorService {
     operation?: string,
   ): {
     schemaDefinition: string;
-    requiredParameters: string[];
-    optionalParameters: string[];
     validationSchema: ZodSchema | null;
     schemaStructure?: Record<string, any>;
-    extractionMetadata: {
-      serviceName: string;
-      operation: string | undefined;
-      schemaFound: boolean;
-      extractionMethod: string;
-      parametersFound: number;
-    };
   } {
     this.logger.debug(
       `🎯 Extracting schema definition for ${serviceName}.${operation}`,
@@ -129,10 +118,6 @@ export class RequiredInputExtractorService {
 
     try {
       const schema = this.serviceSchemas[serviceName];
-      if (!schema) {
-        this.logger.warn(`❌ No schema found for service: ${serviceName}`);
-        return this.createFallbackSchemaDefinition(serviceName, operation);
-      }
 
       // 🎯 Use the dedicated schema definition generator
       const { schemaDefinition } =
@@ -146,28 +131,14 @@ export class RequiredInputExtractorService {
       const schemaStructure =
         this.schemaDefinitionGenerator.parseZodSchemaToStructure(schema);
 
-      const basicParams = this.getOperationSpecificParameters(
-        serviceName,
-        operation,
-      );
-
       this.logger.debug(
         `✅ Schema definition extraction completed for ${serviceName}.${operation}`,
       );
 
       return {
         schemaDefinition,
-        requiredParameters: basicParams,
-        optionalParameters: [],
         validationSchema: schema,
         schemaStructure,
-        extractionMetadata: {
-          serviceName,
-          operation: operation || 'unknown',
-          schemaFound: true,
-          extractionMethod: 'dedicated-schema-generator',
-          parametersFound: basicParams.length,
-        },
       };
     } catch (error) {
       this.logger.error(
@@ -179,108 +150,6 @@ export class RequiredInputExtractorService {
   }
 
   /**
-   * 🎯 CORE: Extract required inputs from step actions (workflow-specific logic)
-   */
-  extractRequiredInputFromStepActions(
-    stepId: string | null,
-    stepActions: any[],
-  ): string[] {
-    const requiredInputs = new Set<string>();
-
-    // Add essential workflow inputs
-    this.addEssentialWorkflowInputs(requiredInputs);
-
-    // Process each step action
-    stepActions.forEach((action) => {
-      if (action.type === 'MCP_CALL' && action.data?.serviceName) {
-        const serviceParams = this.getOperationSpecificParameters(
-          action.data.serviceName,
-          action.data.operation,
-        );
-        serviceParams.forEach((param) => requiredInputs.add(param));
-      }
-    });
-
-    this.logger.debug(
-      `Extracted ${requiredInputs.size} required inputs for step ${stepId}`,
-    );
-
-    return Array.from(requiredInputs);
-  }
-
-  /**
-   * 🎯 LEGACY: Maintain compatibility with existing workflow guidance extraction
-   */
-  extractRequiredInput(_stepId: string | null, _guidance: any): string[] {
-    // Legacy method - now delegates to step actions extraction
-    this.logger.debug('Using legacy extractRequiredInput method');
-    return ['taskId', 'roleId', 'projectPath'];
-  }
-
-  /**
-   * 🎯 HELPER: Get operation-specific parameters from mapping
-   */
-  private getOperationSpecificParameters(
-    serviceName: string,
-    operation?: string,
-  ): string[] {
-    if (!operation || !this.operationParameterMap[serviceName]) {
-      return [];
-    }
-
-    return this.operationParameterMap[serviceName][operation] || [];
-  }
-
-  /**
-   * 🎯 HELPER: Add essential workflow inputs that are always needed
-   */
-  private addEssentialWorkflowInputs(requiredInputs: Set<string>): void {
-    requiredInputs.add('taskId');
-    requiredInputs.add('roleId');
-    requiredInputs.add('projectPath');
-  }
-
-  /**
-   * 🎯 FALLBACK: Create fallback schema definition when no schema is found
-   */
-  private createFallbackSchemaDefinition(
-    serviceName: string,
-    operation?: string,
-  ): {
-    schemaDefinition: string;
-    requiredParameters: string[];
-    optionalParameters: string[];
-    validationSchema: null;
-    schemaStructure?: Record<string, any>;
-    extractionMetadata: any;
-  } {
-    const operationParams = this.getOperationSpecificParameters(
-      serviceName,
-      operation,
-    );
-    const fallbackParams =
-      operationParams.length > 0
-        ? operationParams
-        : ['operation', 'executionData'];
-
-    return {
-      schemaDefinition: `No schema found for ${serviceName}.${operation}. Use basic parameters: ${fallbackParams.join(', ')}`,
-      requiredParameters: fallbackParams,
-      optionalParameters: [],
-      validationSchema: null,
-      schemaStructure: undefined,
-      extractionMetadata: {
-        serviceName,
-        operation: operation || 'unknown',
-        schemaFound: false,
-        extractionMethod: 'fallback-definition',
-        parametersFound: fallbackParams.length,
-        warning: `No schema found for ${serviceName}, using fallback parameters`,
-      },
-    };
-  }
-
-  /**
    * 🎯 ERROR: Create error schema definition when extraction fails
    */
   private createErrorSchemaDefinition(
@@ -289,27 +158,14 @@ export class RequiredInputExtractorService {
     error: any,
   ): {
     schemaDefinition: string;
-    requiredParameters: string[];
-    optionalParameters: string[];
     validationSchema: null;
     schemaStructure?: Record<string, any>;
-    extractionMetadata: any;
   } {
     return {
       schemaDefinition: `Error extracting schema for ${serviceName}.${operation}: ${error.message}`,
-      requiredParameters: ['operation', 'executionData'],
-      optionalParameters: [],
+
       validationSchema: null,
       schemaStructure: undefined,
-      extractionMetadata: {
-        serviceName,
-        operation: operation || 'unknown',
-        schemaFound: false,
-        extractionMethod: 'error-fallback',
-        parametersFound: 2,
-        error: error.message,
-        warning: 'Schema extraction failed, using minimal fallback parameters',
-      },
     };
   }
 }

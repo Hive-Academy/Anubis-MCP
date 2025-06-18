@@ -125,38 +125,6 @@ export interface MinimalResponse<T = any> {
   metadata?: any;
 }
 
-// NOTE: buildMinimalResponse and buildErrorResponse moved to mcp-response.utils.ts
-// Use BaseMcpService.buildMinimalResponse() instead
-
-/**
- * Build guidance response from database data - Updated for streamlined schema
- */
-export function buildGuidanceFromDatabase(stepData: any): any {
-  if (!stepData) return null;
-
-  return {
-    id: stepData.id,
-    name: stepData.name || 'Unnamed Step',
-    description: stepData.description || '',
-    // Note: In streamlined schema, behavioral context and approach guidance
-    // are handled differently through StepGuidance and QualityCheck models
-    behavioralContext: {
-      approach: stepData.approach || 'Execute step according to guidance',
-      principles: ['Follow MCP protocol', 'Validate all operations'],
-      methodology: 'Structured step execution',
-    },
-    approachGuidance: {
-      stepByStep: ['Execute step according to guidance'],
-      validationSteps: ['Verify completion'],
-      errorHandling: ['Handle errors appropriately'],
-    },
-    qualityChecklist: [], // Will be populated from QualityCheck models
-    actionData: {}, // Will be populated from McpAction models
-    sequenceNumber: stepData.sequenceNumber || 0,
-    roleId: stepData.roleId || null,
-  };
-}
-
 // ===================================================================
 // 🚨 ERROR HANDLING UTILITIES - CONSOLIDATED
 // ===================================================================
@@ -185,64 +153,6 @@ export function logStepServiceError(
   logger.error(`[${service}] ${operation} failed: ${errorMessage}`, logContext);
 }
 
-/**
- * Handle step service operation with consistent error handling
- */
-export async function handleStepServiceOperation<T>(
-  logger: Logger,
-  service: string,
-  operation: string,
-  operationFn: () => Promise<T>,
-  context?: any,
-): Promise<T> {
-  try {
-    return await operationFn();
-  } catch (error) {
-    logStepServiceError(logger, error, service, operation, context);
-    throw error;
-  }
-}
-
-// ===================================================================
-// 🔍 MCP ACTION EXTRACTION UTILITIES - CONSOLIDATED
-// ===================================================================
-
-/**
- * Extract MCP actions with dynamic parameters
- */
-export function extractMcpActionsWithDynamicParameters(actionData: any): Array<{
-  operation: string;
-  serviceName: string;
-  parameters: Record<string, any>;
-  description: string;
-}> {
-  if (!actionData?.mcpActions) return [];
-
-  const actions = Array.isArray(actionData.mcpActions)
-    ? actionData.mcpActions
-    : [actionData.mcpActions];
-
-  return actions.map((action: any) => ({
-    operation: action.operation || 'unknown',
-    serviceName: action.serviceName || 'unknown',
-    parameters: safeJsonCast(action.parameters) || {},
-    description: action.description || '',
-  }));
-}
-
-/**
- * Validate MCP action structure
- */
-export function validateMcpAction(action: unknown): boolean {
-  return !!(
-    action &&
-    typeof action === 'object' &&
-    action !== null &&
-    'operation' in action &&
-    'serviceName' in action
-  );
-}
-
 // ===================================================================
 // 🔧 STREAMLINED SCHEMA UTILITIES - NEW
 // ===================================================================
@@ -253,11 +163,9 @@ export function validateMcpAction(action: unknown): boolean {
 export function extractStreamlinedGuidance(stepData: {
   stepGuidance?: { stepByStep: any } | null;
   qualityChecks?: Array<{ criterion: string; sequenceOrder: number }>;
-  mcpActions?: Array<{ name: string; serviceName: string; operation: string }>;
 }): {
   stepByStep: string[];
   qualityChecklist: string[];
-  mcpActions: Array<{ name: string; serviceName: string; operation: string }>;
 } {
   let stepByStep: string[] = [];
 
@@ -279,19 +187,9 @@ export function extractStreamlinedGuidance(stepData: {
         .map((check) => check.criterion)
     : [];
 
-  // Extract MCP actions
-  const mcpActions = stepData.mcpActions
-    ? stepData.mcpActions.map((action) => ({
-        name: action.name,
-        serviceName: action.serviceName,
-        operation: action.operation,
-      }))
-    : [];
-
   return {
     stepByStep,
     qualityChecklist,
-    mcpActions,
   };
 }
 
