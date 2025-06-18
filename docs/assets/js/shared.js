@@ -3,9 +3,11 @@ gsap.registerPlugin(ScrollTrigger);
 
 // Initialize animations when DOM is loaded
 document.addEventListener('DOMContentLoaded', function () {
-  initializeTheme();
-  initializeAnimations();
-  initializeInteractions();
+  setTimeout(() => {
+    initializeTheme();
+    initializeAnimations();
+    initializeInteractions();
+  }, 200);
 });
 
 function initializeAnimations() {
