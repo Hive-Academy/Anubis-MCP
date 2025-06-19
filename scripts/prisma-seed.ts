@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 /**
- * Prisma Seed Script for Anubis
+ * Prisma Seed Script for Anubis - Updated for Streamlined Schema
  *
  * This script seeds the database with essential workflow rules, roles, steps, and transitions.
- * It's designed to work in both development and production environments, including Docker.
+ * It's designed to work with the new streamlined schema structure.
  *
  * Usage:
  * - Development: npm run db:seed
@@ -12,13 +12,7 @@
  * - Docker: Automatically run during build/startup
  */
 
-import {
-  PrismaClient,
-  RoleType,
-  StepType,
-  ConditionType,
-  ActionType,
-} from '../generated/prisma';
+import { PrismaClient, StepType } from '../generated/prisma';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -35,31 +29,35 @@ interface RoleDefinition {
   capabilities: Record<string, boolean>;
   coreResponsibilities: string[];
   keyCapabilities: string[];
-  executionProtocol: string;
-  behavioralContext: {
-    approachMethodology: string;
-    decisionMakingPrinciples: string[];
-    qualityStandards: string[];
-    [key: string]: any;
-  };
 }
 
 interface WorkflowStep {
   name: string;
-  displayName: string;
   description: string;
   sequenceNumber: number;
   isRequired: boolean;
-  estimatedTime: string;
   stepType: string;
-  behavioralContext: Record<string, any>;
-  approachGuidance: Record<string, any>;
+  approach: string;
+  approachGuidance: {
+    stepByStep: string[];
+  };
   qualityChecklist: string[];
-  conditions: any[];
-  actions: any[];
-  triggerReport: boolean;
-  reportType?: string;
-  reportTemplate?: string;
+  conditions: Array<{
+    name: string;
+    conditionType: string;
+    logic: any;
+    isRequired: boolean;
+  }>;
+  actions: Array<{
+    name: string;
+    actionType: string;
+    actionData: {
+      serviceName: string;
+      operation: string;
+      requiredParameters?: string[];
+    };
+    sequenceOrder: number;
+  }>;
 }
 
 interface RoleTransition {
@@ -103,74 +101,18 @@ function getJsonBasePath(): string {
   );
 }
 
-// Helper function to convert string to enum
-function parseRoleType(roleType: string): RoleType {
-  switch (roleType.toUpperCase()) {
-    case 'WORKFLOW':
-      return RoleType.WORKFLOW;
-    case 'SPECIALIST':
-      return RoleType.SPECIALIST;
-    case 'QUALITY_GATE':
-      return RoleType.QUALITY_GATE;
-    default:
-      return RoleType.WORKFLOW;
-  }
-}
-
 function parseStepType(stepType: string): StepType {
   switch (stepType.toUpperCase()) {
-    case 'VALIDATION':
-      return StepType.VALIDATION;
     case 'ACTION':
       return StepType.ACTION;
-    case 'DECISION':
-      return StepType.DECISION;
-    case 'DELEGATION':
-      return StepType.DELEGATION;
     case 'ANALYSIS':
       return StepType.ANALYSIS;
-    case 'REPORTING':
-      return StepType.REPORTING;
+    case 'DECISION':
+      return StepType.ACTION; // Map DECISION to ACTION for streamlined schema
+    case 'DELEGATION':
+      return StepType.ACTION; // Map DELEGATION to ACTION for streamlined schema
     default:
       return StepType.ACTION;
-  }
-}
-
-function parseConditionType(conditionType: string): ConditionType {
-  switch (conditionType.toUpperCase()) {
-    case 'CONTEXT_CHECK':
-      return ConditionType.CONTEXT_CHECK;
-    case 'FILE_EXISTS':
-      return ConditionType.FILE_EXISTS;
-    case 'TASK_STATUS':
-      return ConditionType.TASK_STATUS;
-    case 'GIT_STATUS':
-      return ConditionType.GIT_STATUS;
-    case 'PREVIOUS_STEP_COMPLETED':
-      return ConditionType.PREVIOUS_STEP_COMPLETED;
-    case 'CUSTOM_LOGIC':
-      return ConditionType.CUSTOM_LOGIC;
-    default:
-      return ConditionType.CONTEXT_CHECK;
-  }
-}
-
-function parseActionType(actionType: string): ActionType {
-  switch (actionType.toUpperCase()) {
-    case 'COMMAND':
-      return ActionType.COMMAND;
-    case 'MCP_CALL':
-      return ActionType.MCP_CALL;
-    case 'VALIDATION':
-      return ActionType.VALIDATION;
-    case 'REMINDER':
-      return ActionType.REMINDER;
-    case 'FILE_OPERATION':
-      return ActionType.FILE_OPERATION;
-    case 'REPORT_GENERATION':
-      return ActionType.REPORT_GENERATION;
-    default:
-      return ActionType.MCP_CALL;
   }
 }
 
@@ -194,9 +136,18 @@ async function resetDatabase() {
     // Delete in correct order to handle foreign key constraints
     await prisma.workflowStepProgress.deleteMany();
     await prisma.workflowExecution.deleteMany();
-    await prisma.projectBehavioralProfile.deleteMany();
-    await prisma.stepAction.deleteMany();
-    await prisma.stepCondition.deleteMany();
+
+    // Delete structured workflow data
+    await prisma.transitionDeliverable.deleteMany();
+    await prisma.transitionContext.deleteMany();
+    await prisma.transitionValidation.deleteMany();
+    await prisma.transitionRequirement.deleteMany();
+    await prisma.transitionCondition.deleteMany();
+    await prisma.stepDependency.deleteMany();
+    await prisma.mcpAction.deleteMany();
+    await prisma.qualityCheck.deleteMany();
+    await prisma.stepGuidance.deleteMany();
+
     await prisma.workflowStep.deleteMany();
     await prisma.roleTransition.deleteMany();
     await prisma.workflowRole.deleteMany();
@@ -239,18 +190,12 @@ async function seedWorkflowRoles(jsonBasePath: string) {
       const createdRole = await prisma.workflowRole.create({
         data: {
           name: roleDefinition.name,
-          displayName: roleDefinition.displayName,
           description: roleDefinition.description,
           priority: roleDefinition.priority,
           isActive: roleDefinition.isActive,
-          roleType: parseRoleType(roleDefinition.roleType),
-          capabilities: {
-            ...roleDefinition.capabilities,
-            coreResponsibilities: roleDefinition.coreResponsibilities,
-            keyCapabilities: roleDefinition.keyCapabilities,
-            executionProtocol: roleDefinition.executionProtocol,
-            behavioralContext: roleDefinition.behavioralContext,
-          },
+          capabilities: roleDefinition.capabilities,
+          coreResponsibilities: roleDefinition.coreResponsibilities,
+          keyCapabilities: roleDefinition.keyCapabilities,
         },
       });
 
@@ -290,50 +235,80 @@ async function seedWorkflowSteps(jsonBasePath: string) {
 
     for (const step of stepsData.workflowSteps) {
       try {
+        // Create the main workflow step
         const createdStep = await prisma.workflowStep.create({
           data: {
             roleId: role.id,
             name: step.name,
-            displayName: step.displayName,
             description: step.description,
             sequenceNumber: step.sequenceNumber,
             isRequired: step.isRequired,
-            estimatedTime: step.estimatedTime,
             stepType: parseStepType(step.stepType),
-            behavioralContext: step.behavioralContext,
-            approachGuidance: step.approachGuidance,
-            qualityChecklist: step.qualityChecklist,
-            triggerReport: step.triggerReport,
-            reportType: step.reportType,
-            reportTemplate: step.reportTemplate,
+            approach: step.approach || 'Execute step according to guidance',
           },
         });
 
-        // Create step conditions
-        if (step.conditions && step.conditions.length > 0) {
-          for (const condition of step.conditions) {
-            await prisma.stepCondition.create({
+        // Create step guidance
+        if (
+          step.approachGuidance?.stepByStep &&
+          step.approachGuidance.stepByStep.length > 0
+        ) {
+          await prisma.stepGuidance.create({
+            data: {
+              stepId: createdStep.id,
+              stepByStep: step.approachGuidance.stepByStep,
+            },
+          });
+        }
+
+        // Create quality checks
+        if (step.qualityChecklist && step.qualityChecklist.length > 0) {
+          for (let i = 0; i < step.qualityChecklist.length; i++) {
+            await prisma.qualityCheck.create({
               data: {
                 stepId: createdStep.id,
-                name: condition.name,
-                conditionType: parseConditionType(condition.conditionType),
-                logic: condition.logic,
+                criterion: step.qualityChecklist[i],
+                sequenceOrder: i + 1,
               },
             });
           }
         }
 
-        // Create step actions
+        // Create MCP actions
         if (step.actions && step.actions.length > 0) {
           for (const action of step.actions) {
-            await prisma.stepAction.create({
-              data: {
-                stepId: createdStep.id,
-                name: action.name,
-                actionType: parseActionType(action.actionType),
-                actionData: action.actionData,
-              },
-            });
+            if (action.actionType === 'MCP_CALL') {
+              await prisma.mcpAction.create({
+                data: {
+                  stepId: createdStep.id,
+                  name: action.name,
+                  serviceName: action.actionData.serviceName,
+                  operation: action.actionData.operation,
+                  parameters: {
+                    requiredParameters:
+                      action.actionData.requiredParameters || [],
+                  },
+                  sequenceOrder: action.sequenceOrder || 1,
+                },
+              });
+            }
+          }
+        }
+
+        // Create step dependencies
+        if (step.conditions && step.conditions.length > 0) {
+          for (const condition of step.conditions) {
+            if (condition.conditionType === 'PREVIOUS_STEP_COMPLETED') {
+              const dependsOnStep =
+                condition.logic?.parameters?.stepName || 'previous_step';
+              await prisma.stepDependency.create({
+                data: {
+                  stepId: createdStep.id,
+                  dependsOnStep: dependsOnStep,
+                  isRequired: condition.isRequired || true,
+                },
+              });
+            }
           }
         }
 
@@ -385,19 +360,83 @@ async function seedRoleTransitions(jsonBasePath: string) {
           continue;
         }
 
-        await prisma.roleTransition.create({
+        // Create the main role transition
+        const createdTransition = await prisma.roleTransition.create({
           data: {
             fromRoleId: fromRole.id,
             toRoleId: toRole.id,
             transitionName: transition.transitionName,
-            conditions: transition.conditions,
-            requirements: transition.requirements,
-            validationRules: transition.validationRules,
-            handoffGuidance: transition.handoffGuidance,
-            contextPreservation: transition.contextPreservation,
+            description: 'Role transition',
+            handoffMessage: 'Transitioning to next role',
             isActive: transition.isActive,
           },
         });
+
+        // Create transition conditions
+        if (transition.conditions) {
+          for (const [name, value] of Object.entries(transition.conditions)) {
+            await prisma.transitionCondition.create({
+              data: {
+                transitionId: createdTransition.id,
+                name: name,
+                value: Boolean(value),
+              },
+            });
+          }
+        }
+
+        // Create transition requirements
+        if (transition.requirements) {
+          for (const [requirement] of Object.entries(transition.requirements)) {
+            await prisma.transitionRequirement.create({
+              data: {
+                transitionId: createdTransition.id,
+                requirement: requirement,
+              },
+            });
+          }
+        }
+
+        // Create validation criteria
+        if (transition.validationRules) {
+          for (const [criterion] of Object.entries(
+            transition.validationRules,
+          )) {
+            await prisma.transitionValidation.create({
+              data: {
+                transitionId: createdTransition.id,
+                criterion: criterion,
+              },
+            });
+          }
+        }
+
+        // Create context elements
+        if (transition.contextPreservation) {
+          for (const [contextKey] of Object.entries(
+            transition.contextPreservation,
+          )) {
+            await prisma.transitionContext.create({
+              data: {
+                transitionId: createdTransition.id,
+                contextKey: contextKey,
+              },
+            });
+          }
+        }
+
+        // Create deliverables
+        if (transition.handoffGuidance?.expectedDeliverables) {
+          for (const deliverable of transition.handoffGuidance
+            .expectedDeliverables) {
+            await prisma.transitionDeliverable.create({
+              data: {
+                transitionId: createdTransition.id,
+                deliverable: deliverable,
+              },
+            });
+          }
+        }
 
         console.log(`✅ Created transition: ${transition.transitionName}`);
       } catch (error) {
@@ -417,15 +456,19 @@ async function validateSeeding() {
   const roleCount = await prisma.workflowRole.count();
   const stepCount = await prisma.workflowStep.count();
   const transitionCount = await prisma.roleTransition.count();
-  const conditionCount = await prisma.stepCondition.count();
-  const actionCount = await prisma.stepAction.count();
+  const guidanceCount = await prisma.stepGuidance.count();
+  const qualityCheckCount = await prisma.qualityCheck.count();
+  const mcpActionCount = await prisma.mcpAction.count();
+  const dependencyCount = await prisma.stepDependency.count();
 
   console.log(`📊 Seeding Summary:`);
   console.log(`   - Workflow Roles: ${roleCount}`);
   console.log(`   - Workflow Steps: ${stepCount}`);
   console.log(`   - Role Transitions: ${transitionCount}`);
-  console.log(`   - Step Conditions: ${conditionCount}`);
-  console.log(`   - Step Actions: ${actionCount}`);
+  console.log(`   - Step Guidance: ${guidanceCount}`);
+  console.log(`   - Quality Checks: ${qualityCheckCount}`);
+  console.log(`   - MCP Actions: ${mcpActionCount}`);
+  console.log(`   - Step Dependencies: ${dependencyCount}`);
 
   if (roleCount === 0 || stepCount === 0) {
     throw new Error(
@@ -438,7 +481,9 @@ async function validateSeeding() {
 
 async function main() {
   try {
-    console.log('🚀 Starting Anubis database seeding...\n');
+    console.log(
+      '🚀 Starting Anubis database seeding (Streamlined Schema)...\n',
+    );
 
     // Check if already seeded (for production environments)
     const isAlreadySeeded = await checkIfSeeded();

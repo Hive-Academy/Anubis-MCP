@@ -1,91 +1,35 @@
 {
   "workflowSteps": [
     {
-      "name": "mandatory_context_consumption_and_setup",
-      "displayName": "MANDATORY: Context Consumption and Implementation Setup",
-      "description": "Consume existing strategic context and setup implementation environment without re-analysis",
+      "name": "setup_implementation_context",
+      "description": "Consume existing context and setup implementation environment",
       "sequenceNumber": 1,
       "isRequired": true,
-      "estimatedTime": "10-15 minutes",
       "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "MANDATORY use mcp operations to get comprehensive task context including codebase analysis, task description, implementation plan, and all subtasks",
-        "principles": [
-          "WORKFLOW STOPPER: Cannot proceed without consuming existing codebaseAnalysis",
-          "NEVER re-investigate comprehensive analysis boomerang already completed",
-          "ALWAYS consume architect's strategic guidance completely",
-          "ALWAYS retrieve complete implementation plan with all subtasks",
-          "ALWAYS build upon previous discoveries rather than starting from scratch"
-        ],
-        "methodology": "Context consumption with implementation environment preparation and subtask tracking setup",
-        "contextConsumption": {
-          "codebaseAnalysis": "Extract and validate existing codebaseAnalysis from boomerang (technology stack, patterns, integration points)",
-          "strategicGuidance": "Consume architect's strategic guidance (implementation specifics, code examples, quality constraints)",
-          "implementationPlan": "Retrieve complete implementation plan with all subtasks and batches",
-          "subtaskTracking": "Setup subtask completion tracking for progress monitoring",
-          "environmentSetup": "Setup development environment following verified technology stack and patterns",
-          "readinessValidation": "Validate implementation readiness without redundant discovery"
-        },
-        "validationCriteria": {
-          "codebaseAnalysisAvailable": "Technology stack, patterns, and integration points from boomerang",
-          "strategicGuidanceAvailable": "Implementation specifics, code examples, and quality constraints from architect",
-          "implementationPlanAvailable": "Complete plan with all subtasks and strategic guidance",
-          "subtaskTrackingReady": "All subtasks identified and ready for completion tracking",
-          "implementationReadiness": "No redundant analysis required, existing context comprehensive",
-          "contextConsumptionComplete": "Ready to proceed following established patterns"
-        },
-        "environmentSetup": {
-          "gitBranchVerification": "Verify git branch matches task requirements",
-          "dependencyInstallation": "Install dependencies using confirmed technology stack",
-          "developmentServerValidation": "Validate development server and test functionality",
-          "projectStructureConfirmation": "Confirm project structure matches verified analysis"
-        }
-      },
+      "approach": "Retrieve comprehensive context and setup development environment",
       "approachGuidance": {
         "stepByStep": [
-          "Execute TaskOperations.get with comprehensive inclusion (plans, subtasks, analysis)",
-          "Execute PlanningOperations.get_plan with includeBatches: true to get all subtasks",
-          "Extract and validate existing codebaseAnalysis from boomerang (technology stack, patterns, integration points)",
-          "Consume architect's strategic guidance (implementation specifics, code examples, quality constraints)",
-          "Setup subtask completion tracking for all identified subtasks",
-          "Setup development environment following verified technology stack and patterns",
-          "Validate implementation readiness without redundant discovery"
-        ],
-        "contextExtractionSteps": [
-          "Call TaskOperations.get with comprehensive parameters to retrieve all context",
-          "Call PlanningOperations.get_plan with includeBatches: true to get complete implementation plan",
-          "Parse codebaseAnalysis for technology stack, architecture patterns, and integration points",
-          "Extract architect's strategic guidance including implementation specifics and code examples",
-          "Identify all subtasks that need to be completed before code review delegation",
-          "Validate that all necessary context is available for implementation"
-        ],
-        "environmentSetupSteps": [
-          "Verify git branch matches task requirements and is clean",
-          "Install dependencies using confirmed technology stack from analysis",
-          "Validate development server functionality and test environment",
-          "Confirm project structure matches verified analysis patterns"
-        ],
-        "readinessValidationSteps": [
-          "Confirm codebase analysis provides sufficient implementation context",
-          "Verify strategic guidance includes specific implementation details",
-          "Validate all subtasks are identified and trackable",
-          "Validate environment is properly configured for implementation",
-          "Ensure no redundant analysis is required to proceed"
+          "Check if task context is already available in current execution history",
+          "If context is available, analyze and validate its completeness",
+          "Only if context is missing or incomplete, execute TaskOperations.get to retrieve implementation context and codebase analysis",
+          "Check if implementation plan context is already available in current execution history",
+          "Only if context is missing or incomplete, Execute PlanningOperations.get_plan to get implementation plan and subtasks",
+          "Extract architect's strategic guidance and implementation specifics",
+          "Setup development environment following verified tech stack",
+          "Validate implementation readiness without redundant analysis"
         ]
       },
       "qualityChecklist": [
-        "Complete task context retrieved including comprehensive analysis and strategic guidance",
-        "Complete implementation plan retrieved with all subtasks and batches",
-        "Existing codebaseAnalysis consumed (technology stack, architecture, implementation context)",
-        "Architect's strategic guidance applied (implementation specifics, code examples, patterns)",
-        "All subtasks identified and ready for completion tracking",
-        "Development environment configured using verified technology stack",
-        "Implementation readiness validated without redundant analysis"
+        "Complete task context and codebase analysis consumed",
+        "Implementation plan and all subtasks retrieved",
+        "Strategic guidance and code examples understood",
+        "Development environment properly configured",
+        "Implementation readiness validated"
       ],
       "conditions": [],
       "actions": [
         {
-          "name": "acquire_comprehensive_context",
+          "name": "get_task_context",
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "TaskOperations",
@@ -94,313 +38,129 @@
           "sequenceOrder": 1
         },
         {
-          "name": "acquire_implementation_context",
+          "name": "get_implementation_plan",
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "PlanningOperations",
-            "operation": "get_plan",
-            "parameters": {
-              "includeBatches": true
-            }
+            "operation": "get_plan"
           },
           "sequenceOrder": 2
         }
-      ],
-      "triggerReport": true,
-      "reportType": "context_consumption_and_setup",
-      "reportTemplate": "mandatory_context_consumption_validation"
+      ]
     },
     {
-      "name": "iterative_subtask_implementation_cycle",
-      "displayName": "Iterative Subtask Implementation Cycle",
-      "description": "Execute implementation in iterative cycles: get next subtask → implement → test → commit → update status → repeat",
+      "name": "implement_subtasks",
+      "description": "Execute subtasks iteratively with testing and commits",
       "sequenceNumber": 2,
       "isRequired": true,
-      "estimatedTime": "60-120 minutes",
-      "stepType": "ITERATIVE_ACTION",
-      "behavioralContext": {
-        "approach": "Iterative subtask completion with individual commits and validation after each subtask",
-        "principles": [
-          "MANDATORY: Get next subtask using SubtaskOperations.get_next_subtask",
-          "MANDATORY: Update subtask to 'in-progress' before starting implementation",
-          "MANDATORY: Implement following architect's code examples exactly",
-          "MANDATORY: Test each subtask implementation thoroughly",
-          "MANDATORY: Commit changes after each subtask completion",
-          "MANDATORY: Update subtask to 'completed' with evidence after commit",
-          "MANDATORY: Repeat cycle until no more subtasks available"
-        ],
-        "methodology": "Iterative development cycle with individual subtask tracking and commits",
-        "iterativeCycle": {
-          "getNextSubtask": "Use SubtaskOperations.get_next_subtask to get next available subtask",
-          "updateToInProgress": "Update subtask status to 'in-progress' using SubtaskOperations.update_subtask",
-          "implement": "Follow architect's strategic guidance and code examples for implementation",
-          "test": "Test the specific subtask implementation (unit tests, integration tests, manual validation)",
-          "commit": "Commit changes with descriptive message referencing subtask",
-          "updateToCompleted": "Update subtask status to 'completed' with completion evidence",
-          "repeatCycle": "Continue cycle until SubtaskOperations.get_next_subtask returns no more subtasks"
-        },
-        "commitStrategy": {
-          "commitAfterEachSubtask": "Individual commit for each completed subtask",
-          "commitMessageFormat": "feat(subtask): [subtask-name] - [brief description of implementation]",
-          "includeSubtaskReference": "Include subtask ID and name in commit message",
-          "descriptiveMessages": "Clear description of what was implemented in the subtask"
-        },
-        "testingPerSubtask": {
-          "unitTests": "Test the specific functionality implemented in the subtask",
-          "integrationTests": "Test integration points affected by the subtask",
-          "manualValidation": "Validate subtask success criteria are met",
-          "errorScenarios": "Test error handling for the subtask implementation"
-        },
-        "solidPrinciples": {
-          "singleResponsibility": "Each class/service has one clear purpose and reason to change",
-          "openClosed": "Extensible through composition and inheritance, not modification",
-          "liskovSubstitution": "Derived classes substitutable for base classes without breaking functionality",
-          "interfaceSegregation": "Focused interfaces with specific responsibilities and dependencies",
-          "dependencyInversion": "Depend on abstractions and interfaces, not concrete implementations"
-        }
-      },
+      "stepType": "ACTION",
+      "approach": "Iterative subtask completion with individual commits and validation",
       "approachGuidance": {
         "stepByStep": [
-          "Execute SubtaskOperations.get_next_subtask with taskId to get next available subtask",
-          "If subtask available: Update status to 'in-progress' using SubtaskOperations.update_subtask",
-          "Implement the subtask following architect's strategic guidance and code examples exactly",
-          "Test the subtask implementation (unit tests, integration tests, manual validation)",
-          "Commit changes with descriptive message referencing the completed subtask",
-          "Update subtask status to 'completed' with completion evidence using SubtaskOperations.update_subtask",
-          "Repeat from step 1 until SubtaskOperations.get_next_subtask returns no more subtasks"
-        ],
-        "iterativeCycleSteps": [
-          "Call SubtaskOperations.get_next_subtask with taskId parameter",
-          "If subtask returned: Call SubtaskOperations.update_subtask with status 'in-progress'",
-          "Implement subtask following strategic guidance and SOLID, KISS and DRY principles",
-          "Create and run tests specific to the subtask implementation",
-          "Execute git add and git commit with subtask-specific message",
-          "Call SubtaskOperations.update_subtask with status 'completed' and completion evidence",
-          "Loop back to get next subtask until none available"
-        ],
-        "implementationSteps": [
-          "Follow architect's code examples exactly for the specific subtask",
-          "Apply SOLID, KISS and DRY principles consistently in the subtask implementation",
-          "Use established patterns from codebase analysis for consistency",
-          "Implement error handling following discovered patterns for the subtask"
-        ],
-        "testingSteps": [
-          "Create unit tests for the specific subtask functionality",
-          "Run integration tests for affected components",
-          "Perform manual validation of subtask success criteria",
-          "Test error scenarios specific to the subtask implementation"
-        ],
-        "commitSteps": [
-          "Stage changes related to the completed subtask using git add",
-          "Commit with format: 'feat(subtask): [subtask-name] - [implementation description]'",
-          "Include subtask ID and brief description of what was implemented",
-          "Verify commit success before updating subtask status"
+          "Get next subtask using SubtaskOperations.get_next_subtask",
+          "Update subtask status to 'in-progress'",
+          "Implement following architect's guidance and code examples",
+          "Test implementation thoroughly (unit, integration, manual)",
+          "Commit changes with descriptive subtask-specific message",
+          "Update subtask to 'completed' with evidence",
+          "Repeat until no more subtasks available"
         ]
       },
       "qualityChecklist": [
-        "SubtaskOperations.get_next_subtask used to systematically get each subtask",
-        "Each subtask updated to 'in-progress' before implementation starts",
-        "Implementation follows architect's strategic guidance and code examples exactly",
-        "SOLID, KISS and DRY principles compliance maintained for each subtask implementation",
-        "Testing completed for each subtask (unit, integration, manual validation)",
-        "Individual commit made after each subtask completion with descriptive message",
-        "Each subtask updated to 'completed' status with proper completion evidence",
-        "Cycle continues until SubtaskOperations.get_next_subtask returns no more subtasks"
+        "All available subtasks retrieved and completed",
+        "Each subtask implemented following strategic guidance",
+        "Comprehensive testing performed for each subtask",
+        "Individual commits made after each subtask completion",
+        "All subtasks updated to 'completed' status with evidence"
       ],
       "conditions": [
         {
-          "name": "context_consumption_completed",
+          "name": "context_setup_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "mandatory_context_consumption_and_setup"
+              "stepName": "setup_implementation_context"
             }
           },
           "isRequired": true
         }
       ],
-      "actions": [],
-      "triggerReport": true,
-      "reportType": "iterative_subtask_implementation",
-      "reportTemplate": "iterative_implementation_cycle_report"
+      "actions": []
     },
     {
-      "name": "final_subtask_completion_validation",
-      "displayName": "MANDATORY: Final Subtask Completion Validation",
-      "description": "WORKFLOW BLOCKER: Validate ALL subtasks are completed before proceeding to delegation",
+      "name": "validate_implementation",
+      "description": "Validate complete implementation and prepare for code review",
       "sequenceNumber": 3,
       "isRequired": true,
-      "estimatedTime": "10-15 minutes",
-      "stepType": "VALIDATION",
-      "behavioralContext": {
-        "approach": "MANDATORY final validation - WORKFLOW STOPPER if any subtask remains incomplete",
-        "principles": [
-          "CRITICAL WORKFLOW BLOCKER: Cannot proceed to delegation without ALL subtasks completed",
-          "ALWAYS use PlanningOperations.get_plan with includeBatches: true to get complete subtask status",
-          "ALWAYS use SubtaskOperations.get_next_subtask to verify no remaining subtasks",
-          "ALWAYS verify each subtask has status 'completed' and proper completion evidence",
-          "NEVER allow workflow to proceed if any subtask is not completed",
-          "STOP execution immediately if incomplete subtasks are found"
-        ],
-        "methodology": "Comprehensive final validation with multiple verification methods and workflow blocking",
-        "validationProtocol": {
-          "primaryValidation": "Use PlanningOperations.get_plan with includeBatches: true to get all subtasks with current status",
-          "secondaryValidation": "Use SubtaskOperations.get_next_subtask to confirm no remaining subtasks exist",
-          "statusVerification": "Verify every subtask across all batches has status 'completed'",
-          "evidenceValidation": "Ensure each completed subtask has proper completion evidence documented",
-          "workflowBlocking": "STOP workflow and report error if any subtask is not completed"
-        },
-        "completionCriteria": {
-          "allSubtasksCompleted": "Every subtask in every batch must have status 'completed'",
-          "noRemainingSubtasks": "SubtaskOperations.get_next_subtask must return no available subtasks",
-          "evidenceDocumented": "Each completed subtask must have completion evidence",
-          "batchesCompleted": "All batches must be fully completed",
-          "readyForDelegation": "Implementation is complete and ready for delegation"
-        }
-      },
+      "stepType": "ACTION",
+      "approach": "Comprehensive validation of completed implementation",
       "approachGuidance": {
         "stepByStep": [
-          "MANDATORY: Execute PlanningOperations.get_plan with taskId and includeBatches: true",
-          "MANDATORY: Iterate through all batches and verify every subtask has status 'completed'",
-          "MANDATORY: Execute SubtaskOperations.get_next_subtask with taskId to confirm no remaining subtasks",
-          "MANDATORY: Verify each completed subtask has proper completion evidence",
-          "MANDATORY: If ANY subtask is not completed, STOP workflow and report error",
-          "MANDATORY: If ALL subtasks are completed, document completion summary for delegation",
-          "MANDATORY: Only proceed to next step if 100% subtask completion is verified"
-        ],
-        "validationSteps": [
-          "Call PlanningOperations.get_plan with parameters: { taskId: [TASK_ID], includeBatches: true }",
-          "Parse response to extract all subtasks across all batches",
-          "For each subtask, verify status === 'completed'",
-          "For each completed subtask, verify completion evidence exists",
-          "Call SubtaskOperations.get_next_subtask with parameters: { taskId: [TASK_ID] }",
-          "Verify response indicates no next subtask available (all completed)"
-        ],
-        "errorReportingSteps": [
-          "If any subtask status !== 'completed', collect all incomplete subtasks",
-          "Report specific subtask names, IDs, current status, and batch information",
-          "Provide clear remediation steps: complete remaining subtasks before proceeding",
-          "STOP workflow execution - do not proceed to next step"
+          "Run complete test suite to ensure no regressions",
+          "Validate all acceptance criteria are met",
+          "Verify code follows established patterns and principles",
+          "Check error handling and edge cases",
+          "Prepare comprehensive evidence for code review"
         ]
       },
       "qualityChecklist": [
-        "MANDATORY: PlanningOperations.get_plan executed with includeBatches: true to get all subtasks",
-        "MANDATORY: Every subtask across ALL batches verified to have status 'completed'",
-        "MANDATORY: SubtaskOperations.get_next_subtask confirms no remaining subtasks available",
-        "MANDATORY: Each completed subtask has proper completion evidence documented",
-        "MANDATORY: If any subtask is incomplete, workflow is STOPPED with clear error message",
-        "MANDATORY: 100% subtask completion verified before proceeding to delegation"
+        "Complete test suite runs successfully",
+        "All acceptance criteria validated and met",
+        "Code follows established patterns and SOLID principles",
+        "Error handling properly implemented",
+        "Implementation evidence prepared for review"
       ],
       "conditions": [
         {
-          "name": "iterative_implementation_completed",
+          "name": "subtasks_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "iterative_subtask_implementation_cycle"
+              "stepName": "implement_subtasks"
             }
           },
           "isRequired": true
         }
       ],
-      "actions": [
-        {
-          "name": "validate_all_subtasks_completed",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "PlanningOperations",
-            "operation": "get_plan",
-            "parameters": {
-              "taskId": "[TASK_ID]",
-              "includeBatches": true
-            }
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "verify_no_remaining_subtasks",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "SubtaskOperations",
-            "operation": "get_next_subtask",
-            "parameters": {
-              "taskId": "[TASK_ID]"
-            }
-          },
-          "sequenceOrder": 2
-        }
-      ],
-      "triggerReport": true,
-      "reportType": "final_subtask_completion_validation",
-      "reportTemplate": "final_subtask_validation_report"
+      "actions": []
     },
     {
-      "name": "role_transition_to_code_review",
-      "displayName": "Role Transition to Code Review",
-      "description": "Execute role transition directly to code review with comprehensive implementation evidence",
+      "name": "role_transition",
+      "description": "Transition to code review role with implementation evidence",
       "sequenceNumber": 4,
       "isRequired": true,
-      "estimatedTime": "10-15 minutes",
       "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Direct role transition execution using the execute_transition tool available to the agent",
-        "principles": [
-          "Use execute_transition tool directly (NOT through MCP_CALL)",
-          "Transition to code review with complete implementation summary and evidence",
-          "Provide comprehensive implementation evidence for code review in handoffMessage",
-          "Include detailed testing results and quality validation with database delegation record creation"
-        ],
-        "methodology": "Direct tool usage for efficient role transition with evidence-based implementation documentation",
-        "transitionStrategy": {
-          "targetRole": "code-review",
-          "transitionExecution": "Use execute_transition tool with 'senior_developer_to_code_review' transitionId",
-          "contextPreservation": "Include complete implementation evidence and quality validation in handoffMessage",
-          "databaseIntegration": "Ensure delegation record is created in database via RoleTransitionService"
-        }
-      },
+      "approach": "Execute transition to code review with comprehensive implementation evidence",
       "approachGuidance": {
         "stepByStep": [
-          "Document complete implementation summary including all completed subtasks",
-          "Compile comprehensive testing results and quality validation evidence",
-          "Prepare implementation evidence showing architectural compliance and SOLID, KISS and DRY principles",
-          "Execute the execute_transition tool directly with 'senior_developer_to_code_review' transitionId",
-          "Include taskId and roleId from current workflow context",
-          "Provide comprehensive handoffMessage with implementation summary, testing results, and quality validation"
-        ],
-        "transitionExecutionSteps": [
-          "Call execute_transition tool directly (available to agent, not MCP_CALL)",
-          "Use transitionId: 'senior_developer_to_code_review'",
-          "Include taskId and roleId from current workflow context",
-          "Provide comprehensive handoffMessage with complete implementation evidence and context"
+          "Execute get_role_transitions with fromRoleName: 'senior-developer'",
+          "Extract transitionId for senior developer to code review transition",
+          "Execute execute_transition with implementation evidence in handoff",
+          "Verify transition success and delegation confirmation"
         ]
       },
       "qualityChecklist": [
-        "Complete implementation summary documented with all subtasks and evidence",
-        "Comprehensive testing results compiled showing validation for each subtask",
-        "Quality validation documented including SOLID, KISS and DRY principles and architectural compliance",
-        "execute_transition tool executed directly with 'senior_developer_to_code_review' transitionId",
-        "TaskId and roleId provided from current workflow context",
-        "Comprehensive handoffMessage includes complete implementation evidence and quality validation for code review"
+        "get_role_transitions executed with correct parameters",
+        "Correct transitionId obtained for code review transition",
+        "execute_transition executed with implementation evidence",
+        "Transition success verified and delegation confirmed"
       ],
       "conditions": [
         {
-          "name": "final_validation_completed",
+          "name": "implementation_validated",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "final_subtask_completion_validation"
+              "stepName": "validate_implementation"
             }
           },
           "isRequired": true
         }
       ],
-      "actions": [],
-      "triggerReport": true,
-      "reportType": "role_transition_execution",
-      "reportTemplate": "direct_role_transition_to_code_review"
+      "actions": []
     }
   ]
 }

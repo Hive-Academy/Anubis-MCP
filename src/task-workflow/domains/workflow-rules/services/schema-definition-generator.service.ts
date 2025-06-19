@@ -52,7 +52,7 @@ export class SchemaDefinitionGeneratorService {
     serviceName: string,
     operation?: string,
   ): {
-    schemaDefinition: string;
+    schemaDefinition: Record<string, any>;
   } {
     try {
       const schemaDefinition = this.generateSchemaDefinitionFromZod(
@@ -70,7 +70,7 @@ export class SchemaDefinitionGeneratorService {
         error,
       );
       return {
-        schemaDefinition: `Schema definition generation failed for ${serviceName}.${operation}: ${error.message}`,
+        schemaDefinition: {},
       };
     }
   }
@@ -82,20 +82,79 @@ export class SchemaDefinitionGeneratorService {
     schema: ZodSchema,
     serviceName: string,
     operation?: string,
-  ): string {
+  ): Record<string, any> {
     try {
-      const schemaStructure = this.parseZodSchemaToStructure(schema);
-      return this.formatSchemaStructureAsText(
-        schemaStructure,
-        serviceName,
-        operation,
-      );
+      const fullSchema = this.parseZodSchemaToStructure(schema);
+
+      // If operation is specified, try to extract operation-specific schema
+      if (operation && fullSchema.type === 'object' && fullSchema.properties) {
+        // Look for operation-specific properties or discriminated union
+        if (fullSchema.properties.operation) {
+          // This is likely a discriminated union based on operation
+          return this.extractOperationSpecificSchema(fullSchema, operation);
+        }
+      }
+
+      // Return full schema if no operation-specific extraction possible
+      return fullSchema;
     } catch (error) {
       this.logger.warn(
         `Failed to parse schema for ${serviceName}, using fallback`,
         error,
       );
-      return `Schema definition for ${serviceName}.${operation} - parsing failed, using basic structure`;
+      return {
+        type: 'unknown',
+        description: `Failed to parse schema for ${serviceName}: ${error.message}`,
+      };
+    }
+  }
+
+  /**
+   * 🎯 DYNAMIC: Extract operation-specific schema from discriminated union
+   */
+  private extractOperationSpecificSchema(
+    fullSchema: Record<string, any>,
+    operation: string,
+  ): Record<string, any> {
+    try {
+      // If the schema has a union type based on operation field
+      if (fullSchema.properties?.operation?.type === 'enum') {
+        const operationValues = fullSchema.properties.operation.values || [];
+
+        if (!operationValues.includes(operation)) {
+          return {
+            type: 'object',
+            description: `Operation '${operation}' not supported. Available operations: ${operationValues.join(', ')}`,
+            properties: {},
+          };
+        }
+      }
+
+      // Return the schema structure with operation-specific context
+      const operationSchema = {
+        type: 'object',
+        description: `Schema for ${operation} operation`,
+        properties: {
+          operation: {
+            type: 'string',
+            value: operation,
+            description: `Must be "${operation}"`,
+          },
+          ...Object.fromEntries(
+            Object.entries(fullSchema.properties || {}).filter(
+              ([key]) => key !== 'operation',
+            ),
+          ),
+        },
+      };
+
+      return operationSchema;
+    } catch (error) {
+      this.logger.warn(
+        `Failed to extract operation-specific schema for ${operation}`,
+        error,
+      );
+      return fullSchema;
     }
   }
 
@@ -216,101 +275,6 @@ export class SchemaDefinitionGeneratorService {
         };
       }
     }
-  }
-
-  /**
-   * 🎯 DYNAMIC: Format parsed schema structure as readable text - NO HARDCODED LOGIC
-   */
-  private formatSchemaStructureAsText(
-    structure: any,
-    serviceName: string,
-    operation?: string,
-  ): string {
-    const lines: string[] = [];
-    lines.push(`${serviceName} Schema for operation: ${operation}`);
-    lines.push('');
-    lines.push('Required structure:');
-
-    const formatted = this.formatObjectStructure(structure, 0);
-    lines.push(formatted);
-
-    // 🎯 DYNAMIC: Add generic helpful notes (no service-specific hardcoding)
-    lines.push('');
-    lines.push('IMPORTANT NOTES:');
-    lines.push('- All optional fields can be omitted if not needed');
-    lines.push('- Follow the exact structure shown for best results');
-    lines.push('- Enum fields must use one of the specified values');
-    lines.push('- Array fields should contain items of the specified type');
-    lines.push('- Record fields are key-value objects with string keys');
-
-    return lines.join('\n');
-  }
-
-  /**
-   * 🎯 DYNAMIC: Format object structure recursively
-   */
-  private formatObjectStructure(
-    structure: Record<string, any>,
-    indent: number = 0,
-  ): string {
-    const spaces = '  '.repeat(indent);
-
-    if (structure.type === 'object' && structure.properties) {
-      const lines: string[] = ['{'];
-
-      Object.entries(structure.properties).forEach(
-        ([key, value]: [string, any]) => {
-          const optional = value.optional ? ' (optional)' : '';
-          const description = value.description
-            ? ` - ${value.description}`
-            : '';
-          const defaultValue =
-            value.default !== undefined
-              ? ` (default: ${JSON.stringify(value.default)})`
-              : '';
-
-          if (value.type === 'object') {
-            lines.push(
-              `${spaces}  ${key}: ${this.formatObjectStructure(value, indent + 1)}${optional}${description}${defaultValue},`,
-            );
-          } else if (value.type === 'array') {
-            const itemType = this.formatTypeDescription(value.items);
-            lines.push(
-              `${spaces}  ${key}: ${itemType}[]${optional}${description}${defaultValue},`,
-            );
-          } else if (value.type === 'enum') {
-            const enumValues =
-              value.values?.map((v: any) => `"${v}"`).join(' | ') || 'enum';
-            lines.push(
-              `${spaces}  ${key}: ${enumValues}${optional}${description}${defaultValue},`,
-            );
-          } else if (value.type === 'record') {
-            const valueType = this.formatTypeDescription(value.valueType);
-            lines.push(
-              `${spaces}  ${key}: Record<string, ${valueType}>${optional}${description}${defaultValue},`,
-            );
-          } else if (value.type === 'union') {
-            const unionTypes =
-              value.options
-                ?.map((opt: any) => this.formatTypeDescription(opt))
-                .join(' | ') || 'union';
-            lines.push(
-              `${spaces}  ${key}: ${unionTypes}${optional}${description}${defaultValue},`,
-            );
-          } else {
-            const typeDesc = this.formatTypeDescription(value);
-            lines.push(
-              `${spaces}  ${key}: ${typeDesc}${optional}${description}${defaultValue},`,
-            );
-          }
-        },
-      );
-
-      lines.push(`${spaces}}`);
-      return lines.join('\n');
-    }
-
-    return this.formatTypeDescription(structure);
   }
 
   /**

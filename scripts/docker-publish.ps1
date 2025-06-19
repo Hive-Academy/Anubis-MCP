@@ -1,4 +1,4 @@
-# MCP Workflow Manager Docker Publication Script for Windows
+# Anubis Docker Publication Script for Windows
 # This script builds and publishes the Docker image with integrated database seeding
 
 param(
@@ -46,7 +46,7 @@ function Test-DockerLogin {
 
 # Main execution
 try {
-    Write-ColorOutput "🚀 MCP Workflow Manager Docker Publication Script" $Blue
+    Write-ColorOutput "🚀 Anubis Docker Publication Script" $Blue
     Write-ColorOutput "=================================================" $Blue
     
     # Check Docker is running
@@ -123,7 +123,8 @@ try {
         if ($LASTEXITCODE -ne 0) {
             throw "Failed to create Docker buildx builder"
         }
-    } else {
+    }
+    else {
         docker buildx use $BuilderName
     }
     
@@ -169,7 +170,8 @@ try {
     if ($LASTEXITCODE -ne 0) {
         Write-ColorOutput "⚠️  Image test failed, but image was published successfully" $Yellow
         Write-ColorOutput "Output: $TestOutput" $Yellow
-    } else {
+    }
+    else {
         Write-ColorOutput "✅ Image test passed" $Green
     }
     
@@ -196,7 +198,8 @@ try {
     Write-ColorOutput '     }' $Blue
     Write-ColorOutput '   }' $Blue
     
-} catch {
+}
+catch {
     Write-ColorOutput "❌ ERROR: $($_.Exception.Message)" $Red
     Write-ColorOutput "💡 Troubleshooting tips:" $Yellow
     Write-ColorOutput "   1. Ensure Docker Desktop is running" $Yellow

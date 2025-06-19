@@ -1,6 +1,6 @@
 {
   "name": "@hive-academy/anubis",
-  "version": "1.1.2",
+  "version": "1.1.8",
   "description": "🏺 Anubis - Divine Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development",
   "author": "Hive Academy <abdallah@nghive.tech>",
   "license": "MIT",
@@ -29,7 +29,7 @@
   ],
   "main": "dist/cli.js",
   "bin": {
-    "anubis": "./dist/cli.js"
+    "anubis": "dist/cli.js"
   },
   "preferGlobal": false,
   "engines": {
@@ -42,17 +42,9 @@
   },
   "files": [
     "dist/**/*",
-    "prisma/schema.prisma",
-    "prisma/onboarding-models.prisma",
-    "prisma/rule-models.prisma",
-    "prisma/task-models.prisma",
-    "prisma/workflow-enums.prisma",
-    "prisma/migrations/**/*",
-    "enhanced-workflow-rules/**/*",
-    "scripts/prisma-seed.ts",
+    "data-template/**/*",
     "package.json",
-    "README.md",
-    "LICENSE"
+    "README.md"
   ],
   "scripts": {
     "prebuild": "rimraf dist && npm run db:generate",

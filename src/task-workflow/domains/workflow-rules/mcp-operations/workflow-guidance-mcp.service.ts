@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { WorkflowGuidanceService } from '../services/workflow-guidance.service';
-import { ProgressCalculatorService } from '../services/progress-calculator.service';
 
 const GetWorkflowGuidanceInputSchema = z.object({
   roleName: z
@@ -24,10 +23,10 @@ const GetWorkflowGuidanceInputSchema = z.object({
 type GetWorkflowGuidanceInput = z.infer<typeof GetWorkflowGuidanceInputSchema>;
 
 /**
- * 🎯 FOCUSED WORKFLOW GUIDANCE MCP SERVICE
+ * 🎯 STREAMLINED WORKFLOW GUIDANCE MCP SERVICE
  *
- * REFACTORED: Role/persona context only - NO step details, NO envelope complexity
- * PURPOSE: Get role persona once, then use get_step_guidance for each step
+ * OPTIMIZED: Returns only essential role identity - NO redundant behavioral context
+ * PURPOSE: Get minimal role persona once, then use get_step_guidance for actionable steps
  */
 @Injectable()
 export class WorkflowGuidanceMcpService {
@@ -35,19 +34,18 @@ export class WorkflowGuidanceMcpService {
 
   constructor(
     private readonly workflowGuidanceService: WorkflowGuidanceService,
-    private readonly progressCalculatorService: ProgressCalculatorService,
   ) {}
 
   @Tool({
     name: 'get_workflow_guidance',
-    description: `Provides role-specific context, quality standards, and behavioral guidelines for workflow execution.`,
+    description: `Provides minimal role identity and basic capabilities for workflow execution.`,
     parameters:
       GetWorkflowGuidanceInputSchema as ZodSchema<GetWorkflowGuidanceInput>,
   })
   async getWorkflowGuidance(input: GetWorkflowGuidanceInput): Promise<any> {
     try {
       this.logger.log(
-        `Getting role guidance for: ${input.roleName}, task: ${input.taskId}`,
+        `Getting role identity for: ${input.roleName}, task: ${input.taskId}`,
       );
 
       const context = {
@@ -55,41 +53,31 @@ export class WorkflowGuidanceMcpService {
         projectPath: input.projectPath,
       };
 
-      // Get ONLY role/persona context - NO step details
+      // Get ONLY essential role identity - NO verbose behavioral context
       const roleGuidance =
         await this.workflowGuidanceService.getWorkflowGuidance(
           input.roleName,
           context,
         );
 
-      // 🎯 NEW: Calculate progress for this role and task
-      const progressMetrics =
-        await this.progressCalculatorService.calculateProgress(
-          parseInt(input.taskId),
-          roleGuidance,
-        );
-
-      // Return minimal role context response with progress
+      // Return minimal essential-only response
       return {
         content: [
           {
             type: 'text',
             text: JSON.stringify(
               {
-                roleId: input.roleName,
-                taskId: parseInt(input.taskId),
                 success: true,
-                roleContext: roleGuidance.currentRole,
-                projectContext: roleGuidance.projectContext,
-                qualityReminders: roleGuidance.qualityReminders,
-                ruleEnforcement: roleGuidance.ruleEnforcement,
-                progress: progressMetrics.success
-                  ? progressMetrics.metrics
-                  : null,
-                meta: {
-                  timestamp: new Date().toISOString(),
-                  responseTime: '< 50ms',
+                currentRole: {
+                  id: roleGuidance.currentRole.id,
+                  name: roleGuidance.currentRole.name,
+                  description: roleGuidance.currentRole.description,
+                  capabilities: roleGuidance.currentRole.capabilities,
+                  coreResponsibilities:
+                    roleGuidance.currentRole.coreResponsibilities,
+                  keyCapabilities: roleGuidance.currentRole.keyCapabilities,
                 },
+                projectContext: roleGuidance.projectContext,
               },
               null,
               2,
@@ -109,8 +97,6 @@ export class WorkflowGuidanceMcpService {
             type: 'text' as const,
             text: JSON.stringify(
               {
-                taskId: parseInt(input.taskId),
-                roleName: input.roleName,
                 success: false,
                 error: {
                   message: error.message,

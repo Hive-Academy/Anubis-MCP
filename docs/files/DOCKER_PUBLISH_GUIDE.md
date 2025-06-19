@@ -1,6 +1,6 @@
 # 🚀 Docker Hub Publication Guide
 
-This guide will help you publish your MCP Workflow Manager to Docker Hub immediately, following the established patterns in the MCP ecosystem.
+This guide will help you publish your Anubis to Docker Hub immediately, following the established patterns in the MCP ecosystem.
 
 ## 📋 Prerequisites
 
@@ -320,7 +320,7 @@ curl -X POST http://localhost:3000/messages \
 
 ## ✅ Ready to Publish!
 
-Your MCP Workflow Manager is now properly configured for Docker Hub publication with:
+Your Anubis is now properly configured for Docker Hub publication with:
 
 ✅ **Correct Repository Information**: All references point to Hive-Academy/Workflow_Manager_MCP  
 ✅ **Multi-Transport Support**: STDIO, SSE, and Streamable HTTP  

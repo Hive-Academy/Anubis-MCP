@@ -2,39 +2,50 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../../prisma/prisma.service';
 
 // ===================================================================
-// 🔥 STEP QUERY SERVICE - COMPLETE REVAMP FOR MCP-ONLY
+// 🔥 STEP QUERY SERVICE - UPDATED FOR STREAMLINED SCHEMA
 // ===================================================================
 // Purpose: Query workflow steps with MCP execution data
 // Scope: MCP-focused step retrieval and progress queries
-// ZERO Legacy Support: Complete removal of all non-MCP query logic
+// Schema: Aligned with streamlined schema structure
 
-// 🎯 STRICT TYPE DEFINITIONS - ZERO ANY USAGE - SCHEMA ALIGNED
+// 🎯 UPDATED TYPE DEFINITIONS - STREAMLINED SCHEMA ALIGNED
 
 export interface StepWithExecutionData {
   id: string;
   name: string;
-  displayName: string;
   description: string;
   stepType: string;
-  actions: StepAction[];
-  conditions: StepCondition[];
+  mcpActions: McpActionData[];
+  stepDependencies: StepDependencyData[];
   stepProgress: WorkflowStepProgress[];
+  stepGuidance: StepGuidanceData | null;
+  qualityChecks: QualityCheckData[];
 }
 
-export interface StepAction {
+export interface McpActionData {
   id: string;
   name: string;
-  actionType: string;
-  actionData: unknown;
+  serviceName: string;
+  operation: string;
+  parameters: unknown;
   sequenceOrder: number;
 }
 
-export interface StepCondition {
+export interface StepDependencyData {
   id: string;
-  name: string;
-  conditionType: string;
-  logic: unknown;
+  dependsOnStep: string;
   isRequired: boolean;
+}
+
+export interface StepGuidanceData {
+  id: string;
+  stepByStep: unknown; // JSON array
+}
+
+export interface QualityCheckData {
+  id: string;
+  criterion: string;
+  sequenceOrder: number;
 }
 
 export interface WorkflowStepProgress {
@@ -53,7 +64,6 @@ export interface WorkflowStepProgress {
 export interface WorkflowStep {
   id: string;
   name: string;
-  displayName: string;
   description: string;
   sequenceNumber: number;
   stepType: string;
@@ -69,43 +79,18 @@ export interface RoleStepStatistics {
 }
 
 /**
- * 🚀 REVAMPED: StepQueryService
+ * 🚀 UPDATED: StepQueryService for Streamlined Schema
  *
- * COMPLETE OVERHAUL FOR MCP-ONLY EXECUTION:
- * - Schema-aligned field names (sequenceNumber, not sequenceOrder)
- * - Correct table names (workflowStep, workflowStepProgress)
- * - MCP_CALL-only action filtering
- * - Enhanced progress queries
- * - Zero legacy code - MCP-only focus
- * - Reduced dependencies: Only PrismaService
+ * STREAMLINED SCHEMA CHANGES:
+ * - actions → mcpActions (all actions are MCP actions)
+ * - conditions → stepDependencies (simplified dependencies)
+ * - Added stepGuidance and qualityChecks relationships
+ * - Removed actionType filtering (all actions are MCP_CALL)
+ * - Updated field references to match new schema
  */
 @Injectable()
 export class StepQueryService {
   constructor(private readonly prisma: PrismaService) {}
-
-  /**
-   * Get step with all MCP execution data in single query
-   */
-  async getStepWithExecutionData(
-    stepId: string,
-  ): Promise<StepWithExecutionData | null> {
-    const result = await this.prisma.workflowStep.findUnique({
-      where: { id: stepId },
-      include: {
-        actions: {
-          where: { actionType: 'MCP_CALL' },
-          orderBy: { sequenceOrder: 'asc' },
-        },
-        conditions: true,
-        stepProgress: {
-          take: 1,
-          orderBy: { startedAt: 'desc' },
-        },
-      },
-    });
-
-    return result as StepWithExecutionData | null;
-  }
 
   /**
    * Get next available step for execution
@@ -208,51 +193,17 @@ export class StepQueryService {
   }
 
   /**
-   * Get steps with MCP actions only
-   */
-  async getStepsWithMcpActions(
-    roleId: string,
-  ): Promise<StepWithExecutionData[]> {
-    const results = await this.prisma.workflowStep.findMany({
-      where: {
-        roleId,
-        actions: {
-          some: {
-            actionType: 'MCP_CALL',
-          },
-        },
-      },
-      include: {
-        actions: {
-          where: { actionType: 'MCP_CALL' },
-          orderBy: { sequenceOrder: 'asc' },
-        },
-        conditions: true,
-        stepProgress: {
-          take: 1,
-          orderBy: { startedAt: 'desc' },
-        },
-      },
-      orderBy: { sequenceNumber: 'asc' },
-    });
-
-    return results as StepWithExecutionData[];
-  }
-
-  /**
    * Check if step exists and has MCP actions
    */
   async validateStepForMcpExecution(stepId: string): Promise<boolean> {
     const step = await this.prisma.workflowStep.findUnique({
       where: { id: stepId },
       include: {
-        actions: {
-          where: { actionType: 'MCP_CALL' },
-        },
+        mcpActions: true,
       },
     });
 
-    return step !== null && step.actions.length > 0;
+    return step !== null && step.mcpActions.length > 0;
   }
 
   /**
@@ -267,5 +218,26 @@ export class StepQueryService {
     });
 
     return results as WorkflowStepProgress[];
+  }
+
+  // ===================================================================
+  // 🔧 PRIVATE IMPLEMENTATION METHODS - STREAMLINED SCHEMA
+  // ===================================================================
+
+  async getStepWithMcpActions(stepId: string) {
+    const result = await this.prisma.workflowStep.findUnique({
+      where: { id: stepId },
+      include: {
+        mcpActions: {
+          orderBy: { sequenceOrder: 'asc' },
+        },
+        stepGuidance: true,
+        qualityChecks: {
+          orderBy: { sequenceOrder: 'asc' },
+        },
+      },
+    });
+
+    return result;
   }
 }

@@ -101,23 +101,29 @@ export class RoleTransitionMcpService extends BaseMcpService {
         ),
       ]);
 
-      // ✅ MINIMAL RESPONSE: Only essential transition data
+      // Combine and prioritize transitions to eliminate redundancy
+      const recommendedIds = new Set(recommendedTransitions.map((t) => t.id));
+      const transitions = [
+        ...recommendedTransitions.map((t) => ({
+          transitionId: t.id,
+          transitionName: t.transitionName,
+          toRole: t.toRole.name,
+          recommended: true,
+          score: (t as any).recommendationScore || 0.95,
+        })),
+        ...availableTransitions
+          .filter((t) => !recommendedIds.has(t.id))
+          .map((t) => ({
+            transitionId: t.id,
+            transitionName: t.transitionName,
+            toRole: t.toRole.name,
+            recommended: false,
+            score: 0.5,
+          })),
+      ];
+
       return this.buildMinimalResponse({
-        fromRole: input.fromRoleName,
-        availableTransitions: availableTransitions.map((t) => ({
-          transitionId: t.id,
-          transitionName: t.transitionName,
-          toRole: t.toRole.name,
-          toRoleDisplay: t.toRole.displayName,
-        })),
-        recommendedTransitions: recommendedTransitions.map((t) => ({
-          transitionId: t.id,
-          transitionName: t.transitionName,
-          toRole: t.toRole.name,
-          toRoleDisplay: t.toRole.displayName,
-          score: (t as any).recommendationScore || 0,
-        })),
-        // ❌ REMOVED: nextAction (hardcoded flow control)
+        transitions,
       });
     } catch (error) {
       return this.buildErrorResponse(
@@ -205,9 +211,7 @@ export class RoleTransitionMcpService extends BaseMcpService {
         success: result.success,
         status: result.success ? 'completed' : 'failed',
         message: result.message,
-        newRole: result.newRoleId,
-        handoffMessage: input.handoffMessage,
-        // ❌ REMOVED: nextAction (hardcoded flow control)
+        newRoleId: result.newRoleId,
       });
     } catch (error) {
       return this.buildErrorResponse(

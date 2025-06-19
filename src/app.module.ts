@@ -4,6 +4,16 @@ import { PrismaModule } from './prisma/prisma.module';
 import { McpModule, McpTransportType } from '@rekog/mcp-nest';
 import { TaskWorkflowModule } from './task-workflow/task-workflow.module';
 import { UtilsModule } from './task-workflow/utils/utils.module';
+import { APP_FILTER } from '@nestjs/core';
+
+// Global exception filter for MCP debugging
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  Logger,
+} from '@nestjs/common';
 
 // Determine transport type based on environment
 const getTransportType = (): McpTransportType => {
@@ -20,6 +30,40 @@ const getTransportType = (): McpTransportType => {
       return McpTransportType.STDIO;
   }
 };
+
+@Catch()
+export class GlobalExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(GlobalExceptionFilter.name);
+
+  catch(exception: unknown, host: ArgumentsHost) {
+    const timestamp = new Date().toISOString();
+
+    // Log the exception with full details
+    this.logger.error('[MCP-GLOBAL-EXCEPTION]', {
+      timestamp,
+      exception:
+        exception instanceof Error
+          ? {
+              name: exception.name,
+              message: exception.message,
+              stack: exception.stack,
+            }
+          : exception,
+      hostType: host.getType(),
+      context: 'MCP Tool Call Handler',
+    });
+
+    // If it's an HTTP exception, rethrow it
+    if (exception instanceof HttpException) {
+      throw exception;
+    }
+
+    // For other exceptions, create a generic error response
+    throw new Error(
+      `Unhandled exception in MCP handler: ${exception instanceof Error ? exception.message : 'Unknown error'}`,
+    );
+  }
+}
 
 @Module({
   imports: [
@@ -46,6 +90,12 @@ const getTransportType = (): McpTransportType => {
     }),
     TaskWorkflowModule,
     UtilsModule,
+  ],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: GlobalExceptionFilter,
+    },
   ],
 })
 export class AppModule {}

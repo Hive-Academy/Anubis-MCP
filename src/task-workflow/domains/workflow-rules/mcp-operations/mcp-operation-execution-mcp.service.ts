@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { CoreServiceOrchestrator } from '../services/core-service-orchestrator.service';
+import { RequiredInputExtractorService } from '../services/required-input-extractor.service';
 import { getErrorMessage } from '../utils/type-safety.utils';
 import { BaseMcpService } from '../utils/mcp-response.utils';
 
@@ -36,7 +37,25 @@ const ExecuteMcpOperationInputSchema = z.object({
     ),
 });
 
+const GetOperationSchemaInputSchema = z.object({
+  serviceName: z
+    .enum([
+      'TaskOperations',
+      'PlanningOperations',
+      'WorkflowOperations',
+      'ReviewOperations',
+      'ResearchOperations',
+      'SubtaskOperations',
+    ])
+    .describe('Service name to get schema for'),
+  operation: z
+    .string()
+    .optional()
+    .describe('Optional operation name to get specific operation schema'),
+});
+
 type ExecuteMcpOperationInput = z.infer<typeof ExecuteMcpOperationInputSchema>;
+type GetOperationSchemaInput = z.infer<typeof GetOperationSchemaInputSchema>;
 
 /**
  * 🚀 MCP Operation Execution Service
@@ -55,8 +74,48 @@ export class McpOperationExecutionMcpService extends BaseMcpService {
 
   constructor(
     private readonly coreServiceOrchestrator: CoreServiceOrchestrator,
+    private readonly requiredInputService: RequiredInputExtractorService,
   ) {
     super();
+  }
+
+  // ===================================================================
+  // 🔥 NEW: GET OPERATION SCHEMA TOOL - For understanding parameter structure
+  // ===================================================================
+
+  @Tool({
+    name: 'get_operation_schema',
+    description: `Get the parameter schema definition for a specific MCP service and operation. Returns the exact structure needed for parameters when calling execute_mcp_operation. Useful for understanding what parameters are required and optional for any service operation.`,
+    parameters:
+      GetOperationSchemaInputSchema as ZodSchema<GetOperationSchemaInput>,
+  })
+  getOperationSchema(input: GetOperationSchemaInput) {
+    try {
+      this.logger.log(
+        `Getting schema for: ${input.serviceName}${input.operation ? `.${input.operation}` : ''}`,
+      );
+
+      // Extract schema using the same service that step guidance uses
+      const schemaResult = this.requiredInputService.extractFromServiceSchema(
+        input.serviceName,
+        input.operation,
+      );
+
+      return this.buildMinimalResponse({
+        success: true,
+        data: {
+          serviceName: input.serviceName,
+          operation: input.operation || 'all operations',
+          schema: schemaResult.schemaDefinition,
+        },
+      });
+    } catch (error) {
+      return this.buildErrorResponse(
+        `Failed to get schema for ${input.serviceName}${input.operation ? `.${input.operation}` : ''}`,
+        getErrorMessage(error),
+        'SCHEMA_EXTRACTION_ERROR',
+      );
+    }
   }
 
   // ===================================================================
@@ -108,17 +167,10 @@ export class McpOperationExecutionMcpService extends BaseMcpService {
 
       // ✅ MINIMAL RESPONSE: Only essential operation result
       return this.buildMinimalResponse({
-        serviceName: input.serviceName,
-        operation: input.operation,
         success: operationResult.success,
         data: operationResult.data,
         ...(operationResult.error && { error: operationResult.error }),
-        metadata: {
-          operation: input.operation,
-          serviceValidated: true,
-          supportedOperations: supportedOperations,
-          responseTime: operationResult.duration,
-        },
+        ...(operationResult.duration && { duration: operationResult.duration }),
       });
     } catch (error) {
       return this.buildErrorResponse(

@@ -1,0 +1,15 @@
+<div class="code-block p-4 {{#if classes}}{{classes}}{{/if}}">
+  {{#if title}}
+  <div class="flex items-center justify-between mb-2">
+    <span class="text-xs text-slate-400">{{title}}</span>
+    {{#if copyable}}
+    <button class="copy-btn text-slate-400 hover:text-white transition-colors text-xs" onclick="copyToClipboard('{{code}}')">
+      <i class="fas fa-copy"></i>
+    </button>
+    {{/if}}
+  </div>
+  {{/if}}
+  <code class="font-mono {{#if codeSize}}text-{{codeSize}}{{else}}text-sm{{/if}} {{#if codeColor}}text-{{codeColor}}{{else}}text-green-400{{/if}} {{#if align}}text-{{align}}{{/if}} {{#if display}}{{display}}{{/if}}">
+    {{{code}}}
+  </code>
+</div>

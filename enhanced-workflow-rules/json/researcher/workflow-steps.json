@@ -1,527 +1,148 @@
 {
   "workflowSteps": [
     {
-      "name": "task_context_and_requirements_analysis",
-      "displayName": "Task Context and Requirements Analysis",
-      "description": "Retrieve comprehensive task context via MCP call with analysis integration",
+      "name": "get_task_context",
+      "description": "Retrieve task context and existing analysis",
       "sequenceNumber": 1,
       "isRequired": true,
-      "estimatedTime": "2-3 minutes",
       "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Comprehensive context retrieval through MCP service orchestration",
-        "principles": [
-          "Use TaskOperations with comprehensive inclusion flags",
-          "Access existing codebase analysis as research foundation",
-          "Retrieve business and technical requirements",
-          "Include stored analysis and architectural context"
-        ],
-        "methodology": "MCP-driven context acquisition with complete analysis inclusion"
-      },
+      "approach": "Intelligently assess task context availability and retrieve if needed",
       "approachGuidance": {
         "stepByStep": [
-          "Execute TaskOperations.get with comprehensive parameters",
-          "Include existing codebase analysis and architectural findings",
-          "Access business requirements and technical constraints",
-          "Retrieve quality assessment and performance baselines",
-          "Review previous research reports and comments"
+          "Check if task context is already available in current execution history",
+          "If context is available, analyze and validate its completeness",
+          "Only if context is missing or incomplete, execute TaskOperations.get",
+          "Review business and technical requirements",
+          "Identify quality baselines and constraints"
         ]
       },
       "qualityChecklist": [
-        "Complete task context retrieved including all requirements",
-        "Existing codebase analysis accessed and available",
-        "Business and technical constraints documented",
-        "Quality assessment and performance baselines identified",
-        "Previous research and analysis context available"
+        "Task context availability intelligently assessed",
+        "Existing context validated for completeness",
+        "Requirements and constraints documented",
+        "Quality baselines identified"
       ],
       "conditions": [],
-      "actions": [
-        {
-          "name": "query_comprehensive_task_context",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "TaskOperations",
-            "operation": "get"
-          },
-          "sequenceOrder": 1
-        }
-      ],
-      "triggerReport": false
+      "actions": []
     },
     {
-      "name": "mandatory_codebase_analysis_integration",
-      "displayName": "MANDATORY: CodebaseAnalysis Integration",
-      "description": "Use boomerang's CodebaseAnalysis as research foundation and context",
+      "name": "analyze_codebase_foundation",
+      "description": "Use existing codebase analysis as research foundation",
       "sequenceNumber": 2,
       "isRequired": true,
-      "estimatedTime": "5-8 minutes",
       "stepType": "ANALYSIS",
-      "behavioralContext": {
-        "approach": "CodebaseAnalysis-driven research foundation with integration focus",
-        "principles": [
-          "Use existing codebase analysis as research baseline",
-          "Research compatibility and enhancement opportunities",
-          "Focus on solutions for identified technical debt",
-          "Ensure integration compatibility with existing architecture"
-        ],
-        "methodology": "Analysis-informed research with architecture-first approach",
-        "analysisIntegration": {
-          "architectureExtraction": "Extract current architecture patterns from codebase analysis",
-          "debtIdentification": "Identify technical debt and code quality issues needing research",
-          "compatibilityResearch": "Review technology stack details for compatibility research",
-          "constraintAnalysis": "Analyze integration constraints for research focus",
-          "qualityStandards": "Document quality standards for compliance research requirements"
-        },
-        "researchFoundation": {
-          "patternEnhancement": "Research architecture enhancement opportunities",
-          "problemSolutions": "Focus on solutions for technical debt resolution needs",
-          "integrationApproaches": "Research system integration requirements",
-          "qualityImprovements": "Investigate quality enhancement needs",
-          "performanceOptimization": "Research performance improvement areas"
-        }
-      },
+      "approach": "Extract patterns and identify research needs from codebase analysis",
       "approachGuidance": {
         "stepByStep": [
-          "Extract current architecture patterns from codebase analysis",
-          "Identify technical debt and code quality issues needing research",
-          "Review technology stack details for compatibility research",
-          "Analyze integration constraints for research focus",
-          "Document quality standards for compliance research requirements"
-        ],
-        "extractionSteps": [
-          "Parse codebase analysis for architecture patterns and design decisions",
-          "Identify technical debt items that require research for resolution",
-          "Map technology stack components and their compatibility requirements",
-          "Document integration points and constraints that affect research scope"
-        ],
-        "foundationSteps": [
-          "Establish research baseline using existing analysis findings",
-          "Identify gaps where additional research is needed",
-          "Map research questions to specific architecture enhancement opportunities",
-          "Prioritize research areas based on technical debt impact and resolution needs"
+          "Extract current architecture patterns from analysis",
+          "Identify technical debt requiring research",
+          "Review tech stack for compatibility needs",
+          "Document integration constraints and quality standards"
         ]
       },
       "qualityChecklist": [
-        "Current architecture patterns extracted and analyzed",
-        "Technical debt and quality issues identified for research",
-        "Technology stack compatibility requirements documented",
-        "Integration constraints properly understood",
-        "Quality standards and compliance requirements identified"
+        "Architecture patterns extracted and analyzed",
+        "Technical debt and quality issues identified",
+        "Technology stack compatibility documented",
+        "Integration constraints understood"
       ],
       "conditions": [
         {
-          "name": "task_context_available",
+          "name": "task_context_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "task_context_and_requirements_analysis"
+              "stepName": "get_task_context"
             }
           },
           "isRequired": true
         }
       ],
-      "actions": [],
-      "triggerReport": true,
-      "reportType": "codebase_analysis_integration",
-      "reportTemplate": "codebase_analysis_foundation"
+      "actions": []
     },
     {
-      "name": "research_question_identification_and_prioritization",
-      "displayName": "Research Question Identification and Prioritization",
-      "description": "Extract and prioritize research questions from task context and codebase analysis",
+      "name": "identify_research_questions",
+      "description": "Extract and prioritize research questions",
       "sequenceNumber": 3,
       "isRequired": true,
-      "estimatedTime": "6-10 minutes",
       "stepType": "ANALYSIS",
-      "behavioralContext": {
-        "approach": "Systematic research question extraction with priority classification",
-        "principles": [
-          "Extract research questions from task context and analysis",
-          "Categorize questions by type and implementation impact",
-          "Prioritize based on criticality and blocking nature",
-          "Align questions with existing architectural constraints"
-        ],
-        "methodology": "Structured question identification with priority matrix application",
-        "questionCategories": [
-          "technical_unknowns",
-          "implementation_options",
-          "integration_challenges",
-          "best_practices",
-          "security_requirements",
-          "performance_considerations",
-          "scalability_implications"
-        ],
-        "priorityClassification": {
-          "critical": "Blocking questions for implementation",
-          "important": "Quality enhancement questions",
-          "nice_to_have": "Optimization opportunity questions"
-        }
-      },
+      "approach": "Systematic question extraction with priority classification",
       "approachGuidance": {
         "stepByStep": [
           "Identify technical unknowns requiring investigation",
           "Extract implementation options needing comparison",
-          "Identify integration challenges requiring solution research",
-          "Document best practices and industry standards needs",
-          "Classify questions as Critical, Important, or Nice-to-have",
-          "Prioritize research questions based on blocking impact"
-        ],
-        "identificationSteps": [
-          "Review task requirements for technical unknowns and uncertainties",
-          "Analyze codebase analysis for areas requiring additional investigation",
-          "Extract implementation options that need research and comparison",
-          "Identify integration challenges that require solution research"
-        ],
-        "prioritizationSteps": [
-          "Apply priority matrix to classify questions by impact and urgency",
-          "Identify critical blocking questions that must be answered first",
-          "Categorize important questions that enhance quality and implementation",
-          "Document nice-to-have questions for optimization opportunities"
+          "Document integration challenges requiring research",
+          "Classify questions by priority: Critical, Important, Nice-to-have",
+          "Prioritize based on blocking impact on implementation"
         ]
       },
       "qualityChecklist": [
-        "Technical unknowns properly identified and documented",
-        "Implementation options and alternatives identified",
-        "Integration challenges and requirements documented",
-        "Best practices and standards research needs identified",
-        "Questions properly categorized and prioritized",
+        "Technical unknowns identified and documented",
+        "Implementation options extracted",
+        "Integration challenges documented",
+        "Questions classified by priority",
         "Critical blocking questions clearly identified"
       ],
       "conditions": [
         {
-          "name": "codebase_analysis_integrated",
+          "name": "codebase_analysis_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "mandatory_codebase_analysis_integration"
+              "stepName": "analyze_codebase_foundation"
             }
           },
           "isRequired": true
         }
       ],
-      "actions": [],
-      "triggerReport": true,
-      "reportType": "research_questions",
-      "reportTemplate": "research_question_prioritization"
+      "actions": []
     },
     {
-      "name": "research_methodology_selection",
-      "displayName": "Research Methodology Selection",
-      "description": "Choose appropriate research approaches based on question types and requirements",
+      "name": "conduct_research_and_report",
+      "description": "Research critical questions and generate comprehensive findings report",
       "sequenceNumber": 4,
       "isRequired": true,
-      "estimatedTime": "4-6 minutes",
       "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Question-type driven methodology selection with quality standards",
-        "principles": [
-          "Select methodology based on research question type",
-          "Ensure authoritative and current source selection",
-          "Apply multi-source validation requirements",
-          "Focus on practical applicability and integration compatibility"
-        ],
-        "methodology": "Structured methodology framework with quality validation",
-        "methodologyTypes": {
-          "technical_implementation": [
-            "official_documentation",
-            "github_repositories",
-            "stack_overflow_validated",
-            "technical_blogs_experts",
-            "performance_benchmarks"
-          ],
-          "architecture_decisions": [
-            "architecture_pattern_docs",
-            "case_studies_implementations",
-            "trade_off_analysis",
-            "scalability_considerations",
-            "integration_compatibility"
-          ],
-          "security_compliance": [
-            "security_best_practices",
-            "compliance_frameworks",
-            "vulnerability_analysis",
-            "authentication_patterns",
-            "data_protection_regulations"
-          ]
-        },
-        "qualityStandards": {
-          "multipleSourceValidation": "minimum_3_authoritative_sources",
-          "recencyVerification": "prioritize_last_2_years_actively_maintained",
-          "authorityAssessment": "evaluate_credibility_expertise_recognition",
-          "practicalApplicability": "focus_actionable_implementable_guidance",
-          "integrationCompatibility": "ensure_existing_architecture_compatibility"
-        }
-      },
+      "approach": "Comprehensive research and structured report generation with actionable insights",
       "approachGuidance": {
         "stepByStep": [
-          "Categorize questions by research type (technical, architectural, security)",
-          "Select appropriate research sources for each category",
-          "Define quality standards for source validation",
-          "Plan multi-source validation approach",
-          "Ensure practical applicability focus",
-          "Document methodology for each research area"
-        ],
-        "selectionSteps": [
-          "Map research questions to appropriate methodology types",
-          "Select research sources based on question category and requirements",
-          "Define quality criteria for evaluating sources and findings",
-          "Plan validation approach using multiple authoritative sources"
-        ],
-        "validationSteps": [
-          "Establish quality standards for source credibility and recency",
-          "Define practical applicability criteria for findings",
-          "Ensure integration compatibility requirements are considered",
-          "Document methodology approach for each research area"
+          "For each critical question:",
+          "- Use web_search if available to find authoritative documentation",
+          "- Check official GitHub repositories and documentation",
+          "- Analyze NPM or relevant package registries",
+          "- Look for recent blog posts and technical articles",
+          "- Review community discussions and best practices",
+          "- Validate findings through multiple sources",
+          "- Document evidence with links and citations",
+          "- Organize findings by research question priority",
+          "- Provide clear recommendations for implementation",
+          "- Include risk assessment and mitigation strategies",
+          "- Synthesize information into clear, actionable insights",
+          "- Prepare comprehensive handoff for architect role"
         ]
       },
       "qualityChecklist": [
-        "Appropriate methodology selected for each question type",
-        "Quality standards defined for source validation",
-        "Multi-source validation approach planned",
-        "Practical applicability focus ensured",
-        "Integration compatibility considered in methodology",
-        "Research approach documented for execution"
+        "Multiple authoritative sources consulted per question",
+        "Latest information validated and cross-referenced",
+        "Technical claims supported by documentation",
+        "Implementation examples and patterns collected",
+        "Community best practices and recommendations gathered",
+        "All findings properly cited and linked",
+        "Findings organized by priority and impact",
+        "Clear implementation recommendations provided",
+        "Risk assessment and mitigation included",
+        "Report prepared for architect handoff"
       ],
       "conditions": [
         {
-          "name": "research_questions_prioritized",
+          "name": "research_questions_identified",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "research_question_identification_and_prioritization"
-            }
-          },
-          "isRequired": true
-        }
-      ],
-      "actions": [],
-      "triggerReport": false
-    },
-    {
-      "name": "systematic_research_execution",
-      "displayName": "Systematic Research Execution",
-      "description": "Conduct comprehensive investigation following quality standards and methodology",
-      "sequenceNumber": 5,
-      "isRequired": true,
-      "estimatedTime": "15-25 minutes",
-      "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Quality-driven comprehensive research with evidence documentation",
-        "principles": [
-          "Apply research quality standards consistently",
-          "Validate findings across multiple authoritative sources",
-          "Focus on actionable and practical guidance",
-          "Document evidence and reasoning for all findings"
-        ],
-        "methodology": "Systematic investigation with structured documentation",
-        "researchExecution": {
-          "qualityStandards": {
-            "multipleSourceValidation": true,
-            "recencyVerification": true,
-            "authorityAssessment": true,
-            "practicalApplicability": true,
-            "integrationCompatibility": true
-          },
-          "documentationPattern": {
-            "question": "Clear research question",
-            "sources": "Authoritative sources with credibility assessment",
-            "findings": "Key discoveries with supporting evidence",
-            "implications": "Implementation impact analysis",
-            "recommendations": "Actionable guidance with justification"
-          }
-        }
-      },
-      "approachGuidance": {
-        "stepByStep": [
-          "Execute research following selected methodology for each question",
-          "Apply quality standards for source validation and evidence collection",
-          "Cross-reference findings across multiple authoritative sources",
-          "Focus on practical applicability and integration compatibility",
-          "Document findings with supporting evidence and source credibility",
-          "Validate implications for implementation decisions and architecture"
-        ],
-        "executionSteps": [
-          "Conduct systematic investigation for each prioritized research question",
-          "Apply quality standards consistently across all research activities",
-          "Validate findings using multiple authoritative sources",
-          "Focus on actionable and practical guidance for implementation"
-        ],
-        "documentationSteps": [
-          "Document each research question with clear context and scope",
-          "Record authoritative sources with credibility assessment",
-          "Document key findings with supporting evidence and reasoning",
-          "Analyze implementation implications and provide actionable recommendations"
-        ]
-      },
-      "qualityChecklist": [
-        "Research executed following selected methodology",
-        "Quality standards applied for source validation",
-        "Findings cross-referenced across multiple sources",
-        "Practical applicability and integration compatibility verified",
-        "Evidence and source credibility properly documented",
-        "Implementation implications validated and documented"
-      ],
-      "conditions": [
-        {
-          "name": "methodology_selected",
-          "conditionType": "PREVIOUS_STEP_COMPLETED",
-          "logic": {
-            "check": "step_completed",
-            "parameters": {
-              "stepName": "research_methodology_selection"
-            }
-          },
-          "isRequired": true
-        }
-      ],
-      "actions": [],
-      "triggerReport": true,
-      "reportType": "research_execution",
-      "reportTemplate": "systematic_research_findings"
-    },
-    {
-      "name": "findings_synthesis_and_validation",
-      "displayName": "Findings Synthesis and Validation",
-      "description": "Synthesize research results into actionable recommendations with validation",
-      "sequenceNumber": 6,
-      "isRequired": true,
-      "estimatedTime": "10-15 minutes",
-      "stepType": "ANALYSIS",
-      "behavioralContext": {
-        "approach": "Evidence-based synthesis with comprehensive recommendation framework",
-        "principles": [
-          "Synthesize findings into actionable technical recommendations",
-          "Document architecture implications and design patterns",
-          "Perform comprehensive risk assessment with mitigation strategies",
-          "Ensure compatibility with existing system architecture"
-        ],
-        "methodology": "Structured synthesis with validation and risk assessment",
-        "synthesisAreas": {
-          "technicalRecommendations": [
-            "preferred_implementation_approaches",
-            "technology_stack_compatibility",
-            "integration_patterns",
-            "performance_optimization",
-            "error_handling"
-          ],
-          "architectureImplications": [
-            "design_pattern_recommendations",
-            "component_interaction",
-            "data_flow",
-            "scalability_considerations",
-            "maintenance_strategies"
-          ],
-          "riskAssessment": [
-            "implementation_risks",
-            "mitigation_strategies",
-            "alternative_approaches",
-            "fallback_options",
-            "testing_strategies"
-          ]
-        },
-        "validationCriteria": {
-          "architecturalAlignment": "Existing architecture compatibility",
-          "implementationFeasibility": "Technical feasibility assessment",
-          "riskMitigation": "Risk mitigation completeness",
-          "qualityStandards": "Quality requirements compliance",
-          "performanceImpact": "Performance impact analysis"
-        }
-      },
-      "approachGuidance": {
-        "stepByStep": [
-          "Synthesize research findings into technical recommendations",
-          "Document preferred implementation approaches with justification",
-          "Analyze architecture implications and design pattern recommendations",
-          "Perform risk assessment with implementation risks and mitigation",
-          "Validate technology stack compatibility and integration patterns",
-          "Create comprehensive recommendation framework with alternatives"
-        ],
-        "synthesisSteps": [
-          "Consolidate research findings into coherent technical recommendations",
-          "Document preferred implementation approaches with evidence-based justification",
-          "Analyze architecture implications and recommend appropriate design patterns",
-          "Assess risks and develop comprehensive mitigation strategies"
-        ],
-        "validationSteps": [
-          "Validate recommendations against existing architecture compatibility",
-          "Assess technical feasibility and implementation complexity",
-          "Verify risk mitigation strategies are comprehensive and actionable",
-          "Ensure recommendations comply with quality standards and performance requirements"
-        ]
-      },
-      "qualityChecklist": [
-        "Research findings properly synthesized into recommendations",
-        "Technical recommendations documented with justification",
-        "Architecture implications and patterns analyzed",
-        "Comprehensive risk assessment completed with mitigation",
-        "Technology compatibility and integration validated",
-        "Alternative approaches and fallback options documented"
-      ],
-      "conditions": [
-        {
-          "name": "research_execution_completed",
-          "conditionType": "PREVIOUS_STEP_COMPLETED",
-          "logic": {
-            "check": "step_completed",
-            "parameters": {
-              "stepName": "systematic_research_execution"
-            }
-          },
-          "isRequired": true
-        }
-      ],
-      "actions": [],
-      "triggerReport": true,
-      "reportType": "findings_synthesis",
-      "reportTemplate": "research_synthesis_validation"
-    },
-    {
-      "name": "research_report_creation",
-      "displayName": "Research Report Creation",
-      "description": "Generate comprehensive research report with recommendations and implementation guidance",
-      "sequenceNumber": 7,
-      "isRequired": true,
-      "estimatedTime": "8-12 minutes",
-      "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Comprehensive research report generation with structured documentation",
-        "principles": [
-          "Create detailed research report with evidence-based analysis",
-          "Include specific actionable implementation guidance",
-          "Document risk mitigation strategies and contingency plans",
-          "Provide authoritative sources with credibility assessment"
-        ],
-        "methodology": "Structured report creation with strategic implementation context"
-      },
-      "approachGuidance": {
-        "stepByStep": [
-          "Create comprehensive research report structure",
-          "Document title reflecting investigation scope and findings",
-          "Provide executive summary of key findings and recommendations",
-          "Include detailed technical analysis with evidence and reasoning",
-          "Document specific actionable implementation guidance",
-          "Include authoritative sources with credibility notes"
-        ]
-      },
-      "qualityChecklist": [
-        "Comprehensive research report structure created",
-        "Descriptive title reflecting investigation scope",
-        "Executive summary with key findings and recommendations",
-        "Detailed technical analysis with evidence and reasoning",
-        "Specific actionable implementation guidance provided",
-        "Authoritative sources documented with credibility assessment"
-      ],
-      "conditions": [
-        {
-          "name": "findings_synthesis_completed",
-          "conditionType": "PREVIOUS_STEP_COMPLETED",
-          "logic": {
-            "check": "step_completed",
-            "parameters": {
-              "stepName": "findings_synthesis_and_validation"
+              "stepName": "identify_research_questions"
             }
           },
           "isRequired": true
@@ -537,76 +158,43 @@
           },
           "sequenceOrder": 1
         }
-      ],
-      "triggerReport": true,
-      "reportType": "research_completion",
-      "reportTemplate": "comprehensive_research_report"
+      ]
     },
     {
-      "name": "role_transition_to_architect",
-      "displayName": "Role Transition to Architect",
-      "description": "Execute role transition directly to architect with validated recommendations and implementation guidance",
-      "sequenceNumber": 8,
+      "name": "role_transition",
+      "description": "Transition to architect role with research findings",
+      "sequenceNumber": 6,
       "isRequired": true,
-      "estimatedTime": "2-3 minutes",
       "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Direct role transition execution using the execute_transition tool available to the agent",
-        "principles": [
-          "Use execute_transition tool directly (NOT through MCP_CALL)",
-          "Transition to architect role with complete research context",
-          "Provide validated recommendations and evidence-based guidance in handoffMessage",
-          "Ensure implementation readiness with clear next steps and database delegation record creation"
-        ],
-        "methodology": "Direct tool usage for efficient role transition with comprehensive research handoff",
-        "transitionStrategy": {
-          "targetRole": "architect",
-          "transitionExecution": "Use execute_transition tool with 'researcher_to_architect' transitionId",
-          "contextPreservation": "Include complete research findings and strategic context in handoffMessage",
-          "databaseIntegration": "Ensure delegation record is created in database via RoleTransitionService"
-        }
-      },
+      "approach": "Execute transition to architect with comprehensive research handoff",
       "approachGuidance": {
         "stepByStep": [
-          "Prepare comprehensive handoff message with research findings and recommendations",
-          "Execute the execute_transition tool directly with 'researcher_to_architect' transitionId",
-          "Include taskId and roleId from current workflow context",
-          "Provide clear handoff message with research summary and implementation guidance",
-          "Verify transition success and confirm delegation record creation",
-          "Document completion of research phase and context preservation for implementation planning"
-        ],
-        "transitionExecutionSteps": [
-          "Call execute_transition tool directly (available to agent, not MCP_CALL)",
-          "Use transitionId: 'researcher_to_architect'",
-          "Include taskId and roleId from current workflow context",
-          "Provide comprehensive handoffMessage with research findings and strategic guidance"
+          "Execute get_role_transitions with fromRoleName: 'researcher'",
+          "Extract transitionId for researcher to architect transition",
+          "Execute execute_transition with research findings in handoff",
+          "Verify transition success and delegation confirmation"
         ]
       },
       "qualityChecklist": [
-        "Comprehensive handoff message prepared with research findings and recommendations",
-        "execute_transition tool executed directly with 'researcher_to_architect' transitionId",
-        "TaskId and roleId provided from current workflow context",
-        "Clear handoff message with research summary and implementation guidance provided",
-        "Transition success verified and delegation record creation confirmed",
-        "Research phase completion documented with context preservation for next phase"
+        "get_role_transitions executed with correct parameters",
+        "Correct transitionId obtained for architect transition",
+        "execute_transition executed with research findings",
+        "Transition success verified and delegation confirmed"
       ],
       "conditions": [
         {
-          "name": "research_report_created",
+          "name": "research_report_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "research_report_creation"
+              "stepName": "conduct_research_and_report"
             }
           },
           "isRequired": true
         }
       ],
-      "actions": [],
-      "triggerReport": true,
-      "reportType": "role_transition_execution",
-      "reportTemplate": "direct_role_transition_to_architect"
+      "actions": []
     }
   ]
 }

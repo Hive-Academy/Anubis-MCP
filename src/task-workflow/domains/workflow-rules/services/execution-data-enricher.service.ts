@@ -211,7 +211,7 @@ export class ExecutionDataEnricherService extends ConfigurableService<DataEnrich
           name: nextStep.name,
           status: stepStatus,
           description:
-            nextStep.description || `Execute ${nextStep.displayName}`,
+            nextStep.description || `Execute ${nextStep.description}`,
         },
       ];
     } catch (error) {

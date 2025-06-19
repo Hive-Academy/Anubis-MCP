@@ -137,54 +137,79 @@ export class DatabaseConfigManager {
     // Enhanced path resolution for VS Code extensions and MCP clients
     let resolvedProjectRoot = projectRoot;
 
-    // If running in VS Code extension context, try to find a better project root
-    if (process.env.VSCODE_PID || process.env.TERM_PROGRAM === 'vscode') {
+    // CRITICAL: Always respect PROJECT_ROOT environment variable from MCP configuration
+    if (process.env.PROJECT_ROOT && path.isAbsolute(process.env.PROJECT_ROOT)) {
+      resolvedProjectRoot = process.env.PROJECT_ROOT;
+      if (this.verbose) {
+        console.error(
+          `🎯 Using PROJECT_ROOT from MCP config: ${resolvedProjectRoot}`,
+        );
+      }
+    }
+    // If running in VS Code extension context, try to find workspace folder as fallback only
+    else if (process.env.VSCODE_PID || process.env.TERM_PROGRAM === 'vscode') {
       // Try to use workspace folder if available
       const workspaceFolder =
         process.env.VSCODE_WORKSPACE_FOLDER || process.env.PWD || process.cwd();
 
       if (workspaceFolder && fs.existsSync(workspaceFolder)) {
         resolvedProjectRoot = workspaceFolder;
+        if (this.verbose) {
+          console.error(
+            `📁 Using VS Code workspace folder: ${resolvedProjectRoot}`,
+          );
+        }
       }
     }
 
-    // Fallback to user home directory if project root is not writable
-    let dataDirectory = path.join(resolvedProjectRoot, 'data');
+    // ALWAYS use project-specific data directory - cross-platform path resolution
+    const dataDirectory = path.resolve(resolvedProjectRoot, 'data');
 
+    // Ensure we can create and write to the project data directory
     try {
-      // Test if we can create the data directory
+      // Create directory if it doesn't exist
       if (!fs.existsSync(dataDirectory)) {
         fs.mkdirSync(dataDirectory, { recursive: true });
+        if (this.verbose) {
+          console.error(`📁 Created data directory: ${dataDirectory}`);
+        }
       }
 
-      // Test write permissions
+      // Test write permissions with cross-platform approach
       const testFile = path.join(dataDirectory, '.write-test');
       fs.writeFileSync(testFile, 'test');
       fs.unlinkSync(testFile);
-    } catch (error) {
-      // Fallback to user home directory for VS Code extensions
-      const homeDir =
-        process.env.USERPROFILE || process.env.HOME || process.cwd();
-      dataDirectory = path.join(homeDir, '.anubis', 'data');
 
       if (this.verbose) {
-        console.warn(`⚠️ Using fallback data directory: ${dataDirectory}`);
-        console.warn(`   Original error: ${error}`);
-      }
-
-      // Ensure fallback directory exists
-      try {
-        if (!fs.existsSync(dataDirectory)) {
-          fs.mkdirSync(dataDirectory, { recursive: true });
-        }
-      } catch (fallbackError) {
-        throw new Error(
-          `Cannot create data directory. Tried: ${path.join(resolvedProjectRoot, 'data')} and ${dataDirectory}. Error: ${fallbackError}`,
+        console.error(
+          `✅ Successfully using project data directory: ${dataDirectory}`,
         );
       }
+    } catch (error) {
+      // NO FALLBACK - always fail with clear error message
+      const errorMessage = [
+        `❌ Cannot create data directory in project: ${resolvedProjectRoot}`,
+        `   Target directory: ${dataDirectory}`,
+        `   Error: ${error}`,
+        ``,
+        `💡 Possible solutions:`,
+        `   1. Check directory permissions for: ${resolvedProjectRoot}`,
+        `   2. Ensure the project directory is writable`,
+        `   3. Run with elevated permissions if needed`,
+        `   4. Check disk space availability`,
+        ``,
+        `🔧 Cross-platform note:`,
+        `   - Windows: Ensure no antivirus blocking directory creation`,
+        `   - Linux/Mac: Check user permissions with 'ls -la'`,
+        ``,
+        `This tool requires project isolation and will NOT use system directories.`,
+      ].join('\n');
+
+      throw new Error(errorMessage);
     }
 
-    const databasePath = path.join(dataDirectory, 'workflow.db');
+    // Use cross-platform path resolution for database
+    const databasePath = path.resolve(dataDirectory, 'workflow.db');
     const databaseUrl = `file:${databasePath}`;
 
     return {
@@ -193,7 +218,7 @@ export class DatabaseConfigManager {
       dataDirectory,
       projectRoot: resolvedProjectRoot,
       deploymentMethod: 'npx',
-      isProjectIsolated: true, // Achieved via project-specific paths
+      isProjectIsolated: true, // Always true - no fallbacks
     };
   }
 

@@ -55,17 +55,18 @@ export class WorkflowBootstrapService {
 
       // Single transaction for workflow execution creation
       const result = await this.prisma.$transaction(async (tx) => {
-        // Step 1: Get role with full context
+        // Step 1: Get role with full context including capabilities
         const role = await tx.workflowRole.findUnique({
           where: { name: input.initialRole },
           select: {
             id: true,
             name: true,
-            displayName: true,
             description: true,
-            capabilities: true,
             priority: true,
-            roleType: true,
+            isActive: true,
+            capabilities: true,
+            coreResponsibilities: true,
+            keyCapabilities: true,
           },
         });
 
@@ -82,17 +83,10 @@ export class WorkflowBootstrapService {
           select: {
             id: true,
             name: true,
-            displayName: true,
             description: true,
             sequenceNumber: true,
             stepType: true,
-            estimatedTime: true,
-            behavioralContext: true,
-            approachGuidance: true,
-            qualityChecklist: true,
-            actionData: true,
-            contextValidation: true,
-            patternEnforcement: true,
+            approach: true,
           },
         });
 
@@ -125,7 +119,7 @@ export class WorkflowBootstrapService {
               currentStep: {
                 id: firstStep.id,
                 name: firstStep.name,
-                displayName: firstStep.displayName,
+                description: firstStep.description,
                 sequenceNumber: firstStep.sequenceNumber,
                 assignedAt: new Date().toISOString(),
               },
@@ -137,25 +131,20 @@ export class WorkflowBootstrapService {
               select: {
                 id: true,
                 name: true,
-                displayName: true,
                 description: true,
-                capabilities: true,
                 priority: true,
-                roleType: true,
+                isActive: true,
+                capabilities: true,
+                coreResponsibilities: true,
+                keyCapabilities: true,
               },
             },
             currentStep: {
               select: {
                 id: true,
                 name: true,
-                displayName: true,
                 description: true,
-                behavioralContext: true,
-                approachGuidance: true,
-                qualityChecklist: true,
-                actionData: true,
-                contextValidation: true,
-                patternEnforcement: true,
+                approach: true,
               },
             },
           },
@@ -176,13 +165,13 @@ export class WorkflowBootstrapService {
       // Return execution data for immediate workflow start
       return {
         success: true,
-        message: `Workflow execution started successfully. Begin with: ${result.firstStep.displayName}`,
+        message: `Workflow execution started successfully. Begin with: ${result.firstStep.description}`,
         resources: {
           taskId: null, // Will be created by workflow
           executionId: result.workflowExecution.id,
           firstStepId: result.firstStep.id,
         },
-        execution: result.workflowExecution,
+        task: result.workflowExecution.task,
         currentStep: result.firstStep,
         currentRole: result.role,
       };

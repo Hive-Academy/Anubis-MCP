@@ -1,56 +1,29 @@
 {
   "workflowSteps": [
     {
-      "name": "mandatory_git_integration_setup",
-      "displayName": "MANDATORY: Git Integration Setup",
-      "description": "CRITICAL: Complete Git operations before task creation. STOP workflow if any step fails.",
+      "name": "git_setup and Memory_bank Analysis",
+      "description": "Set up git branch for task work",
       "sequenceNumber": 1,
       "isRequired": true,
-      "estimatedTime": "3-5 minutes",
       "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Complete git operations verification and setup before task creation",
-        "principles": [
-          "Verify git repository status and configuration",
-          "Ensure clean working directory or proper handling of existing changes",
-          "Create feature branch with descriptive naming",
-          "Verify all git operations work before proceeding"
-        ],
-        "methodology": "Git-first approach with comprehensive verification",
-        "setupPhases": {
-          "statusVerification": "Check git status and verify repository state",
-          "branchManagement": "Create appropriate feature branch for task work",
-          "configurationCheck": "Verify git configuration and repository setup",
-          "operationValidation": "Test basic git operations work correctly"
-        }
-      },
+      "approach": "Verify git status and create feature branch",
       "approachGuidance": {
         "stepByStep": [
-          "Check git repository status and configuration",
-          "Verify working directory state (clean or with expected changes)",
-          "Create feature branch using descriptive naming convention",
-          "Verify git operations work correctly",
-          "Document any git-related setup or configuration issues"
-        ],
-        "gitOperations": [
-          "Execute 'git status --porcelain' to check working directory",
-          "Create feature branch with format 'feature/TSK-{ID}-{short-description}'",
-          "Verify branch creation and checkout operations work",
-          "Test basic git commands to ensure repository is functional"
-        ],
-        "errorHandling": [
-          "Handle working directory changes appropriately",
-          "Address any git configuration issues",
-          "Resolve branch naming conflicts if they exist",
-          "Ensure git operations are functional before proceeding"
+          "Check git repository status with 'git status --porcelain'",
+          "Handle any uncommitted changes appropriately",
+          "Create feature branch with descriptive name",
+          "Verify branch creation succeeded",
+          "Check if memory-bank folder exists, if it exists, do Enhanced Memory Bank Analysis:",
+          "1. memory-bank/ProjectOverview.md: Extract business context, features, stakeholder requirements, value propositions",
+          "2. memory-bank/TechnicalArchitecture.md: Extract architecture patterns, component structure, technology stack, performance requirements",
+          "3. memory-bank/DeveloperGuide.md: Extract implementation standards, coding patterns, quality guidelines, testing approaches"
         ]
       },
       "qualityChecklist": [
-        "Git repository status verified and documented",
-        "Working directory state handled appropriately",
-        "Feature branch created with proper naming convention",
-        "Git operations verified to work correctly",
-        "Any git issues identified and resolved"
+        "Git repository exists and functional",
+        "Working directory status checked and handled",
+        "Feature branch created with proper naming",
+        "Branch checkout successful"
       ],
       "conditions": [
         {
@@ -65,62 +38,29 @@
           "isRequired": true
         }
       ],
-      "actions": [],
-      "triggerReport": true,
-      "reportType": "git_setup",
-      "reportTemplate": "git_integration_setup"
+      "actions": []
     },
     {
-      "name": "mandatory_codebase_analysis_and_task_creation",
-      "displayName": "Task Creation and Codebase Analysis",
-      "description": "Analyze codebase systematically, then create comprehensive task with analysis results",
+      "name": "create_task_with_analysis",
+      "description": "Analyze codebase and create task",
       "sequenceNumber": 2,
       "isRequired": true,
-      "estimatedTime": "10-15 minutes",
       "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Combined analysis and task creation for efficiency and context preservation",
-        "principles": [
-          "Perform systematic codebase analysis with functional verification",
-          "Create task immediately with analysis results to preserve context",
-          "Link task to current workflow execution via executionId",
-          "Structure analysis data for downstream role consumption"
-        ],
-        "methodology": "Analysis → Task Creation → Context Linking"
-      },
+      "approach": "Analyze project systematically then create task with findings",
       "approachGuidance": {
         "stepByStep": [
-          "Analyze project structure and identify key patterns",
-          "Document technology stack and architecture findings",
-          "Test current functionality to verify capabilities",
-          "Extract task requirements from user input",
-          "Create comprehensive task with analysis data",
-          "CRITICAL: Include executionId to link task to workflow"
-        ],
-        "analysisPhase": [
-          "Map technology stack and versions",
-          "Identify architectural patterns and design principles",
-          "Test functionality to validate current capabilities",
-          "Document findings with evidence"
-        ],
-        "taskCreationPhase": [
-          "Extract requirements from user request",
-          "Structure analysis findings for downstream consumption",
-          "Call TaskOperations.create with ALL required parameters",
-          "Immediately update task status to 'in-progress' using TaskOperations.update",
-          "Verify task creation and execution linking"
+          "Combined with the memory bank files analysis, Analyze project structure and identify tech stack",
+          "Extract clear requirements from user request",
+          "Create task with executionId and codebase analysis",
+          "Update task status to 'in-progress'"
         ]
       },
       "qualityChecklist": [
-        "Architecture patterns and technology stack documented",
+        "Project structure and tech stack documented",
         "Current functionality tested and verified",
-        "Task created with comprehensive description and requirements",
-        "Task status updated to 'in-progress' immediately after creation",
-        "Codebase analysis properly structured in task",
-        "CRITICAL: executionId included in TaskOperations.create call",
-        "Task successfully linked to current workflow execution",
-        "Git branch information recorded in task",
-        "All acceptance criteria clearly defined"
+        "Requirements extracted and clearly defined",
+        "Task created with executionId linked to workflow",
+        "Task status updated to 'in-progress'"
       ],
       "conditions": [
         {
@@ -129,7 +69,7 @@
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "mandatory_git_integration_setup"
+              "stepName": "git_setup"
             }
           },
           "isRequired": true
@@ -137,13 +77,12 @@
       ],
       "actions": [
         {
-          "name": "create_task_with_codebase_analysis",
+          "name": "create_task",
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "TaskOperations",
             "operation": "create",
             "requiredParameters": [
-              "operation",
               "executionId",
               "taskData",
               "description",
@@ -153,164 +92,78 @@
           "sequenceOrder": 1
         },
         {
-          "name": "update_task_status_to_in_progress",
+          "name": "update_task_status",
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "TaskOperations",
             "operation": "update",
-            "requiredParameters": ["operation", "taskId", "taskData"],
-            "parameterGuidance": {
-              "taskId": "Use the task ID returned from the create operation",
-              "taskData": "Set status to 'in-progress' to indicate work has begun"
-            }
+            "requiredParameters": ["taskId", "taskData"]
           },
           "sequenceOrder": 2
         }
-      ],
-      "triggerReport": true,
-      "reportType": "task_creation_with_analysis",
-      "reportTemplate": "task_creation_completion"
+      ]
     },
     {
-      "name": "research_decision_framework_with_validation",
-      "displayName": "Research Decision Framework with Current State Validation",
-      "description": "Evaluate research necessity using verified decision criteria and evidence",
+      "name": "research_decision",
+      "description": "Decide if research is needed based on task complexity",
       "sequenceNumber": 3,
       "isRequired": true,
-      "estimatedTime": "3-5 minutes",
-      "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Evidence-based research decision making with mandatory verification",
-        "principles": [
-          "Base decisions on verified current state testing",
-          "Document evidence supporting research rationale",
-          "Use tested capabilities vs assumptions for decisions",
-          "Provide specific research questions if research needed"
-        ],
-        "methodology": "Verification-driven decision matrix with evidence documentation",
-        "decisionCriteria": {
-          "definitelyResearch": [
-            "unfamiliar_technologies_verified",
-            "multiple_approaches_needed_confirmed",
-            "critical_architecture_decisions_tested",
-            "security_requirements_beyond_current",
-            "unknown_external_systems_proven"
-          ],
-          "unlikelyResearch": [
-            "clear_implementation_path_confirmed",
-            "well_understood_technology_validated",
-            "similar_work_completed_verified",
-            "standard_operations_tested"
-          ]
-        },
-        "evidenceRequirements": {
-          "currentStateTested": "Verify current system capabilities through actual testing",
-          "capabilitiesVerified": "Document what the system can and cannot do",
-          "limitationsConfirmed": "Test and confirm system limitations",
-          "complexityValidated": "Validate complexity assumptions through hands-on investigation",
-          "verificationEvidence": "Provide concrete evidence from testing and investigation"
-        }
-      },
+      "stepType": "DECISION",
+      "approach": "Test current system, evaluate task complexity, decide research necessity",
       "approachGuidance": {
         "stepByStep": [
-          "Review functional verification results from previous step",
-          "Test existing functionality to understand current capabilities",
-          "Verify technical claims through actual code execution",
-          "Validate complexity assumptions with hands-on investigation",
-          "Apply evidence-based decision criteria for research necessity",
-          "Document specific research questions if research is needed"
-        ],
-        "evaluationSteps": [
-          "Apply decision matrix criteria to current task requirements",
-          "Compare task complexity against verified system capabilities",
-          "Assess whether current knowledge is sufficient for implementation",
-          "Determine if additional research would provide significant value"
-        ],
-        "documentationSteps": [
-          "Document decision rationale with supporting evidence",
-          "Record verification results that influenced the decision",
-          "Specify research questions if research is recommended",
-          "Prepare context for next role based on decision outcome"
+          "Review task requirements and current system capabilities",
+          "Test existing functionality to confirm what works",
+          "Evaluate if technologies/patterns are familiar or unknown",
+          "Apply decision criteria: research needed vs direct implementation",
+          "Document decision with clear reasoning"
         ]
       },
       "qualityChecklist": [
-        "Current state tested and capabilities verified",
-        "Technical claims validated through execution",
-        "Complexity assumptions tested with evidence",
-        "Decision criteria applied with verification evidence",
-        "Research decision documented with rationale",
-        "Specific research questions provided if research needed"
+        "Current system capabilities tested and confirmed",
+        "Task complexity evaluated against known capabilities",
+        "Decision made: research needed or direct to architect",
+        "Decision reasoning documented clearly",
+        "Next role determined (researcher or architect)"
       ],
       "conditions": [
         {
-          "name": "analysis_and_task_creation_completed",
+          "name": "task_creation_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "mandatory_codebase_analysis_and_task_creation"
+              "stepName": "create_task_with_analysis"
             }
           },
           "isRequired": true
         }
       ],
-      "actions": [],
-      "triggerReport": true,
-      "reportType": "research_decision",
-      "reportTemplate": "evidence_based_research_decision"
+      "actions": []
     },
     {
-      "name": "role_transition_execution",
-      "displayName": "Role Transition Execution",
-      "description": "Execute role transition directly using the execute_transition tool based on research decision",
+      "name": "role_transition",
+      "description": "Transition to next role based on research decision",
       "sequenceNumber": 4,
       "isRequired": true,
-      "estimatedTime": "2-3 minutes",
       "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Direct role transition execution using the execute_transition tool available to the agent",
-        "principles": [
-          "Use execute_transition tool directly (NOT through MCP_CALL)",
-          "Select appropriate target role based on research decision",
-          "Provide comprehensive handoff context in handoffMessage",
-          "Ensure proper workflow continuity and database delegation record creation"
-        ],
-        "methodology": "Direct tool usage for efficient role transition with database integration",
-        "transitionStrategy": {
-          "roleSelection": "Determine target role: 'researcher' if research needed, 'architect' if direct implementation",
-          "transitionExecution": "Use execute_transition tool with appropriate transitionId",
-          "contextPreservation": "Include comprehensive handoff context in handoffMessage parameter",
-          "databaseIntegration": "Ensure delegation record is created in database via RoleTransitionService"
-        }
-      },
+      "approach": "Get correct transition ID, then execute transition to researcher or architect",
       "approachGuidance": {
         "stepByStep": [
-          "Determine target role based on research decision from previous step",
-          "Identify the appropriate transitionId for the target role transition",
-          "Prepare comprehensive handoff message with task context and analysis results",
-          "Execute the execute_transition tool directly with required parameters",
-          "Verify transition success and confirm delegation record creation",
-          "Document transition completion and context handoff"
-        ],
-        "roleSelectionGuidance": [
-          "If research decision indicates research needed: transition to 'researcher' role",
-          "If research decision indicates direct implementation: transition to 'architect' role",
-          "Use appropriate transitionId: 'boomerang_to_researcher' or 'boomerang_to_architect'"
-        ],
-        "transitionExecutionSteps": [
-          "Call execute_transition tool directly (available to agent, not MCP_CALL)",
-          "Provide transitionId based on target role selection",
-          "Include taskId and roleId from current workflow context",
-          "Provide comprehensive handoffMessage with analysis results and context"
+          "Determine target role based on research decision (researcher or architect)",
+          "Execute get_role_transitions with fromRoleName: 'boomerang', taskId, and roleId",
+          "Extract correct transitionId from response based on target role",
+          "Execute execute_transition with obtained transitionId and handoff message",
+          "Verify transition success and delegation record creation"
         ]
       },
       "qualityChecklist": [
-        "Target role determined based on evidence-based research decision",
-        "Appropriate transitionId identified for the target role transition",
-        "Comprehensive handoff message prepared with task context and analysis",
-        "execute_transition tool executed directly with all required parameters",
-        "Transition success verified and delegation record creation confirmed",
-        "Workflow continuity ensured with proper context handoff"
+        "Target role determined based on research decision",
+        "get_role_transitions executed with correct parameters",
+        "Correct transitionId obtained from response (not placeholder)",
+        "execute_transition executed with proper transitionId",
+        "Handoff message includes task context and analysis",
+        "Transition success verified and delegation confirmed"
       ],
       "conditions": [
         {
@@ -319,16 +172,13 @@
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "research_decision_framework_with_validation"
+              "stepName": "research_decision"
             }
           },
           "isRequired": true
         }
       ],
-      "actions": [],
-      "triggerReport": true,
-      "reportType": "role_transition_execution",
-      "reportTemplate": "direct_role_transition_completion"
+      "actions": []
     }
   ]
 }

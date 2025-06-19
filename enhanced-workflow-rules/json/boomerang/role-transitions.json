@@ -4,221 +4,79 @@
       "fromRoleId": "boomerang",
       "toRoleId": "researcher",
       "transitionName": "boomerang_to_researcher",
+      "description": "Transition when research is needed for informed decisions",
       "conditions": {
         "knowledgeGapsIdentified": true,
         "researchRequired": true,
-        "technicalUncertainty": true,
-        "evidenceInsufficient": true
+        "technicalUncertainty": true
       },
-      "requirements": {
-        "taskContextComplete": true,
-        "researchQuestionsFormulated": true,
-        "currentStateVerified": true,
-        "strategicDecisionMade": true
-      },
-      "validationRules": {
-        "mustHaveCompletedSteps": [
-          "mandatory_git_integration_setup",
-          "mandatory_codebase_analysis_and_task_creation",
-          "research_decision_framework_with_validation"
-        ],
-        "mustHaveEvidence": [
-          "verification_results",
-          "knowledge_gaps",
-          "research_questions"
-        ],
-        "qualityGates": [
-          "context_completeness_check",
-          "research_scope_validation"
-        ]
-      },
+      "requirements": [
+        "Task context complete",
+        "Research questions formulated", 
+        "Current state verified",
+        "Strategic decision made"
+      ],
+      "validationCriteria": [
+        "All boomerang workflow steps completed",
+        "Knowledge gaps clearly identified",
+        "Research scope defined",
+        "Context completeness verified"
+      ],
       "handoffGuidance": {
         "contextToPreserve": [
           "task_context",
-          "verification_evidence",
+          "codebase_analysis", 
           "strategic_decisions",
-          "identified_knowledge_gaps",
+          "knowledge_gaps",
           "research_questions"
         ],
         "handoffMessage": "Research required for informed strategic decisions. Context and evidence provided for targeted investigation.",
         "expectedDeliverables": [
           "research_findings",
           "technical_recommendations",
-          "risk_assessment",
+          "risk_assessment", 
           "implementation_guidance"
         ]
-      },
-      "contextPreservation": {
-        "taskData": "complete_task_context",
-        "verificationEvidence": "current_state_verification_results",
-        "strategicContext": "strategic_analysis_and_decisions",
-        "qualityRequirements": "quality_standards_and_constraints"
       },
       "isActive": true
     },
     {
-      "fromRoleId": "boomerang",
+      "fromRoleId": "boomerang", 
       "toRoleId": "architect",
       "transitionName": "boomerang_to_architect",
+      "description": "Direct transition when architectural planning is needed",
       "conditions": {
-        "complexityHigh": true,
+        "requirementsClear": true,
         "architecturalDecisionsRequired": true,
-        "systemDesignNeeded": true,
         "implementationPlanRequired": true
       },
-      "requirements": {
-        "taskContextComplete": true,
-        "currentStateVerified": true,
-        "complexityAssessed": true,
-        "strategicDirectionSet": true
-      },
-      "validationRules": {
-        "mustHaveCompletedSteps": [
-          "mandatory_git_integration_setup",
-          "mandatory_codebase_analysis_and_task_creation",
-          "research_decision_framework_with_validation"
-        ],
-        "mustHaveEvidence": [
-          "verification_results",
-          "complexity_assessment",
-          "architectural_requirements"
-        ],
-        "qualityGates": [
-          "context_completeness_check",
-          "architectural_scope_validation"
-        ]
-      },
+      "requirements": [
+        "Task context complete",
+        "Current state verified", 
+        "Complexity assessed",
+        "Strategic direction set"
+      ],
+      "validationCriteria": [
+        "All boomerang workflow steps completed",
+        "Architectural requirements identified",
+        "Implementation scope defined",
+        "Quality standards established"
+      ],
       "handoffGuidance": {
         "contextToPreserve": [
           "task_context",
-          "verification_evidence",
-          "strategic_decisions",
-          "complexity_assessment",
-          "architectural_requirements"
+          "codebase_analysis",
+          "strategic_decisions", 
+          "architectural_requirements",
+          "quality_standards"
         ],
-        "handoffMessage": "Architectural design required for complex implementation. Full context and evidence provided for comprehensive planning.",
+        "handoffMessage": "Architectural design required for implementation. Full context and evidence provided for comprehensive planning.",
         "expectedDeliverables": [
           "implementation_plan",
           "architectural_decisions",
           "technical_specifications",
           "quality_constraints"
         ]
-      },
-      "contextPreservation": {
-        "taskData": "complete_task_context",
-        "verificationEvidence": "current_state_verification_results",
-        "strategicContext": "strategic_analysis_and_decisions",
-        "complexityAnalysis": "complexity_assessment_results"
-      },
-      "isActive": true
-    },
-    {
-      "fromRoleId": "boomerang",
-      "toRoleId": "senior-developer",
-      "transitionName": "boomerang_to_senior_developer",
-      "conditions": {
-        "implementationReady": true,
-        "requirementsClear": true,
-        "complexityManageable": true,
-        "noArchitecturalUncertainty": true
-      },
-      "requirements": {
-        "taskContextComplete": true,
-        "currentStateVerified": true,
-        "implementationPlanExists": true,
-        "qualityStandardsDefined": true
-      },
-      "validationRules": {
-        "mustHaveCompletedSteps": [
-          "mandatory_git_integration_setup",
-          "mandatory_codebase_analysis_and_task_creation",
-          "research_decision_framework_with_validation"
-        ],
-        "mustHaveEvidence": [
-          "verification_results",
-          "implementation_plan",
-          "quality_requirements"
-        ],
-        "qualityGates": [
-          "implementation_readiness_check",
-          "quality_standards_validation"
-        ]
-      },
-      "handoffGuidance": {
-        "contextToPreserve": [
-          "task_context",
-          "verification_evidence",
-          "implementation_plan",
-          "quality_standards",
-          "acceptance_criteria"
-        ],
-        "handoffMessage": "Implementation ready with clear requirements and plan. Full context provided for quality execution.",
-        "expectedDeliverables": [
-          "implemented_solution",
-          "test_coverage",
-          "documentation",
-          "quality_validation"
-        ]
-      },
-      "contextPreservation": {
-        "taskData": "complete_task_context",
-        "verificationEvidence": "current_state_verification_results",
-        "implementationPlan": "detailed_implementation_plan",
-        "qualityRequirements": "quality_standards_and_constraints"
-      },
-      "isActive": true
-    },
-    {
-      "fromRoleId": "boomerang",
-      "toRoleId": "integration-engineer",
-      "transitionName": "boomerang_to_integration_engineer_direct",
-      "conditions": {
-        "implementationComplete": true,
-        "directIntegrationRequested": true,
-        "qualityValidated": true,
-        "deliverableReady": true
-      },
-      "requirements": {
-        "comprehensiveImplementation": true,
-        "qualityStandardsMet": true,
-        "deliverablePackageReady": true,
-        "timelineConstraintsMet": true
-      },
-      "validationRules": {
-        "deliverableReady": "Deliverable ready for integration and deployment",
-        "qualityValidated": "Quality validation completed with evidence",
-        "implementationComplete": "Implementation completed and ready for integration",
-        "directIntegrationJustified": "Direct integration explicitly requested by Boomerang"
-      },
-      "handoffGuidance": {
-        "contextToProvide": [
-          "Complete project context and business requirements",
-          "Implementation completion confirmation with evidence",
-          "Quality validation results and metrics",
-          "Acceptance criteria mapping and verification status",
-          "Timeline constraints and delivery expectations"
-        ],
-        "integrationScope": [
-          "Comprehensive final validation and readiness assessment",
-          "Git operations with complete evidence documentation",
-          "Memory bank updates with implementation context",
-          "User delivery with success metrics and monitoring",
-          "Knowledge preservation for organizational learning"
-        ],
-        "deliveryExpectations": [
-          "Production-ready deployment with comprehensive validation",
-          "Complete documentation with implementation evidence",
-          "User handoff with actionable next steps",
-          "Monitoring and support procedures established",
-          "Knowledge assets preserved for future reference"
-        ]
-      },
-      "contextPreservation": {
-        "projectContext": "Complete project context and business requirements",
-        "implementationEvidence": "Implementation completion confirmation with evidence",
-        "qualityValidation": "Quality validation results and metrics",
-        "acceptanceCriteriaMapping": "Acceptance criteria mapping and verification status",
-        "deliveryExpectations": "Timeline constraints and delivery expectations"
       },
       "isActive": true
     }

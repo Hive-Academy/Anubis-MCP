@@ -1,75 +1,34 @@
 {
   "workflowSteps": [
     {
-      "name": "intelligent_context_analysis_and_testing_strategy",
-      "displayName": "Intelligent Context Analysis and Testing Strategy",
-      "description": "Analyze implementation context, tech stack, and changes to determine optimal testing and validation approach",
+      "name": "analyze_implementation_context",
+      "description": "Analyze implementation and formulate testing strategy",
       "sequenceNumber": 1,
       "isRequired": true,
-      "estimatedTime": "25-35 minutes",
       "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Intelligent context-driven analysis with adaptive testing strategy formulation",
-        "principles": [
-          "Analyze task description, codebase analysis, and implementation to understand what was actually changed",
-          "Determine tech stack, architecture patterns, and integration points from context",
-          "Identify highest-risk areas based on the type of changes made",
-          "Formulate testing strategy appropriate for the specific technology and change type"
-        ],
-        "methodology": "QA Engineer mindset: Context → Risk Assessment → Targeted Testing Strategy",
-        "contextAnalysisFramework": {
-          "taskTypeAnalysis": "Determine if this is: new feature, refactoring, bug fix, performance optimization, security enhancement, etc.",
-          "techStackIdentification": "Identify technology stack, frameworks, databases, APIs, UI technologies from codebase analysis",
-          "changeImpactAssessment": "Analyze what components were modified and potential ripple effects",
-          "riskAreaIdentification": "Identify highest-risk areas based on change type and system architecture"
-        },
-        "adaptiveTestingGuidance": {
-          "riskBasedTesting": "Focus testing effort on areas with highest risk of regression or failure",
-          "techStackAppropriate": "Apply testing methods appropriate for the identified technology stack",
-          "changeTypeSpecific": "Tailor validation approach based on whether changes are functional, structural, or performance-related",
-          "integrationFocused": "Prioritize testing of integration points and system boundaries affected by changes"
-        }
-      },
+      "approach": "Context-driven analysis with adaptive testing strategy",
       "approachGuidance": {
         "stepByStep": [
-          "Execute TaskOperations.get to retrieve comprehensive task context, codebase analysis, and implementation details",
-          "Analyze task description and acceptance criteria to understand the purpose and scope of changes",
-          "Extract technology stack, architecture patterns, and system boundaries from codebase analysis",
-          "Identify what was actually implemented by reviewing completed subtasks and implementation evidence",
-          "Assess change impact and identify highest-risk areas for potential regression or failure",
-          "Formulate targeted testing strategy appropriate for the tech stack and change type"
-        ],
-        "contextAnalysisSteps": [
-          "Parse task description to understand: What problem was being solved? What type of change is this?",
-          "Extract tech stack details: Frontend/backend technologies, databases, APIs, frameworks",
-          "Identify system architecture: Microservices, monolith, serverless, client-server, etc.",
-          "Map implementation scope: Which components were modified, added, or removed?"
-        ],
-        "riskAssessmentSteps": [
-          "Identify critical system boundaries and integration points affected by changes",
-          "Assess potential for regression in existing functionality",
-          "Evaluate security implications of changes (authentication, authorization, data handling)",
-          "Consider performance impact and scalability implications"
-        ],
-        "strategyFormulationSteps": [
-          "Design testing approach appropriate for identified tech stack and architecture",
-          "Prioritize testing areas based on risk assessment and change impact",
-          "Plan validation methods suitable for the type of implementation (UI, API, database, etc.)",
-          "Establish success criteria and evidence collection approach"
+          "Check if task context is already available in current execution history",
+          "If context is available, analyze and validate its completeness",
+          "Only if context is missing or incomplete, execute TaskOperations.get to retrieve implementation context and codebase analysis",
+          "Analyze task type, tech stack, and implementation scope",
+          "Identify highest-risk areas and integration points",
+          "Formulate testing strategy appropriate for changes made",
+          "Establish risk-based testing priorities"
         ]
       },
       "qualityChecklist": [
-        "Task context and implementation scope thoroughly analyzed and understood",
-        "Technology stack, architecture patterns, and system boundaries identified",
-        "Change impact assessed with highest-risk areas for testing identified",
-        "Testing strategy formulated appropriate for tech stack and change type",
-        "Risk-based testing priorities established with clear validation approach",
-        "Success criteria and evidence collection methods defined"
+        "Implementation context and scope thoroughly analyzed",
+        "Technology stack and architecture patterns identified",
+        "Highest-risk areas for testing identified",
+        "Testing strategy formulated for tech stack and changes",
+        "Risk-based testing priorities established"
       ],
       "conditions": [],
       "actions": [
         {
-          "name": "acquire_comprehensive_context",
+          "name": "get_implementation_context",
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "TaskOperations",
@@ -77,272 +36,121 @@
           },
           "sequenceOrder": 1
         }
-      ],
-      "triggerReport": true,
-      "reportType": "intelligent_context_analysis_and_testing_strategy",
-      "reportTemplate": "context_analysis_and_testing_strategy"
+      ]
     },
     {
-      "name": "targeted_implementation_validation",
-      "displayName": "Targeted Implementation Validation",
-      "description": "Execute focused validation based on the formulated testing strategy and identified risk areas",
+      "name": "execute_targeted_validation",
+      "description": "Execute focused validation based on testing strategy",
       "sequenceNumber": 2,
       "isRequired": true,
-      "estimatedTime": "35-50 minutes",
       "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Targeted validation execution based on context-specific testing strategy",
-        "principles": [
-          "Execute testing strategy formulated in previous step with focus on identified risk areas",
-          "Apply validation methods appropriate for the specific technology stack and change type",
-          "Prioritize testing effort on highest-impact areas rather than generic comprehensive testing",
-          "Collect evidence specific to the implementation and acceptance criteria"
-        ],
-        "methodology": "Strategic testing execution with evidence-based validation",
-        "validationFramework": {
-          "functionalValidation": "Test core functionality affected by changes using methods appropriate for tech stack",
-          "integrationValidation": "Validate integration points and system boundaries identified in analysis",
-          "regressionValidation": "Test existing functionality that could be affected by changes",
-          "qualityValidation": "Assess code quality, patterns, and standards compliance"
-        },
-        "adaptiveTestingMethods": {
-          "apiTesting": "For backend services: endpoint testing, data validation, error handling",
-          "uiTesting": "For frontend changes: user workflows, responsiveness, accessibility",
-          "databaseTesting": "For data layer changes: CRUD operations, migrations, performance",
-          "integrationTesting": "For system changes: service communication, data flow, error propagation"
-        }
-      },
+      "approach": "Strategic testing execution with evidence collection",
       "approachGuidance": {
         "stepByStep": [
-          "Execute the testing strategy formulated in the previous step",
-          "Focus validation effort on the highest-risk areas identified during context analysis",
-          "Apply testing methods appropriate for the identified technology stack",
-          "Validate core functionality affected by the implementation changes",
-          "Test integration points and system boundaries that could be impacted",
-          "Collect specific evidence of functionality, quality, and compliance"
-        ],
-        "targetedTestingSteps": [
-          "Execute primary functionality testing for features directly implemented or modified",
-          "Validate integration points between modified components and existing systems",
-          "Test error scenarios and edge cases relevant to the specific implementation",
-          "Verify data flow and processing accuracy for affected workflows"
-        ],
-        "qualityAssessmentSteps": [
-          "Review code quality and adherence to established patterns from codebase analysis",
-          "Validate implementation follows architectural principles and design patterns",
-          "Assess error handling, logging, and monitoring appropriate for the tech stack",
-          "Verify security considerations relevant to the type of changes made"
-        ],
-        "evidenceCollectionSteps": [
-          "Document test results with specific evidence of functionality validation",
-          "Record any issues, inconsistencies, or areas of concern discovered",
-          "Collect performance metrics if relevant to the type of changes made",
-          "Gather compliance evidence for acceptance criteria and quality standards"
+          "Execute testing strategy focusing on identified risk areas",
+          "Apply validation methods appropriate for tech stack",
+          "Test core functionality and integration points",
+          "Assess code quality and pattern compliance",
+          "Collect specific evidence of validation results"
         ]
       },
       "qualityChecklist": [
-        "Testing strategy executed with focus on identified highest-risk areas",
-        "Validation methods appropriate for tech stack and change type applied",
-        "Core functionality affected by implementation thoroughly tested",
-        "Integration points and system boundaries validated for proper operation",
-        "Code quality and pattern compliance assessed against established standards",
-        "Specific evidence collected demonstrating functionality and quality validation"
+        "Testing strategy executed on highest-risk areas",
+        "Validation methods appropriate for tech stack applied",
+        "Core functionality thoroughly tested",
+        "Integration points validated for proper operation",
+        "Code quality assessed against established standards"
       ],
       "conditions": [
         {
-          "name": "context_analysis_and_strategy_completed",
+          "name": "context_analysis_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "intelligent_context_analysis_and_testing_strategy"
+              "stepName": "analyze_implementation_context"
             }
           },
           "isRequired": true
         }
       ],
-      "actions": [],
-      "triggerReport": true,
-      "reportType": "targeted_implementation_validation",
-      "reportTemplate": "targeted_validation_results"
+      "actions": []
     },
     {
-      "name": "acceptance_criteria_verification_and_evidence_synthesis",
-      "displayName": "Acceptance Criteria Verification and Evidence Synthesis",
-      "description": "Systematically verify acceptance criteria satisfaction and synthesize validation evidence for decision making",
+      "name": "verify_acceptance_criteria",
+      "description": "Verify acceptance criteria and synthesize evidence",
       "sequenceNumber": 3,
       "isRequired": true,
-      "estimatedTime": "20-30 minutes",
       "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Systematic acceptance criteria validation with comprehensive evidence synthesis",
-        "principles": [
-          "Map validation results against original acceptance criteria to verify satisfaction",
-          "Synthesize evidence from testing and validation into clear assessment",
-          "Identify any gaps between implementation and requirements",
-          "Prepare evidence-based assessment for review decision making"
-        ],
-        "methodology": "Requirements traceability with evidence-based verification",
-        "verificationFramework": {
-          "criteriaMapping": "Map each acceptance criterion to specific validation evidence",
-          "gapAnalysis": "Identify any requirements not fully satisfied by implementation",
-          "evidenceSynthesis": "Consolidate validation results into clear assessment",
-          "riskAssessment": "Evaluate any remaining risks or concerns for production readiness"
-        }
-      },
+      "approach": "Systematic acceptance criteria validation with evidence synthesis",
       "approachGuidance": {
         "stepByStep": [
-          "Review original acceptance criteria and map against validation evidence collected",
-          "Verify each acceptance criterion is satisfied with specific evidence from testing",
-          "Identify any gaps between requirements and implementation based on validation results",
-          "Synthesize validation evidence into clear assessment of implementation quality",
-          "Evaluate overall implementation completeness and production readiness",
-          "Prepare comprehensive evidence package for review decision making"
-        ],
-        "criteriaVerificationSteps": [
-          "Map each acceptance criterion to specific validation evidence from testing",
-          "Verify functional requirements satisfaction with concrete test results",
-          "Confirm technical requirements met based on quality and performance validation",
-          "Validate non-functional requirements addressed appropriately for the system type"
-        ],
-        "evidenceSynthesisSteps": [
-          "Consolidate validation results into clear summary of implementation quality",
-          "Document any issues, risks, or areas requiring attention",
-          "Assess overall implementation completeness against original requirements",
-          "Prepare evidence-based recommendation for approval or further work needed"
+          "Map validation results against acceptance criteria",
+          "Verify each criterion satisfied with specific evidence",
+          "Identify any gaps between requirements and implementation",
+          "Synthesize evidence into clear quality assessment",
+          "Prepare comprehensive evidence for decision making"
         ]
       },
       "qualityChecklist": [
-        "All acceptance criteria systematically verified against validation evidence",
-        "Functional and technical requirements satisfaction confirmed with specific evidence",
-        "Any gaps between implementation and requirements clearly identified",
-        "Validation evidence synthesized into clear assessment of implementation quality",
-        "Overall implementation completeness evaluated against original requirements",
-        "Evidence-based assessment prepared for informed review decision making"
+        "All acceptance criteria mapped to validation evidence",
+        "Each criterion verified with specific evidence",
+        "Any gaps between requirements and implementation identified",
+        "Evidence synthesized into clear quality assessment",
+        "Comprehensive evidence prepared for review decision"
       ],
       "conditions": [
         {
-          "name": "targeted_validation_completed",
+          "name": "validation_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "targeted_implementation_validation"
+              "stepName": "execute_targeted_validation"
             }
           },
           "isRequired": true
         }
       ],
-      "actions": [],
-      "triggerReport": true,
-      "reportType": "acceptance_criteria_verification_and_evidence_synthesis",
-      "reportTemplate": "criteria_verification_and_evidence_synthesis"
+      "actions": []
     },
     {
-      "name": "intelligent_review_decision_and_workflow_completion",
-      "displayName": "Intelligent Review Decision and Workflow Completion",
-      "description": "Make evidence-based review decision and execute appropriate role transition based on review outcome",
+      "name": "make_review_decision",
+      "description": "Make code review decision and execute appropriate transition",
       "sequenceNumber": 4,
       "isRequired": true,
-      "estimatedTime": "15-25 minutes",
       "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Evidence-based decision making with direct role transition execution based on review outcome",
-        "principles": [
-          "Make review decision based on comprehensive evidence and risk assessment",
-          "Use deterministic criteria to decide between integration delegation or escalation",
-          "Execute appropriate role transition directly using execute_transition tool",
-          "Provide clear rationale and context for decision made in handoffMessage"
-        ],
-        "methodology": "Decision matrix application with direct role transition execution",
-        "decisionFramework": {
-          "approvalCriteria": "All acceptance criteria met, quality standards satisfied, no significant risks",
-          "conditionalApproval": "Requirements met with minor issues that don't block production",
-          "changesRequired": "Significant gaps, quality issues, or risks requiring additional work",
-          "escalationTriggers": "Complex issues requiring architectural or business stakeholder input"
-        },
-        "roleTransitionGuidance": {
-          "useIntegrationTransition": [
-            "All acceptance criteria fully satisfied with evidence",
-            "Implementation quality meets or exceeds established standards",
-            "No significant risks or blockers identified for production",
-            "All validation evidence supports approval decision",
-            "Minor issues present but don't impact core functionality or production readiness",
-            "Ready for integration, documentation updates, and deployment preparation"
-          ],
-          "useArchitectEscalation": [
-            "One or more acceptance criteria not satisfied",
-            "Significant quality issues or code problems identified",
-            "Security vulnerabilities or performance issues discovered",
-            "Implementation doesn't follow established patterns or standards",
-            "Major functionality gaps or integration problems found",
-            "Complex architectural decisions needed beyond code review scope"
-          ]
-        }
-      },
+      "approach": "Evidence-based decision making with appropriate role transition",
       "approachGuidance": {
         "stepByStep": [
-          "Evaluate all validation evidence against approval criteria for informed decision",
-          "Apply deterministic decision criteria to determine APPROVED or NEEDS_CHANGES",
-          "Create comprehensive review report with findings, evidence, and decision rationale",
-          "Determine appropriate role transition based on decision outcome",
-          "Execute the appropriate execute_transition tool directly with proper context",
-          "Ensure comprehensive documentation of decision rationale and next steps"
-        ],
-        "decisionMakingSteps": [
-          "Assess overall implementation quality against established standards",
-          "Evaluate requirements satisfaction completeness based on evidence",
-          "Consider production readiness and any remaining risks or concerns",
-          "Apply decision criteria to determine APPROVED or NEEDS_CHANGES outcome"
-        ],
-        "roleTransitionSelectionSteps": [
-          "IF decision is APPROVED: Use execute_transition with 'code_review_to_integration_engineer' transitionId",
-          "IF decision is NEEDS_CHANGES: Use execute_transition with 'code_review_to_architect' transitionId",
-          "Document specific reasons for transition selection based on review findings",
-          "Include clear guidance for next steps in handoffMessage"
-        ],
-        "transitionExecutionSteps": [
-          "Create detailed review report with findings, evidence, and decision rationale",
-          "Call execute_transition tool directly (available to agent, not MCP_CALL)",
-          "Use appropriate transitionId based on decision outcome",
-          "Provide comprehensive handoffMessage with review context and next steps"
+          "Make review decision based on validation evidence",
+          "If approved: transition to integration-engineer for final steps",
+          "If needs changes: transition to architect for revision",
+          "Execute get_role_transitions with appropriate parameters",
+          "Execute transition with comprehensive evidence in handoff"
         ]
       },
       "qualityChecklist": [
-        "Review decision based on comprehensive evidence evaluation and risk assessment",
-        "Deterministic criteria applied to select appropriate role transition",
-        "Implementation quality, requirements satisfaction, and production readiness considered",
-        "Comprehensive review report created with findings, evidence, and decision rationale",
-        "Correct role transition executed directly using execute_transition tool",
-        "Context preservation comprehensive with clear rationale and handoff information for receiving role"
+        "Review decision made based on validation evidence",
+        "Appropriate transition path determined",
+        "get_role_transitions executed with correct parameters",
+        "Transition executed with comprehensive evidence",
+        "Decision rationale and evidence properly communicated"
       ],
       "conditions": [
         {
-          "name": "acceptance_criteria_verified_and_evidence_synthesized",
+          "name": "criteria_verification_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "acceptance_criteria_verification_and_evidence_synthesis"
+              "stepName": "verify_acceptance_criteria"
             }
           },
           "isRequired": true
         }
       ],
-      "actions": [
-        {
-          "name": "create_comprehensive_review_report",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "ReviewOperations",
-            "operation": "create_review"
-          },
-          "sequenceOrder": 1
-        }
-      ],
-      "triggerReport": true,
-      "reportType": "intelligent_review_decision_and_workflow_completion",
-      "reportTemplate": "intelligent_review_decision_and_completion"
+      "actions": []
     }
   ]
 }

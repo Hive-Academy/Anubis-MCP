@@ -1,0 +1,55 @@
+<!-- Call to Action -->
+<section class="py-24 bg-gradient-to-r from-blue-600 to-purple-600 relative">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <h2 class="text-4xl md:text-5xl font-bold mb-6">
+      Experience Rules as Guidance
+    </h2>
+    <p class="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
+      Join the revolution in AI workflow reliability. Try the first
+      MCP-compliant workflow intelligence system with embedded guidance
+      architecture.
+    </p>
+
+    <div class="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+      <button
+        onclick="copyToClipboard('npx -y @hive-academy/anubis')"
+        class="bg-white text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-lg font-semibold text-lg transition-all transform hover:scale-105"
+      >
+        <i class="fas fa-rocket mr-2"></i>Try Now with NPX
+      </button>
+      <a
+        href="https://github.com/Hive-Academy/Workflow_Manager_MCP"
+        class="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg transition-all transform hover:scale-105"
+      >
+        <i class="fab fa-github mr-2"></i>View on GitHub
+      </a>
+    </div>
+
+    <div
+      class="code-block max-w-2xl mx-auto p-6 bg-slate-900/20 backdrop-blur-sm"
+    >
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-blue-100 text-sm"
+          >Add to your MCP client config:</span
+        >
+        <button
+          class="copy-btn text-blue-200 hover:text-white transition-colors"
+          onclick="copyToClipboard(getMCPConfig())"
+        >
+          <i class="fas fa-copy"></i>
+        </button>
+      </div>
+      <code class="font-mono text-green-300 block text-left">
+        {<br />
+        &nbsp;&nbsp;"mcpServers": {<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;"anubis": {<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"command": "npx",<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"args": ["-y",
+        "@hive-academy/anubis"]<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;}<br />
+        &nbsp;&nbsp;}<br />
+        }
+      </code>
+    </div>
+  </div>
+</section>

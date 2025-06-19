@@ -1,123 +1,33 @@
 {
   "workflowSteps": [
     {
-      "name": "iterative_planning_and_subtask_creation",
-      "displayName": "Iterative Planning and Subtask Creation with Context Preservation",
-      "description": "Create implementation plan and subtasks iteratively in one step to maintain context and ensure alignment with actual task requirements",
+      "name": "create_implementation_plan",
+      "description": "Create implementation plan and subtasks in one integrated step",
       "sequenceNumber": 1,
       "isRequired": true,
-      "estimatedTime": "35-45 minutes",
-      "stepType": "ITERATIVE_ACTION",
-      "behavioralContext": {
-        "approach": "Iterative planning with immediate subtask creation to preserve context and ensure task alignment",
-        "principles": [
-          "MANDATORY: Get comprehensive task context first (TaskOperations.get)",
-          "MANDATORY: Create or update implementation plan based on actual task requirements",
-          "MANDATORY: Immediately create subtasks while context is fresh",
-          "MANDATORY: Validate subtasks align with actual task goals (not generic validation)",
-          "MANDATORY: Focus on ACTUAL WORK needed, not meta-analysis tasks",
-          "NEVER create documentation subtasks - integration-engineer role handles all documentation"
-        ],
-        "methodology": "Context-preserving iterative planning with immediate subtask creation and validation",
-        "iterativePlanningCycle": {
-          "getTaskContext": "Use TaskOperations.get with comprehensive inclusion to understand actual requirements",
-          "analyzePlanNeeds": "Determine if plan exists and if it matches actual task requirements",
-          "createOrUpdatePlan": "Create new plan or update existing plan based on actual task needs",
-          "immediateSubtaskCreation": "Create subtasks immediately while context is fresh",
-          "validateAlignment": "Validate subtasks actually accomplish the task goals",
-          "refineIfNeeded": "Refine plan/subtasks if they don't match actual requirements"
-        },
-        "contextPreservation": {
-          "taskRequirements": "Keep actual task description and goals at forefront",
-          "codebaseAnalysis": "Use existing codebase analysis without re-analysis",
-          "realWork": "Focus on actual implementation work, not meta-validation",
-          "documentationExclusion": "NEVER create subtasks for documentation - integration-engineer handles this"
-        },
-        "subtaskFocus": {
-          "includeInSubtasks": [
-            "Code implementation and refactoring",
-            "Unit and integration testing",
-            "Performance optimization",
-            "Security implementation",
-            "Error handling and validation",
-            "Configuration and setup changes",
-            "Database schema changes",
-            "API endpoint implementation"
-          ],
-          "excludeFromSubtasks": [
-            "Documentation updates (README, memory bank, etc.)",
-            "Content analysis and validation scripts",
-            "Business value validation scripts",
-            "Quality gate definition scripts",
-            "Meta-analysis tasks",
-            "Pull request creation",
-            "Git operations and commits",
-            "Deployment and integration tasks"
-          ]
-        },
-        "solidPrinciples": {
-          "singleResponsibility": "Each class/service has one reason to change",
-          "openClosed": "Extensible through inheritance/composition, not modification",
-          "liskovSubstitution": "Derived classes substitutable for base classes",
-          "interfaceSegregation": "Clients depend only on interfaces they use",
-          "dependencyInversion": "Depend on abstractions, not concretions"
-        }
-      },
+      "stepType": "ACTION",
+      "approach": "Iterative planning with immediate subtask creation to preserve context",
       "approachGuidance": {
         "stepByStep": [
-          "Execute TaskOperations.get with comprehensive inclusion to get task details and codebase analysis",
-          "Analyze actual task requirements - what REAL WORK needs to be done?",
-          "Check if existing plan exists using PlanningOperations.get_plan",
-          "Create new plan or update existing plan based on ACTUAL task requirements (not generic validation)",
-          "Immediately create subtasks using PlanningOperations.create_subtasks while context is fresh",
-          "Validate subtasks actually accomplish the task goals (not meta-analysis)",
-          "If subtasks don't align with actual work needed, refine plan and recreate subtasks",
-          "Ensure subtasks focus on REAL IMPLEMENTATION WORK, not documentation or validation scripts"
-        ],
-        "contextAnalysisSteps": [
-          "Read task name and description carefully - what is the user actually asking for?",
-          "Identify the REAL WORK needed (code changes, feature implementation, bug fixes)",
-          "Use existing codebase analysis without re-analyzing",
-          "Distinguish between actual implementation work vs meta-tasks",
-          "Focus on deliverables that directly satisfy user requirements"
-        ],
-        "planCreationSteps": [
-          "Design solution approach using SOLID, KISS and DRY principles",
-          "Create implementation plan focused on ACTUAL WORK needed",
-          "Include architectural context from existing codebase analysis",
-          "Define quality constraints and success criteria for REAL deliverables",
-          "Document approach that directly addresses user requirements"
-        ],
-        "subtaskCreationSteps": [
-          "Create subtasks that directly implement the required functionality",
-          "Provide comprehensive strategic guidance for each subtask",
-          "Include architectural context, implementation specifics, and code examples",
-          "Define measurable success criteria and validation requirements",
-          "Focus ONLY on code implementation, testing, and technical tasks",
-          "EXCLUDE documentation, meta-analysis, and validation script tasks"
-        ],
-        "validationSteps": [
-          "Review created subtasks against original task requirements",
-          "Ensure subtasks accomplish the actual user request",
-          "Verify no meta-analysis or documentation subtasks were created",
-          "Confirm subtasks focus on real implementation work",
-          "Refine if subtasks don't directly address task goals"
+          "Check if task context is already available in current execution history",
+          "If context is available, analyze and validate its completeness",
+          "Only if context is missing or incomplete, execute TaskOperations.get",
+          "Create or update plan based on actual task requirements",
+          "Create subtasks immediately while context is fresh",
+          "Focus on implementation work, exclude documentation tasks"
         ]
       },
       "qualityChecklist": [
-        "Task context and codebase analysis retrieved and understood",
-        "Implementation plan created or updated based on ACTUAL task requirements",
-        "Subtasks created immediately while context is fresh",
-        "Subtasks focus on REAL IMPLEMENTATION WORK, not meta-analysis",
-        "NO documentation subtasks created - integration-engineer handles documentation",
-        "Subtasks directly accomplish the user's actual request",
-        "Quality constraints and success criteria defined for real deliverables",
-        "Plan and subtasks validated against original task goals"
+        "Task context and requirements understood",
+        "Implementation plan created based on actual needs",
+        "Subtasks created focusing on real implementation work",
+        "No documentation subtasks created",
+        "Plan and subtasks validated against task goals"
       ],
       "conditions": [],
       "actions": [
         {
-          "name": "acquire_comprehensive_context",
+          "name": "get_task_context",
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "TaskOperations",
@@ -144,7 +54,7 @@
           "sequenceOrder": 3
         },
         {
-          "name": "create_aligned_subtasks",
+          "name": "create_subtasks",
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "PlanningOperations",
@@ -152,76 +62,43 @@
           },
           "sequenceOrder": 4
         }
-      ],
-      "triggerReport": true,
-      "reportType": "iterative_planning_and_subtask_creation",
-      "reportTemplate": "context_preserving_planning_report"
+      ]
     },
     {
-      "name": "role_transition_to_senior_developer",
-      "displayName": "Role Transition to Senior Developer",
-      "description": "Execute role transition directly to senior developer with comprehensive strategic context and implementation readiness",
+      "name": "role_transition",
+      "description": "Transition to senior developer with strategic context",
       "sequenceNumber": 2,
       "isRequired": true,
-      "estimatedTime": "5-8 minutes",
       "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Direct role transition execution using the execute_transition tool available to the agent",
-        "principles": [
-          "Use execute_transition tool directly (NOT through MCP_CALL)",
-          "Transition to senior developer with comprehensive strategic context",
-          "Provide complete strategic context and architectural guidance in handoffMessage",
-          "Ensure implementation readiness with clear quality requirements and database delegation record creation"
-        ],
-        "methodology": "Direct tool usage for efficient role transition with strategic implementation guidance",
-        "transitionStrategy": {
-          "targetRole": "senior-developer",
-          "transitionExecution": "Use execute_transition tool with 'architect_to_senior_developer' transitionId",
-          "contextPreservation": "Include complete strategic context and architectural guidance in handoffMessage",
-          "databaseIntegration": "Ensure delegation record is created in database via RoleTransitionService"
-        }
-      },
+      "approach": "Execute transition to senior developer with comprehensive implementation guidance",
       "approachGuidance": {
         "stepByStep": [
-          "Prepare comprehensive handoff message with strategic context and architectural guidance",
-          "Execute the execute_transition tool directly with 'architect_to_senior_developer' transitionId",
-          "Include taskId and roleId from current workflow context",
-          "Communicate implementation priorities and architectural guidance in handoffMessage",
-          "Verify transition success and confirm delegation record creation",
-          "Ensure quality requirements and success criteria are understood for immediate productive work"
-        ],
-        "transitionExecutionSteps": [
-          "Call execute_transition tool directly (available to agent, not MCP_CALL)",
-          "Use transitionId: 'architect_to_senior_developer'",
-          "Include taskId and roleId from current workflow context",
-          "Provide comprehensive handoffMessage with strategic guidance and implementation context"
+          "Execute get_role_transitions with fromRoleName: 'architect'",
+          "Extract transitionId for architect to senior developer transition",
+          "Execute execute_transition with strategic context in handoff",
+          "Verify transition success and delegation confirmation"
         ]
       },
       "qualityChecklist": [
-        "Comprehensive handoff message prepared with strategic context and architectural guidance",
-        "execute_transition tool executed directly with 'architect_to_senior_developer' transitionId",
-        "TaskId and roleId provided from current workflow context",
-        "Implementation priorities and architectural guidance communicated in handoffMessage",
-        "Transition success verified and delegation record creation confirmed",
-        "Quality requirements and success criteria clearly understood for immediate productive implementation work"
+        "get_role_transitions executed with correct parameters",
+        "Correct transitionId obtained for senior developer transition",
+        "execute_transition executed with strategic context",
+        "Transition success verified and delegation confirmed"
       ],
       "conditions": [
         {
-          "name": "planning_and_subtasks_completed",
+          "name": "planning_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "iterative_planning_and_subtask_creation"
+              "stepName": "create_implementation_plan"
             }
           },
           "isRequired": true
         }
       ],
-      "actions": [],
-      "triggerReport": true,
-      "reportType": "role_transition_execution",
-      "reportTemplate": "direct_role_transition_to_senior_developer"
+      "actions": []
     }
   ]
 }
