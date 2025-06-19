@@ -9,7 +9,7 @@
 - **MCP Integration**: @rekog/mcp-nest v1.5.2 for seamless protocol compliance
 - **Validation Framework**: Zod v3.24.4 for comprehensive parameter validation
 - **Runtime Environment**: Node.js >=18.0.0 with npm >=8.0.0
-- **Package Version**: @hive-academy/mcp-workflow-manager v1.0.14
+- **Package Version**: @hive-academy/anubis v1.0.15
 
 ### Architecture Patterns
 
@@ -21,7 +21,7 @@
 
 ## **🚀 MCP-Compliant Guidance Architecture**
 
-**ARCHITECTURAL FOUNDATION**: The MCP Workflow Manager implements a **guidance-only architecture** that provides intelligent workflow guidance for AI agents to execute locally, ensuring full MCP protocol compliance.
+**ARCHITECTURAL FOUNDATION**: The Anubis implements a **guidance-only architecture** that provides intelligent workflow guidance for AI agents to execute locally, ensuring full MCP protocol compliance.
 
 ### **Core Architectural Innovation: Database-Driven Workflow Intelligence**
 
@@ -592,9 +592,9 @@ The system is distributed as a self-contained NPX package with automatic depende
 ```json
 {
   "mcpServers": {
-    "workflow-manager": {
+    "anubis": {
       "command": "npx",
-      "args": ["-y", "@hive-academy/mcp-workflow-manager"]
+      "args": ["-y", "@hive-academy/anubis"]
     }
   }
 }
@@ -614,7 +614,7 @@ For production environments, Docker containers are available:
 ```json
 {
   "mcpServers": {
-    "workflow-manager": {
+    "anubis": {
       "command": "docker",
       "args": [
         "run",
@@ -622,7 +622,7 @@ For production environments, Docker containers are available:
         "-v",
         "project-workflow:/app/data",
         "--rm",
-        "hiveacademy/mcp-workflow-manager"
+        "hiveacademy/anubis"
       ]
     }
   }
@@ -686,4 +686,4 @@ The system includes comprehensive architectural validation:
 
 ---
 
-**The MCP Workflow Manager represents a sophisticated, enterprise-grade architecture that combines the power of NestJS v11.0.1, Prisma v6.9.0, and MCP protocol compliance to deliver intelligent workflow guidance for AI-assisted development.**
+**The Anubis represents a sophisticated, enterprise-grade architecture that combines the power of NestJS v11.0.1, Prisma v6.9.0, and MCP protocol compliance to deliver intelligent workflow guidance for AI-assisted development.**

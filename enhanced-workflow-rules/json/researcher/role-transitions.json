@@ -2,105 +2,42 @@
   "roleTransitions": [
     {
       "fromRoleId": "researcher",
-      "toRoleId": "architect",
+      "toRoleId": "architect", 
       "transitionName": "researcher_to_architect",
+      "description": "Transition to architect with research findings and recommendations",
       "conditions": {
         "researchCompleted": true,
         "findingsValidated": true,
-        "recommendationsReady": true,
-        "evidenceDocumented": true
+        "recommendationsReady": true
       },
-      "requirements": {
-        "comprehensiveAnalysis": true,
-        "technicalFeasibilityValidated": true,
-        "performanceBenchmarked": true,
-        "securityAssessed": true,
-        "integrationValidated": true,
-        "riskAssessmentComplete": true
-      },
-      "validationRules": {
-        "researchQualityMet": "Research must meet established quality standards",
-        "evidenceAuthoritative": "All findings must be from authoritative sources",
-        "mcpCompatibilityValidated": "Solutions must be compatible with existing MCP context",
-        "implementationFeasible": "Recommendations must be technically feasible"
-      },
+      "requirements": [
+        "Comprehensive analysis completed",
+        "Technical feasibility validated",
+        "Risk assessment complete",
+        "Integration strategy defined"
+      ],
+      "validationCriteria": [
+        "Research quality standards met",
+        "Evidence from authoritative sources",
+        "Implementation feasibility confirmed",
+        "Security considerations addressed"
+      ],
       "handoffGuidance": {
-        "researchDeliverables": [
-          "Comprehensive technical research analysis",
-          "Primary recommendation with detailed justification",
-          "Alternative solutions with trade-off analysis",
-          "Implementation guidance and strategic context"
+        "contextToPreserve": [
+          "research_findings",
+          "technical_recommendations", 
+          "performance_benchmarks",
+          "security_requirements",
+          "integration_strategy",
+          "risk_assessment"
         ],
-        "architecturalContext": [
-          "Technical foundation for design decisions",
-          "Performance benchmarks for strategic guidance",
-          "Security requirements for implementation planning",
-          "Integration strategy for system compatibility"
-        ],
-        "strategicGuidance": [
-          "Evidence-based decision support",
-          "Risk mitigation framework",
-          "Implementation readiness assessment",
-          "Quality validation criteria"
+        "handoffMessage": "Research complete with validated findings and implementation recommendations. Technical foundation provided for architectural design.",
+        "expectedDeliverables": [
+          "implementation_plan",
+          "architectural_decisions",
+          "quality_constraints",
+          "technical_specifications"
         ]
-      },
-      "contextPreservation": {
-        "researchFindings": "Complete research analysis with evidence and validation",
-        "technicalRecommendations": "Primary and alternative solutions with rationale",
-        "performanceBaseline": "Benchmarks and performance improvement targets",
-        "securityFramework": "Security requirements and enhancement opportunities",
-        "integrationStrategy": "Compatibility validation and integration approach",
-        "riskAssessment": "Comprehensive risk analysis with mitigation strategies"
-      },
-      "isActive": true
-    },
-    {
-      "fromRoleId": "researcher",
-      "toRoleId": "boomerang",
-      "transitionName": "researcher_to_boomerang_escalation",
-      "conditions": {
-        "researchBlocked": true,
-        "informationUnavailable": true,
-        "strategicDecisionRequired": true,
-        "escalationNeeded": true
-      },
-      "requirements": {
-        "blockageDocumented": true,
-        "alternativesExplored": true,
-        "escalationJustified": true,
-        "contextPreserved": true
-      },
-      "validationRules": {
-        "escalationJustified": "Clear justification for escalation must be provided",
-        "alternativesExhausted": "All reasonable alternatives must have been explored",
-        "contextComplete": "Complete context must be preserved for strategic decision",
-        "recommendationsProvided": "Partial recommendations must be provided where possible"
-      },
-      "handoffGuidance": {
-        "escalationContext": [
-          "Clear description of research blockage or limitation",
-          "Alternatives explored and reasons for inadequacy",
-          "Strategic decision points requiring boomerang input",
-          "Partial findings and preliminary recommendations"
-        ],
-        "strategicOptions": [
-          "Available research paths and their limitations",
-          "Resource requirements for comprehensive research",
-          "Timeline implications of different approaches",
-          "Risk assessment of proceeding with limited information"
-        ],
-        "decisionSupport": [
-          "Evidence gathered to date with quality assessment",
-          "Confidence levels for different findings",
-          "Recommendations for strategic decision making",
-          "Alternative workflow paths for consideration"
-        ]
-      },
-      "contextPreservation": {
-        "researchProgress": "All research conducted to date with findings",
-        "blockageAnalysis": "Detailed analysis of research limitations and blockages",
-        "partialFindings": "Validated findings available for strategic consideration",
-        "alternativeOptions": "Explored alternatives and their feasibility assessment"
       },
       "isActive": true
     }

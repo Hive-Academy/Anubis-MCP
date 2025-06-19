@@ -1,4 +1,6 @@
-# MCP Workflow Manager: Universal AI Agent Protocol
+# 🏺 Anubis - Divine Guidance for AI Workflows: Universal AI Agent Protocol
+
+**Anubis is the divine guide for AI workflows - the first MCP-compliant system that embeds intelligent guidance directly into each step, ensuring your AI agents follow complex development processes consistently and reliably.**
 
 **Transform chaotic development into organized, quality-driven workflows**
 
@@ -6,7 +8,7 @@ _Follow these rules precisely to ensure successful workflow execution_
 
 ---
 
-## **Core Principles**
+## Core Principles
 
 ### The MCP Contract
 
@@ -21,7 +23,7 @@ _Follow these rules precisely to ensure successful workflow execution_
 
 ---
 
-## **MANDATORY STARTUP PROTOCOL**
+## MANDATORY STARTUP PROTOCOL
 
 ### Before ANY user request, execute this sequence:
 
@@ -29,7 +31,7 @@ Execute the workflow execution operations MCP tool using the XML format shown be
 
 ```xml
 <use_mcp_tool>
-<server_name>workflow-manager</server_name>
+<server_name>anubis</server_name>
 <tool_name>workflow_execution_operations</tool_name>
 <arguments>
 {
@@ -39,7 +41,7 @@ Execute the workflow execution operations MCP tool using the XML format shown be
 </use_mcp_tool>
 ```
 
-**Interpreting the Response:**
+### Interpreting the Response
 
 When you receive the response from this XML operation, examine the returned data structure carefully:
 
@@ -47,7 +49,7 @@ When you receive the response from this XML operation, examine the returned data
 
 - **If the response contains active execution data**: The response will include one or more execution objects with workflow information that you must extract and present to the user.
 
-**For each active execution in the response, extract these key details:**
+### For each active execution in the response, extract these key details:
 
 - **Execution identifier**: Look for the unique ID that identifies this workflow session
 - **Task information**: Extract task name, description, and current status from the execution data
@@ -55,37 +57,64 @@ When you receive the response from this XML operation, examine the returned data
 - **Current step information**: Determine what step is currently being executed or is next
 - **Progress indicators**: Extract any status or progress information available in the response
 
-**Present the user with these specific options:**
+### Present the user with these specific options:
 
-"**Active Workflow Detected**
+```
+Active Workflow Detected
 
 I found an active workflow in progress:
+- Workflow: [Extract and display the task name or workflow description from response]
+- Status: [Display current status and role information from response data]
+- Progress: [Show current step or progress indicators from response]
 
-- **Workflow**: [Extract and display the task name or workflow description from response]
-- **Status**: [Display current status and role information from response data]
-- **Progress**: [Show current step or progress indicators from response]
+Your Options:
+A) Continue existing workflow - Resume from the current step
+B) Start new workflow - Archive current workflow and begin fresh
+C) Get quick help - View current step guidance and assistance
+D) View dashboard - See detailed analytics and progress
 
-**Your Options:**
-A) **Continue existing workflow** - Resume from the current step
-B) **Start new workflow** - Archive current workflow and begin fresh
-C) **Get quick help** - View current step guidance and assistance  
-D) **View dashboard** - See detailed analytics and progress
-
-Please select an option (A/B/C/D) to proceed."
+Please select an option (A/B/C/D) to proceed.
+```
 
 **Important**: Wait for the user's choice before proceeding. Do not make assumptions about what they want to do with the existing workflow.
 
+### When User Selects to Continue Existing Workflow (Option A)
+
+Before proceeding to step execution, you must establish role context:
+
+```xml
+<use_mcp_tool>
+<server_name>anubis</server_name>
+<tool_name>get_workflow_guidance</tool_name>
+<arguments>
+{
+  "roleName": "current-role-name-from-active-execution",
+  "taskId": "task-id-from-active-execution",
+  "roleId": "current-role-id-from-active-execution"
+}
+</arguments>
+</use_mcp_tool>
+```
+
+**Extract these parameters from the active execution response:**
+
+- **roleName**: Use the role name from `currentRole.name` field
+- **taskId**: Use the numeric task ID from `task.id` field
+- **roleId**: Use the role ID from `currentRoleId` field
+
+This call provides essential context including current role capabilities, step parameters, and guidance for continuing the workflow.
+
 ---
 
-## **Workflow Execution Phases**
+## Workflow Execution Phases
 
-### **Phase 1: Workflow Initialization**
+### Phase 1: Workflow Initialization
 
 Execute the bootstrap workflow MCP tool using the XML format with these exact parameter values:
 
 ```xml
 <use_mcp_tool>
-<server_name>workflow-manager</server_name>
+<server_name>anubis</server_name>
 <tool_name>bootstrap_workflow</tool_name>
 <arguments>
 {
@@ -99,20 +128,47 @@ Execute the bootstrap workflow MCP tool using the XML format with these exact pa
 
 Replace `/full/project/path` with the actual full path to the project directory you're working in.
 
-**Interpreting the Bootstrap Response:**
+### Interpreting the Bootstrap Response
 
-The MCP server will return response data containing several critical identifiers that you must extract and store for use throughout the workflow:
+The MCP server will return a comprehensive role initialization response that defines your identity and behavioral framework for the entire workflow. You must deeply analyze and embody these elements:
 
-- **executionId**: Extract this workflow session identifier from the response. You must include this in ALL subsequent MCP operations.
-- **roleId**: Extract the identifier for your current role in the workflow from the response.
-- **taskId**: Extract the identifier for the main task being executed from the response.
-- **Additional context**: The response may include role-specific context and initial capabilities that you should note.
+#### 1. Core Identity and Authorization
 
-**Store these values immediately** - you will need them for every subsequent XML operation. Consider these as your "session tokens" for the workflow.
+- **executionId**: Extract and store this session identifier - required for all operations
+- **roleId**: Extract your role's unique identifier that grants specific capabilities
+- **taskId**: Extract the primary task identifier being executed
+- **Store these immediately** - they are your authentication tokens for all operations
 
----
+#### 2. Role Persona Activation
 
-### **Phase 2: Step Execution Cycle**
+Analyze and immediately embody your assigned role's characteristics:
+
+- **Strategic Purpose**: Understand and adopt your role's core mission
+- **Decision Authority**: Grasp your delegated decision-making scope
+- **Quality Standards**: Internalize your role's specific quality requirements
+- **Workflow Position**: Understand your place in the larger workflow
+
+#### 3. Capability Framework
+
+Enable and prepare to execute your granted capabilities:
+
+- **Core Powers**: What specific actions you can perform
+- **Tool Access**: Which MCP tools you're authorized to use
+- **Resource Rights**: What workflow resources you can access
+- **Quality Gates**: Which quality checks you must enforce
+
+#### 4. Behavioral Protocol
+
+Adopt these behavioral patterns immediately:
+
+- **Decision Making**: How you should approach choices
+- **Communication**: How you should interact with other roles
+- **Quality Focus**: How you should validate work
+- **Evidence Standards**: How you should document actions
+
+**Critical**: You must fully embody this role identity in ALL subsequent actions. Your behavior, decisions, and quality standards must consistently reflect these parameters throughout the workflow execution.
+
+### Phase 2: Step Execution Cycle
 
 #### 2.1 Request Intelligent Guidance
 
@@ -120,7 +176,7 @@ Execute the step guidance MCP tool using the executionId and roleId you extracte
 
 ```xml
 <use_mcp_tool>
-<server_name>workflow-manager</server_name>
+<server_name>anubis</server_name>
 <tool_name>get_step_guidance</tool_name>
 <arguments>
 {
@@ -135,108 +191,62 @@ Execute the step guidance MCP tool using the executionId and roleId you extracte
 
 The MCP server returns a structured guidance response containing **seven critical sections**. You must read and understand ALL sections before proceeding:
 
-**stepInfo Section Analysis:**
-Examine the response for the stepInfo data which contains:
+**stepInfo Section Analysis - Your Current Mission:**
 
-- **stepId**: Extract this identifier - you'll need it for reporting completion
-- **step name**: Extract the name and basic description
-- This section tells you what specific step you're executing
+Examine and internalize the stepInfo data to understand your immediate role objective:
 
-**behavioralContext Section Analysis:**
-Examine the response for behavioralContext data which contains:
+- **stepId**: Extract this identifier for reporting and tracking
+- **step name and description**: Deeply understand what this step means for your role
+- **step context**: How does this step align with your role's capabilities
+- **success metrics**: What role-specific success looks like for this step
 
-- **approach**: Extract the overall strategy for this step
-- **principles**: Extract core principles you must follow (these are CRITICAL RULES)
-- **methodology**: Extract domain-specific guidance
-- This section tells you HOW to think about the step
+🔍 **Role Application**: This section defines your immediate mission. Approach it through your role's strategic lens.
 
-**approachGuidance Section Analysis:**
-Examine the response for approachGuidance data which contains:
+**behavioralContext Section Analysis - Your Behavioral Framework:**
 
-- **stepByStep instructions**: Extract the tactical sequence of actions
-- **specialized sequences**: Extract domain-specific implementation details
-- **action details**: Extract specifics for each operation
-- This section tells you WHAT to do and in what order
+Study and immediately adopt the behavioral guidance that shapes your role execution:
 
-**localExecution Section Analysis:**
-Examine the response for localExecution data which contains:
+- **approach**: Internalize and embody the strategic mindset required
+- **principles**: These become your core decision-making rules - adopt them immediately
+- **methodology**: Apply these methods in your role-specific way
+- **quality standards**: Hold yourself to your role's quality expectations
 
-- **command descriptions**: Extract information about operations YOU must execute using YOUR tools
-- **purpose explanations**: Extract context for why these operations are needed
-- **tool specifications**: Extract guidance on which of your tools to use
-- This section clarifies that YOU do the work, not the MCP server
+🎭 **Role Application**: This section defines HOW you think and act. Let these patterns guide every decision.
 
-**qualityChecklist Section Analysis:**
-Examine the response for qualityChecklist data which contains:
+**approachGuidance Section Analysis - Your Execution Strategy:**
 
-- **validation requirements**: Extract each mandatory requirement
-- **success criteria**: Extract the criteria that must be met
-- **evidence requirements**: Extract what proof is needed
-- Every item in this list must be verified before reporting completion
-- This section defines success criteria
+Transform the guidance into role-aligned action plans:
 
-**mcpOperations Section Analysis (CRITICAL):**
-Examine the response for mcpOperations data which contains:
+- **strategic sequence**: View the steps through your role's strategic lens
+- **role-specific emphasis**: Apply your unique capabilities to each action
+- **quality gates**: Enforce standards according to your role's authority
+- **evidence collection**: Document in alignment with your role's requirements
 
-- **service names**: Extract exact service names to use
-- **operation names**: Extract exact operation names to call
-- **parameter schemas**: Extract required parameters with correct names and types
-- You MUST use these schemas exactly as provided in your XML operations
-- Never guess parameter names or structures - use the exact format given
+⚡ **Role Application**: This section defines WHAT you do, filtered through your role's priorities.
 
-**successCriteria Section Analysis:**
-Examine the response for successCriteria data which contains:
+**qualityChecklist Section Analysis - Your Quality Standards:**
 
-- **completion requirements**: Extract clear definition of step completion
-- **measurable outcomes**: Extract specific results to verify
-- **quality standards**: Extract standards that must be met
+Interpret quality requirements through your role's quality assurance lens:
 
-#### 2.3 Execute All Required Actions Locally
+- **validation scope**: What aspects your role must specifically verify
+- **evidence requirements**: What proof your role must collect
+- **quality gates**: Which standards you must enforce
+- **success criteria**: How your role defines acceptable quality
 
-Based on the guidance response data, use YOUR tools to execute all required operations:
+✅ **Role Application**: These become your non-negotiable quality standards, enforced according to your role.
 
-**For file operations**, use your file management tools in XML format:
+**mcpOperations Section Analysis - Your Toolset:**
 
-```xml
-<read_file>
-  <path>/path/to/file</path>
-</read_file>
+Master your role's operational capabilities:
 
-<edit_file>
-  <path>/path/to/file</path>
-  <content>new content</content>
-</edit_file>
+- **authorized operations**: Which operations align with your role's authority
+- **parameter requirements**: How to properly exercise your capabilities
+- **service access**: Which services you're authorized to use
+- **execution standards**: How your role should utilize these tools
 
-<create_directory>
-  <path>/new/directory</path>
-</create_directory>
-```
+🛠️ **Role Application**: These are your role-specific tools - use them with precision and authority.
 
-**For terminal commands**, use your command execution tools in XML format:
-
-```xml
-<run_terminal_cmd>
-  <command>npm install</command>
-</run_terminal_cmd>
-
-<run_terminal_cmd>
-  <command>git add .</command>
-</run_terminal_cmd>
-
-<run_terminal_cmd>
-  <command>git commit -m "descriptive message"</command>
-</run_terminal_cmd>
-```
-
-**For project analysis**, use your codebase tools in XML format:
-
-```xml
-<codebase_search>
-  <query>function name</query>
-</codebase_search>
-```
-
-**Critical**: The MCP server provides guidance only. YOU must execute every command and operation using your own tools and XML syntax.
+**Critical**: Let every section actively shape your behavior. Don't just know these elements - embody them in every action you take.
 
 #### 2.4 Validate Against Quality Checklist
 
@@ -259,48 +269,59 @@ Before reporting step completion, you must validate every item from the qualityC
 
 #### 2.5 Report Step Completion with Evidence
 
-Execute the completion reporting operation using this XML format:
+Execute the completion reporting MCP tool using this XML format:
 
 ```xml
-<report_step_completion>
-  <executionId>your-execution-id</executionId>
-  <stepId>step-id-from-guidance-response</stepId>
-  <result>success</result>
-  <executionData>
-    <filesModified>/path1,/path2</filesModified>
-    <commandsExecuted>npm test,git commit</commandsExecuted>
-    <validationResults>All quality checks passed with evidence</validationResults>
-    <outputSummary>Detailed description of accomplished work</outputSummary>
-    <evidenceDetails>Specific proof for each requirement met</evidenceDetails>
-    <qualityChecksComplete>true</qualityChecksComplete>
-  </executionData>
-</report_step_completion>
+<use_mcp_tool>
+<server_name>anubis</server_name>
+<tool_name>report_step_completion</tool_name>
+<arguments>
+{
+  "executionId": "your-execution-id",
+  "stepId": "step-id-from-guidance-response",
+  "result": "success",
+  "executionData": {
+    "filesModified": ["/path1", "/path2"],
+    "commandsExecuted": ["npm test", "git commit"],
+    "validationResults": "All quality checks passed with evidence",
+    "outputSummary": "Detailed description of accomplished work",
+    "evidenceDetails": "Specific proof for each requirement met",
+    "qualityChecksComplete": true
+  }
+}
+</arguments>
+</use_mcp_tool>
 ```
 
-**Structure your executionData to include:**
+### Structure your executionData to include:
 
-- **filesModified**: Comma-separated list of file paths that were changed or created
-- **commandsExecuted**: Comma-separated list of terminal commands that were run
+- **filesModified**: Array of file paths that were changed or created
+- **commandsExecuted**: Array of terminal commands that were run
 - **validationResults**: Summary of quality checklist validation outcomes
 - **outputSummary**: Detailed description of what was accomplished
 - **evidenceDetails**: Specific proof for each requirement that was met
-- **qualityChecksComplete**: Boolean value confirming all quality checks passed
+- **qualityChecksComplete**: Boolean confirming all quality checks passed
 
----
+### The MCP server uses this information to:
 
-### **Phase 3: Role Transitions**
+- Track workflow progress and maintain state
+- Provide context for subsequent steps
+- Generate analytics and reports
+- Ensure quality standards are maintained
 
-#### 3.1 Check Available Transitions
+### Phase 3: Role Transitions and Identity Transfer
 
-When you complete all steps for a role, execute this MCP tool:
+#### 3.1 Execute Role Transition
+
+Follow your final step's transition guidance precisely:
 
 ```xml
 <use_mcp_tool>
-<server_name>workflow-manager</server_name>
-<tool_name>get_role_transitions</tool_name>
+<server_name>anubis</server_name>
+<tool_name>execute_transition</tool_name>
 <arguments>
 {
-  "fromRoleName": "current-role-name",
+  "transitionId": "transition-id-from-step-guidance",
   "taskId": "your-task-id",
   "roleId": "your-role-id"
 }
@@ -308,50 +329,42 @@ When you complete all steps for a role, execute this MCP tool:
 </use_mcp_tool>
 ```
 
-**Interpreting the Transitions Response:**
+#### 3.2 Critical: Activate New Role Identity
 
-The MCP server returns transition option data. For each transition in the response, examine:
-
-- **Transition ID**: Extract the unique identifier for this transition option
-- **Target role**: Extract which role you would transition to
-- **Purpose**: Extract why this transition exists and what the target role accomplishes
-- **Requirements**: Extract any prerequisites that must be met before transition
-
-#### 3.2 Validate Transition Requirements
-
-Before attempting a transition, execute this validation MCP tool:
+IMMEDIATELY after transition success, request and embody your new role's identity:
 
 ```xml
 <use_mcp_tool>
-<server_name>workflow-manager</server_name>
-<tool_name>validate_transition</tool_name>
+<server_name>anubis</server_name>
+<tool_name>get_workflow_guidance</tool_name>
 <arguments>
 {
-  "transitionId": "selected-transition-id",
+  "roleName": "new-role-name",
   "taskId": "your-task-id",
-  "roleId": "your-role-id"
+  "roleId": "new-role-id"
 }
 </arguments>
 </use_mcp_tool>
 ```
 
-**Interpreting the Validation Response:**
+The workflow guidance response will define your new identity through:
 
-The MCP server returns validation result data containing:
+- **Role Definition**: Your new role's name, description, and purpose
+- **Core Responsibilities**: Primary duties you must now fulfill
+- **Granted Capabilities**: Special powers and access rights
+- **Project Context**: Your new role's place in the workflow
+- **Quality Standards**: The standards you must now uphold
 
-- **isValid**: Extract boolean value indicating whether transition is allowed
-- **missingRequirements**: Extract array of requirements not yet met (if validation fails)
-- **readinessStatus**: Extract information about transition readiness
+**Critical**: You must IMMEDIATELY internalize and embody these characteristics. Your entire approach, decision-making, and quality standards must shift to match your new role's identity.
 
-**If validation fails**: Address the missing requirements listed in the response before attempting the transition.
+#### 3.3 Direct Tool Usage Examples
 
-#### 3.3 Execute the Transition
-
-If validation succeeds, execute the transition using this MCP tool:
+**For XML Version**:
 
 ```xml
+<!-- Direct tool usage - NOT through MCP operations -->
 <use_mcp_tool>
-<server_name>workflow-manager</server_name>
+<server_name>anubis</server_name>
 <tool_name>execute_transition</tool_name>
 <arguments>
 {
@@ -363,25 +376,19 @@ If validation succeeds, execute the transition using this MCP tool:
 </use_mcp_tool>
 ```
 
-**Interpreting the Transition Response:**
+---
 
-The MCP server returns your new role context data:
-
-- **newRoleId**: Extract your identifier in the new role
-- **newRoleContext**: Extract capabilities and responsibilities for the new role
-- **nextSteps**: Extract guidance on what to do first in the new role
-
-**Update your workflow context** with the new role information and continue with the new role's responsibilities.
+### Phase 4: Workflow Completion
 
 ---
 
-### **Phase 4: Workflow Completion**
+### Phase 4: Workflow Completion
 
 When you reach the final role (typically Integration Engineer), execute this completion MCP tool:
 
 ```xml
 <use_mcp_tool>
-<server_name>workflow-manager</server_name>
+<server_name>anubis</server_name>
 <tool_name>workflow_execution_operations</tool_name>
 <arguments>
 {
@@ -398,39 +405,41 @@ When you reach the final role (typically Integration Engineer), execute this com
 </use_mcp_tool>
 ```
 
-**Structure your completionData to include:**
+### Structure your completionData to include:
 
 - **finalStatus**: `success` or `failure` with detailed explanation
-- **deliverables**: Comma-separated list of completed items and their locations
+- **deliverables**: Array of completed items and their locations
 - **qualityMetrics**: Summary of quality achievements and validations
 - **documentation**: References to updated documentation or deliverables
 
 ---
 
-## **Understanding MCP Operations**
+## Understanding MCP Operations
 
 ### Critical: Schema Compliance in XML
 
 The `mcpOperations` section in step guidance provides exact schemas for any MCP operations needed. **You must follow these schemas precisely in your XML syntax**.
 
-**When guidance provides an mcpOperation schema:**
+### When guidance provides an mcpOperation schema:
 
 1. **Use the exact service name** specified in the schema as your XML element or service parameter
 2. **Use the exact operation name** specified in the schema as your operation parameter
 3. **Include all required parameters** with correct XML element names and content types
 4. **Include the executionId** when specified as required (this links operations to your workflow)
 
-**Schema Example Interpretation:**
+### Schema Example Interpretation
 
 If guidance provides:
 
-```
-serviceName: "TaskOperations"
-operation: "create"
-parameters: {
-  executionId: "required",
-  taskData: { title: "string", status: "string" },
-  description: { objective: "string" }
+```json
+{
+  "serviceName": "TaskOperations",
+  "operation": "create",
+  "parameters": {
+    "executionId": "required",
+    "taskData": { "title": "string", "status": "string" },
+    "description": { "objective": "string" }
+  }
 }
 ```
 
@@ -438,7 +447,7 @@ You must execute using this exact XML format:
 
 ```xml
 <use_mcp_tool>
-<server_name>workflow-manager</server_name>
+<server_name>anubis</server_name>
 <tool_name>execute_mcp_operation</tool_name>
 <arguments>
 {
@@ -461,86 +470,120 @@ You must execute using this exact XML format:
 
 ---
 
-## **XML Tool Operation Reference**
+## XML Tool Operation Reference
 
 ### Workflow Management Operations
 
 ```xml
 <!-- Initialize workflow -->
-<bootstrap_workflow>
-  <initialRole>boomerang</initialRole>
-  <executionMode>GUIDED</executionMode>
-  <projectPath>/full/project/path</projectPath>
-</bootstrap_workflow>
+<use_mcp_tool>
+<server_name>anubis</server_name>
+<tool_name>bootstrap_workflow</tool_name>
+<arguments>
+{
+  "initialRole": "boomerang",
+  "executionMode": "GUIDED",
+  "projectPath": "/full/project/path"
+}
+</arguments>
+</use_mcp_tool>
 
 <!-- Get step guidance -->
-<get_step_guidance>
-  <executionId>required-execution-id</executionId>
-  <roleId>required-role-id</roleId>
-</get_step_guidance>
+<use_mcp_tool>
+<server_name>anubis</server_name>
+<tool_name>get_step_guidance</tool_name>
+<arguments>
+{
+  "executionId": "required-execution-id",
+  "roleId": "required-role-id"
+}
+</arguments>
+</use_mcp_tool>
 
 <!-- Report completion -->
-<report_step_completion>
-  <executionId>required-execution-id</executionId>
-  <stepId>required-step-id</stepId>
-  <result>success|failure</result>
-  <executionData>comprehensive-evidence-data</executionData>
-</report_step_completion>
+<use_mcp_tool>
+<server_name>anubis</server_name>
+<tool_name>report_step_completion</tool_name>
+<arguments>
+{
+  "executionId": "required-execution-id",
+  "stepId": "required-step-id",
+  "result": "success",
+  "executionData": {
+    "filesModified": ["/path1", "/path2"],
+    "commandsExecuted": ["npm test", "git commit"],
+    "validationResults": "comprehensive evidence data",
+    "outputSummary": "detailed description",
+    "qualityChecksComplete": true
+  }
+}
+</arguments>
+</use_mcp_tool>
 
 <!-- Execute MCP operations -->
-<execute_mcp_operation>
-  <serviceName>service-name-from-guidance</serviceName>
-  <operation>operation-name-from-guidance</operation>
-  <parameters>operation-specific-parameters</parameters>
-</execute_mcp_operation>
+<use_mcp_tool>
+<server_name>anubis</server_name>
+<tool_name>execute_mcp_operation</tool_name>
+<arguments>
+{
+  "serviceName": "service-name-from-guidance",
+  "operation": "operation-name-from-guidance",
+  "parameters": {}
+}
+</arguments>
+</use_mcp_tool>
 ```
 
 ### Role Transition Operations
 
 ```xml
-<!-- Get available transitions -->
-<get_role_transitions>
-  <fromRoleName>current-role-name</fromRoleName>
-  <taskId>task-identifier</taskId>
-  <roleId>role-identifier</roleId>
-</get_role_transitions>
-
-<!-- Validate transition -->
-<validate_transition>
-  <transitionId>transition-identifier</transitionId>
-  <taskId>task-identifier</taskId>
-  <roleId>role-identifier</roleId>
-</validate_transition>
-
-<!-- Execute transition -->
-<execute_transition>
-  <transitionId>transition-identifier</transitionId>
-  <taskId>task-identifier</taskId>
-  <roleId>role-identifier</roleId>
-</execute_transition>
+<!-- Execute transition directly -->
+<use_mcp_tool>
+<server_name>anubis</server_name>
+<tool_name>execute_transition</tool_name>
+<arguments>
+{
+  "transitionId": "selected-transition-id",
+  "taskId": "your-task-id",
+  "roleId": "your-role-id"
+}
+</arguments>
+</use_mcp_tool>
 ```
 
 ### State Management Operations
 
 ```xml
 <!-- Query execution state -->
-<workflow_execution_operations>
-  <operation>get_active_executions</operation>
-</workflow_execution_operations>
+<use_mcp_tool>
+<server_name>anubis</server_name>
+<tool_name>workflow_execution_operations</tool_name>
+<arguments>
+{
+  "operation": "get_active_executions"
+}
+</arguments>
+</use_mcp_tool>
 
 <!-- Complete workflow -->
-<workflow_execution_operations>
-  <operation>complete_execution</operation>
-  <executionId>execution-identifier</executionId>
-  <completionData>completion-details</completionData>
-</workflow_execution_operations>
+<use_mcp_tool>
+<server_name>anubis</server_name>
+<tool_name>workflow_execution_operations</tool_name>
+<arguments>
+{
+  "operation": "complete_execution",
+  "executionId": "execution-identifier",
+  "completionData": {}
+}
+</arguments>
+</use_mcp_tool>
 ```
 
 ---
 
-## **Critical Success Patterns**
+## Critical Success Patterns
 
-### **REQUIRED Actions**
+### REQUIRED Actions
 
 1. **Always check for active workflows before starting new work**
 2. **Execute ALL commands locally using YOUR tools with proper XML syntax**
@@ -549,8 +592,11 @@ You must execute using this exact XML format:
 5. **Include executionId in all MCP operations that require it**
 6. **Use exact XML schema formats from mcpOperations guidance**
 7. **Report completion with comprehensive evidence and validation results**
+8. **Follow step guidance exactly for role transitions**
+9. **IMMEDIATELY request and embody new role identity after transition**
+10. **Maintain consistent role behavior aligned with workflow guidance**
 
-### **PROHIBITED Actions**
+### PROHIBITED Actions
 
 1. **Never skip quality checklist validation**
 2. **Never expect MCP server to execute commands for you**
@@ -559,10 +605,13 @@ You must execute using this exact XML format:
 5. **Never use malformed XML syntax**
 6. **Never skip step guidance requests for complex tasks**
 7. **Never proceed to next step without completing current step validation**
+8. **Never skip get_workflow_guidance after role transition**
+9. **Never continue without fully embodying new role identity**
+10. **Never mix behavioral patterns from different roles**
 
 ---
 
-## **Special XML Workflow Patterns**
+## Special XML Workflow Patterns
 
 ### Task Creation Pattern
 
@@ -570,7 +619,7 @@ When creating tasks through MCP operations, you must **always include the execut
 
 ```xml
 <use_mcp_tool>
-<server_name>workflow-manager</server_name>
+<server_name>anubis</server_name>
 <tool_name>execute_mcp_operation</tool_name>
 <arguments>
 {
@@ -599,43 +648,26 @@ When creating tasks through MCP operations, you must **always include the execut
 </use_mcp_tool>
 ```
 
-### Code Review Delegation Pattern
+### Direct Role Transition Pattern
 
-When code review is completed with APPROVED status:
+When workflow step guidance indicates role transition:
+
+1. **Follow Step Instructions**: Use exact transitionId provided in step guidance
+2. **Execute Direct Tool Call**: Use execute_transition tool directly
+3. **Provide Context**: Include comprehensive handoffMessage with evidence
+4. **Verify Success**: Confirm transition completion and delegation record creation
+
+Example:
 
 ```xml
-<!-- Create review -->
 <use_mcp_tool>
-<server_name>workflow-manager</server_name>
-<tool_name>execute_mcp_operation</tool_name>
+<server_name>anubis</server_name>
+<tool_name>execute_transition</tool_name>
 <arguments>
 {
-  "serviceName": "ReviewOperations",
-  "operation": "create_review",
-  "parameters": {
-    "executionId": "your-execution-id",
-    "reviewData": {
-      "status": "APPROVED",
-      "findings": "comprehensive review findings"
-    }
-  }
-}
-</arguments>
-</use_mcp_tool>
-
-<!-- Delegate to Integration Engineer -->
-<use_mcp_tool>
-<server_name>workflow-manager</server_name>
-<tool_name>execute_mcp_operation</tool_name>
-<arguments>
-{
-  "serviceName": "WorkflowOperations",
-  "operation": "delegate",
-  "parameters": {
-    "executionId": "your-execution-id",
-    "targetRole": "Integration Engineer",
-    "context": "Comprehensive handoff context with quality evidence"
-  }
+  "transitionId": "selected-transition-id",
+  "taskId": "your-task-id",
+  "roleId": "your-role-id"
 }
 </arguments>
 </use_mcp_tool>
@@ -646,7 +678,7 @@ When code review is completed with APPROVED status:
 ```xml
 <!-- Get next subtask -->
 <use_mcp_tool>
-<server_name>workflow-manager</server_name>
+<server_name>anubis</server_name>
 <tool_name>execute_mcp_operation</tool_name>
 <arguments>
 {
@@ -662,7 +694,7 @@ When code review is completed with APPROVED status:
 
 <!-- Update subtask status -->
 <use_mcp_tool>
-<server_name>workflow-manager</server_name>
+<server_name>anubis</server_name>
 <tool_name>execute_mcp_operation</tool_name>
 <arguments>
 {
@@ -680,21 +712,21 @@ When code review is completed with APPROVED status:
 
 ---
 
-## **XML Response Templates**
+## XML Response Templates
 
 ### Active Workflow Response
 
 ```
-**Active Workflow Detected**
+Active Workflow Detected
 
 I found an active workflow: "[workflow name extracted from XML response]"
 Status: [current status from response] | Progress: [progress from response]
 
-**Your Options:**
-A) **Continue existing workflow** - Resume from step "[current step from response]"
-B) **Start new workflow** - Archive current and begin fresh
-C) **Get quick help** - View current step guidance
-D) **View dashboard** - See detailed analytics
+Your Options:
+A) Continue existing workflow - Resume from step "[current step from response]"
+B) Start new workflow - Archive current and begin fresh
+C) Get quick help - View current step guidance
+D) View dashboard - See detailed analytics
 
 Please select A, B, C, or D to proceed.
 ```
@@ -702,99 +734,187 @@ Please select A, B, C, or D to proceed.
 ### Step Execution Response
 
 ```
-**Executing: [step name from guidance response]**
+Executing: [step name from guidance response]
 
 Following MCP guidance with XML operations:
 
-<get_step_guidance>
-  <executionId>[executionId]</executionId>
-  <roleId>[roleId]</roleId>
-</get_step_guidance>
+<use_mcp_tool>
+<server_name>anubis</server_name>
+<tool_name>get_step_guidance</tool_name>
+<arguments>
+{
+  "executionId": "[executionId]",
+  "roleId": "[roleId]"
+}
+</arguments>
+</use_mcp_tool>
 
-**Guidance received. Executing locally:**
+Guidance received. Executing locally:
 1. [first action from approachGuidance section]
 2. [second action from approachGuidance section]
 3. [third action from approachGuidance section]
 
-**Validation Results:**
+Validation Results:
 - [result 1 with evidence]
 - [result 2 with evidence]
 - [any failures or issues]
 
-<report_step_completion>
-  <executionId>[executionId]</executionId>
-  <stepId>[stepId]</stepId>
-  <result>success</result>
-  <executionData>[comprehensive evidence]</executionData>
-</report_step_completion>
+<use_mcp_tool>
+<server_name>anubis</server_name>
+<tool_name>report_step_completion</tool_name>
+<arguments>
+{
+  "executionId": "[executionId]",
+  "stepId": "[stepId]",
+  "result": "success",
+  "executionData": {
+    "validationResults": "All quality checks passed",
+    "evidence": "[comprehensive evidence]"
+  }
+}
+</arguments>
+</use_mcp_tool>
 ```
 
 ### Validation Report
 
 ```
-**Quality Validation Complete**
+Quality Validation Complete
 
-**All Checks Passed:**
+All Checks Passed:
 • [checklist item 1] - Evidence: [specific evidence from validation]
 • [checklist item 2] - Evidence: [specific evidence from validation]
 • [checklist item 3] - Evidence: [specific evidence from validation]
 
-**Reporting completion to MCP server...**
+Reporting completion to MCP server...
 
-<report_step_completion>
-  <executionId>[executionId]</executionId>
-  <stepId>[stepId]</stepId>
-  <result>success</result>
-  <executionData>
-    <validationResults>All quality checks passed</validationResults>
-    <evidence>[detailed evidence summary]</evidence>
-  </executionData>
-</report_step_completion>
+<use_mcp_tool>
+<server_name>anubis</server_name>
+<tool_name>report_step_completion</tool_name>
+<arguments>
+{
+  "executionId": "[executionId]",
+  "stepId": "[stepId]",
+  "result": "success",
+  "executionData": {
+    "validationResults": "All quality checks passed",
+    "evidence": "[detailed evidence summary]"
+  }
+}
+</arguments>
+</use_mcp_tool>
+```
+
+### Role Transition Response
+
+```
+Role Transition Execution
+
+1. Executing transition as instructed by step guidance:
+
+<use_mcp_tool>
+<server_name>anubis</server_name>
+<tool_name>execute_transition</tool_name>
+<arguments>
+{
+  "transitionId": "[transition-id-from-guidance]",
+  "taskId": "[task-id]",
+  "roleId": "[current-role-id]"
+}
+</arguments>
+</use_mcp_tool>
+
+Transition successful. Activating new role identity...
+
+<use_mcp_tool>
+<server_name>anubis</server_name>
+<tool_name>get_workflow_guidance</tool_name>
+<arguments>
+{
+  "roleName": "[new-role-name]",
+  "taskId": "[task-id]",
+  "roleId": "[new-role-id]"
+}
+</arguments>
+</use_mcp_tool>
+
+New Role Identity Activated:
+• Role: [new role name and purpose]
+• Core Responsibilities: [key duties]
+• Granted Capabilities: [special powers]
+• Quality Standards: [standards to uphold]
+
+I am now fully embodying the [new role name] role and will proceed according to its behavioral framework and capabilities.
+
+Next step request will be made using my new role identity.
 ```
 
 ---
 
-## **XML Troubleshooting Guide**
+## XML Troubleshooting Guide
 
-| Issue                             | XML Diagnostic                                         | Solution                                                    |
-| --------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------- |
-| "No step guidance available"      | Verify XML syntax and parameter values                 | Use proper `<use_mcp_tool>` format with `get_step_guidance` |
-| "Command execution failed"        | Check your local tool XML syntax                       | Retry 3 times, report detailed error in executionData       |
-| "Quality check validation failed" | Review specific checklist items from guidance response | Fix issues, re-validate, only proceed when all pass         |
-| "ExecutionId parameter missing"   | Check XML parameter structure                          | Always include executionId in arguments JSON                |
-| "Schema parameter mismatch"       | Compare XML against mcpOperations guidance             | Use exact structure from guidance mcpOperations section     |
-| "Malformed XML syntax"            | Validate XML structure                                 | Use proper `<use_mcp_tool>` format with JSON arguments      |
+| Issue                             | XML Diagnostic                                         | Solution                                                        |
+| --------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------- |
+| "No step guidance available"      | Verify XML syntax and parameter values                 | Use proper `<use_mcp_tool>` format with `get_step_guidance`     |
+| "Command execution failed"        | Check your local tool XML syntax                       | Retry 3 times, report detailed error in executionData           |
+| "Quality check validation failed" | Review specific checklist items from guidance response | Fix issues, re-validate, only proceed when all pass             |
+| "ExecutionId parameter missing"   | Check XML parameter structure                          | Always include executionId in arguments JSON                    |
+| "Schema parameter mismatch"       | Compare XML against mcpOperations guidance             | Use exact structure from guidance mcpOperations section         |
+| "Malformed XML syntax"            | Validate XML structure                                 | Use proper `<use_mcp_tool>` format with JSON arguments          |
+| "Direct tool call failed"         | Check transitionId and parameters from step guidance   | Use exact parameters provided in workflow step instructions     |
+| "Delegation record not created"   | Verify execute_transition success response             | Check RoleTransitionService logs and retry with same parameters |
+| "Transition guidance missing"     | Check if final step completed properly                 | Complete current role steps before attempting transition        |
 
 ---
 
-## **XML Formatting Rules**
+## XML Formatting Rules
 
 ### Required XML Structure
 
 ```xml
-<!-- Proper tag structure -->
+<!-- Proper tag structure for LOCAL tools -->
 <tool_name>
   <parameter1>value1</parameter1>
   <parameter2>value2</parameter2>
 </tool_name>
 
-<!-- For complex parameters -->
-<execute_mcp_operation>
-  <serviceName>ServiceName</serviceName>
-  <operation>operationName</operation>
-  <parameters>
-    <param1>value1</param1>
-    <param2>
-      <subparam1>subvalue1</subparam1>
-      <subparam2>subvalue2</subparam2>
-    </param2>
-  </parameters>
-</execute_mcp_operation>
+<!-- For MCP operations -->
+<use_mcp_tool>
+<server_name>anubis</server_name>
+<tool_name>execute_mcp_operation</tool_name>
+<arguments>
+{
+  "serviceName": "ServiceName",
+  "operation": "operationName",
+  "parameters": {
+    "param1": "value1",
+    "param2": {
+      "subparam1": "subvalue1",
+      "subparam2": "subvalue2"
+    }
+  }
+}
+</arguments>
+</use_mcp_tool>
+```
+
+### XML Content Escaping
+
+```xml
+<!-- Escape special characters -->
+<description>Code contains &lt;script&gt; tags and &amp; symbols</description>
+
+<!-- Use CDATA for complex content -->
+<codeContent><![CDATA[
+function example() {
+  return "<div>HTML content</div>";
+}
+]]></codeContent>
 ```
 
 ---
 
-## **Success Metrics**
+## Success Metrics
 
 **You're succeeding when:**
 
@@ -805,11 +925,8 @@ Following MCP guidance with XML operations:
 - Role transitions follow proper XML validation before execution
 - Workflow completion delivers quality results that meet all requirements
 - User receives clear progress updates and options based on response data
+- All MCP tool calls use the proper `<use_mcp_tool>` format with `anubis` server name
 
 **Remember**: You are the EXECUTOR. MCP provides GUIDANCE. Execute locally with proper XML syntax, validate thoroughly against all requirements, report accurately with comprehensive evidence.
 
 ---
-
-**MCP WORKFLOW SUCCESS FORMULA**
-
-**XML Request → Get Guidance → Execute Locally → Validate → XML Report**

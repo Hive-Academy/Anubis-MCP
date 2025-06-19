@@ -1,0 +1,150 @@
+<section id="getting-started" class="py-24 bg-slate-900 relative">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+      <h2 class="text-4xl md:text-5xl font-bold mb-6">Get Started in Minutes</h2>
+      <p class="text-xl text-slate-300 max-w-3xl mx-auto">
+        Add one configuration entry to your MCP client and you're ready to go. No installation, no setup, no complexity.
+      </p>
+    </div>
+
+    <div class="max-w-4xl mx-auto">
+      <!-- Step 1: NPX Installation -->
+      <div class="mb-12">
+        <h3 class="text-2xl font-bold mb-6 flex items-center">
+          <span class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-sm font-bold mr-3">1</span>
+          Add to Your MCP Client Config
+        </h3>
+        <div class="grid md:grid-cols-3 gap-6">
+          <!-- Cursor IDE -->
+          <div class="config-tab">
+            <h4 class="font-semibold mb-3 text-center text-blue-400">Cursor IDE</h4>
+            <div class="code-block p-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs text-slate-400">cursor_settings.json</span>
+                <button class="copy-btn text-slate-400 hover:text-white transition-colors text-xs" onclick="copyToClipboard(getCursorConfig())">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+              <code class="font-mono text-xs text-green-400 text-left block" id="cursor-config">
+                {<br />
+                &nbsp;&nbsp;"mcpServers": {<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;"anubis": {<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"command": "npx",<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"args": ["-y", "@hive-academy/anubis"]<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;}<br />
+                &nbsp;&nbsp;}<br />
+                }
+              </code>
+            </div>
+          </div>
+
+          <!-- Claude Desktop -->
+          <div class="config-tab">
+            <h4 class="font-semibold mb-3 text-center text-purple-400">Claude Desktop</h4>
+            <div class="code-block p-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs text-slate-400">claude_desktop_config.json</span>
+                <button class="copy-btn text-slate-400 hover:text-white transition-colors text-xs" onclick="copyToClipboard(getClaudeConfig())">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+              <code class="font-mono text-xs text-green-400" id="claude-config">
+                {<br />
+                &nbsp;&nbsp;"mcpServers": {<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;"anubis": {<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"command": "npx",<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"args": ["-y", "@hive-academy/anubis"]<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;}<br />
+                &nbsp;&nbsp;}<br />
+                }
+              </code>
+            </div>
+          </div>
+
+          <!-- VS Code -->
+          <div class="config-tab">
+            <h4 class="font-semibold mb-3 text-center text-green-400">VS Code MCP</h4>
+            <div class="code-block p-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs text-slate-400">mcp_config.json</span>
+                <button class="copy-btn text-slate-400 hover:text-white transition-colors text-xs" onclick="copyToClipboard(getVSCodeConfig())">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+              <code class="font-mono text-xs text-green-400" id="vscode-config">
+                {<br />
+                &nbsp;&nbsp;"mcpServers": {<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;"anubis": {<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"command": "npx",<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"args": ["-y", "@hive-academy/anubis"]<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;}<br />
+                &nbsp;&nbsp;}<br />
+                }
+              </code>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Restart -->
+      <div class="mb-12">
+        <h3 class="text-2xl font-bold mb-6 flex items-center">
+          <span class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-sm font-bold mr-3">2</span>
+          Restart Your MCP Client
+        </h3>
+        <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+          <p class="text-slate-300 mb-4">Restart your IDE or MCP client to load the new server. The first run will automatically:</p>
+          <ul class="space-y-2 text-sm text-slate-300">
+            <li class="flex items-center space-x-2">
+              <i class="fas fa-download text-blue-400"></i>
+              <span>Download and install the latest version</span>
+            </li>
+            <li class="flex items-center space-x-2">
+              <i class="fas fa-database text-green-400"></i>
+              <span>Set up your project database</span>
+            </li>
+            <li class="flex items-center space-x-2">
+              <i class="fas fa-cogs text-purple-400"></i>
+              <span>Initialize workflow rules and roles</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Step 3: Start Using -->
+      <div class="mb-12">
+        <h3 class="text-2xl font-bold mb-6 flex items-center">
+          <span class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-sm font-bold mr-3">3</span>
+          Start Your First Workflow
+        </h3>
+        <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+          <p class="text-slate-300 mb-4">Try these example commands in your AI assistant:</p>
+          <div class="space-y-4">
+            <div class="code-block p-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs text-slate-400">Create a new workflow</span>
+                <button class="copy-btn text-slate-400 hover:text-white transition-colors text-xs" onclick="copyToClipboard('Can you help me set up a new React component workflow using Anubis - Divine Guidance for AI Workflows?')">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+              <code class="font-mono text-sm text-blue-400">
+                Can you help me set up a new React component workflow using Anubis - Divine Guidance for AI Workflows?
+              </code>
+            </div>
+            <div class="code-block p-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs text-slate-400">Get workflow guidance</span>
+                <button class="copy-btn text-slate-400 hover:text-white transition-colors text-xs" onclick="copyToClipboard('Show me the available workflow roles and how to get started with the senior developer role.')">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+              <code class="font-mono text-sm text-blue-400">
+                Show me the available workflow roles and how to get started with the senior developer role.
+              </code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

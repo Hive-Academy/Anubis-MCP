@@ -1,18 +1,12 @@
 {
   "mcpServers": {
-    "workflow-manager": {
-      "command": "docker",
+    "anubis": {
+      "command": "node",
       "args": [
-        "run",
-        "--rm",
-        "-i",
-        "--network=host",
-        "-v",
-        "D:/projects/cursor-workflow/data:/app/data",
-        "-v",
-        "D:/projects/cursor-workflow/workflow-reports:/app/data/workflow-manager-mcp-reports",
-        "hiveacademy/mcp-workflow-manager"
-      ]
+        "D:/projects/cursor-workflow/dist/main.js"
+      ],
+      "disabled": false,
+      "alwaysAllow": []
     }
   }
 }

@@ -32,25 +32,7 @@ export class WorkflowBootstrapMcpService {
 
   @Tool({
     name: 'bootstrap_workflow',
-    description: `Start a new workflow execution - Simple kickoff without task details.
-
-**🚀 WORKFLOW KICKOFF - Pure execution starter**
-
-Starts a workflow execution pointing to the first boomerang step. 
-The boomerang workflow steps will guide the agent to:
-1. Perform git setup and verification
-2. Analyze the codebase with functional testing
-3. Gather task requirements and create comprehensive task
-4. Make research decisions
-5. Delegate to appropriate next role
-
-**Returns:**
-- Execution ID and first step ID for workflow execution
-- Current step guidance for immediate execution
-- Complete execution context to start boomerang workflow
-
-**Usage:**
-Just call bootstrap_workflow() and start executing the returned step guidance.`,
+    description: `Initializes a new workflow execution with boomerang role, starting from git setup through task creation and delegation.`,
     parameters:
       BootstrapWorkflowInputSchema as ZodSchema<BootstrapWorkflowInputType>,
   })
@@ -84,19 +66,31 @@ Just call bootstrap_workflow() and start executing the returned step guidance.`,
         };
       }
 
-      // Return execution data for immediate workflow start
+      // Return streamlined response with essential data only
+      // Remove duplication of currentRole and currentStep (they're in resources)
       return {
         content: [
           {
             type: 'text' as const,
             text: JSON.stringify(
               {
-                currentRole: result.currentRole,
-                currentStep: result.currentStep,
-                execution: result.execution,
                 success: true,
                 message: result.message,
-                resources: result.resources,
+                executionId: result.resources.executionId,
+                taskId: result.resources.taskId,
+                currentRole: {
+                  id: result.currentRole.id,
+                  name: result.currentRole.name,
+                  description: result.currentRole.description,
+                  capabilities: result.currentRole.capabilities,
+                  coreResponsibilities: result.currentRole.coreResponsibilities,
+                  keyCapabilities: result.currentRole.keyCapabilities,
+                },
+                currentStep: {
+                  id: result.currentStep.id,
+                  name: result.currentStep.name,
+                  description: result.currentStep.description,
+                },
                 timestamp: new Date().toISOString(),
               },
               null,

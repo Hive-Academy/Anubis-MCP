@@ -11,6 +11,7 @@ async function bootstrapProduction() {
   return app.close();
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function bootstrapDevelopment() {
   const app = await NestFactory.create(AppModule);
 
@@ -19,8 +20,8 @@ async function bootstrapDevelopment() {
   await app.listen(process.env.PORT ?? 3000);
 }
 
-if (process.env.NODE_ENV === 'production') {
-  void bootstrapProduction();
-} else {
-  void bootstrapDevelopment();
-}
+// if (process.env.NODE_ENV === 'production') {
+void bootstrapProduction();
+// } else {
+//   void bootstrapDevelopment();
+// }

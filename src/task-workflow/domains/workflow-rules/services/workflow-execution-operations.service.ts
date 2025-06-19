@@ -44,6 +44,7 @@ export interface ExecutionResult {
   nextActions?: any[];
   completionSummary?: CompletionSummary;
   finalRecommendations?: string[];
+  availableTransitions?: unknown[];
 }
 
 export interface ExecutionsSummary {
@@ -373,6 +374,7 @@ export class WorkflowExecutionOperationsService extends ConfigurableService<Exec
       execution: enrichedData.execution,
       nextSteps: enrichedData.nextSteps,
       progressUpdate: enrichedData.progressMetrics,
+      availableTransitions: enrichedData.availableTransitions,
     };
   }
 }

@@ -1,0 +1,26 @@
+<div class="feature-card rounded-xl p-8 {{#if hover}}hover:scale-105 transition-transform duration-300{{/if}}">
+  <div class="text-center mb-6">
+    <i class="{{icon}} text-4xl {{iconColor}} mb-4"></i>
+    <h3 class="text-xl font-bold mb-3">{{title}}</h3>
+  </div>
+  {{#if list}}
+  <ul class="space-y-2 text-sm text-slate-300">
+    {{#each list}}
+    <li class="flex items-center space-x-2">
+      <i class="{{icon}} {{iconColor}} text-xs"></i>
+      <span>{{{text}}}</span>
+    </li>
+    {{/each}}
+  </ul>
+  {{/if}}
+  {{#if content}}
+  <ul class="space-y-3 text-sm text-slate-300">
+    {{#each content}}
+    <li class="flex items-start space-x-2">
+      <i class="{{icon}} {{iconColor}} text-xs mt-1"></i>
+      <span>{{{text}}}</span>
+    </li>
+    {{/each}}
+  </ul>
+  {{/if}}
+</div>

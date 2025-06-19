@@ -40,18 +40,6 @@ const ExecutionStateSchema = z
   })
   .describe('Current workflow execution state');
 
-// Task Creation Data Schema - For auto-created tasks
-const TaskCreationDataSchema = z
-  .object({
-    name: z.string().optional(),
-    description: z.string().optional(),
-    requirements: z.string().optional(),
-    codebaseAnalysis: z.record(z.string(), z.unknown()).optional(),
-    gitBranch: z.string().optional(),
-    priority: z.enum(['Low', 'Medium', 'High', 'Critical']).optional(),
-  })
-  .describe('Data used for automatic task creation');
-
 // Execution Context Schema - Additional context for execution
 const ExecutionContextSchema = z
   .object({
@@ -61,7 +49,6 @@ const ExecutionContextSchema = z
     initialRoleName: z.string().optional(),
     firstStepName: z.string().optional(),
     workflowPhase: z.string().optional(),
-    taskCreationData: TaskCreationDataSchema.optional(),
   })
   .describe('Additional execution context');
 
@@ -83,8 +70,6 @@ const UpdateDataSchema = z
     currentStepId: z.string().optional(),
     executionState: ExecutionStateSchema.optional(),
     completedAt: z.string().optional(), // ISO date string
-    autoCreatedTask: z.boolean().optional(),
-    taskCreationData: TaskCreationDataSchema.optional(),
     stepsCompleted: z.number().optional(),
     totalSteps: z.number().optional(),
     progressPercentage: z.number().min(0).max(100).optional(),
@@ -128,7 +113,6 @@ const ContextUpdatesSchema = z
     initialRoleName: z.string().optional(),
     firstStepName: z.string().optional(),
     workflowPhase: z.string().optional(),
-    taskCreationData: TaskCreationDataSchema.optional(),
     // Allow additional dynamic context fields
   })
   .passthrough()
@@ -250,42 +234,7 @@ export class WorkflowExecutionMcpService {
 
   @Tool({
     name: 'workflow_execution_operations',
-    description: `
-**⚙️ WORKFLOW STATE MANAGEMENT - Query and manage execution state only**
-
-**FOCUSED OPERATIONS:**
-- get_active_executions: List all active executions (no parameters required)
-- get_execution: Get current execution state (requires taskId OR executionId) 
-- update_execution: Update execution state and progress (requires executionId + updateData)
-- complete_execution: Mark execution as completed (requires executionId)
-- get_execution_context: Get execution context data (requires executionId, optional dataKey)
-- update_execution_context: Update execution context (requires executionId + contextUpdates)
-
-**✅ STRONGLY TYPED: All parameters are properly validated - no z.any() usage**
-
-**updateData fields (all optional):**
-- currentRoleId: string (role ID)
-- currentStepId: string (step ID) 
-- executionState: object (workflow state)
-- stepsCompleted: number (completed step count)
-- totalSteps: number (total steps)
-- progressPercentage: number (0-100)
-- executionContext: object (additional context)
-- lastError: object (error details)
-- completedAt: string (ISO date)
-
-**Does NOT provide:**
-❌ Workflow guidance (use get_workflow_guidance)
-❌ Step guidance (use get_step_guidance)  
-❌ Role recommendations (use role transition tools)
-❌ MCP operations (use execute_mcp_operation)
-
-**Examples:**
-- List active: { "operation": "get_active_executions" }
-- Get by taskId: { "operation": "get_execution", "taskId": 123 }
-- Update progress: { "operation": "update_execution", "executionId": "exec-123", "updateData": { "stepsCompleted": 1, "progressPercentage": 20 } }
-- Get context: { "operation": "get_execution_context", "executionId": "exec-123" }
-`,
+    description: `Manages workflow execution state through strongly-typed operations for creating, querying, updating, and completing workflow executions. Handles execution context and progress tracking with validated parameters.`,
     parameters: WorkflowExecutionSchema,
   })
   async executeWorkflowOperation(input: WorkflowExecutionInputSchema): Promise<{
@@ -303,7 +252,6 @@ export class WorkflowExecutionMcpService {
         executionId: input.executionId,
         roleName: input.roleName,
         executionMode: input.executionMode,
-        autoCreatedTask: input.autoCreatedTask,
         executionContext: input.executionContext,
         updateData: input.updateData,
         stepId: input.stepId,
@@ -369,9 +317,6 @@ export class WorkflowExecutionMcpService {
             type: 'text' as const,
             text: JSON.stringify(
               {
-                operation: input.operation,
-                taskId: input.taskId,
-                executionId: input.executionId,
                 success: true,
                 data: result,
                 timestamp: new Date().toISOString(),
@@ -393,9 +338,6 @@ export class WorkflowExecutionMcpService {
             type: 'text' as const,
             text: JSON.stringify(
               {
-                operation: input.operation,
-                taskId: input.taskId,
-                executionId: input.executionId,
                 success: false,
                 error: {
                   message: errorMessage,

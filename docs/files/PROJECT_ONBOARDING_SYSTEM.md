@@ -254,7 +254,7 @@ task_operations({
       "Implement JWT strategy with Passport.js"
     ],
     behavioralContext: {
-      codeQuality: "Apply SOLID principles, use TypeScript strict mode",
+      codeQuality: "Apply SOLID, KISS and DRY principles, use TypeScript strict mode",
       patterns: "Follow established Repository and Service Layer patterns",
       testing: "80% coverage with Jest, integration tests with Supertest",
       architecture: "Maintain Domain-Driven Design module boundaries"

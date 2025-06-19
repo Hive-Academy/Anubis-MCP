@@ -1,6 +1,6 @@
 # 🚀 Docker Hub Publication Guide
 
-This guide will help you publish your MCP Workflow Manager to Docker Hub immediately, following the established patterns in the MCP ecosystem.
+This guide will help you publish your Anubis to Docker Hub immediately, following the established patterns in the MCP ecosystem.
 
 ## 📋 Prerequisites
 
@@ -65,13 +65,13 @@ docker info | grep Username
 
 ```bash
 # Pull your image
-docker pull hiveacademy/mcp-workflow-manager
+docker pull hiveacademy/anubis
 
 # Test with STDIO transport (default)
-docker run -i --rm -v mcp-workflow-data:/app/data hiveacademy/mcp-workflow-manager
+docker run -i --rm -v mcp-workflow-data:/app/data hiveacademy/anubis
 
 # Test with SSE transport
-docker run -p 3000:3000 -e MCP_TRANSPORT_TYPE=SSE -v mcp-workflow-data:/app/data hiveacademy/mcp-workflow-manager
+docker run -p 3000:3000 -e MCP_TRANSPORT_TYPE=SSE -v mcp-workflow-data:/app/data hiveacademy/anubis
 
 # Check health
 curl http://localhost:3000/health
@@ -90,15 +90,15 @@ docker buildx create --name mcp-builder --use --bootstrap
 # Build for multiple platforms
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
-  --tag hiveacademy/mcp-workflow-manager:latest \
-  --tag hiveacademy/mcp-workflow-manager:1.0.0 \
+  --tag hiveacademy/anubis:latest \
+  --tag hiveacademy/anubis:1.0.0 \
   --push \
   .
 ```
 
 ### 2. Update Docker Hub Description
 
-- Go to [hub.docker.com/r/hiveacademy/mcp-workflow-manager](https://hub.docker.com/r/hiveacademy/mcp-workflow-manager)
+- Go to [hub.docker.com/r/hiveacademy/anubis](https://hub.docker.com/r/hiveacademy/anubis)
 - Navigate to repository settings
 - Copy content from `DOCKER_HUB_README.md` into the repository description
 
@@ -136,30 +136,30 @@ The GitHub Action will automatically build and publish on every push!
 
 ```bash
 # STDIO (default) - for CLI integration
-docker run -i --rm -v mcp-workflow-data:/app/data hiveacademy/mcp-workflow-manager
+docker run -i --rm -v mcp-workflow-data:/app/data hiveacademy/anubis
 
 # SSE - for HTTP clients
-docker run -p 3000:3000 -e MCP_TRANSPORT_TYPE=SSE -v mcp-workflow-data:/app/data hiveacademy/mcp-workflow-manager
+docker run -p 3000:3000 -e MCP_TRANSPORT_TYPE=SSE -v mcp-workflow-data:/app/data hiveacademy/anubis
 
 # Streamable HTTP - for web applications
-docker run -p 3000:3000 -e MCP_TRANSPORT_TYPE=STREAMABLE_HTTP -v mcp-workflow-data:/app/data hiveacademy/mcp-workflow-manager
+docker run -p 3000:3000 -e MCP_TRANSPORT_TYPE=STREAMABLE_HTTP -v mcp-workflow-data:/app/data hiveacademy/anubis
 ```
 
 ### Test Database Types
 
 ```bash
 # SQLite (default)
-docker run -v mcp-workflow-data:/app/data hiveacademy/mcp-workflow-manager
+docker run -v mcp-workflow-data:/app/data hiveacademy/anubis
 
 # PostgreSQL
 docker run \
   -e DATABASE_URL="postgresql://user:pass@host:5432/db" \
-  hiveacademy/mcp-workflow-manager
+  hiveacademy/anubis
 
 # MySQL
 docker run \
   -e DATABASE_URL="mysql://user:pass@host:3306/db" \
-  hiveacademy/mcp-workflow-manager
+  hiveacademy/anubis
 ```
 
 ### MCP Client Configuration
@@ -169,7 +169,7 @@ docker run \
 ```json
 {
   "mcpServers": {
-    "workflow-manager": {
+    "anubis": {
       "command": "docker",
       "args": [
         "run",
@@ -177,7 +177,7 @@ docker run \
         "-i",
         "-v",
         "mcp-workflow-data:/app/data",
-        "hiveacademy/mcp-workflow-manager"
+        "hiveacademy/anubis"
       ]
     }
   }
@@ -189,7 +189,7 @@ docker run \
 ```json
 {
   "mcpServers": {
-    "workflow-manager": {
+    "anubis": {
       "transport": {
         "type": "sse",
         "url": "http://localhost:3000/sse"
@@ -202,7 +202,7 @@ docker run \
 First start the container:
 
 ```bash
-docker run -p 3000:3000 -e MCP_TRANSPORT_TYPE=SSE -v mcp-workflow-data:/app/data hiveacademy/mcp-workflow-manager
+docker run -p 3000:3000 -e MCP_TRANSPORT_TYPE=SSE -v mcp-workflow-data:/app/data hiveacademy/anubis
 ```
 
 ## 📋 Production Deployment
@@ -213,12 +213,12 @@ docker run -p 3000:3000 -e MCP_TRANSPORT_TYPE=SSE -v mcp-workflow-data:/app/data
 version: '3.8'
 services:
   mcp-workflow:
-    image: hiveacademy/mcp-workflow-manager:latest
+    image: hiveacademy/anubis:latest
     ports:
       - '3000:3000'
     environment:
       - DATABASE_URL=postgresql://workflow:secure_password@postgres:5432/workflow_db
-      - MCP_SERVER_NAME=Production-Workflow-Manager
+      - MCP_SERVER_NAME=Production-anubis
       - MCP_TRANSPORT_TYPE=SSE
       - NODE_ENV=production
     depends_on:
@@ -270,15 +270,15 @@ cp docker.env.example .env
 ### 2. Add MCP Badge to README
 
 ```markdown
-[![MCP Server](https://img.shields.io/badge/MCP-Server-blue?style=for-the-badge&logo=docker)](https://hub.docker.com/r/hiveacademy/mcp-workflow-manager)
-[![Docker Pulls](https://img.shields.io/docker/pulls/hiveacademy/mcp-workflow-manager)](https://hub.docker.com/r/hiveacademy/mcp-workflow-manager)
+[![MCP Server](https://img.shields.io/badge/MCP-Server-blue?style=for-the-badge&logo=docker)](https://hub.docker.com/r/hiveacademy/anubis)
+[![Docker Pulls](https://img.shields.io/docker/pulls/hiveacademy/anubis)](https://hub.docker.com/r/hiveacademy/anubis)
 ```
 
 ## 📈 Success Metrics
 
 After publication, monitor:
 
-- **Docker pulls**: Track adoption at [hub.docker.com/r/hiveacademy/mcp-workflow-manager](https://hub.docker.com/r/hiveacademy/mcp-workflow-manager)
+- **Docker pulls**: Track adoption at [hub.docker.com/r/hiveacademy/anubis](https://hub.docker.com/r/hiveacademy/anubis)
 - **GitHub stars**: Community validation
 - **Issue reports**: User engagement
 - **MCP community mentions**: Ecosystem adoption
@@ -310,7 +310,7 @@ docker exec -it <container-id> npx prisma migrate deploy
 
 ```bash
 # Test STDIO transport
-echo '{"jsonrpc": "2.0", "method": "ping", "id": 1}' | docker run -i --rm hiveacademy/mcp-workflow-manager
+echo '{"jsonrpc": "2.0", "method": "ping", "id": 1}' | docker run -i --rm hiveacademy/anubis
 
 # Test HTTP transport
 curl -X POST http://localhost:3000/messages \
@@ -320,7 +320,7 @@ curl -X POST http://localhost:3000/messages \
 
 ## ✅ Ready to Publish!
 
-Your MCP Workflow Manager is now properly configured for Docker Hub publication with:
+Your Anubis is now properly configured for Docker Hub publication with:
 
 ✅ **Correct Repository Information**: All references point to Hive-Academy/Workflow_Manager_MCP  
 ✅ **Multi-Transport Support**: STDIO, SSE, and Streamable HTTP  

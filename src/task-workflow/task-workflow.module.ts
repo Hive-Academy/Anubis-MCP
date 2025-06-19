@@ -8,6 +8,7 @@ import { ReportingModule } from './domains/reporting/reporting.module';
 // Domain-Based Tool Modules - Rule-based workflow architecture
 import { CoreWorkflowModule } from './domains/core-workflow/core-workflow.module';
 import { WorkflowRulesModule } from './domains/workflow-rules/workflow-rules.module';
+import { InitRulesModule } from './domains/init-rules/init-rules.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { WorkflowRulesModule } from './domains/workflow-rules/workflow-rules.mod
     // Rule-based workflow architecture - clean and focused
     CoreWorkflowModule, // Internal task management services (NOT MCP tools)
     WorkflowRulesModule, // Rule-driven workflow MCP interface (8 tools)
+    InitRulesModule, // Tool initialization for different AI agents
   ],
 
   exports: [
@@ -24,6 +26,7 @@ import { WorkflowRulesModule } from './domains/workflow-rules/workflow-rules.mod
     ReportingModule,
     CoreWorkflowModule,
     WorkflowRulesModule,
+    InitRulesModule,
   ],
 })
 export class TaskWorkflowModule {}

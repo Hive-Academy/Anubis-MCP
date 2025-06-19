@@ -55,7 +55,7 @@ jspm_packages/
 .env
 
 # Generated reports
-workflow-manager-mcp-reports/
+anubis-mcp-reports/
 
 # Temporary files
 temp/
@@ -78,4 +78,4 @@ test/
 
 # Build artifacts that will be rebuilt
 dist/
-build/ 
+build/

@@ -1,57 +1,32 @@
 {
   "workflowSteps": [
     {
-      "name": "comprehensive_context_acquisition_for_integration",
-      "displayName": "Comprehensive Context Acquisition for Integration",
-      "description": "Retrieve complete implementation context and prepare for integration and documentation tasks",
+      "name": "gather_integration_context",
+      "description": "Retrieve implementation context for integration and documentation",
       "sequenceNumber": 1,
       "isRequired": true,
-      "estimatedTime": "10-15 minutes",
       "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Context acquisition focused on integration needs and documentation requirements",
-        "principles": [
-          "Retrieve complete task context to understand what was implemented",
-          "Gather implementation details for documentation updates",
-          "Understand changes made to determine documentation impact",
-          "Prepare context for integration and deployment activities"
-        ],
-        "methodology": "Integration-focused context gathering with documentation preparation",
-        "contextGathering": {
-          "implementationSummary": "Understand what was built and how it works",
-          "changesAnalysis": "Identify what files were modified, added, or removed",
-          "documentationImpact": "Determine which documentation needs updates",
-          "integrationRequirements": "Understand deployment and integration needs"
-        }
-      },
+      "approach": "Context acquisition focused on integration and documentation needs",
       "approachGuidance": {
         "stepByStep": [
-          "Execute TaskOperations.get to retrieve complete task context and implementation details",
-          "Review implementation plans and completed subtasks to understand what was built",
-          "Analyze code review results to understand approved changes and implementation quality",
-          "Identify files modified, added, or removed for documentation impact assessment",
-          "Prepare context for documentation updates and integration activities",
-          "Document integration requirements and deployment considerations"
-        ],
-        "contextAnalysisSteps": [
-          "Review task description and acceptance criteria to understand original requirements",
-          "Examine implementation plans to understand architectural decisions and approach",
-          "Analyze completed subtasks to understand specific changes made",
-          "Review code review feedback to understand quality validation results"
+          "Execute TaskOperations.get to retrieve implementation context",
+          "Review implementation plans and completed subtasks",
+          "Analyze code review results and approved changes",
+          "Identify files modified for documentation impact assessment",
+          "Prepare context for documentation updates and integration"
         ]
       },
       "qualityChecklist": [
-        "Complete task context retrieved with implementation details and quality results",
-        "Implementation plans and subtasks reviewed to understand what was built",
-        "Code review results analyzed to understand approved changes",
-        "Files and changes identified for documentation impact assessment",
-        "Integration requirements and deployment considerations documented",
-        "Context prepared for effective documentation updates and integration activities"
+        "Complete implementation context retrieved",
+        "Implementation plans and subtasks reviewed",
+        "Code review results analyzed",
+        "File changes identified for documentation impact",
+        "Integration requirements documented"
       ],
       "conditions": [],
       "actions": [
         {
-          "name": "acquire_comprehensive_implementation_context",
+          "name": "get_implementation_context",
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "TaskOperations",
@@ -59,161 +34,68 @@
           },
           "sequenceOrder": 1
         }
-      ],
-      "triggerReport": true,
-      "reportType": "integration_context_acquisition",
-      "reportTemplate": "integration_context_and_preparation"
+      ]
     },
     {
-      "name": "mandatory_git_integration_and_remote_synchronization",
-      "displayName": "MANDATORY: Git Integration and Remote Synchronization",
-      "description": "Execute comprehensive git operations with error handling and remote synchronization for integration readiness",
+      "name": "execute_git_integration",
+      "description": "Execute git operations with error handling and remote sync",
       "sequenceNumber": 2,
       "isRequired": true,
-      "estimatedTime": "15-25 minutes",
       "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "MANDATORY git integration operations with comprehensive error handling and validation",
-        "principles": [
-          "CRITICAL: Ensure all implementation properly committed and ready for integration",
-          "HALT INTEGRATION immediately if any git operation fails",
-          "Verify feature branch status and prevent integration from main/master branches",
-          "Execute comprehensive commit creation with detailed integration message",
-          "Perform remote synchronization with push verification and error handling"
-        ],
-        "methodology": "Git-first integration with mandatory validation and error recovery protocols",
-        "gitOperations": {
-          "statusAssessment": {
-            "statusCheck": "Execute 'git status --porcelain' to verify working directory state",
-            "branchVerification": "Execute 'git branch --show-current' to confirm feature branch",
-            "branchValidation": "Ensure current branch is feature branch, not main/master",
-            "cleanStateVerification": "Verify working directory is clean and ready for commit"
-          },
-          "stagingAndCommit": {
-            "stageFiles": "Execute 'git add .' to stage all implementation changes",
-            "verifyStaged": "Execute 'git diff --cached --stat' to verify staged changes",
-            "checkUnstaged": "Execute 'git diff --name-only' to ensure no unstaged files",
-            "createCommit": "Execute git commit with comprehensive integration message",
-            "verifyCommit": "Execute 'git rev-parse HEAD' for commit hash validation"
-          },
-          "remoteSynchronization": {
-            "fetchLatest": "Execute 'git fetch origin' to get latest remote changes",
-            "pushBranch": "Execute 'git push origin [current_branch]' to push feature branch",
-            "verifyPush": "Validate push success and confirm remote synchronization",
-            "errorHandling": "Implement error recovery and escalation protocols for failures"
-          }
-        }
-      },
+      "approach": "Comprehensive git integration with validation and error handling",
       "approachGuidance": {
         "stepByStep": [
-          "Execute git status assessment: verify working directory clean and correct feature branch",
-          "Perform file staging and commit verification: stage all changes and verify no unstaged files",
-          "Create comprehensive integration commit: detailed message with implementation summary",
-          "Execute remote synchronization: fetch latest, push feature branch, verify success",
-          "Implement error handling protocol: document errors, attempt resolution, halt if unresolvable",
-          "Validate git integration completion: clean state, successful push, ready for PR creation"
-        ],
-        "validationCriteria": [
-          "Git status assessment completed with clean working directory and correct feature branch verified",
-          "File staging and commit verification successful with all implementation changes committed",
-          "Comprehensive integration commit created with detailed message including implementation summary",
-          "Remote synchronization completed with successful push and verification of feature branch",
-          "Error handling protocol implemented with resolution attempts and escalation procedures",
-          "Git integration completion validated with clean state and integration readiness confirmed"
+          "Execute git status to verify clean working directory",
+          "Verify current branch is feature branch (not main/master)",
+          "Stage all implementation changes with git add",
+          "Create comprehensive integration commit with detailed message",
+          "Push feature branch to remote with error handling"
         ]
       },
       "qualityChecklist": [
-        "Git status assessment completed with clean working directory and correct feature branch verified",
-        "File staging and commit verification successful with all implementation changes committed",
-        "Comprehensive integration commit created with detailed message including implementation summary",
-        "Remote synchronization completed with successful push and verification of feature branch",
-        "Error handling protocol implemented with resolution attempts and escalation procedures",
-        "Git integration completion validated with clean state and integration readiness confirmed"
+        "Git status verified with clean working directory",
+        "Feature branch confirmed (not main/master)",
+        "All implementation changes staged and committed",
+        "Comprehensive commit message created",
+        "Feature branch successfully pushed to remote"
       ],
       "conditions": [
         {
-          "name": "context_acquisition_completed",
+          "name": "context_gathered",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "comprehensive_context_acquisition_for_integration"
+              "stepName": "gather_integration_context"
             }
           },
           "isRequired": true
         }
       ],
-      "actions": [],
-      "triggerReport": true,
-      "reportType": "git_integration_operations",
-      "reportTemplate": "mandatory_git_integration_and_synchronization"
+      "actions": []
     },
     {
-      "name": "intelligent_documentation_updates_and_pull_request_creation",
-      "displayName": "Intelligent Documentation Updates and Pull Request Creation",
-      "description": "Update memory bank files and documentation based on implementation changes, then create comprehensive pull request",
+      "name": "update_documentation",
+      "description": "Update documentation based on implementation changes",
       "sequenceNumber": 3,
       "isRequired": true,
-      "estimatedTime": "25-45 minutes",
       "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Intelligent documentation assessment with targeted updates and comprehensive pull request creation",
-        "principles": [
-          "Analyze implementation changes to determine which documentation needs updates",
-          "Update memory bank files to reflect new capabilities or architectural changes",
-          "Update README and other documentation based on actual changes made",
-          "Create comprehensive pull request with detailed description and implementation summary"
-        ],
-        "methodology": "Smart documentation analysis with targeted updates and comprehensive pull request preparation",
-        "intelligentDocumentationAssessment": {
-          "changeImpactAnalysis": "Analyze what was implemented and how it affects user-facing documentation",
-          "memoryBankRelevance": "Determine if changes affect ProjectOverview, TechnicalArchitecture, or DeveloperGuide",
-          "readmeRelevance": "Determine if changes require README updates for installation, usage, or API documentation",
-          "updateCriteria": "Update documentation based on new features, API changes, architectural modifications, or user workflow changes"
-        },
-        "targetedDocumentationUpdates": {
-          "memoryBankUpdates": "Update ProjectOverview.md, TechnicalArchitecture.md, DeveloperGuide.md based on implementation changes",
-          "readmeUpdates": "Update README.md sections affected by implementation changes",
-          "architecturalDocumentation": "Update technical documentation to reflect new patterns or capabilities",
-          "userDocumentation": "Update user-facing documentation for new features or changed workflows"
-        },
-        "pullRequestCreation": {
-          "preparation": "Generate file change summary, check for conflicts, create comprehensive description",
-          "prDescription": "Include task summary, implementation overview, documentation updates summary",
-          "technicalDetails": "Document implementation changes, files modified, and integration considerations",
-          "reviewerGuidance": "Provide deployment considerations, review checklist, and integration validation steps"
-        }
-      },
+      "approach": "Intelligent documentation assessment with targeted updates",
       "approachGuidance": {
         "stepByStep": [
-          "Analyze implementation changes to determine documentation update requirements",
-          "Update memory bank files (ProjectOverview.md, TechnicalArchitecture.md, DeveloperGuide.md) based on changes",
-          "Update README.md sections affected by implementation changes",
-          "Update any other relevant documentation based on new features or architectural changes",
-          "Generate pull request preparation: file change summary, conflicts check, comprehensive description creation",
-          "Create detailed pull request with implementation summary, documentation updates, and reviewer guidance"
-        ],
-        "documentationUpdateSteps": [
-          "Review implementation to identify new features, architectural changes, or API modifications",
-          "Update ProjectOverview.md if business value or capabilities changed",
-          "Update TechnicalArchitecture.md if architectural patterns or technical stack changed",
-          "Update DeveloperGuide.md if development patterns or setup procedures changed",
-          "Update README.md if installation, usage, or API documentation is affected"
-        ],
-        "pullRequestSteps": [
-          "Generate comprehensive file change summary with implementation and documentation focus",
-          "Create detailed PR description with task context, implementation overview, and documentation updates",
-          "Include technical implementation details and integration considerations",
-          "Provide reviewer guidance with deployment considerations and validation checklist"
+          "Analyze implementation changes for documentation impact",
+          "Update memory bank files based on architectural changes",
+          "Update README sections affected by implementation",
+          "Update any relevant technical documentation",
+          "Validate documentation accuracy and completeness"
         ]
       },
       "qualityChecklist": [
-        "Implementation changes analyzed to determine documentation update requirements",
-        "Memory bank files updated based on actual implementation changes and new capabilities",
-        "README and other documentation updated to reflect implementation changes",
-        "Documentation updates focused on areas actually affected by implementation",
-        "Pull request preparation executed with comprehensive file change summary and description",
-        "Detailed pull request created with implementation summary, documentation updates, and reviewer guidance"
+        "Implementation changes analyzed for documentation impact",
+        "Memory bank files updated based on changes",
+        "README sections updated for affected functionality",
+        "Technical documentation updated where relevant",
+        "Documentation accuracy and completeness validated"
       ],
       "conditions": [
         {
@@ -222,179 +104,87 @@
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "mandatory_git_integration_and_remote_synchronization"
+              "stepName": "execute_git_integration"
             }
           },
           "isRequired": true
         }
       ],
-      "actions": [],
-      "triggerReport": true,
-      "reportType": "documentation_updates_and_pull_request",
-      "reportTemplate": "documentation_updates_and_pr_creation"
+      "actions": []
     },
     {
-      "name": "task_completion_and_delivery_coordination",
-      "displayName": "Task Completion and Delivery Coordination",
-      "description": "Complete task with comprehensive delivery documentation and coordinate final handoff",
+      "name": "create_pull_request",
+      "description": "Create comprehensive pull request with implementation summary",
       "sequenceNumber": 4,
       "isRequired": true,
-      "estimatedTime": "15-25 minutes",
       "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Task completion with comprehensive delivery coordination and handoff documentation",
-        "principles": [
-          "Complete task with detailed completion report and delivery documentation",
-          "Coordinate final delivery with comprehensive handoff information",
-          "Document deployment considerations and integration requirements",
-          "Prepare comprehensive delivery package for stakeholders"
-        ],
-        "methodology": "Delivery-focused completion with comprehensive coordination and documentation",
-        "deliveryCoordination": {
-          "completionDocumentation": "Create comprehensive completion report with implementation summary and delivery details",
-          "deploymentGuidance": "Document deployment considerations, requirements, and procedures",
-          "integrationDocumentation": "Provide integration guidance and validation procedures",
-          "handoffPreparation": "Prepare comprehensive handoff documentation for stakeholders"
-        }
-      },
+      "approach": "Comprehensive pull request creation with detailed description",
       "approachGuidance": {
         "stepByStep": [
-          "Create comprehensive completion report with implementation summary and delivery documentation",
-          "Document deployment considerations, requirements, and integration procedures",
-          "Prepare delivery coordination documentation with stakeholder handoff information",
-          "Complete task with comprehensive completion data and delivery evidence",
-          "Coordinate final handoff with actionable next steps and deployment guidance",
-          "Validate delivery package completeness and stakeholder readiness"
-        ],
-        "completionSteps": [
-          "Create integration completion report with implementation summary and delivery details",
-          "Document all files modified, features implemented, and integration considerations",
-          "Prepare deployment guidance and integration validation procedures",
-          "Complete task with comprehensive completion data and evidence"
-        ],
-        "deliveryCoordinationSteps": [
-          "Prepare comprehensive delivery documentation for stakeholders",
-          "Document deployment considerations and integration requirements",
-          "Provide actionable next steps and handoff guidance",
-          "Validate delivery package completeness and readiness"
+          "Generate comprehensive file change summary",
+          "Create detailed PR description with implementation overview",
+          "Include documentation updates summary in PR",
+          "Provide reviewer guidance and validation steps",
+          "Create pull request with comprehensive details"
         ]
       },
       "qualityChecklist": [
-        "Comprehensive completion report created with implementation summary and delivery documentation",
-        "Deployment considerations and integration procedures documented",
-        "Delivery coordination prepared with comprehensive stakeholder handoff information",
-        "Task completion executed with comprehensive completion data and delivery evidence",
-        "Final handoff coordinated with actionable next steps and deployment guidance",
-        "Delivery package validated for completeness and stakeholder readiness"
+        "Comprehensive file change summary generated",
+        "Detailed PR description created with implementation overview",
+        "Documentation updates summarized in PR",
+        "Reviewer guidance and validation steps provided",
+        "Pull request created with comprehensive details"
       ],
       "conditions": [
         {
-          "name": "documentation_and_pr_completed",
+          "name": "documentation_updated",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "intelligent_documentation_updates_and_pull_request_creation"
+              "stepName": "update_documentation"
             }
           },
           "isRequired": true
         }
       ],
-      "actions": [
-        {
-          "name": "create_integration_completion_report",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "ReviewOperations",
-            "operation": "create_completion"
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "execute_task_completion",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "WorkflowOperations",
-            "operation": "complete"
-          },
-          "sequenceOrder": 2
-        }
-      ],
-      "triggerReport": true,
-      "reportType": "task_completion_and_delivery",
-      "reportTemplate": "task_completion_and_delivery_coordination"
+      "actions": []
     },
     {
-      "name": "workflow_execution_completion",
-      "displayName": "Workflow Execution Completion",
-      "description": "Complete the workflow execution using workflow_execution_operations tool to finalize the entire workflow",
+      "name": "complete_workflow",
+      "description": "Complete task and workflow execution",
       "sequenceNumber": 5,
       "isRequired": true,
-      "estimatedTime": "5-10 minutes",
       "stepType": "ACTION",
-      "behavioralContext": {
-        "approach": "Direct workflow execution completion using workflow_execution_operations tool",
-        "principles": [
-          "Use workflow_execution_operations tool directly to complete the execution",
-          "Ensure proper execution completion with comprehensive context",
-          "Finalize the entire workflow process with proper closure",
-          "Validate execution completion success and provide final status"
-        ],
-        "methodology": "Direct tool usage for workflow execution completion",
-        "executionCompletionGuidance": {
-          "toolUsage": "Use workflow_execution_operations tool with complete_execution operation",
-          "requiredParameters": "Provide executionId for the current workflow execution",
-          "completionValidation": "Verify execution completion success and final status",
-          "finalStatus": "Confirm entire workflow process completed successfully"
-        }
-      },
+      "approach": "Complete both task and workflow execution with final status",
       "approachGuidance": {
         "stepByStep": [
-          "Execute workflow_execution_operations tool with complete_execution operation",
-          "Provide current executionId to complete the workflow execution",
-          "Validate execution completion success and verify final status",
-          "Confirm entire workflow process completed successfully",
-          "Document final execution completion status and provide closure summary",
-          "Ensure comprehensive workflow completion with all evidence preserved"
-        ],
-        "executionCompletionSteps": [
-          "Call workflow_execution_operations({ operation: 'complete_execution', executionId: currentExecutionId })",
-          "Verify the execution completion response indicates success",
-          "Validate that execution status is properly updated to completed",
-          "Confirm all workflow data and evidence is preserved"
-        ],
-        "validationSteps": [
-          "Check execution completion response for success confirmation",
-          "Verify execution status updated to completed state",
-          "Confirm workflow process fully finalized with proper closure",
-          "Document final completion status and summary"
+          "Validate all integration and documentation tasks completed",
+          "Execute workflow completion with final status and deliverables",
+          "Document completion evidence and quality metrics",
+          "Ensure proper workflow closure and state cleanup"
         ]
       },
       "qualityChecklist": [
-        "workflow_execution_operations tool executed with complete_execution operation",
-        "Current executionId provided for proper execution completion",
-        "Execution completion success validated and confirmed",
-        "Entire workflow process completed successfully with proper closure",
-        "Final execution status documented and completion summary provided",
-        "Comprehensive workflow completion achieved with all evidence preserved"
+        "All integration and documentation tasks completed",
+        "Workflow execution completed with final status",
+        "Completion evidence and metrics documented",
+        "Workflow closure and state cleanup verified"
       ],
       "conditions": [
         {
-          "name": "task_completion_finalized",
+          "name": "pull_request_created",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "task_completion_and_delivery_coordination"
+              "stepName": "create_pull_request"
             }
           },
           "isRequired": true
         }
       ],
-      "actions": [],
-      "triggerReport": true,
-      "reportType": "workflow_execution_completion",
-      "reportTemplate": "workflow_execution_completion_final"
+      "actions": []
     }
   ]
 }

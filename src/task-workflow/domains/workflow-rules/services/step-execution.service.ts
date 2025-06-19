@@ -81,18 +81,6 @@ export interface ValidationResult {
   errors: string[];
 }
 
-/**
- * 🚀 CONSOLIDATED: StepExecutionService (Phase 2)
- *
- * SERVICE CONSOLIDATION COMPLETE:
- * - Merged StepExecutionCoreService functionality directly into this service
- * - Eliminated redundant service boundary and overhead
- * - Maintains all existing public API contracts
- * - Combines orchestration and core execution logic in single service
- * - Reduced from 2 services to 1 service (50% reduction)
- * - Reduced inter-service dependencies and call overhead
- * - Clear internal organization with core and orchestration sections
- */
 @Injectable()
 export class StepExecutionService {
   private readonly logger = new Logger(StepExecutionService.name);
@@ -194,32 +182,6 @@ export class StepExecutionService {
     }
   }
 
-  // ===================================================================
-  // 🎯 ORCHESTRATION METHODS (Original service methods)
-  // ===================================================================
-
-  /**
-   * Get step guidance - simple delegation
-   */
-  async getStepGuidance(
-    taskId: number,
-    roleId: string,
-    stepId: string,
-  ): Promise<unknown> {
-    try {
-      return await this.guidanceService.getStepGuidance({
-        taskId,
-        roleId,
-        stepId,
-      });
-    } catch (error) {
-      this.logger.error(
-        `Failed to get step guidance: ${getErrorMessage(error)}`,
-      );
-      throw error;
-    }
-  }
-
   /**
    * Process step completion - using executionId
    */
@@ -228,7 +190,7 @@ export class StepExecutionService {
     stepId: string,
     result: 'success' | 'failure',
     executionData?: unknown,
-  ): Promise<unknown> {
+  ) {
     try {
       this.logger.debug(`Processing step completion: ${stepId} -> ${result}`);
 
@@ -332,21 +294,6 @@ export class StepExecutionService {
     } catch (error) {
       this.logger.error(
         `Failed to get step progress: ${getErrorMessage(error)}`,
-      );
-      throw error;
-    }
-  }
-
-  /**
-   * Get step with execution data
-   */
-  async getStepWithExecutionData(stepId: string): Promise<unknown> {
-    try {
-      this.logger.debug(`Getting step with execution data: ${stepId}`);
-      return await this.queryService.getStepWithExecutionData(stepId);
-    } catch (error) {
-      this.logger.error(
-        `Failed to get step with execution data: ${getErrorMessage(error)}`,
       );
       throw error;
     }

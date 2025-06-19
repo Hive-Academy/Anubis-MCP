@@ -1,0 +1,130 @@
+<section id="how-it-works" class="py-24 bg-slate-900 relative">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+      <h2 class="text-4xl md:text-5xl font-bold mb-6">How It Works</h2>
+      <p class="text-xl text-slate-300 max-w-3xl mx-auto">
+        MCP-compliant architecture where the server provides intelligent guidance and AI agents execute locally using their own tools.
+      </p>
+    </div>
+
+    <div class="relative">
+      <!-- Timeline Line -->
+      <div class="absolute left-8 top-0 bottom-0 w-0.5 bg-blue-500 timeline-line"></div>
+
+      <div class="space-y-16">
+        <!-- Step 1 -->
+        <div class="relative flex items-center">
+          <div class="timeline-dot"></div>
+          <div class="ml-16 grid md:grid-cols-2 gap-8 items-center w-full">
+            <div class="step-content">
+              <h3 class="text-2xl font-bold text-blue-400 mb-4">1. AI Agent Requests Guidance</h3>
+              <p class="text-slate-300 mb-4">
+                AI agents call the MCP server for intelligent workflow guidance instead of trying to execute commands themselves.
+              </p>
+              <div class="code-block p-4">
+                <code class="font-mono text-sm text-green-400">
+                  get_step_guidance({<br />
+                  &nbsp;&nbsp;taskId: 123,<br />
+                  &nbsp;&nbsp;roleId: 'senior-developer'<br />
+                  });
+                </code>
+              </div>
+            </div>
+            <div class="step-visual">
+              <div class="feature-card rounded-xl p-6 text-center">
+                <i class="fas fa-robot text-4xl text-blue-400 mb-4"></i>
+                <h4 class="font-semibold mb-2">MCP Protocol</h4>
+                <p class="text-sm text-slate-400">Compliant communication</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="relative flex items-center">
+          <div class="timeline-dot"></div>
+          <div class="ml-16 grid md:grid-cols-2 gap-8 items-center w-full">
+            <div class="step-visual order-2 md:order-1">
+              <div class="feature-card rounded-xl p-6 text-center">
+                <i class="fas fa-brain text-4xl text-purple-400 mb-4"></i>
+                <h4 class="font-semibold mb-2">Intelligence Engine</h4>
+                <p class="text-sm text-slate-400">Database-driven rules</p>
+              </div>
+            </div>
+            <div class="step-content order-1 md:order-2">
+              <h3 class="text-2xl font-bold text-purple-400 mb-4">2. Server Provides Intelligence</h3>
+              <p class="text-slate-300 mb-4">
+                The server generates structured guidance with context-aware recommendations, suggested tools, and success criteria.
+              </p>
+              <div class="code-block p-4">
+                <code class="font-mono text-sm text-green-400">
+                  {<br />
+                  &nbsp;&nbsp;"guidance": "Step-by-step instructions",<br />
+                  &nbsp;&nbsp;"suggestedTools": ["read_file", "edit_file"],<br />
+                  &nbsp;&nbsp;"successCriteria": [...]<br />
+                  }
+                </code>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="relative flex items-center">
+          <div class="timeline-dot"></div>
+          <div class="ml-16 grid md:grid-cols-2 gap-8 items-center w-full">
+            <div class="step-content">
+              <h3 class="text-2xl font-bold text-green-400 mb-4">3. Agent Executes Locally</h3>
+              <p class="text-slate-300 mb-4">
+                AI agents execute commands locally using their own tools, following the intelligent guidance provided by the server.
+              </p>
+              <div class="code-block p-4">
+                <code class="font-mono text-sm text-green-400">
+                  // AI uses its own tools locally<br />
+                  codebase_search("components")<br />
+                  read_file("package.json")<br />
+                  edit_file("src/app.ts")
+                </code>
+              </div>
+            </div>
+            <div class="step-visual">
+              <div class="feature-card rounded-xl p-6 text-center">
+                <i class="fas fa-cogs text-4xl text-green-400 mb-4"></i>
+                <h4 class="font-semibold mb-2">Local Execution</h4>
+                <p class="text-sm text-slate-400">AI's own tools</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="relative flex items-center">
+          <div class="timeline-dot"></div>
+          <div class="ml-16 grid md:grid-cols-2 gap-8 items-center w-full">
+            <div class="step-visual order-2 md:order-1">
+              <div class="feature-card rounded-xl p-6 text-center">
+                <i class="fas fa-chart-line text-4xl text-yellow-400 mb-4"></i>
+                <h4 class="font-semibold mb-2">Analytics</h4>
+                <p class="text-sm text-slate-400">Progress tracking</p>
+              </div>
+            </div>
+            <div class="step-content order-1 md:order-2">
+              <h3 class="text-2xl font-bold text-yellow-400 mb-4">4. Progress Tracking</h3>
+              <p class="text-slate-300 mb-4">
+                AI agents report results back to the server for comprehensive analytics and continuous workflow optimization.
+              </p>
+              <div class="code-block p-4">
+                <code class="font-mono text-sm text-green-400">
+                  report_step_completion({<br />
+                  &nbsp;&nbsp;stepId: 'implementation-setup',<br />
+                  &nbsp;&nbsp;result: 'success'<br />
+                  });
+                </code>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,25 +1,25 @@
-# MCP Workflow Manager
+# 🏺 Anubis - Divine Guidance for AI Workflows
 
-## Business Value Proposition
+**Anubis is the divine guide for AI workflows - the first MCP-compliant system that embeds intelligent guidance directly into each step, ensuring your AI agents follow complex development processes consistently and reliably.**
 
-The MCP Workflow Manager delivers database-driven workflow intelligence through MCP protocol compliance, providing AI agents with structured guidance for software development workflows.
-
-### Key Benefits
-
-- **Database-Driven Intelligence**: Embedded workflow intelligence with quality gates
-- **MCP Protocol Compliance**: Seamless integration with AI development environments
-- **Workflow Orchestration**: Structured guidance for complex development tasks
+The Anubis delivers database-driven workflow intelligence through MCP protocol compliance, providing AI agents with structured guidance for software development workflows.
 
 ## Executive Summary
 
-The MCP Workflow Manager is a sophisticated NestJS-based system that transforms how AI agents execute software development workflows. By providing database-driven workflow intelligence through the Model Context Protocol (MCP), it enables development teams to achieve consistent, high-quality results with embedded guidance and quality assurance.
+### The Challenge
+
+AI agents in software development often struggle with unstructured workflows, leading to inconsistent quality, missed requirements, and chaotic development processes. Traditional approaches either provide too little guidance or attempt to execute commands directly, violating MCP protocol standards.
+
+### The Solution
+
+The Anubis is a sophisticated NestJS-based system that transforms how AI agents execute software development workflows. By providing database-driven workflow intelligence through the Model Context Protocol (MCP), it delivers structured guidance while maintaining strict protocol compliance.
 
 ## **🎯 Core Business Value**
 
 ### **For Development Teams**
 
 - **Accelerated Development Cycles**: Structured workflow guidance reduces project setup time by 60-80%
-- **Consistent Quality Standards**: Embedded quality gates ensure SOLID principles compliance across all implementations
+- **Consistent Quality Standards**: Embedded quality gates ensure SOLID, KISS and DRY principles compliance across all implementations
 - **Reduced Technical Debt**: Database-driven workflow intelligence prevents common anti-patterns and architectural issues
 - **Enhanced Collaboration**: Role-based workflow transitions provide clear handoff protocols between team members
 
@@ -95,7 +95,7 @@ The MCP Workflow Manager is a sophisticated NestJS-based system that transforms 
 
 ### **Software Architects**
 
-- **Pattern Enforcement**: Automated validation of SOLID principles and architectural patterns
+- **Pattern Enforcement**: Automated validation of SOLID, KISS and DRY principles and architectural patterns
 - **Design Consistency**: Embedded guidance ensures implementation aligns with architectural decisions
 - **Technical Debt Prevention**: Quality gates catch potential issues before they become technical debt
 - **Documentation Integration**: Workflow steps automatically generate implementation evidence and decision records
@@ -151,14 +151,14 @@ The MCP Workflow Manager is a sophisticated NestJS-based system that transforms 
 
 ### **Immediate Deployment**
 
-The MCP Workflow Manager follows the MCP ecosystem standard for zero-setup deployment:
+The Anubis follows the MCP ecosystem standard for zero-setup deployment:
 
 ```json
 {
   "mcpServers": {
-    "workflow-manager": {
+    "anubis": {
       "command": "npx",
-      "args": ["-y", "@hive-academy/mcp-workflow-manager"]
+      "args": ["-y", "@hive-academy/anubis"]
     }
   }
 }
@@ -197,4 +197,4 @@ For organizations requiring custom deployment:
 
 ---
 
-**The MCP Workflow Manager represents the next generation of AI-assisted development tools, providing the structure, intelligence, and quality assurance needed for successful software development in the AI era.**
+**The Anubis represents the next generation of AI-assisted development tools, providing the structure, intelligence, and quality assurance needed for successful software development in the AI era.**

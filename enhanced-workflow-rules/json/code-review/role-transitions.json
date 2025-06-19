@@ -2,140 +2,82 @@
   "roleTransitions": [
     {
       "fromRoleId": "code-review",
-      "toRoleId": "integration-engineer",
+      "toRoleId": "integration-engineer", 
       "transitionName": "code_review_to_integration_engineer",
+      "description": "Transition to integration when review approves implementation",
       "conditions": {
         "reviewCompleted": true,
         "qualityGatesPassed": true,
         "acceptanceCriteriaVerified": true,
         "productionReady": true
       },
-      "requirements": {
-        "comprehensiveReview": true,
-        "qualityValidationComplete": true,
-        "securityReviewApproved": true,
-        "performanceValidated": true
-      },
-      "validationRules": {
-        "acceptanceCriteriaVerified": "All acceptance criteria must be verified with evidence",
-        "qualityGatesPassed": "All quality gates must pass",
-        "securityReviewComplete": "Security review must be completed and approved",
-        "productionReadinessConfirmed": "Production readiness must be confirmed"
-      },
+      "requirements": [
+        "Comprehensive review completed with approval",
+        "All quality gates passed with evidence",
+        "Security review approved and compliant",
+        "Performance validated within targets"
+      ],
+      "validationCriteria": [
+        "All acceptance criteria verified with evidence",
+        "Quality standards met with compliance confirmation",
+        "Security review completed and approved",
+        "Production readiness confirmed"
+      ],
       "handoffGuidance": {
-        "deliveryPackage": [
-          "Verified implementation meeting all acceptance criteria",
-          "Complete test suite with passing results",
-          "Updated documentation and deployment guides",
-          "Security review approval and compliance confirmation",
-          "Performance validation and optimization results"
+        "contextToPreserve": [
+          "review_results_approved",
+          "quality_evidence_complete",
+          "acceptance_criteria_verification",
+          "security_approval",
+          "production_readiness_assessment"
         ],
-        "qualityConfirmation": [
-          "Complete review summary with approval status",
-          "Acceptance criteria verification evidence",
-          "Quality metrics and compliance confirmation",
-          "Security review results and approvals",
-          "Production deployment readiness assessment"
+        "handoffMessage": "Code review approved with all quality gates passed. Implementation ready for integration and deployment with comprehensive validation evidence.",
+        "expectedDeliverables": [
+          "documentation_updates",
+          "pull_request_creation",
+          "deployment_preparation",
+          "workflow_completion"
         ]
-      },
-      "contextPreservation": {
-        "reviewResults": "Complete review summary with approval status and quality validation",
-        "qualityEvidence": "Comprehensive quality validation evidence and compliance verification",
-        "acceptanceCriteriaEvidence": "Acceptance criteria verification with concrete evidence",
-        "securityApproval": "Security review approval and compliance confirmation",
-        "productionReadiness": "Production deployment readiness assessment with evidence"
-      },
-      "isActive": true
-    },
-    {
-      "fromRoleId": "code-review",
-      "toRoleId": "senior-developer",
-      "transitionName": "code_review_to_senior_developer_rework",
-      "conditions": {
-        "issuesIdentified": true,
-        "reworkRequired": true,
-        "qualityStandardsNotMet": true,
-        "changesNeeded": true
-      },
-      "requirements": {
-        "issuesDocumented": true,
-        "reworkPlanCreated": true,
-        "priorityClassified": true,
-        "timelineEstablished": true
-      },
-      "validationRules": {
-        "issuesDocumented": "All identified issues must be documented",
-        "reworkPlanCreated": "Rework plan must be created with specific guidance",
-        "priorityClassified": "Issues must be classified by priority (critical, major, minor)",
-        "timelineRealistic": "Timeline expectations for rework completion must be realistic"
-      },
-      "handoffGuidance": {
-        "reworkGuidance": [
-          "Address all critical and major issues identified",
-          "Maintain existing functionality while making changes",
-          "Update tests to reflect any changes made",
-          "Document changes made during rework process",
-          "Verify fixes against original acceptance criteria"
-        ],
-        "qualityExpectations": [
-          "All identified issues must be resolved",
-          "No regression in existing functionality",
-          "Maintain or improve code quality metrics",
-          "Update documentation to reflect changes",
-          "Ensure test coverage remains adequate"
-        ]
-      },
-      "contextPreservation": {
-        "reviewFindings": "Detailed review findings with specific issues identified",
-        "reworkRequirements": "Specific rework requirements and acceptance criteria",
-        "qualityStandards": "Quality standards that need to be addressed",
-        "issuesPriority": "Priority classification of issues (critical, major, minor)",
-        "timelineExpectations": "Timeline expectations for rework completion"
       },
       "isActive": true
     },
     {
       "fromRoleId": "code-review",
       "toRoleId": "architect",
-      "transitionName": "code_review_to_architect_redesign",
+      "transitionName": "code_review_to_architect_redesign", 
+      "description": "Transition to architect when significant design changes needed",
       "conditions": {
         "architecturalIssuesIdentified": true,
         "designPatternViolations": true,
-        "fundamentalDesignFlaws": true,
         "redesignRequired": true
       },
-      "requirements": {
-        "qualityAssessmentComplete": true,
-        "architecturalIssuesDocumented": true,
-        "redesignScopeDefinied": true,
-        "qualityTargetsEstablished": true
-      },
-      "validationRules": {
-        "qualityAssessmentThorough": "Quality assessment must be comprehensive with specific issues identified",
-        "architecturalIssuesClear": "Architectural issues must be clearly documented with examples",
-        "redesignScopeRealistic": "Redesign scope must be realistic and achievable",
-        "qualityTargetsMeasurable": "Quality targets must be measurable and enforceable"
-      },
+      "requirements": [
+        "Quality assessment completed with issues documented",
+        "Architectural problems clearly identified",
+        "Redesign scope defined with requirements",
+        "Quality targets established for revision"
+      ],
+      "validationCriteria": [
+        "Comprehensive quality assessment with specific issues",
+        "Architectural violations documented with examples",
+        "Redesign scope realistic and achievable",
+        "Quality targets measurable and enforceable"
+      ],
       "handoffGuidance": {
-        "qualityAssessment": [
-          "Comprehensive quality review results with specific issues identified",
-          "Architectural pattern violations with examples and impact analysis",
-          "Performance issues and optimization opportunities",
-          "Security vulnerabilities and compliance gaps identified"
+        "contextToPreserve": [
+          "quality_assessment_results",
+          "architectural_issues_documented",
+          "design_violations_identified",
+          "redesign_requirements",
+          "quality_targets_established"
         ],
-        "redesignRequirements": [
-          "Specific architectural changes required for quality compliance",
-          "Design pattern corrections needed with implementation guidance",
-          "Performance improvements required with target metrics",
-          "Security enhancements needed with validation criteria"
+        "handoffMessage": "Architectural issues identified requiring redesign. Comprehensive quality assessment provided with specific requirements for architectural improvements.",
+        "expectedDeliverables": [
+          "revised_implementation_plan",
+          "corrected_architectural_design",
+          "updated_quality_constraints",
+          "improved_technical_specifications"
         ]
-      },
-      "contextPreservation": {
-        "qualityAssessment": "Complete quality review with identified issues and recommendations",
-        "architecturalIssues": "Documented architectural problems with impact analysis",
-        "performanceIssues": "Performance problems with optimization requirements",
-        "securityGaps": "Security vulnerabilities with enhancement requirements",
-        "redesignScope": "Scope of architectural redesign required for quality compliance"
       },
       "isActive": true
     }

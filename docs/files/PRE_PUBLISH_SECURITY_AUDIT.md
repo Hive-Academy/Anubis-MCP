@@ -121,7 +121,7 @@ echo "prisma/dev.db*" >> .gitignore
 ```env
 # All values are examples/defaults
 DATABASE_URL="file:./data/workflow.db"  # ✅ Safe default
-MCP_SERVER_NAME="MCP-Workflow-Manager"  # ✅ Safe default
+MCP_SERVER_NAME="MCP-anubis"  # ✅ Safe default
 PORT=3000                               # ✅ Safe default
 NODE_ENV="production"                   # ✅ Safe default
 ```

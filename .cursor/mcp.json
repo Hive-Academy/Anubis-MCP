@@ -1,11 +1,13 @@
 {
   "mcpServers": {
-    "workflow-manager": {
+    "anubis": {
       "command": "npx",
-      "args": ["--yes", "@hive-academy/mcp-workflow-manager@latest"],
+      "args": [
+        "--yes",
+        "@hive-academy/anubis@latest"
+      ],
       "env": {
-        "PROJECT_ROOT": "D:/projects/cursor-workflow",
-        "NODE_ENV": "production"
+        "PROJECT_ROOT": "D:/projects/cursor-workflow"
       }
     }
   }

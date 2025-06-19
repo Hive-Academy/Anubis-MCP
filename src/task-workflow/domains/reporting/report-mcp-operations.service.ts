@@ -75,13 +75,8 @@ const GetReportStatusInputSchema = z.object({
     .describe('Unique identifier of the report generation request'),
 });
 
-const CleanupReportInputSchema = z.object({
-  filename: z.string().describe('Filename of the report to cleanup'),
-});
-
 type GenerateReportInput = z.infer<typeof GenerateReportInputSchema>;
 type GetReportStatusInput = z.infer<typeof GetReportStatusInputSchema>;
-type CleanupReportInput = z.infer<typeof CleanupReportInputSchema>;
 
 interface ReportJobStatus {
   id: string;
@@ -107,35 +102,7 @@ export class ReportMcpOperationsService {
 
   @Tool({
     name: 'generate_workflow_report',
-    description: `Generate interactive workflow reports with real-time analytics and beautiful visualizations.
-
-**CLEAN ARCHITECTURE - TYPE-SAFE TYPESCRIPT + VANILLA JS:**
-
-✅ **Interactive HTML Dashboards** - Type-safe TypeScript with vanilla JavaScript interactivity
-✅ **Beautiful Charts** - Chart.js visualizations (status, priority, trends)  
-✅ **Mobile Responsive** - Enhanced Tailwind CSS responsive design
-✅ **Fast Generation** - Direct Prisma queries, no browser rendering
-✅ **MCP Integration** - Copy-paste MCP commands for workflow actions
-✅ **Enhanced Styling** - Modern gradients, animations, and professional design
-✅ **Task Management** - View details, delegate, update status
-
-**MAIN REPORT TYPES:**
-• interactive-dashboard - Comprehensive interactive dashboard (RECOMMENDED)
-• summary - Clean summary view with key metrics
-• workflow-analytics - Cross-task analytics and insights
-
-**SPECIALIZED REPORTS:**
-• task-detail - Individual task analysis
-• delegation-flow - Workflow transition patterns
-• implementation-plan - Implementation tracking
-• role-performance - Role efficiency analysis
-
-**OUTPUT FORMATS:**
-• html - Interactive HTML dashboard (RECOMMENDED)
-• json - Raw data for custom processing
-
-**FILE ORGANIZATION:**
-Reports saved to 'workflow-reports/interactive/' with meaningful names.`,
+    description: `Generates interactive workflow reports and analytics dashboards with rich visualizations and real-time data tracking.`,
     parameters: GenerateReportInputSchema as ZodSchema<GenerateReportInput>,
   })
   async generateWorkflowReport(input: GenerateReportInput): Promise<any> {
@@ -298,7 +265,7 @@ Error: ${error.message}
 
   @Tool({
     name: 'get_report_status',
-    description: 'Get the status of a report generation job by its job ID.',
+    description: `Retrieves current status and results of a report generation request.`,
     parameters: GetReportStatusInputSchema as ZodSchema<GetReportStatusInput>,
   })
   getReportStatus(input: GetReportStatusInput): any {
@@ -352,51 +319,6 @@ ${jobStatus.error ? `❌ Error: ${jobStatus.error}` : ''}`,
         },
       ],
     };
-  }
-
-  @Tool({
-    name: 'cleanup_report',
-    description: 'Clean up a generated report file to free up disk space.',
-    parameters: CleanupReportInputSchema as ZodSchema<CleanupReportInput>,
-  })
-  cleanupReport(input: CleanupReportInput): any {
-    try {
-      // Use the new MCP service for cleanup
-      this.mcpOrchestrator.clearCaches();
-
-      this.logger.log(`Report cleanup requested: ${input.filename}`);
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: `✅ Report cleanup completed: ${input.filename}
-
-🧹 **Actions Performed:**
-• Template caches cleared
-• Temporary files cleaned
-• Memory freed
-
-💡 **Note:** Individual file deletion not implemented in simplified architecture.
-Files are organized in 'workflow-reports/' directory for manual management.`,
-          },
-        ],
-      };
-    } catch (error: any) {
-      this.logger.warn(`Report cleanup failed: ${input.filename}`, error);
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: `⚠️ Report cleanup warning: ${error.message}
-
-The simplified architecture doesn't require extensive cleanup.
-Files are stored in organized folders for easy manual management.`,
-          },
-        ],
-      };
-    }
   }
 
   // Helper methods for formatting
