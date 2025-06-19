@@ -5,7 +5,6 @@ import { AppModule } from './app.module';
 import { setupDatabaseEnvironment } from './utils/database-config';
 import * as fs from 'fs';
 import * as path from 'path';
-import { execSync } from 'child_process';
 
 /**
  * ANUBIS MCP SERVER - PRE-BUILT PACKAGE APPROACH
@@ -17,43 +16,19 @@ import { execSync } from 'child_process';
  * PRE-BUILT DATABASE SETUP
  * Copies pre-seeded database from package to project directory
  */
-function setupPrebuiltDatabase(): void {
-  // Get database configuration
-  const dbConfig = setupDatabaseEnvironment({
-    projectRoot: process.env.PROJECT_ROOT || process.cwd(),
-    verbose: true,
-  });
+function setupPrebuiltDatabase(dbConfig: any): void {
+  // This function now assumes dbConfig is provided and correct.
+  // It also assumes the data directory has been created by setupDatabaseEnvironment.
 
-  // Ensure data directory exists
-  if (!fs.existsSync(dbConfig.dataDirectory)) {
-    fs.mkdirSync(dbConfig.dataDirectory, { recursive: true });
-  }
-
-  // Check if database already exists
   if (fs.existsSync(dbConfig.databasePath)) {
-    return;
+    return; // Database already exists, no need to copy
   }
 
-  // Find pre-built database template
-  // First try to find it relative to the CLI script location
-  const cliDirectory = path.dirname(__filename);
-  let templateDbPath = path.join(
-    cliDirectory,
-    '..',
-    'data-template',
-    'workflow.db',
+  // Correctly locate the template DB within the package installation directory
+  const packageRoot = path.resolve(
+    path.dirname(require.resolve('@hive-academy/anubis/package.json')),
   );
-
-  if (!fs.existsSync(templateDbPath)) {
-    // Fallback: try relative to package root
-    templateDbPath = path.join(
-      cliDirectory,
-      '..',
-      '..',
-      'data-template',
-      'workflow.db',
-    );
-  }
+  const templateDbPath = path.join(packageRoot, 'data-template', 'workflow.db');
 
   if (!fs.existsSync(templateDbPath)) {
     throw new Error(
@@ -61,80 +36,29 @@ function setupPrebuiltDatabase(): void {
     );
   }
 
-  // Copy pre-built database
+  // Copy the pre-built database to the final destination
   fs.copyFileSync(templateDbPath, dbConfig.databasePath);
-
-  // Set the database URL environment variable
-  process.env.DATABASE_URL = dbConfig.databaseUrl;
-}
-
-/**
- * ENSURE PRISMA CLIENT
- * Generate Prisma client if not available (runtime generation for NPM packages)
- */
-async function ensurePrismaClient(): Promise<void> {
-  // Check if generated Prisma client exists
-  const cliDirectory = path.dirname(__filename);
-  const generatedPath = path.join(cliDirectory, '..', 'generated', 'prisma');
-
-  if (fs.existsSync(generatedPath)) {
-    return;
-  }
-
-  // Generate Prisma client at runtime
-  const packageRoot = path.join(cliDirectory, '..');
-
-  await new Promise<void>((resolve, reject) => {
-    try {
-      execSync('npx prisma generate', {
-        stdio: 'pipe', // Hide output to keep logs clean
-        cwd: packageRoot,
-        timeout: 60000, // 1 minute timeout
-      });
-      resolve();
-    } catch (error) {
-      reject(error instanceof Error ? error : new Error(String(error)));
-    }
-  });
 }
 
 async function bootstrap() {
-  // Parse command line arguments
   const args = process.argv.slice(2);
   const verbose = args.includes('--verbose') || args.includes('-v');
 
+  // CRITICAL: Setup database environment FIRST to set DATABASE_URL
+  const dbConfig = setupDatabaseEnvironment({
+    projectRoot: process.env.PROJECT_ROOT || process.cwd(),
+    verbose,
+  });
+
   // Set default environment variables
-  if (!process.env.MCP_TRANSPORT_TYPE) {
-    process.env.MCP_TRANSPORT_TYPE = 'STDIO';
-  }
+  process.env.MCP_TRANSPORT_TYPE ||= 'STDIO';
+  process.env.MCP_SERVER_NAME ||= 'Anubis';
+  process.env.NODE_ENV ||= 'production';
 
-  if (!process.env.MCP_SERVER_NAME) {
-    process.env.MCP_SERVER_NAME = 'Anubis';
-  }
+  // Setup pre-built database by copying the template
+  setupPrebuiltDatabase(dbConfig);
 
-  if (!process.env.NODE_ENV) {
-    process.env.NODE_ENV = 'production';
-  }
-
-  // Ensure Prisma client is available (runtime generation for NPM packages)
-  await ensurePrismaClient();
-
-  // Setup pre-built database (simple copy operation)
-  setupPrebuiltDatabase();
-
-  // Enhanced debugging for VS Code extensions
-  if (
-    verbose ||
-    process.env.VSCODE_PID ||
-    process.env.TERM_PROGRAM === 'vscode'
-  ) {
-    setupDatabaseEnvironment({
-      projectRoot: process.env.PROJECT_ROOT || process.cwd(),
-    });
-  }
-
-  // Start NestJS application (no complex initialization needed)
-
+  // Start NestJS application
   const app = await NestFactory.createApplicationContext(AppModule, {
     logger: false,
   });
@@ -149,11 +73,9 @@ async function bootstrap() {
     }
   };
 
-  // Register signal handlers
   process.on('SIGINT', () => void gracefulShutdown('SIGINT'));
   process.on('SIGTERM', () => void gracefulShutdown('SIGTERM'));
 
-  // Keep the process alive
   process.stdin.resume();
 }
 

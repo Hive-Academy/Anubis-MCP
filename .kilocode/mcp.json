@@ -12,7 +12,9 @@
         "-v",
         "D:/projects/cursor-workflow/workflow-reports:/app/data/anubis-mcp-reports",
         "hiveacademy/anubis"
-      ]
+      ],
+      "disabled": true,
+      "alwaysAllow": []
     }
   }
 }

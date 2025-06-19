@@ -1,6 +1,6 @@
 {
   "name": "@hive-academy/anubis",
-  "version": "1.1.10",
+  "version": "1.1.15",
   "description": "🏺 Anubis - Divine Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development",
   "author": "Hive Academy <abdallah@nghive.tech>",
   "license": "MIT",
@@ -43,13 +43,15 @@
   "files": [
     "dist/**/*",
     "data-template/**/*",
+    "prisma/**/*",
     "package.json",
     "README.md"
   ],
   "scripts": {
-    "prebuild": "rimraf dist && npm run db:generate",
+    "prebuild": "rimraf dist",
     "build": "nest build",
-    "prepublishOnly": "npm run build && npm run db:generate",
+    "prepublishOnly": "npm run build",
+    "postinstall": "prisma generate",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -59,7 +61,6 @@
     "db:generate": "npx prisma generate",
     "db:init": "npm run db:generate && npm run db:migrate && npm run db:seed",
     "db:seed": "npx prisma db seed",
-    "postinstall": "npm run db:generate && echo '📦 @hive-academy/anubis installed successfully' && echo '🔧 Prisma client generated automatically'",
     "setup:force": "npm run db:generate",
     "lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
     "test": "jest",
@@ -82,7 +83,8 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "uuid": "^11.1.0",
-    "zod": "^3.24.4"
+    "zod": "^3.24.4",
+    "prisma": "^6.9.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -103,7 +105,6 @@
     "globals": "^16.0.0",
     "jest": "^29.7.0",
     "prettier": "^3.4.2",
-    "prisma": "^6.9.0",
     "rimraf": "^6.0.1",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",

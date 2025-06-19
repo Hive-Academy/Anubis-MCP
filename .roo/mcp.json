@@ -1,13 +1,13 @@
 {
   "mcpServers": {
-    "anubis": {
-      "command": "npx",
+     "anubis": {
+      "command": "cmd.exe",
       "args": [
+        "/c",
+        "C://Program Files/nodejs/npx.cmd",
         "--yes",
         "@hive-academy/anubis@latest"
-      ],
-      "disabled": true,
-      "alwaysAllow": []
+      ]
     }
   }
 }
