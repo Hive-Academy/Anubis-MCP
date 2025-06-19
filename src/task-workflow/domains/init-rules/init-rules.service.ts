@@ -9,6 +9,7 @@ export interface AIAgentConfig {
   targetFileName: string;
   requiresFrontmatter: boolean;
   ensureDirectories: string[];
+  specialHandling?: 'roocode';
 }
 
 @Injectable()
@@ -20,17 +21,26 @@ export class InitRulesService {
       name: 'Cursor IDE',
       sourceTemplate: 'workflow-protocol-function-calls.md',
       targetPath: '.cursor/rules',
-      targetFileName: '000-workflow-core.md',
+      targetFileName: '000-workflow-core.mdc',
       requiresFrontmatter: true,
       ensureDirectories: ['.cursor', '.cursor/rules'],
     },
     copilot: {
       name: 'GitHub Copilot',
-      sourceTemplate: 'workflow-protocol-function-calls.md',
+      sourceTemplate: 'workflow-protocol-xml.md',
       targetPath: '.github/chatmodes',
       targetFileName: '𓂀𓁢𓋹𝔸ℕ𝕌𝔹𝕀𝕊𓋹𓁢𓂀.chatmode.md',
       requiresFrontmatter: true,
       ensureDirectories: ['.github', '.github/chatmodes'],
+    },
+    roocode: {
+      name: 'RooCode',
+      sourceTemplate: 'workflow-protocol-xml.md',
+      targetPath: '.roo/rules-anubis',
+      targetFileName: 'rules.md',
+      requiresFrontmatter: false, // XML file doesn't need frontmatter
+      ensureDirectories: ['.roo', '.roo/rules-anubis'],
+      specialHandling: 'roocode', // Add special flag
     },
   };
 
@@ -38,11 +48,13 @@ export class InitRulesService {
    * Deploy Anubis workflow rules to specified AI agent
    * @param agentName - The AI agent to deploy rules for
    * @param projectRoot - Root directory of the target project
+   * @param templateFile - Optional template file to use instead of the default
    * @returns Promise with deployment result
    */
-  async deployRules(
+  async InitRules(
     agentName: string,
     projectRoot: string,
+    templateFile?: string,
   ): Promise<{
     success: boolean;
     message: string;
@@ -60,8 +72,11 @@ export class InitRulesService {
       // Ensure target directories exist
       await this.ensureDirectories(projectRoot, config.ensureDirectories);
 
+      // Use the provided template file if specified, otherwise use the default from config
+      const templateToUse = templateFile || config.sourceTemplate;
+
       // Read source template
-      const sourceContent = await this.readTemplate(config.sourceTemplate);
+      const sourceContent = await this.readTemplate(templateToUse);
 
       // Process content (add frontmatter if required)
       const processedContent = config.requiresFrontmatter
@@ -75,6 +90,15 @@ export class InitRulesService {
         config.targetFileName,
       );
       await fs.writeFile(targetFilePath, processedContent, 'utf8');
+
+      if (config.specialHandling === 'roocode') {
+        const sourceJsonPath = path.join(
+          this.templatesPath,
+          'custom-mode.json',
+        );
+        const targetJsonPath = path.join(projectRoot, '.roomodes');
+        await fs.copyFile(sourceJsonPath, targetJsonPath);
+      }
 
       return {
         success: true,
@@ -101,39 +125,6 @@ export class InitRulesService {
    */
   getAgentConfig(agentName: string): AIAgentConfig | null {
     return this.agentConfigs[agentName] || null;
-  }
-
-  /**
-   * Deploy rules to all supported agents
-   */
-  async deployAllRules(projectRoot: string): Promise<{
-    success: boolean;
-    results: Array<{
-      agent: string;
-      success: boolean;
-      message: string;
-      targetFile?: string;
-    }>;
-  }> {
-    const results = [];
-    let overallSuccess = true;
-
-    for (const agentName of this.getSupportedAgents()) {
-      const result = await this.deployRules(agentName, projectRoot);
-      results.push({
-        agent: agentName,
-        ...result,
-      });
-
-      if (!result.success) {
-        overallSuccess = false;
-      }
-    }
-
-    return {
-      success: overallSuccess,
-      results,
-    };
   }
 
   /**
@@ -184,20 +175,29 @@ export class InitRulesService {
     switch (config.name) {
       case 'Cursor IDE':
         return `---
-title: "Anubis Workflow Protocol"
-description: "Divine guidance for AI workflows - MCP-compliant system for structured development"
-version: "1.0.0"
-created: "${timestamp}"
-agent: "cursor"
+description: 
+globs: 
+alwaysApply: true
 ---`;
 
       case 'GitHub Copilot':
         return `---
-name: "𓂀𓁢𓋹𝔸ℕ𝕌𝔹𝕀𝕊𓋹𓁢𓂀"
-description: "Anubis - Divine Guidance for AI Workflows"
-version: "1.0.0"
-created: "${timestamp}"
-agent: "copilot"
+description: 'Anubis is the divine guide for AI workflows - the first MCP-compliant system that embeds intelligent guidance directly into each step, ensuring your AI agents follow complex development processes consistently and reliably.'
+
+tools: [
+  'changes',
+  'codebase',
+  'editFiles',
+  'extensions',
+  'fetch',
+  'problems',
+  'runCommands',
+  'runTasks',
+  'search',
+  'usages',
+  'anubis',
+  'mcp-server-firecrawl'
+  ]
 ---`;
 
       default:
