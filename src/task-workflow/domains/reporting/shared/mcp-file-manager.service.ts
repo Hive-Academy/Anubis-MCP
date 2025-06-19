@@ -12,6 +12,22 @@ export class McpFileManagerService {
   private readonly logger = new Logger(McpFileManagerService.name);
 
   /**
+   * Get the correct project root path for reports
+   */
+  private getProjectRoot(providedBasePath?: string): string {
+    // Priority order: provided base path, PROJECT_ROOT env var, current working directory
+    if (providedBasePath && path.isAbsolute(providedBasePath)) {
+      return providedBasePath;
+    }
+
+    if (process.env.PROJECT_ROOT && path.isAbsolute(process.env.PROJECT_ROOT)) {
+      return process.env.PROJECT_ROOT;
+    }
+
+    return process.cwd();
+  }
+
+  /**
    * Save report content to file
    */
   async saveReportFile(
@@ -24,8 +40,11 @@ export class McpFileManagerService {
     try {
       const extension = outputFormat === 'json' ? 'json' : 'html';
       const fileName = `${reportType}-${identifier}-${Date.now()}.${extension}`;
+
+      // Always use project root, never data directory
+      const projectRoot = this.getProjectRoot(basePath);
       const filePath = path.join(
-        basePath || process.cwd(),
+        projectRoot,
         'workflow-reports',
         'interactive',
         fileName,
@@ -69,8 +88,10 @@ export class McpFileManagerService {
     maxAgeHours: number = 24,
   ): Promise<number> {
     try {
+      // Always use project root, never data directory
+      const projectRoot = this.getProjectRoot(basePath);
       const reportsDir = path.join(
-        basePath || process.cwd(),
+        projectRoot,
         'workflow-reports',
         'interactive',
       );

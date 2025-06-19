@@ -1,3 +1,24 @@
 {
-  "postman.settings.dotenv-detection-notification-visibility": false
+  "postman.settings.dotenv-detection-notification-visibility": false,
+  "chat.mcp.serverSampling": {
+    "cursor-workflow/.vscode/mcp.json: anubis": {
+      "allowedModels": [
+        "github.copilot-chat/gpt-4.1",
+        "github.copilot-chat/OpenRouter-anthropic/claude-3.7-sonnet",
+        "github.copilot-chat/OpenRouter-anthropic/claude-3.7-sonnet:thinking",
+        "github.copilot-chat/claude-3.5-sonnet",
+        "github.copilot-chat/claude-3.7-sonnet",
+        "github.copilot-chat/claude-3.7-sonnet-thought",
+        "github.copilot-chat/claude-sonnet-4",
+        "github.copilot-chat/OpenRouter-deepseek/deepseek-v3-base:free",
+        "github.copilot-chat/gemini-2.0-flash-001",
+        "github.copilot-chat/gemini-2.5-pro",
+        "github.copilot-chat/OpenRouter-google/gemini-2.5-pro-preview-03-25",
+        "github.copilot-chat/gpt-4o",
+        "github.copilot-chat/o1",
+        "github.copilot-chat/o3-mini",
+        "github.copilot-chat/o4-mini"
+      ]
+    }
+  }
 }

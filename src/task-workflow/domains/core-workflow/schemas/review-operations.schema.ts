@@ -1,5 +1,22 @@
 import { z } from 'zod';
 
+// 🎯 STRUCTURED SCHEMAS: Proper structure definitions instead of z.any()
+
+// Acceptance Criteria Verification Schema - For tracking acceptance criteria validation
+const AcceptanceCriteriaVerificationSchema = z.object({
+  criteriaId: z.string().optional(), // Unique identifier for the criteria
+  criteriaDescription: z.string().optional(), // Description of the acceptance criteria
+  verificationStatus: z
+    .enum(['passed', 'failed', 'partial', 'not-tested'])
+    .optional(), // Verification result
+  verificationMethod: z.string().optional(), // How the criteria was verified (manual, automated, etc.)
+  evidence: z.string().optional(), // Evidence supporting the verification
+  testResults: z.string().optional(), // Specific test results
+  notes: z.string().optional(), // Additional notes about verification
+  verifiedBy: z.string().optional(), // Who performed the verification
+  verificationDate: z.string().optional(), // When verification was performed
+});
+
 // Review Operations Schema - Code review and completion management
 export const ReviewOperationsSchema = z.object({
   operation: z.enum([
@@ -23,7 +40,9 @@ export const ReviewOperationsSchema = z.object({
       summary: z.string(),
       strengths: z.string().optional(),
       issues: z.string().optional(),
-      acceptanceCriteriaVerification: z.record(z.any()).optional(),
+      acceptanceCriteriaVerification: z
+        .record(AcceptanceCriteriaVerificationSchema)
+        .optional(), // ✅ STRUCTURED: Acceptance criteria verification with detailed tracking
       manualTestingResults: z.string().optional(),
       requiredChanges: z.string().optional(),
     })
@@ -34,7 +53,9 @@ export const ReviewOperationsSchema = z.object({
     .object({
       summary: z.string(),
       filesModified: z.array(z.string()).optional(),
-      acceptanceCriteriaVerification: z.record(z.any()).optional(),
+      acceptanceCriteriaVerification: z
+        .record(AcceptanceCriteriaVerificationSchema)
+        .optional(), // ✅ STRUCTURED: Acceptance criteria verification with detailed tracking
       delegationSummary: z.string().optional(),
       qualityValidation: z.string().optional(),
     })

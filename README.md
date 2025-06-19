@@ -1,288 +1,176 @@
-# 🎯 MCP Workflow-Manager: AI-Guided Development Intelligence
+# 𓂀𓁢𓋹𝔸ℕ𝕌𝔹𝕀𝕊𓋹𓁢𓂀 - Divine Guidance for AI Workflows
 
-**Transform chaotic development into organized, quality-driven workflows with MCP-compliant AI guidance.**
+**The first MCP-compliant system that embeds intelligent guidance directly into AI workflows, transforming chaotic development into organized, quality-driven processes.**
 
-A revolutionary **Model Context Protocol (MCP) server** that provides intelligent workflow guidance for AI agents in software development. Built with NestJS + Prisma, this system follows MCP protocol standards correctly by providing guidance instead of executing commands.
+![Docker Pulls](https://img.shields.io/docker/pulls/hiveacademy/anubis)
+![Docker Image Size](https://img.shields.io/docker/image-size/hiveacademy/anubis)
+![Docker Image Version](https://img.shields.io/docker/v/hiveacademy/anubis)
+[![MCP Server](https://img.shields.io/badge/MCP-Server-blue?style=for-the-badge&logo=docker)](https://hub.docker.com/r/hiveacademy/anubis)
 
-## 🏆 **MAJOR ACHIEVEMENT: MCP PROTOCOL COMPLIANCE**
-
-**✅ BREAKTHROUGH**: We've achieved full MCP protocol compliance by eliminating all execution violations and establishing a true guidance-only architecture.
-
-### **🎯 What Makes This Special**
-
-- **✅ MCP Compliant**: Server provides guidance, AI agents execute locally
-- **✅ Zero Execution Violations**: No server-side command execution
-- **✅ Intelligent Guidance**: Context-aware recommendations for AI agents
-- **✅ Clean Architecture**: Proper separation between guidance and execution
-
-## 🚀 **BUSINESS VALUE**
-
-### **For Development Teams**
-
-- **🎯 Structured Workflows**: Transform chaotic development into organized processes
-- **📈 Quality Assurance**: Built-in quality gates and validation criteria
-- **⚡ Faster Delivery**: AI-guided development with intelligent recommendations
-- **📊 Analytics**: Comprehensive tracking and performance insights
-
-### **For AI Agents**
-
-- **🧠 Intelligent Guidance**: Context-aware step-by-step instructions
-- **🔧 Tool Recommendations**: Suggested tools for each development task
-- **✅ Success Criteria**: Clear validation requirements for each step
-- **📋 Progress Tracking**: Comprehensive workflow state management
-
-### **For Organizations**
-
-- **🏗️ Scalable Architecture**: MCP-compliant design for enterprise use
-- **🔒 Security**: No server-side execution reduces security risks
-- **📈 ROI**: Faster development cycles with higher quality output
-- **🎯 Standardization**: Consistent development practices across teams
-
-## 🎯 **HOW IT WORKS: MCP GUIDANCE ARCHITECTURE**
-
-### **1. AI Agent Requests Guidance**
-
-```javascript
-// AI agent calls MCP server for guidance
-get_step_guidance({
-  taskId: 123,
-  roleId: 'senior-developer',
-  stepId: 'implementation-setup',
-});
-```
-
-### **2. MCP Server Provides Intelligent Guidance**
-
-```json
-{
-  "success": true,
-  "guidance": {
-    "description": "Set up implementation environment with proper structure",
-    "expectedOutput": "Clean project structure with all dependencies configured",
-    "suggestedTools": ["codebase_search", "read_file", "edit_file"],
-    "localExecution": {
-      "commands": [
-        "Analyze existing project structure",
-        "Install required dependencies",
-        "Configure development environment"
-      ],
-      "aiIntelligence": "Apply senior developer expertise to create optimal setup"
-    },
-    "successCriteria": [
-      "All dependencies installed and configured",
-      "Project structure follows best practices",
-      "Development environment ready for implementation"
-    ]
-  }
-}
-```
-
-### **3. AI Agent Executes Locally**
-
-- AI agent receives structured guidance
-- Uses its own tools (codebase_search, read_file, edit_file, etc.)
-- Executes commands locally in the development environment
-- Reports results back to MCP server
-
-### **4. Progress Tracking & Analytics**
-
-```javascript
-// AI agent reports completion
-report_step_completion({
-  taskId: 123,
-  stepId: 'implementation-setup',
-  result: 'success',
-  executionData: {
-    /* results */
-  },
-  executionTime: 1500,
-});
-```
+**🚀 [NPM Package](https://www.npmjs.com/package/@hive-academy/anubis)** • **🐳 [Docker Hub](https://hub.docker.com/r/hiveacademy/anubis)** • **📚 [Documentation](memory-bank/)**
 
 ## 🚀 **QUICK START**
 
-### NPX Setup (Recommended)
+### **Option 1: NPX (Recommended)**
 
 ```json
-// Add to your MCP client config (Cursor, Claude Desktop, etc.)
+// Add to your MCP client config
 {
   "mcpServers": {
-    "workflow-manager": {
+    "anubis": {
       "command": "npx",
-      "args": ["-y", "@hive-academy/mcp-workflow-manager"]
+      "args": ["-y", "@hive-academy/anubis"]
     }
   }
 }
 ```
 
-**Benefits:**
-
-- ✅ Zero installation required
-- ✅ Automatic dependency management
-- ✅ Always latest version
-- ✅ Project isolation
-
-### Docker Setup
+### **Option 2: Docker**
 
 ```json
 {
   "mcpServers": {
-    "workflow-manager": {
-      "command": "docker",
-      "args": [
-        "run",
-        "-i",
-        "-v",
-        "project-workflow:/app/data",
-        "--rm",
-        "hiveacademy/mcp-workflow-manager"
-      ]
+    "anubis": {
+      "command": "docker", 
+      "args": ["run", "-i", "-v", "anubis-data:/app/data", "--rm", "hiveacademy/anubis"]
     }
   }
 }
 ```
 
-## 🎭 **AI ROLE SPECIALIZATIONS**
+**✅ Benefits**: Zero installation • Always latest version • Project isolation • Auto-dependency management
 
-Our system provides specialized guidance for different development roles:
+## 🤖 **SUPERCHARGE YOUR AI AGENT**
 
-| Role                    | Purpose                      | Guidance Focus                            |
-| ----------------------- | ---------------------------- | ----------------------------------------- |
-| **🎯 Boomerang**        | Strategic orchestration      | Project analysis, coordination, delivery  |
-| **🔍 Researcher**       | Evidence-based investigation | Technology research, feasibility analysis |
-| **🏗️ Architect**        | Technical design & planning  | System architecture, design patterns      |
-| **👨‍💻 Senior Developer** | Implementation excellence    | Code development, SOLID principles        |
-| **✅ Code Review**      | Quality assurance            | Testing, validation, acceptance criteria  |
+### **Initialize Workflow Rules**
 
-## 🔧 **MCP TOOL ARCHITECTURE**
-
-### **Core Workflow Tools (8 Tools)**
-
-- `bootstrap_workflow` - Initialize new workflows with task creation
-- `get_workflow_guidance` - Get role-specific behavioral context
-- `get_step_guidance` - Get specific guidance for step execution
-- `report_step_completion` - Report AI execution results back to server
-- `get_next_available_step` - Get AI-powered next step recommendations
-- `get_step_progress` - Get step execution history and analytics
-- `workflow_execution_operations` - Complete execution lifecycle management
-
-### **Analytics & Reporting Tools (3 Tools)**
-
-- `generate_workflow_report` - Interactive HTML dashboards with Chart.js
-- `get_report_status` - Monitor report generation progress
-- `cleanup_report` - Clean up report files
-
-## 💡 **BEST PRACTICES FOR AI AGENTS**
-
-### **MCP-Compliant Development**
-
-- ✅ **DO**: Request guidance from MCP server
-- ✅ **DO**: Execute commands locally using your own tools
-- ✅ **DO**: Report results back to MCP server
-- ✅ **DO**: Follow structured guidance recommendations
-- ❌ **DON'T**: Expect MCP server to execute commands
-- ❌ **DON'T**: Skip guidance requests for complex tasks
-
-### **Quality Standards**
-
-- **Evidence-Based Development**: Validate all changes with testing
-- **SOLID Principles**: Follow clean code practices
-- **Documentation**: Maintain comprehensive project documentation
-- **Progress Tracking**: Report completion status for analytics
-
-## 📊 **INTERACTIVE ANALYTICS**
-
-Generate beautiful HTML dashboards with:
-
-- **📈 Real-time Progress Tracking**: Visual workflow progress indicators
-- **🎯 Role Performance Metrics**: Efficiency and quality analytics
-- **✅ Quality Gate Monitoring**: Compliance and validation tracking
-- **📊 Interactive Charts**: Chart.js visualizations with filtering
-- **📱 Mobile Responsive**: Modern Tailwind CSS design
-
-## 🏗️ **TECHNICAL ARCHITECTURE**
-
-### **MCP-Compliant Design**
+Transform any AI agent into a workflow expert by asking it to run:
 
 ```
-AI Agent ←→ MCP Protocol ←→ Guidance Server
-    ↓                           ↓
-Local Execution            Intelligent Guidance
-    ↓                           ↓
-Own Tools                  Database-Driven Rules
+Please initialize Anubis workflow rules for [your-agent-name] by calling the init_rules MCP tool
 ```
 
-### **Technology Stack**
+**Supported Agents**: `cursor` • `copilot` • `roocode` • `kilocode`
 
-- **Backend**: NestJS with TypeScript
-- **Database**: Prisma ORM (SQLite/PostgreSQL)
-- **MCP Integration**: @rekog/mcp-nest
-- **Validation**: Zod schemas
-- **Reports**: Direct HTML generation with Chart.js
-- **Transport**: STDIO, SSE, HTTP support
+### **What Your Agent Gets**
 
-### **Key Architectural Principles**
+🎯 **Structured Workflows** - Step-by-step guidance for complex development tasks  
+🔒 **Role Boundaries** - Clear separation between planning, development, and review  
+⚡ **Quality Gates** - Built-in validation and testing requirements  
+📊 **Progress Tracking** - Real-time analytics and completion reports  
+🧠 **Embedded Intelligence** - Context-aware recommendations for each step  
 
-- **Guidance-Only**: No server-side execution
-- **Intelligence**: Context-aware recommendations
-- **Scalability**: Database-driven workflow rules
-- **Quality**: Built-in validation and tracking
-
-## 🎯 **PROJECT ISOLATION**
-
-### NPX (Automatic)
-
-Each project gets its own database automatically:
+### **Example: Agent Transformation**
 
 ```
-/project-a/workflow.db
-/project-b/workflow.db
-/project-c/workflow.db
+Before: "Create a user authentication system"
+↓ Chaotic implementation, missing tests, no documentation
+
+After: "Create a user authentication system" 
+↓ Guided workflow with:
+   1. Requirements analysis (Researcher role)
+   2. System design (Architect role) 
+   3. Implementation (Senior Developer role)
+   4. Testing & validation (Code Review role)
+   5. Quality assurance & deployment
 ```
 
-### Docker (Manual)
+## 🎭 **ROLE-BASED WORKFLOW SYSTEM**
 
-Configure volume names for project isolation:
+| Role | Purpose | Key Capabilities |
+|------|---------|------------------|
+| **🎯 Boomerang** | Strategic orchestration | Project analysis, git setup, task creation |
+| **🔍 Researcher** | Evidence-based investigation | Technology research, feasibility analysis |
+| **🏗️ Architect** | Technical design | System architecture, implementation planning |
+| **👨‍💻 Senior Developer** | Implementation excellence | Code development, testing, quality assurance |
+| **✅ Code Review** | Quality validation | Manual testing, security validation, approval |
 
-```json
-// Project A
-"args": ["run", "-i", "-v", "project-a-workflow:/app/data", "--rm", "..."]
+## 🔧 **MCP TOOLS OVERVIEW**
+
+**12 Specialized Tools** for complete workflow management:
+
+- **Workflow Management** (8 tools): Step guidance, progress tracking, role transitions
+- **Execution Management** (2 tools): Bootstrap workflows, manage execution state  
+- **Service Operations** (1 tool): Core business logic operations
+- **Analytics** (3 tools): Interactive dashboards, reports, cleanup
+
+## 🎯 **HOW IT WORKS**
+
+### **Simple 3-Step Process**
+
+1. **🤖 AI Agent Requests Guidance** → Calls MCP server for step-by-step instructions
+2. **🧠 Server Provides Intelligence** → Returns structured guidance with quality checklist  
+3. **⚡ Agent Executes Locally** → Uses own tools to implement, reports results back
+
+### **Example Workflow**
+
+```javascript
+// 1. Agent asks for guidance
+const guidance = await get_step_guidance({
+  executionId: 'workflow-123',
+  roleId: 'senior-developer'
+});
+
+// 2. Server responds with structured guidance
+{
+  "stepInfo": { "name": "Implement authentication system" },
+  "qualityChecklist": ["SOLID principles", "Unit tests", "Security validation"],
+  "approachGuidance": ["Create models", "Add controllers", "Write tests"]
+}
+
+// 3. Agent executes using own tools and reports completion
+await report_step_completion({
+  result: 'success',
+  executionData: { filesModified: ['auth.ts'], testsRun: 15 }
+});
 ```
 
-## 🚀 **DEVELOPMENT STATUS**
+## � **ANALYTICS & REPORTING**
 
-**✅ PRODUCTION READY - MCP COMPLIANT**
+Generate beautiful interactive dashboards with real-time metrics:
 
-- **✅ Architecture**: MCP-compliant guidance-only design
-- **✅ Performance**: Optimized with intelligent caching
-- **✅ Quality**: Comprehensive testing and validation
-- **✅ Compliance**: Zero execution violations
-- **✅ Documentation**: Complete system instructions
+- **📈 Progress Tracking** - Visual workflow indicators
+- **🎯 Role Performance** - Efficiency analytics  
+- **✅ Quality Gates** - Compliance monitoring
+- **📊 Interactive Charts** - Chart.js visualizations
+- **📱 Mobile Responsive** - Modern Tailwind CSS
+
+## 🏗️ **TECHNICAL STACK**
+
+**Enterprise-Grade Architecture:**
+- **Backend**: NestJS v11 + TypeScript
+- **Database**: Prisma ORM + SQLite/PostgreSQL  
+- **MCP**: @rekog/mcp-nest v1.5.2
+- **Runtime**: Node.js ≥18.0.0
+
+**✅ Production Ready**: MCP-compliant • Zero execution violations • 75% test coverage
 
 ## 📚 **DOCUMENTATION**
 
-- **MCP Architecture Fix**: `docs/MCP_ARCHITECTURE_FIX.md`
-- **Technical Architecture**: `memory-bank/TechnicalArchitecture.md`
-- **Developer Guide**: `memory-bank/DeveloperGuide.md`
-- **Project Overview**: `memory-bank/ProjectOverview.md`
+- **[📖 Technical Architecture](memory-bank/TechnicalArchitecture.md)** - System design & patterns
+- **[🚀 Developer Guide](memory-bank/DeveloperGuide.md)** - Setup & development workflows  
+- **[🎯 Project Overview](memory-bank/ProjectOverview.md)** - Business context & strategy
 
 ## 🤝 **CONTRIBUTING**
 
-This project follows MCP protocol standards and clean architecture principles:
+```bash
+# Development setup
+npm install && npm run db:init && npm run start:dev
 
-- **MCP Compliance**: Guidance-only, no execution
-- **SOLID Principles**: Clean, maintainable code
-- **Domain-Driven Design**: Clear domain boundaries
-- **Evidence-Based Development**: Comprehensive testing
+# Quality checks  
+npm run test && npm run lint
+```
+
+**Standards**: MCP compliance • SOLID principles • Domain-driven design • Evidence-based development
 
 ## 📄 **LICENSE**
 
-MIT License - see LICENSE file for details.
+MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
 ## 🎯 **THE BOTTOM LINE**
 
-**This MCP server transforms AI development by providing intelligent guidance instead of trying to execute commands itself. It's the difference between a GPS that gives you directions (correct) vs. a GPS that tries to drive your car (wrong).**
+**Transform your AI agent from chaotic task executor to intelligent workflow orchestrator. Get structured guidance, quality assurance, and analytics - all while maintaining perfect MCP protocol compliance.**
 
-**Result**: Faster, higher-quality development with proper MCP protocol compliance and clean separation of concerns.
+**🚀 Ready to upgrade your AI workflows? Add Anubis to your MCP config and ask your agent to initialize the rules!**

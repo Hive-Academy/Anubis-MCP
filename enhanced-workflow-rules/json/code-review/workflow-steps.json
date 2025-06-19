@@ -1,470 +1,156 @@
 {
   "workflowSteps": [
     {
-      "name": "implementation_context_and_codebase_analysis_validation",
-      "displayName": "Implementation Context and MANDATORY CodebaseAnalysis Validation",
-      "description": "Retrieve implementation context and validate against existing codebase analysis for quality consistency",
+      "name": "analyze_implementation_context",
+      "description": "Analyze implementation and formulate testing strategy",
       "sequenceNumber": 1,
       "isRequired": true,
-      "estimatedTime": "10-15 minutes",
-      "stepType": "ANALYSIS",
-      "behavioralContext": {
-        "approach": "MANDATORY codebase analysis validation with comprehensive implementation context acquisition",
-        "principles": [
-          "Use CodebaseAnalysis to validate implementation quality and consistency",
-          "Verify implementation follows established patterns from existing analysis",
-          "Confirm implementation addresses ALL issues identified in codebase analysis",
-          "Focus review on areas identified as problematic in original analysis"
-        ],
-        "methodology": "Analysis-informed review with pattern consistency validation"
-      },
+      "stepType": "ACTION",
+      "approach": "Context-driven analysis with adaptive testing strategy",
       "approachGuidance": {
         "stepByStep": [
-          "Execute query_task_context with comprehensive inclusion for complete implementation context",
-          "Extract and validate against existing CodebaseAnalysis (patterns, technical debt, integration points)",
-          "Verify implementation follows established patterns and coding standards from analysis",
-          "Confirm implementation addresses identified code smells and technical debt",
-          "Plan review strategy focusing on integration points and quality gaps from analysis",
-          "Analyze completed batches, subtasks, and acceptance criteria mapping"
+          "Check if task context is already available in current execution history",
+          "If context is available, analyze and validate its completeness",
+          "Only if context is missing or incomplete, execute TaskOperations.get to retrieve implementation context and codebase analysis",
+          "Analyze task type, tech stack, and implementation scope",
+          "Identify highest-risk areas and integration points",
+          "Formulate testing strategy appropriate for changes made",
+          "Establish risk-based testing priorities"
         ]
       },
       "qualityChecklist": [
-        "Implementation context retrieved with comprehensive analysis and evidence",
-        "CodebaseAnalysis validation confirms pattern consistency and standard compliance",
-        "Technical debt prevention verified - implementation avoids identified problems",
-        "Integration quality validated - implementation respects existing integration points",
-        "Review strategy planned focusing on analysis-identified problem areas",
-        "Implementation scope analyzed with completed batches and acceptance criteria mapping"
+        "Implementation context and scope thoroughly analyzed",
+        "Technology stack and architecture patterns identified",
+        "Highest-risk areas for testing identified",
+        "Testing strategy formulated for tech stack and changes",
+        "Risk-based testing priorities established"
       ],
       "conditions": [],
       "actions": [
         {
-          "name": "acquire_implementation_context",
+          "name": "get_implementation_context",
           "actionType": "MCP_CALL",
           "actionData": {
             "serviceName": "TaskOperations",
-            "operation": "get",
-            "parameters": {
-              "includeLevel": "comprehensive",
-              "includePlans": true,
-              "includeSubtasks": true,
-              "includeAnalysis": true,
-              "includeComments": false,
-              "includeCodebaseAnalysis": true,
-              "includeImplementationEvidence": true
-            }
+            "operation": "get"
           },
           "sequenceOrder": 1
-        },
-        {
-          "name": "validate_codebase_analysis_compliance",
-          "actionType": "VALIDATION",
-          "actionData": {
-            "validationType": "mandatory_codebase_analysis_validation",
-            "validationCriteria": {
-              "patternConsistency": "{{verify_implementation_follows_established_patterns}}",
-              "technicalDebtPrevention": "{{confirm_implementation_avoids_identified_problems}}",
-              "integrationQuality": "{{validate_implementation_respects_integration_points}}",
-              "standardCompliance": "{{verify_adherence_to_documented_coding_standards}}",
-              "qualityImprovement": "{{confirm_implementation_addresses_quality_gaps}}"
-            }
-          },
-          "sequenceOrder": 2
-        },
-        {
-          "name": "plan_analysis_informed_review_strategy",
-          "actionType": "PLANNING",
-          "actionData": {
-            "planType": "analysis_informed_review_strategy",
-            "reviewFocus": {
-              "priorityTestingAreas": "{{focus_testing_on_analysis_identified_problem_areas}}",
-              "integrationValidation": "{{intensive_testing_of_integration_points_from_analysis}}",
-              "qualityGateEmphasis": "{{stricter_validation_where_analysis_identified_gaps}}",
-              "patternVerification": "{{detailed_review_of_established_pattern_usage}}",
-              "improvementAssessment": "{{evaluation_of_codebase_quality_enhancement}}"
-            }
-          },
-          "sequenceOrder": 3
         }
-      ],
-      "triggerReport": true,
-      "reportType": "context_and_codebase_validation",
-      "reportTemplate": "implementation_context_and_analysis_validation"
+      ]
     },
     {
-      "name": "comprehensive_manual_testing_and_functionality_validation",
-      "displayName": "Comprehensive Manual Testing and Functionality Validation",
-      "description": "Execute hands-on testing of all implemented functionality with user experience validation",
+      "name": "execute_targeted_validation",
+      "description": "Execute focused validation based on testing strategy",
       "sequenceNumber": 2,
       "isRequired": true,
-      "estimatedTime": "30-45 minutes",
-      "stepType": "TESTING",
-      "behavioralContext": {
-        "approach": "Comprehensive hands-on testing with user experience and cross-platform validation",
-        "principles": [
-          "Manually test all primary features and user workflows comprehensively",
-          "Validate user interface responsiveness, usability, and accessibility",
-          "Test cross-browser compatibility and responsive design thoroughly",
-          "Verify component integration and system integration functionality"
-        ],
-        "methodology": "Systematic manual testing with comprehensive validation coverage"
-      },
+      "stepType": "ACTION",
+      "approach": "Strategic testing execution with evidence collection",
       "approachGuidance": {
         "stepByStep": [
-          "Execute core functionality testing: primary features, user workflows, data flow validation",
-          "Perform user experience validation: interface responsiveness, navigation flow, error message clarity",
-          "Conduct cross-browser and device testing: compatibility, responsive design, performance consistency",
-          "Execute integration testing: component interaction, system integration, API and database validation",
-          "Test error scenarios and recovery mechanisms comprehensively",
-          "Validate accessibility standards and usability compliance"
+          "Execute testing strategy focusing on identified risk areas",
+          "Apply validation methods appropriate for tech stack",
+          "Test core functionality and integration points",
+          "Assess code quality and pattern compliance",
+          "Collect specific evidence of validation results"
         ]
       },
       "qualityChecklist": [
-        "Core functionality manually tested with all primary features and workflows validated",
-        "User experience thoroughly validated including interface responsiveness and usability",
-        "Cross-browser and device compatibility tested with responsive design verification",
-        "Integration testing completed for components, systems, APIs, and database operations",
-        "Error scenarios and recovery mechanisms comprehensively tested",
-        "Accessibility standards and usability compliance verified"
+        "Testing strategy executed on highest-risk areas",
+        "Validation methods appropriate for tech stack applied",
+        "Core functionality thoroughly tested",
+        "Integration points validated for proper operation",
+        "Code quality assessed against established standards"
       ],
       "conditions": [
         {
-          "name": "context_and_analysis_validated",
+          "name": "context_analysis_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "implementation_context_and_codebase_analysis_validation"
+              "stepName": "analyze_implementation_context"
             }
           },
           "isRequired": true
         }
       ],
-      "actions": [
-        {
-          "name": "execute_core_functionality_testing",
-          "actionType": "MANUAL_TESTING",
-          "actionData": {
-            "testingType": "comprehensive_functionality_validation",
-            "testingAreas": {
-              "coreFunctionality": "{{primary_features_user_workflows_data_flow_business_logic}}",
-              "userInterface": "{{interface_responsiveness_usability_navigation_efficiency}}",
-              "dataFlow": "{{input_processing_output_accuracy_validation}}",
-              "errorScenarios": "{{error_conditions_recovery_mechanisms_error_message_clarity}}"
-            }
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "execute_cross_platform_and_integration_testing",
-          "actionType": "MANUAL_TESTING",
-          "actionData": {
-            "testingType": "cross_platform_and_integration_validation",
-            "testingAreas": {
-              "crossBrowserCompatibility": "{{browser_versions_responsive_design_mobile_compatibility}}",
-              "deviceTesting": "{{screen_resolutions_performance_consistency_feature_parity}}",
-              "componentIntegration": "{{component_interaction_system_integration_API_endpoints}}",
-              "databaseIntegration": "{{data_persistence_retrieval_operations_validation}}"
-            }
-          },
-          "sequenceOrder": 2
-        },
-        {
-          "name": "validate_accessibility_and_user_experience",
-          "actionType": "MANUAL_TESTING",
-          "actionData": {
-            "testingType": "accessibility_and_user_experience_validation",
-            "testingAreas": {
-              "accessibilityStandards": "{{accessibility_compliance_usability_standards}}",
-              "userWorkflows": "{{end_to_end_workflows_user_journey_efficiency}}",
-              "errorHandling": "{{error_message_clarity_actionable_feedback}}",
-              "performanceExperience": "{{interface_responsiveness_loading_times}}"
-            }
-          },
-          "sequenceOrder": 3
-        }
-      ],
-      "triggerReport": true,
-      "reportType": "comprehensive_manual_testing",
-      "reportTemplate": "manual_testing_and_functionality_validation"
+      "actions": []
     },
     {
-      "name": "security_performance_and_technical_standards_validation",
-      "displayName": "Security, Performance, and Technical Standards Validation",
-      "description": "Comprehensive security testing, performance validation, and SOLID principles verification",
+      "name": "verify_acceptance_criteria",
+      "description": "Verify acceptance criteria and synthesize evidence",
       "sequenceNumber": 3,
       "isRequired": true,
-      "estimatedTime": "35-50 minutes",
-      "stepType": "VALIDATION",
-      "behavioralContext": {
-        "approach": "Comprehensive security testing with performance validation and technical excellence verification",
-        "principles": [
-          "Thorough security validation including OWASP Top 10 vulnerability assessment",
-          "Performance testing with metrics validation and scalability assessment",
-          "SOLID principles verification and design pattern implementation review",
-          "Code quality assessment with clean code practices validation"
-        ],
-        "methodology": "Multi-faceted validation covering security, performance, and technical excellence"
-      },
+      "stepType": "ACTION",
+      "approach": "Systematic acceptance criteria validation with evidence synthesis",
       "approachGuidance": {
         "stepByStep": [
-          "Execute comprehensive security testing: input validation, authentication, data protection, vulnerability assessment",
-          "Perform performance and scalability testing: response times, load testing, resource utilization, bottleneck identification",
-          "Verify SOLID principles compliance: Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion",
-          "Validate design pattern implementation: appropriateness, correct implementation, pattern integration",
-          "Assess code quality: clean code practices, documentation quality, error handling, resource management",
-          "Document security validation, performance metrics, and technical standards compliance"
+          "Map validation results against acceptance criteria",
+          "Verify each criterion satisfied with specific evidence",
+          "Identify any gaps between requirements and implementation",
+          "Synthesize evidence into clear quality assessment",
+          "Prepare comprehensive evidence for decision making"
         ]
       },
       "qualityChecklist": [
-        "Security testing comprehensive including input validation, authentication, and vulnerability assessment",
-        "Performance testing completed with response times, load testing, and scalability validation",
-        "SOLID principles compliance verified for all implemented components",
-        "Design pattern implementation reviewed for appropriateness and correct implementation",
-        "Code quality assessed including clean code practices and documentation quality",
-        "Technical standards validation documented with compliance evidence"
+        "All acceptance criteria mapped to validation evidence",
+        "Each criterion verified with specific evidence",
+        "Any gaps between requirements and implementation identified",
+        "Evidence synthesized into clear quality assessment",
+        "Comprehensive evidence prepared for review decision"
       ],
       "conditions": [
         {
-          "name": "manual_testing_completed",
+          "name": "validation_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "comprehensive_manual_testing_and_functionality_validation"
+              "stepName": "execute_targeted_validation"
             }
           },
           "isRequired": true
         }
       ],
-      "actions": [
-        {
-          "name": "execute_comprehensive_security_testing",
-          "actionType": "SECURITY_TESTING",
-          "actionData": {
-            "testingType": "comprehensive_security_validation",
-            "securityAreas": {
-              "inputValidation": "{{SQL_injection_XSS_CSRF_protection_input_sanitization}}",
-              "authenticationAuthorization": "{{authentication_mechanisms_session_management_access_control}}",
-              "dataProtection": "{{data_encryption_privacy_compliance_secure_communication}}",
-              "vulnerabilityAssessment": "{{OWASP_top_10_file_upload_security_dependency_vulnerabilities}}"
-            }
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "execute_performance_and_scalability_testing",
-          "actionType": "PERFORMANCE_TESTING",
-          "actionData": {
-            "testingType": "performance_and_scalability_validation",
-            "performanceAreas": {
-              "performanceMetrics": "{{response_times_load_testing_stress_testing_memory_usage}}",
-              "userExperiencePerformance": "{{page_load_times_interactive_elements_resource_loading}}",
-              "scalabilityAssessment": "{{concurrent_users_data_volume_resource_utilization_bottlenecks}}"
-            }
-          },
-          "sequenceOrder": 2
-        },
-        {
-          "name": "validate_technical_standards_and_solid_principles",
-          "actionType": "TECHNICAL_VALIDATION",
-          "actionData": {
-            "validationType": "technical_standards_and_solid_principles_verification",
-            "validationAreas": {
-              "solidPrinciples": "{{single_responsibility_open_closed_liskov_substitution_interface_segregation_dependency_inversion}}",
-              "designPatterns": "{{pattern_appropriateness_correct_implementation_pattern_integration}}",
-              "codeQuality": "{{clean_code_practices_documentation_quality_error_handling_resource_management}}"
-            }
-          },
-          "sequenceOrder": 3
-        }
-      ],
-      "triggerReport": true,
-      "reportType": "security_performance_technical_validation",
-      "reportTemplate": "security_performance_and_technical_standards"
+      "actions": []
     },
     {
-      "name": "acceptance_criteria_verification_and_evidence_collection",
-      "displayName": "Acceptance Criteria Verification and Evidence Collection",
-      "description": "Systematic validation against acceptance criteria with comprehensive evidence documentation",
+      "name": "make_review_decision",
+      "description": "Make code review decision and execute appropriate transition",
       "sequenceNumber": 4,
       "isRequired": true,
-      "estimatedTime": "20-30 minutes",
-      "stepType": "VERIFICATION",
-      "behavioralContext": {
-        "approach": "Systematic acceptance criteria validation with comprehensive evidence collection and documentation",
-        "principles": [
-          "Verify all specified functionality against original acceptance criteria",
-          "Document specific evidence of requirement satisfaction with test results",
-          "Collect comprehensive validation evidence for decision support",
-          "Prepare detailed assessment for review decision making"
-        ],
-        "methodology": "Evidence-based verification with systematic criteria validation"
-      },
+      "stepType": "ACTION",
+      "approach": "Evidence-based decision making with appropriate role transition",
       "approachGuidance": {
         "stepByStep": [
-          "Verify functional requirements: feature completeness, business logic, data validation, integration requirements",
-          "Validate technical requirements: architecture compliance, performance benchmarks, security criteria, quality standards",
-          "Document evidence collection: requirement satisfaction evidence, test results, performance metrics, security validation",
-          "Compile comprehensive validation evidence for review decision support",
-          "Prepare detailed assessment documentation with rationale and supporting evidence",
-          "Evaluate overall implementation completeness against all acceptance criteria"
+          "Make review decision based on validation evidence",
+          "If approved: transition to integration-engineer for final steps",
+          "If needs changes: transition to architect for revision",
+          "Execute get_role_transitions with appropriate parameters",
+          "Execute transition with comprehensive evidence in handoff"
         ]
       },
       "qualityChecklist": [
-        "Functional requirements verified with feature completeness and business logic validation",
-        "Technical requirements validated including architecture compliance and performance benchmarks",
-        "Evidence collection comprehensive with requirement satisfaction documentation",
-        "Test results compiled with performance metrics and security validation evidence",
-        "Assessment documentation prepared with detailed rationale and supporting evidence",
-        "Implementation completeness evaluated against all original acceptance criteria"
+        "Review decision made based on validation evidence",
+        "Appropriate transition path determined",
+        "get_role_transitions executed with correct parameters",
+        "Transition executed with comprehensive evidence",
+        "Decision rationale and evidence properly communicated"
       ],
       "conditions": [
         {
-          "name": "security_performance_technical_validated",
+          "name": "criteria_verification_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "security_performance_and_technical_standards_validation"
+              "stepName": "verify_acceptance_criteria"
             }
           },
           "isRequired": true
         }
       ],
-      "actions": [
-        {
-          "name": "verify_functional_and_technical_requirements",
-          "actionType": "VERIFICATION",
-          "actionData": {
-            "verificationType": "comprehensive_acceptance_criteria_validation",
-            "verificationAreas": {
-              "functionalRequirements": "{{feature_completeness_business_logic_data_validation_integration}}",
-              "technicalRequirements": "{{architecture_compliance_performance_security_quality_testing}}",
-              "userExperienceRequirements": "{{user_workflows_interface_usability_acceptance_criteria}}"
-            }
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "collect_comprehensive_evidence",
-          "actionType": "EVIDENCE_COLLECTION",
-          "actionData": {
-            "collectionType": "comprehensive_validation_evidence",
-            "evidenceCategories": {
-              "requirementSatisfaction": "{{specific_evidence_of_criteria_satisfaction}}",
-              "testResults": "{{comprehensive_testing_results_and_validation}}",
-              "performanceMetrics": "{{performance_testing_results_and_benchmarks}}",
-              "securityValidation": "{{security_testing_results_and_compliance}}",
-              "qualityMetrics": "{{code_quality_metrics_and_standards_compliance}}"
-            }
-          },
-          "sequenceOrder": 2
-        }
-      ],
-      "triggerReport": true,
-      "reportType": "acceptance_criteria_verification_and_evidence",
-      "reportTemplate": "acceptance_criteria_and_evidence_collection"
-    },
-    {
-      "name": "review_decision_and_workflow_completion",
-      "displayName": "Review Decision and Workflow Completion",
-      "description": "Make evidence-based review decision and execute appropriate workflow completion or escalation",
-      "sequenceNumber": 5,
-      "isRequired": true,
-      "estimatedTime": "15-25 minutes",
-      "stepType": "DECISION_AND_COMPLETION",
-      "behavioralContext": {
-        "approach": "Evidence-based review decision with appropriate workflow completion or escalation execution",
-        "principles": [
-          "Make review decision based on comprehensive evidence and quality assessment",
-          "Create detailed review report with findings, strengths, and issues documentation",
-          "Execute appropriate workflow completion (APPROVED) or escalation (NEEDS_CHANGES)",
-          "Preserve comprehensive context for receiving role or task completion"
-        ],
-        "methodology": "Decision matrix application with workflow transition execution"
-      },
-      "approachGuidance": {
-        "stepByStep": [
-          "Evaluate all evidence against approval criteria matrix for informed decision making",
-          "Create comprehensive review report with status, findings, strengths, issues, and evidence",
-          "Make review decision: APPROVED, APPROVED_WITH_RESERVATIONS, or NEEDS_CHANGES",
-          "Execute appropriate workflow transition: complete task (if approved) or escalate (if changes needed)",
-          "Document final assessment with production readiness status and context preservation",
-          "Ensure comprehensive handoff documentation for receiving role or completion"
-        ]
-      },
-      "qualityChecklist": [
-        "Review decision based on comprehensive evidence evaluation and quality assessment",
-        "Review report created with detailed findings, strengths, issues, and acceptance criteria verification",
-        "Appropriate workflow transition executed based on review decision outcome",
-        "Final assessment documented with production readiness status and rationale",
-        "Context preservation comprehensive for receiving role or task completion",
-        "Workflow completion includes all validation evidence and quality documentation"
-      ],
-      "conditions": [
-        {
-          "name": "acceptance_criteria_verified_and_evidence_collected",
-          "conditionType": "PREVIOUS_STEP_COMPLETED",
-          "logic": {
-            "check": "step_completed",
-            "parameters": {
-              "stepName": "acceptance_criteria_verification_and_evidence_collection"
-            }
-          },
-          "isRequired": true
-        }
-      ],
-      "actions": [
-        {
-          "name": "create_comprehensive_review_report",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "ReviewOperations",
-            "operation": "create_review",
-            "parameters": {
-              "reviewData": {
-                "status": "{{APPROVED_or_APPROVED_WITH_RESERVATIONS_or_NEEDS_CHANGES}}",
-                "summary": "{{comprehensive_review_summary_with_key_findings}}",
-                "strengths": "{{implementation_strengths_and_quality_highlights}}",
-                "issues": "{{identified_issues_and_improvement_areas}}",
-                "acceptanceCriteriaVerification": "{{criterion_verification_status_and_evidence}}",
-                "manualTestingResults": "{{hands_on_testing_and_validation_results}}",
-                "requiredChanges": "{{specific_changes_if_NEEDS_CHANGES_status}}"
-              }
-            }
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "execute_workflow_completion_or_escalation",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "WorkflowOperations",
-            "operation": "{{complete_or_escalate_based_on_review_decision}}",
-            "parameters": {
-              "fromRole": "code-review",
-              "toRole": "{{task_completion_or_senior_developer_based_on_decision}}",
-              "completionData": {
-                "summary": "{{implementation_status_with_quality_gates_satisfaction}}",
-                "filesModified": "{{array_of_final_implemented_files}}",
-                "acceptanceCriteriaVerification": "{{verified_criteria_with_evidence}}",
-                "productionReadiness": "{{production_readiness_assessment}}"
-              },
-              "escalationData": {
-                "reason": "{{implementation_requires_changes_before_approval}}",
-                "severity": "{{escalation_severity_level}}",
-                "blockers": "{{specific_issues_requiring_resolution}}",
-                "improvementGuidance": "{{detailed_guidance_for_resolution}}"
-              }
-            }
-          },
-          "sequenceOrder": 2
-        }
-      ],
-      "triggerReport": true,
-      "reportType": "review_decision_and_workflow_completion",
-      "reportTemplate": "final_review_decision_and_completion"
+      "actions": []
     }
   ]
 }

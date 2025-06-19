@@ -1,9 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { WorkflowExecution, WorkflowExecutionMode } from 'generated/prisma';
 import { PrismaService } from '../../../../prisma/prisma.service';
+import { ExecutionDataUtils } from '../utils/execution-data.utils';
+import {
+  ConfigurableService,
+  BaseServiceConfig,
+} from '../utils/configurable-service.base';
 
 // Configuration interfaces to eliminate hardcoding
-export interface ExecutionServiceConfig {
+export interface ExecutionServiceConfig extends BaseServiceConfig {
   defaults: {
     executionMode: WorkflowExecutionMode;
     maxRecoveryAttempts: number;
@@ -29,7 +34,7 @@ export interface ExecutionServiceConfig {
 }
 
 export interface CreateWorkflowExecutionInput {
-  taskId: number;
+  taskId?: number;
   currentRoleId: string;
   executionMode?: WorkflowExecutionMode;
   autoCreatedTask?: boolean;
@@ -62,11 +67,11 @@ export interface WorkflowExecutionWithRelations extends WorkflowExecution {
  * Dependency Inversion: Depends on PrismaService abstraction
  */
 @Injectable()
-export class WorkflowExecutionService {
+export class WorkflowExecutionService extends ConfigurableService<ExecutionServiceConfig> {
   private readonly logger = new Logger(WorkflowExecutionService.name);
 
-  // Configuration with sensible defaults
-  private readonly config: ExecutionServiceConfig = {
+  // Default configuration implementation (required by ConfigurableService)
+  protected readonly defaultConfig: ExecutionServiceConfig = {
     defaults: {
       executionMode: 'GUIDED',
       maxRecoveryAttempts: 3,
@@ -91,56 +96,34 @@ export class WorkflowExecutionService {
     },
   };
 
-  constructor(private readonly prisma: PrismaService) {}
-
-  /**
-   * Update execution service configuration
-   */
-  updateConfig(config: Partial<ExecutionServiceConfig>): void {
-    if (config.defaults) {
-      Object.assign(this.config.defaults, config.defaults);
-    }
-    if (config.phases) {
-      Object.assign(this.config.phases, config.phases);
-    }
-    if (config.validation) {
-      Object.assign(this.config.validation, config.validation);
-    }
-    if (config.performance) {
-      Object.assign(this.config.performance, config.performance);
-    }
-    this.logger.log('Execution service configuration updated');
+  constructor(private readonly prisma: PrismaService) {
+    super();
+    this.initializeConfig();
   }
 
-  /**
-   * Get current configuration
-   */
-  getConfig(): ExecutionServiceConfig {
-    return {
-      defaults: { ...this.config.defaults },
-      phases: { ...this.config.phases },
-      validation: { ...this.config.validation },
-      performance: { ...this.config.performance },
-    };
+  // Optional: Override configuration change hook
+  protected onConfigUpdate(): void {
+    this.logger.log('Execution service configuration updated');
   }
 
   /**
    * Validate input parameters
    */
   private validateInput(input: CreateWorkflowExecutionInput): void {
-    if (this.config.validation.requireTaskId && !input.taskId) {
-      throw new Error('taskId is required');
-    }
-
-    if (this.config.validation.requireRoleId && !input.currentRoleId) {
+    // taskId is now optional for bootstrap workflows
+    if (
+      this.getConfigValue('validation').requireRoleId &&
+      !input.currentRoleId
+    ) {
       throw new Error('currentRoleId is required');
     }
 
     if (input.executionContext) {
       const contextSize = JSON.stringify(input.executionContext).length;
-      if (contextSize > this.config.validation.maxContextSize) {
+      const maxContextSize = this.getConfigValue('validation').maxContextSize;
+      if (contextSize > maxContextSize) {
         throw new Error(
-          `Execution context too large: ${contextSize} bytes. Maximum: ${this.config.validation.maxContextSize} bytes`,
+          `Execution context too large: ${contextSize} bytes. Maximum: ${maxContextSize} bytes`,
         );
       }
     }
@@ -154,7 +137,9 @@ export class WorkflowExecutionService {
   ): Promise<WorkflowExecutionWithRelations> {
     try {
       this.validateInput(input);
-      this.logger.debug(`Creating workflow execution for task ${input.taskId}`);
+      this.logger.debug(
+        `Creating workflow execution for ${input.taskId ? `task ${input.taskId}` : 'bootstrap workflow'}`,
+      );
 
       // Get the first step for the role to assign as currentStepId
       const firstStep = await this.prisma.workflowStep.findFirst({
@@ -166,30 +151,36 @@ export class WorkflowExecutionService {
         this.logger.warn(`No steps found for role ${input.currentRoleId}`);
       }
 
-      const execution = await this.prisma.workflowExecution.create({
-        data: {
-          taskId: input.taskId,
-          currentRoleId: input.currentRoleId,
-          currentStepId: firstStep?.id || null, // Assign first step if available
-          executionMode:
-            input.executionMode || this.config.defaults.executionMode,
-          autoCreatedTask: input.autoCreatedTask || false,
-          executionContext: input.executionContext || {},
-          executionState: {
-            phase: this.config.phases.initialized,
-            currentContext: input.executionContext || {},
-            progressMarkers: [],
-            // Include current step information in execution state
-            ...(firstStep && {
-              currentStep: {
-                id: firstStep.id,
-                name: firstStep.name,
-                sequenceNumber: firstStep.sequenceNumber,
-                assignedAt: new Date().toISOString(),
-              },
-            }),
-          },
+      // Build create data with optional taskId
+      const createData: any = {
+        currentRoleId: input.currentRoleId,
+        currentStepId: firstStep?.id || null,
+        executionMode:
+          input.executionMode || this.getConfigValue('defaults').executionMode,
+        autoCreatedTask: input.autoCreatedTask || false,
+        executionContext: input.executionContext || {},
+        executionState: {
+          phase: this.getConfigValue('phases').initialized,
+          currentContext: input.executionContext || {},
+          progressMarkers: [],
+          ...(firstStep && {
+            currentStep: {
+              id: firstStep.id,
+              name: firstStep.name,
+              sequenceNumber: firstStep.sequenceNumber,
+              assignedAt: new Date().toISOString(),
+            },
+          }),
         },
+      };
+
+      // Only add taskId if provided
+      if (input.taskId !== undefined) {
+        createData.taskId = input.taskId;
+      }
+
+      const execution = await this.prisma.workflowExecution.create({
+        data: createData,
         include: {
           task: true,
           currentRole: true,
@@ -278,7 +269,7 @@ export class WorkflowExecutionService {
   }
 
   /**
-   * Update execution progress
+   * Update execution progress using centralized calculation (DRY compliance)
    */
   async updateProgress(
     executionId: string,
@@ -288,8 +279,13 @@ export class WorkflowExecutionService {
     const currentExecution = await this.getExecutionById(executionId);
     let progressPercentage = currentExecution.progressPercentage;
 
+    // Use centralized progress calculation from ExecutionDataUtils
     if (totalSteps && totalSteps > 0) {
-      progressPercentage = Math.round((stepsCompleted / totalSteps) * 100);
+      progressPercentage = ExecutionDataUtils.calculatePercentage(
+        stepsCompleted,
+        totalSteps,
+        0, // No decimal precision for execution progress
+      );
     }
 
     return this.updateExecution(executionId, {
@@ -313,9 +309,9 @@ export class WorkflowExecutionService {
   ): Promise<WorkflowExecutionWithRelations> {
     return this.updateExecution(executionId, {
       completedAt: new Date(),
-      progressPercentage: this.config.defaults.completionPercentage,
+      progressPercentage: this.getConfigValue('defaults').completionPercentage,
       executionState: {
-        phase: this.config.phases.completed,
+        phase: this.getConfigValue('phases').completed,
         completedAt: new Date().toISOString(),
       },
     });

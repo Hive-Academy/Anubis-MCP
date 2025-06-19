@@ -1,5 +1,22 @@
 import { z } from 'zod';
 
+// 🎯 STRUCTURED SCHEMAS: Proper structure definitions instead of z.any()
+
+// Acceptance Criteria Verification Schema - For tracking acceptance criteria validation
+const AcceptanceCriteriaVerificationSchema = z.object({
+  criteriaId: z.string().optional(), // Unique identifier for the criteria
+  criteriaDescription: z.string().optional(), // Description of the acceptance criteria
+  verificationStatus: z
+    .enum(['passed', 'failed', 'partial', 'not-tested'])
+    .optional(), // Verification result
+  verificationMethod: z.string().optional(), // How the criteria was verified (manual, automated, etc.)
+  evidence: z.string().optional(), // Evidence supporting the verification
+  testResults: z.string().optional(), // Specific test results
+  notes: z.string().optional(), // Additional notes about verification
+  verifiedBy: z.string().optional(), // Who performed the verification
+  verificationDate: z.string().optional(), // When verification was performed
+});
+
 // Workflow Operations Schema - Role transitions and delegation management
 export const WorkflowOperationsSchema = z.object({
   operation: z.enum(['delegate', 'complete', 'escalate', 'transition']),
@@ -29,7 +46,9 @@ export const WorkflowOperationsSchema = z.object({
     .object({
       summary: z.string(),
       filesModified: z.array(z.string()).optional(),
-      acceptanceCriteriaVerification: z.record(z.any()).optional(),
+      acceptanceCriteriaVerification: z
+        .record(AcceptanceCriteriaVerificationSchema)
+        .optional(), // ✅ STRUCTURED: Acceptance criteria verification with detailed tracking
     })
     .optional(),
 

@@ -11,8 +11,10 @@ import { WorkflowBootstrapMcpService } from './mcp-operations/workflow-bootstrap
 
 // Services
 import { WorkflowGuidanceService } from './services/workflow-guidance.service';
+import { RequiredInputExtractorService } from './services/required-input-extractor.service';
+import { SchemaDefinitionGeneratorService } from './services/schema-definition-generator.service';
+import { ProgressCalculatorService } from './services/progress-calculator.service';
 import { StepExecutionService } from './services/step-execution.service';
-import { StepExecutionCoreService } from './services/step-execution-core.service';
 import { StepGuidanceService } from './services/step-guidance.service';
 import { StepProgressTrackerService } from './services/step-progress-tracker.service';
 import { StepQueryService } from './services/step-query.service';
@@ -24,14 +26,8 @@ import { WorkflowBootstrapService } from './services/workflow-bootstrap.service'
 import { CoreServiceOrchestrator } from './services/core-service-orchestrator.service';
 
 import { ExecutionAnalyticsService } from './services/execution-analytics.service';
-// Utils
-import {
-  EnvelopeBuilderService,
-  RequiredInputExtractorService,
-  ActionGuidanceGeneratorService,
-} from '../../utils/envelope-builder';
-import { ValidationContextBuilderService } from '../../utils/envelope-builder/validation-context-builder.service';
-import { ProgressCalculatorService } from '../../utils/envelope-builder/progress-calculator.service';
+import { McpOperationExecutionMcpService } from './mcp-operations/mcp-operation-execution-mcp.service';
+// Utils - Legacy services removed
 
 @Module({
   imports: [CoreWorkflowModule],
@@ -47,8 +43,10 @@ import { ProgressCalculatorService } from '../../utils/envelope-builder/progress
 
     // Core Services
     WorkflowGuidanceService,
+    RequiredInputExtractorService,
+    SchemaDefinitionGeneratorService,
+    ProgressCalculatorService,
     StepExecutionService,
-    StepExecutionCoreService,
     StepGuidanceService,
     StepProgressTrackerService,
     StepQueryService,
@@ -59,13 +57,7 @@ import { ProgressCalculatorService } from '../../utils/envelope-builder/progress
     WorkflowBootstrapService,
     CoreServiceOrchestrator,
     ExecutionAnalyticsService,
-
-    // Utils
-    EnvelopeBuilderService,
-    RequiredInputExtractorService,
-    ActionGuidanceGeneratorService,
-    ProgressCalculatorService,
-    ValidationContextBuilderService,
+    McpOperationExecutionMcpService,
   ],
   exports: [
     // MCP Operations
@@ -74,11 +66,12 @@ import { ProgressCalculatorService } from '../../utils/envelope-builder/progress
     RoleTransitionMcpService,
     WorkflowExecutionMcpService,
     WorkflowBootstrapMcpService,
+    McpOperationExecutionMcpService,
 
     // Core Services
     WorkflowGuidanceService,
+    SchemaDefinitionGeneratorService,
     StepExecutionService,
-    StepExecutionCoreService,
     StepGuidanceService,
     StepProgressTrackerService,
     StepQueryService,
@@ -87,8 +80,9 @@ import { ProgressCalculatorService } from '../../utils/envelope-builder/progress
     WorkflowExecutionOperationsService,
     ExecutionDataEnricherService,
     WorkflowBootstrapService,
-    CoreServiceOrchestrator,
     ExecutionAnalyticsService,
+
+    // Note: CoreServiceOrchestrator not exported - internal use only by MCP operation execution service
   ],
 })
 export class WorkflowRulesModule {}

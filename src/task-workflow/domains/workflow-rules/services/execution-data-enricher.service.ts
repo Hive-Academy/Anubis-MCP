@@ -1,16 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { WorkflowExecutionWithRelations } from './workflow-execution.service';
-import { StepExecutionService } from './step-execution.service';
+import { PrismaService } from '../../../../prisma/prisma.service';
+import { getErrorMessage } from '../utils/type-safety.utils';
+import { ExecutionDataUtils } from '../utils/execution-data.utils';
 import { RoleTransitionService } from './role-transition.service';
+import { StepExecutionService } from './step-execution.service';
+import { WorkflowExecutionWithRelations } from './workflow-execution.service';
 import { WorkflowGuidanceService } from './workflow-guidance.service';
 import {
-  safePropertyAccess,
-  getErrorMessage,
-} from '../utils/type-safety.utils';
-import { PrismaService } from '../../../../prisma/prisma.service';
+  ConfigurableService,
+  BaseServiceConfig,
+} from '../utils/configurable-service.base';
 
 // Configuration interfaces to eliminate hardcoding
-export interface DataEnricherConfig {
+export interface DataEnricherConfig extends BaseServiceConfig {
   defaults: {
     projectPath: string;
     fallbackRecommendations: string[];
@@ -53,6 +55,11 @@ export interface ProgressMetrics {
   estimatedCompletion: string | null;
 }
 
+export interface ProgressOverview {
+  averageProgress: number;
+  totalActive: number;
+}
+
 export interface EnrichedExecutionData {
   execution: WorkflowExecutionWithRelations;
   nextSteps: NextStep[];
@@ -67,11 +74,11 @@ export interface EnrichedExecutionData {
  * Follows Single Responsibility Principle - only handles data enrichment.
  */
 @Injectable()
-export class ExecutionDataEnricherService {
+export class ExecutionDataEnricherService extends ConfigurableService<DataEnricherConfig> {
   private readonly logger = new Logger(ExecutionDataEnricherService.name);
 
   // Configuration with sensible defaults
-  private readonly config: DataEnricherConfig = {
+  protected readonly defaultConfig: DataEnricherConfig = {
     defaults: {
       projectPath: process.cwd(),
       fallbackRecommendations: [
@@ -115,33 +122,14 @@ export class ExecutionDataEnricherService {
     private readonly roleTransition: RoleTransitionService,
     private readonly workflowGuidance: WorkflowGuidanceService,
     private readonly prisma: PrismaService,
-  ) {}
-
-  /**
-   * Update data enricher configuration
-   */
-  updateConfig(config: Partial<DataEnricherConfig>): void {
-    if (config.defaults) {
-      Object.assign(this.config.defaults, config.defaults);
-    }
-    if (config.fallbackSteps) {
-      Object.assign(this.config.fallbackSteps, config.fallbackSteps);
-    }
-    if (config.performance) {
-      Object.assign(this.config.performance, config.performance);
-    }
-    this.logger.log('Data enricher configuration updated');
+  ) {
+    super();
+    this.initializeConfig();
   }
 
-  /**
-   * Get current configuration
-   */
-  getConfig(): DataEnricherConfig {
-    return {
-      defaults: { ...this.config.defaults },
-      fallbackSteps: JSON.parse(JSON.stringify(this.config.fallbackSteps)),
-      performance: { ...this.config.performance },
-    };
+  // Optional: Override configuration change hook
+  protected onConfigUpdate(): void {
+    this.logger.log('Data enricher configuration updated');
   }
 
   /**
@@ -180,26 +168,28 @@ export class ExecutionDataEnricherService {
         this.logger.warn(`Execution not found: ${executionId}`);
         return [
           {
-            name: this.config.fallbackSteps.executionNotFound.name,
+            name: this.getConfigValue('fallbackSteps').executionNotFound.name,
             status: 'ready',
             description:
-              this.config.fallbackSteps.executionNotFound.description,
+              this.getConfigValue('fallbackSteps').executionNotFound
+                .description,
           },
         ];
       }
 
       // Get the next available step for the current role
       const nextStep = await this.stepExecution.getNextAvailableStep(
+        Number(execution.taskId),
         execution.currentRoleId,
-        String(execution.taskId),
       );
 
       if (!nextStep) {
         return [
           {
-            name: this.config.fallbackSteps.noNextStep.name,
+            name: this.getConfigValue('fallbackSteps').noNextStep.name,
             status: 'ready',
-            description: this.config.fallbackSteps.noNextStep.description,
+            description:
+              this.getConfigValue('fallbackSteps').noNextStep.description,
           },
         ];
       }
@@ -221,50 +211,19 @@ export class ExecutionDataEnricherService {
           name: nextStep.name,
           status: stepStatus,
           description:
-            nextStep.description || `Execute ${nextStep.displayName}`,
+            nextStep.description || `Execute ${nextStep.description}`,
         },
       ];
     } catch (error) {
       this.logger.warn('Failed to get next steps:', getErrorMessage(error));
       return [
         {
-          name: this.config.fallbackSteps.errorFallback.name,
+          name: this.getConfigValue('fallbackSteps').errorFallback.name,
           status: 'ready',
-          description: this.config.fallbackSteps.errorFallback.description,
+          description:
+            this.getConfigValue('fallbackSteps').errorFallback.description,
         },
       ];
-    }
-  }
-
-  /**
-   * Get role-specific recommendations
-   */
-  async getRoleRecommendations(
-    roleName: string,
-    taskId: number,
-  ): Promise<string[]> {
-    try {
-      const guidance = await this.workflowGuidance.getWorkflowGuidance(
-        roleName,
-        {
-          taskId,
-          roleId: roleName,
-        },
-      );
-
-      const nextActions = guidance.nextActions || [];
-      return nextActions.map((action: { name: string }) =>
-        safePropertyAccess(action, 'name', 'Unknown action'),
-      );
-    } catch (error) {
-      this.logger.warn(
-        'Failed to get role recommendations:',
-        getErrorMessage(error),
-      );
-      return this.config.defaults.fallbackRecommendations.slice(
-        0,
-        this.config.performance.maxRecommendations,
-      );
     }
   }
 
@@ -275,15 +234,8 @@ export class ExecutionDataEnricherService {
     execution: WorkflowExecutionWithRelations,
   ): Promise<unknown[]> {
     try {
-      const context = {
-        taskId: execution.taskId,
-        roleId: execution.currentRoleId,
-        projectPath: this.config.defaults.projectPath,
-      };
-
       return await this.roleTransition.getAvailableTransitions(
         execution.currentRoleId,
-        context,
       );
     } catch (error) {
       this.logger.warn(
@@ -300,42 +252,142 @@ export class ExecutionDataEnricherService {
   calculateProgressMetrics(
     execution: WorkflowExecutionWithRelations,
   ): ProgressMetrics {
-    const percentage = this.safeGetNumber(execution, 'progressPercentage', 0);
-    const stepsCompleted = this.safeGetNumber(execution, 'stepsCompleted', 0);
-    const totalSteps = this.safeGetNumber(execution, 'totalSteps', 0);
+    const percentage = ExecutionDataUtils.safeGetNumber(
+      execution,
+      'progressPercentage',
+      0,
+    );
+    const stepsCompleted = ExecutionDataUtils.safeGetNumber(
+      execution,
+      'stepsCompleted',
+      0,
+    );
+    const totalSteps = ExecutionDataUtils.safeGetNumber(
+      execution,
+      'totalSteps',
+      0,
+    );
 
     return {
       percentage,
       stepsCompleted,
       totalSteps,
-      estimatedCompletion: this.estimateCompletion(totalSteps, stepsCompleted),
+      estimatedCompletion: ExecutionDataUtils.formatTimeEstimate(
+        totalSteps,
+        stepsCompleted,
+      ),
     };
   }
 
   /**
-   * Estimate completion time
+   * CENTRALIZED PROGRESS CALCULATIONS
+   *
+   * All progress calculation logic centralized here for DRY compliance.
+   * ExecutionAnalyticsService will consume these enriched calculations.
    */
-  private estimateCompletion(
-    totalSteps: number,
-    stepsCompleted: number,
-  ): string | null {
-    if (!totalSteps || totalSteps === 0) return null;
 
-    const remaining = totalSteps - stepsCompleted;
-    return remaining > 0
-      ? `${remaining} ${this.config.defaults.completionMessages.stepsRemaining}`
-      : this.config.defaults.completionMessages.nearCompletion;
+  /**
+   * Calculate overall progress using centralized utility (DRY compliance)
+   *
+   * DEPENDENCY REDUCTION: Now uses ExecutionDataUtils.calculateOverallProgress
+   * to maintain consistency with ExecutionAnalyticsService and eliminate duplication.
+   */
+  calculateOverallProgress(
+    executions: WorkflowExecutionWithRelations[],
+  ): ProgressOverview {
+    return ExecutionDataUtils.calculateOverallProgress(
+      executions,
+      (exec) => ExecutionDataUtils.safeGetNumber(exec, 'progressPercentage', 0),
+      0,
+    );
   }
 
   /**
-   * Safely get number property from execution object
+   * Calculate enhanced progress metrics with additional context
    */
-  private safeGetNumber(
+  calculateEnhancedProgressMetrics(
     execution: WorkflowExecutionWithRelations,
-    key: keyof WorkflowExecutionWithRelations,
-    fallback: number,
-  ): number {
-    const value = execution[key];
-    return typeof value === 'number' ? value : fallback;
+    options: {
+      includeEstimation?: boolean;
+      roundingPrecision?: number;
+    } = {},
+  ): ProgressMetrics & {
+    progressPhase: 'starting' | 'in-progress' | 'near-completion' | 'completed';
+    efficiency: number;
+  } {
+    const basicMetrics = this.calculateProgressMetrics(execution);
+    const { includeEstimation = true, roundingPrecision = 0 } = options;
+
+    // Determine progress phase
+    let progressPhase:
+      | 'starting'
+      | 'in-progress'
+      | 'near-completion'
+      | 'completed';
+    if (basicMetrics.percentage >= 100) {
+      progressPhase = 'completed';
+    } else if (basicMetrics.percentage >= 80) {
+      progressPhase = 'near-completion';
+    } else if (basicMetrics.percentage > 10) {
+      progressPhase = 'in-progress';
+    } else {
+      progressPhase = 'starting';
+    }
+
+    // Calculate efficiency (steps completed vs expected based on time)
+    const startedAt = ExecutionDataUtils.safeGetDate(execution, 'startedAt');
+    const now = new Date();
+    const hoursElapsed =
+      (now.getTime() - startedAt.getTime()) / (1000 * 60 * 60);
+    const expectedStepsPerHour = 2; // Configurable assumption
+    const expectedSteps = Math.max(1, hoursElapsed * expectedStepsPerHour);
+    const efficiency = ExecutionDataUtils.calculatePercentage(
+      basicMetrics.stepsCompleted,
+      expectedSteps,
+      roundingPrecision,
+    );
+
+    return {
+      ...basicMetrics,
+      percentage: ExecutionDataUtils.roundProgress(
+        basicMetrics.percentage,
+        roundingPrecision,
+      ),
+      progressPhase,
+      efficiency: Math.min(efficiency, 200), // Cap at 200% efficiency
+      estimatedCompletion: includeEstimation
+        ? basicMetrics.estimatedCompletion
+        : null,
+    };
+  }
+
+  /**
+   * Batch calculate progress metrics for multiple executions
+   */
+  batchCalculateProgressMetrics(
+    executions: WorkflowExecutionWithRelations[],
+  ): Map<string, ProgressMetrics> {
+    const results = new Map<string, ProgressMetrics>();
+
+    executions.forEach((execution) => {
+      try {
+        const metrics = this.calculateProgressMetrics(execution);
+        results.set(execution.id, metrics);
+      } catch (error) {
+        this.logger.warn(
+          `Failed to calculate progress for execution ${execution.id}:`,
+          getErrorMessage(error),
+        );
+        // Set fallback metrics
+        results.set(execution.id, {
+          percentage: 0,
+          stepsCompleted: 0,
+          totalSteps: 0,
+          estimatedCompletion: null,
+        });
+      }
+    });
+
+    return results;
   }
 }

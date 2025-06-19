@@ -1,9 +1,19 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { WorkflowExecutionWithRelations } from './workflow-execution.service';
-import { getErrorMessage } from '../utils/type-safety.utils';
+import { ExecutionDataUtils } from '../utils/execution-data.utils';
+import {
+  ConfigurableService,
+  BaseServiceConfig,
+} from '../utils/configurable-service.base';
+
+// Define ProgressOverview interface locally to remove dependency
+export interface ProgressOverview {
+  averageProgress: number;
+  totalActive: number;
+}
 
 // Configuration interface to eliminate hardcoding
-export interface ExecutionAnalyticsConfig {
+export interface ExecutionAnalyticsConfig extends BaseServiceConfig {
   defaults: {
     executionMode: string;
     roleId: string;
@@ -41,23 +51,21 @@ export interface QualityMetrics {
   executionMode: string;
 }
 
-export interface ProgressOverview {
-  averageProgress: number;
-  totalActive: number;
-}
-
 /**
  * Execution Analytics Service
  *
- * Focused service for execution analytics, summaries, and calculations.
- * Follows Single Responsibility Principle - only handles analytics.
+ * Focused service for execution analytics, summaries, and historical analysis.
+ * Follows Single Responsibility Principle - only handles analytics and reporting.
+ *
+ * PROGRESS CALCULATIONS: Now consumes enriched data from ExecutionDataEnricherService
+ * instead of calculating progress independently (DRY principle compliance).
  */
 @Injectable()
-export class ExecutionAnalyticsService {
+export class ExecutionAnalyticsService extends ConfigurableService<ExecutionAnalyticsConfig> {
   private readonly logger = new Logger(ExecutionAnalyticsService.name);
 
   // Configuration with sensible defaults
-  private readonly config: ExecutionAnalyticsConfig = {
+  protected readonly defaultConfig: ExecutionAnalyticsConfig = {
     defaults: {
       executionMode: 'GUIDED',
       roleId: 'unknown',
@@ -88,44 +96,14 @@ export class ExecutionAnalyticsService {
     },
   };
 
-  /**
-   * Update analytics configuration
-   */
-  updateConfig(config: Partial<ExecutionAnalyticsConfig>): void {
-    if (config.defaults) {
-      Object.assign(this.config.defaults, config.defaults);
-    }
-    if (config.recommendations) {
-      Object.assign(this.config.recommendations, config.recommendations);
-    }
-    if (config.calculations) {
-      Object.assign(this.config.calculations, config.calculations);
-    }
-    if (config.performance) {
-      Object.assign(this.config.performance, config.performance);
-    }
-    this.logger.log('Execution analytics configuration updated');
+  constructor() {
+    super();
+    this.initializeConfig();
   }
 
-  /**
-   * Get current configuration
-   */
-  getConfig(): ExecutionAnalyticsConfig {
-    return {
-      defaults: { ...this.config.defaults },
-      recommendations: {
-        finalRecommendations: [
-          ...this.config.recommendations.finalRecommendations,
-        ],
-        maxRecommendations: this.config.recommendations.maxRecommendations,
-      },
-      calculations: {
-        progressRoundingPrecision:
-          this.config.calculations.progressRoundingPrecision,
-        durationFormat: { ...this.config.calculations.durationFormat },
-      },
-      performance: { ...this.config.performance },
-    };
+  // Optional: Override configuration change hook
+  protected onConfigUpdate(): void {
+    this.logger.log('Execution analytics configuration updated');
   }
 
   /**
@@ -134,17 +112,33 @@ export class ExecutionAnalyticsService {
   generateCompletionSummary(
     execution: WorkflowExecutionWithRelations,
   ): CompletionSummary {
-    const startedAt = this.safeGetDate(execution, 'startedAt');
-    const completedAt = this.safeGetDate(execution, 'completedAt');
-    const stepsCompleted = this.safeGetNumber(execution, 'stepsCompleted', 0);
-    const currentRoleId = this.safeGetString(
+    const startedAt = ExecutionDataUtils.safeGetDate(execution, 'startedAt');
+    const completedAt = ExecutionDataUtils.safeGetDate(
+      execution,
+      'completedAt',
+    );
+    const stepsCompleted = ExecutionDataUtils.safeGetNumber(
+      execution,
+      'stepsCompleted',
+      0,
+    );
+    const currentRoleId = ExecutionDataUtils.safeGetString(
       execution,
       'currentRoleId',
-      this.config.defaults.roleId,
+      this.getConfigValue('defaults').roleId,
     );
 
     return {
-      totalDuration: this.calculateDuration(startedAt, completedAt),
+      totalDuration: ExecutionDataUtils.calculateDuration(
+        startedAt,
+        completedAt,
+        {
+          showSeconds:
+            this.getConfigValue('calculations').durationFormat.showSeconds,
+          showDays: this.getConfigValue('calculations').durationFormat.showDays,
+          fallback: this.getConfigValue('defaults').duration,
+        },
+      ),
       stepsCompleted,
       finalRole: currentRoleId,
       qualityMetrics: this.extractQualityMetrics(execution),
@@ -157,16 +151,16 @@ export class ExecutionAnalyticsService {
   extractQualityMetrics(
     execution: WorkflowExecutionWithRelations,
   ): QualityMetrics {
-    const recoveryAttempts = this.safeGetNumber(
+    const recoveryAttempts = ExecutionDataUtils.safeGetNumber(
       execution,
       'recoveryAttempts',
-      this.config.defaults.recoveryAttempts,
+      this.getConfigValue('defaults').recoveryAttempts,
     );
     const lastError = execution.lastError;
-    const executionMode = this.safeGetString(
+    const executionMode = ExecutionDataUtils.safeGetString(
       execution,
       'executionMode',
-      this.config.defaults.executionMode,
+      this.getConfigValue('defaults').executionMode,
     );
 
     return {
@@ -182,116 +176,78 @@ export class ExecutionAnalyticsService {
   groupExecutionsByRole(
     executions: WorkflowExecutionWithRelations[],
   ): Record<string, number> {
-    return executions.reduce(
-      (acc: Record<string, number>, exec: WorkflowExecutionWithRelations) => {
-        const roleId = this.safeGetString(
+    return ExecutionDataUtils.groupBy(
+      executions,
+      (exec) =>
+        ExecutionDataUtils.safeGetString(
           exec,
           'currentRoleId',
-          this.config.defaults.roleId,
-        );
-        acc[roleId] = (acc[roleId] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>,
+          this.getConfigValue('defaults').roleId,
+        ),
+      this.getConfigValue('defaults').roleId,
     );
   }
 
   /**
-   * Calculate overall progress with type safety
+   * Calculate overall progress using centralized utility (DRY compliance)
+   *
+   * DEPENDENCY REDUCTION: Now uses ExecutionDataUtils.calculateOverallProgress
+   * instead of depending on ExecutionDataEnricherService, eliminating circular dependency.
    */
   calculateOverallProgress(
     executions: WorkflowExecutionWithRelations[],
   ): ProgressOverview {
-    const total = executions.length;
-    if (total === 0)
-      return {
-        averageProgress: this.config.defaults.progressPercentage,
-        totalActive: 0,
-      };
-
-    const averageProgress =
-      executions.reduce((sum: number, exec: WorkflowExecutionWithRelations) => {
-        const progress = this.safeGetNumber(
+    // Use centralized utility function to eliminate service dependency
+    return ExecutionDataUtils.calculateOverallProgress(
+      executions,
+      (exec) =>
+        ExecutionDataUtils.safeGetNumber(
           exec,
           'progressPercentage',
-          this.config.defaults.progressPercentage,
-        );
-        return sum + progress;
-      }, 0) / total;
-
-    return {
-      averageProgress: this.roundProgress(averageProgress),
-      totalActive: total,
-    };
+          this.getConfigValue('defaults').progressPercentage,
+        ),
+      this.getConfigValue('defaults').progressPercentage,
+    );
   }
 
   /**
-   * Calculate duration between dates
+   * Generate analytics report with enriched progress data
    */
-  calculateDuration(start: Date, end: Date): string {
-    try {
-      const diff = end.getTime() - start.getTime();
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      return `${hours}h ${minutes}m`;
-    } catch (error) {
-      this.logger.warn('Failed to calculate duration:', getErrorMessage(error));
-      return this.config.defaults.duration;
-    }
+  generateAnalyticsReport(executions: WorkflowExecutionWithRelations[]): {
+    progressOverview: ProgressOverview;
+    executionSummaries: CompletionSummary[];
+    roleDistribution: Record<string, number>;
+    recommendations: string[];
+  } {
+    // Use enriched progress calculations
+    const progressOverview = this.calculateOverallProgress(executions);
+
+    // Generate completion summaries for each execution
+    const executionSummaries = executions.map((exec) =>
+      this.generateCompletionSummary(exec),
+    );
+
+    // Analyze role distribution
+    const roleDistribution = this.groupExecutionsByRole(executions);
+
+    // Get final recommendations
+    const recommendations = this.getFinalRecommendations();
+
+    return {
+      progressOverview,
+      executionSummaries,
+      roleDistribution,
+      recommendations,
+    };
   }
 
   /**
    * Get final recommendations for completed executions
    */
   getFinalRecommendations(): string[] {
-    return this.config.recommendations.finalRecommendations.slice(
+    return this.getConfigValue('recommendations').finalRecommendations.slice(
       0,
-      this.config.recommendations.maxRecommendations,
+      this.getConfigValue('recommendations').maxRecommendations,
     );
-  }
-
-  /**
-   * Round progress percentage based on configuration
-   */
-  private roundProgress(progress: number): number {
-    const precision = this.config.calculations.progressRoundingPrecision;
-    return (
-      Math.round(progress * Math.pow(10, precision)) / Math.pow(10, precision)
-    );
-  }
-
-  /**
-   * Safely get number property from execution object
-   */
-  private safeGetNumber(
-    execution: WorkflowExecutionWithRelations,
-    key: keyof WorkflowExecutionWithRelations,
-    fallback: number,
-  ): number {
-    const value = execution[key];
-    return typeof value === 'number' ? value : fallback;
-  }
-
-  /**
-   * Safely get string property from execution object
-   */
-  private safeGetString(
-    execution: WorkflowExecutionWithRelations,
-    key: keyof WorkflowExecutionWithRelations,
-    fallback: string,
-  ): string {
-    const value = execution[key];
-    return typeof value === 'string' ? value : fallback;
-  }
-
-  /**
-   * Safely get date property from execution object
-   */
-  private safeGetDate(
-    execution: WorkflowExecutionWithRelations,
-    key: keyof WorkflowExecutionWithRelations,
-  ): Date {
-    const value = execution[key];
-    return value instanceof Date ? value : new Date();
   }
 }

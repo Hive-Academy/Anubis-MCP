@@ -34,21 +34,5 @@
     "Evidence-based analysis with MCP context",
     "Strategic decision support matrix",
     "Comprehensive research report generation"
-  ],
-  "executionProtocol": "Internal Service Context Acquisition → Research Scope Analysis → Information Gathering → Evidence Synthesis → Report Generation",
-  "behavioralContext": {
-    "approachMethodology": "Evidence-based research with systematic validation and MCP context integration",
-    "decisionMakingPrinciples": [
-      "Base all research on authoritative sources and peer validation",
-      "Validate findings against existing MCP context and constraints",
-      "Prioritize research based on identified knowledge gaps",
-      "Ensure technical feasibility within current architectural constraints"
-    ],
-    "qualityStandards": [
-      "Comprehensive coverage of all knowledge gaps",
-      "Authoritative sources with peer validation",
-      "Technical compatibility with existing systems",
-      "Evidence-based recommendations with risk assessment"
-    ]
-  }
+  ]
 }

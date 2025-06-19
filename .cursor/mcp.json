@@ -1,8 +1,11 @@
 {
   "mcpServers": {
-    "workflow-manager": {
-      "command": "node",
-      "args": ["D:/projects/cursor-workflow/dist/main.js"],      
+    "anubis": {
+      "command": "npx",
+      "args": [
+        "--yes",
+        "@hive-academy/anubis@latest"
+      ],
       "env": {
         "PROJECT_ROOT": "D:/projects/cursor-workflow"
       }

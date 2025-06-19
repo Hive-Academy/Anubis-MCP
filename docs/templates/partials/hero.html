@@ -1,0 +1,109 @@
+<!-- Hero Section -->
+<section
+  class="min-h-screen tech-gradient flex items-center justify-center relative overflow-hidden"
+>
+  <!-- Background Animation -->
+  <div class="absolute inset-0 opacity-10">
+    <div
+      class="floating absolute top-20 left-10 w-64 h-64 rounded-full blur-3xl"
+      style="background-color: var(--honey-amber)"
+    ></div>
+    <div
+      class="floating absolute bottom-20 right-10 w-64 h-64 rounded-full blur-3xl"
+      style="background-color: var(--electric-blue); animation-delay: -3s"
+    ></div>
+    <div
+      class="floating absolute top-1/2 left-1/2 w-64 h-64 rounded-full blur-3xl"
+      style="background-color: var(--mint-green); animation-delay: -1.5s"
+    ></div>
+  </div>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+    <div class="hero-content">
+      <!-- Badge -->
+      <div
+        class="inline-flex items-center px-4 py-2 rounded-full mb-8"
+        style="
+          background-color: rgba(245, 166, 35, 0.2);
+          border: 1px solid rgba(245, 166, 35, 0.3);
+        "
+      >
+        <i
+          class="fas fa-check-circle mr-2"
+          style="color: var(--mint-green)"
+        ></i>
+        <span class="text-sm font-medium">MCP Protocol Compliant</span>
+      </div>
+
+      <!-- Main Headline -->
+      <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+        <span class="gradient-text">Divine Guidance</span><br />
+        for AI Workflows
+      </h1>
+
+      <!-- Subheadline -->
+      <p class="text-xl md:text-2xl text-slate-300 mb-8 max-w-4xl mx-auto">
+        Anubis guides AI agents through quality-driven workflows with
+        <span class="text-blue-400 font-semibold"
+          >Egyptian-inspired wisdom</span
+        >
+        and
+        <span class="text-green-400 font-semibold">divine precision</span>.
+      </p>
+
+      <!-- Stats -->
+      <div
+        class="flex flex-wrap justify-center gap-8 mb-12 text-sm md:text-base"
+      >
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-rocket text-blue-400"></i>
+          <span><strong>30-50%</strong> Faster Development</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-shield-alt text-green-400"></i>
+          <span><strong>40-60%</strong> Fewer Defects</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-code text-purple-400"></i>
+          <span><strong>25-40%</strong> Higher Productivity</span>
+        </div>
+      </div>
+
+      <!-- CTA Buttons -->
+      <div class="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+        <button
+          class="btn-primary text-lg px-8 py-4 glow transform hover:scale-105"
+        >
+          <i class="fas fa-play mr-2"></i>Try Now with NPX
+        </button>
+        <a
+          href="https://github.com/Hive-Academy/Anubis-MCP"
+          class="btn-secondary text-lg px-8 py-4 transform hover:scale-105"
+        >
+          <i class="fab fa-github mr-2"></i>View on GitHub
+        </a>
+      </div>
+
+      <!-- Quick Install -->
+      <div class="code-block max-w-2xl mx-auto p-6">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-slate-400 text-sm">Quick Install</span>
+          <button
+            class="copy-btn text-slate-400 hover:text-white transition-colors"
+            onclick="copyToClipboard('npx -y @hive-academy/anubis')"
+          >
+            <i class="fas fa-copy"></i>
+          </button>
+        </div>
+        <code class="font-mono text-green-400"
+          >npx -y @hive-academy/anubis</code
+        >
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll Indicator -->
+  <div class="scroll-indicator">
+    <i class="fas fa-chevron-down text-slate-400 text-2xl"></i>
+  </div>
+</section>

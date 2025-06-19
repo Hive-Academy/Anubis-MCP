@@ -1,38 +1,10 @@
 // ===== WORKFLOW SYSTEM ENUMS =====
 // All enums used throughout the workflow system
 
-// Enhanced enums for workflow rules system
-enum RoleType {
-  WORKFLOW      // Standard workflow roles (boomerang, architect, etc.)
-  SPECIALIST    // Specialized roles (researcher, integration-engineer)
-  QUALITY_GATE  // Quality control roles (code-review)
-}
-
+// Streamlined enums for workflow rules system
 enum StepType {
-  VALIDATION    // Validate current state or requirements
-  ACTION        // Perform an action (git, file operations, etc.)
-  DECISION      // Make a decision based on context
-  DELEGATION    // Hand off to another role
-  ANALYSIS      // Analyze code, requirements, or context
-  REPORTING     // Generate reports or documentation
-}
-
-enum ConditionType {
-  CONTEXT_CHECK     // Check task or system context
-  FILE_EXISTS       // Check if files exist
-  TASK_STATUS       // Check task status or properties
-  GIT_STATUS        // Check git repository status
-  PREVIOUS_STEP_COMPLETED // Check if previous step was completed
-  CUSTOM_LOGIC      // Custom evaluation logic
-}
-
-enum ActionType {
-  COMMAND           // Execute shell command
-  MCP_CALL          // Call MCP tool
-  VALIDATION        // Validate something
-  REMINDER          // Show reminder to user
-  FILE_OPERATION    // File system operation
-  REPORT_GENERATION // Generate a report
+  ACTION        // Perform an action (git operations, file operations, MCP calls)
+  ANALYSIS      // Analyze or validate (codebase analysis, quality checks)
 }
 
 enum StepProgressStatus {
@@ -41,6 +13,12 @@ enum StepProgressStatus {
   COMPLETED
   SKIPPED
   FAILED
+}
+
+// 🆕 NEW: Step execution result for MCP-focused tracking
+enum StepExecutionResult {
+  SUCCESS
+  FAILURE
 }
 
 enum ProjectType {

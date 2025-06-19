@@ -2,32 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { WorkflowBootstrapService } from '../services/workflow-bootstrap.service';
-import { EnvelopeBuilderService } from '../../../utils/envelope-builder';
-import { shouldIncludeDebugInfo } from '../../../config/mcp-response.config';
 
-// Schema for bootstrap workflow input
+// Simplified schema - just basic execution setup
 const BootstrapWorkflowInputSchema = z.object({
-  taskName: z.string().min(1).max(200).describe('Name of the task to create'),
-  taskDescription: z
-    .string()
-    .optional()
-    .describe('Detailed description of the task'),
-  businessRequirements: z
-    .string()
-    .optional()
-    .describe('Business requirements for the task'),
-  technicalRequirements: z
-    .string()
-    .optional()
-    .describe('Technical requirements for the task'),
-  acceptanceCriteria: z
-    .array(z.string())
-    .optional()
-    .describe('List of acceptance criteria'),
-  priority: z
-    .enum(['Low', 'Medium', 'High', 'Critical'])
-    .optional()
-    .describe('Task priority level'),
   initialRole: z
     .enum([
       'boomerang',
@@ -36,16 +13,13 @@ const BootstrapWorkflowInputSchema = z.object({
       'senior-developer',
       'code-review',
     ])
+    .default('boomerang')
     .describe('Initial role to start the workflow with'),
   executionMode: z
     .enum(['GUIDED', 'AUTOMATED', 'HYBRID'])
-    .optional()
+    .default('GUIDED')
     .describe('Workflow execution mode'),
   projectPath: z.string().optional().describe('Project path for context'),
-  executionContext: z
-    .record(z.any())
-    .optional()
-    .describe('Additional execution context'),
 });
 
 type BootstrapWorkflowInputType = z.infer<typeof BootstrapWorkflowInputSchema>;
@@ -54,129 +28,96 @@ type BootstrapWorkflowInputType = z.infer<typeof BootstrapWorkflowInputSchema>;
 export class WorkflowBootstrapMcpService {
   private readonly logger = new Logger(WorkflowBootstrapMcpService.name);
 
-  constructor(
-    private readonly bootstrapService: WorkflowBootstrapService,
-    private readonly envelopeBuilder: EnvelopeBuilderService,
-  ) {}
+  constructor(private readonly bootstrapService: WorkflowBootstrapService) {}
 
   @Tool({
     name: 'bootstrap_workflow',
-    description: `Create a new workflow execution with placeholder task.
-
-Creates a minimal placeholder task and workflow execution pointing to the first database-driven step for the specified role. The real task will be created by the boomerang workflow after git setup and codebase analysis.
-
-Returns: Task ID, execution ID, and first step information for use with workflow guidance tools.`,
+    description: `Initializes a new workflow execution with boomerang role, starting from git setup through task creation and delegation.`,
     parameters:
       BootstrapWorkflowInputSchema as ZodSchema<BootstrapWorkflowInputType>,
   })
   async bootstrapWorkflow(input: BootstrapWorkflowInputType): Promise<any> {
     try {
-      this.logger.log(`Bootstrapping workflow: ${input.taskName}`);
+      this.logger.log(
+        `Starting workflow execution with role: ${input.initialRole}`,
+      );
 
-      // Validate input
-      const validation = this.bootstrapService.validateBootstrapInput(input);
-      if (!validation.valid) {
-        const errorEnvelope = {
-          success: false,
-          error: {
-            message: 'Bootstrap validation failed',
-            errors: validation.errors,
-          },
-        };
-
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: JSON.stringify(errorEnvelope, null, 2),
-            },
-          ],
-        };
-      }
-
-      // Bootstrap the workflow
+      // Bootstrap the workflow execution
       const result = await this.bootstrapService.bootstrapWorkflow(input);
 
       if (!result.success) {
-        const errorEnvelope = {
-          success: false,
-          error: {
-            message: result.message,
-          },
-        };
-
         return {
           content: [
             {
               type: 'text' as const,
-              text: JSON.stringify(errorEnvelope, null, 2),
+              text: JSON.stringify(
+                {
+                  success: false,
+                  error: {
+                    message: result.message,
+                  },
+                  timestamp: new Date().toISOString(),
+                },
+                null,
+                2,
+              ),
             },
           ],
         };
       }
 
-      // Build simple success envelope
-      const envelope = {
-        success: true,
-        message: result.message,
-        resources: {
-          taskId: result.resources.taskId,
-          executionId: result.resources.executionId,
-          firstStepId: result.resources.firstStepId,
-        },
-        currentStep: {
-          stepId: result.firstStep.id,
-          name: result.firstStep.name,
-          displayName: result.firstStep.displayName,
-        },
-        nextAction: 'get_workflow_guidance',
-      };
-
-      const response: {
-        content: Array<{ type: 'text'; text: string }>;
-      } = {
+      // Return streamlined response with essential data only
+      // Remove duplication of currentRole and currentStep (they're in resources)
+      return {
         content: [
           {
             type: 'text' as const,
-            text: JSON.stringify(envelope, null, 2),
+            text: JSON.stringify(
+              {
+                success: true,
+                message: result.message,
+                executionId: result.resources.executionId,
+                taskId: result.resources.taskId,
+                currentRole: {
+                  id: result.currentRole.id,
+                  name: result.currentRole.name,
+                  description: result.currentRole.description,
+                  capabilities: result.currentRole.capabilities,
+                  coreResponsibilities: result.currentRole.coreResponsibilities,
+                  keyCapabilities: result.currentRole.keyCapabilities,
+                },
+                currentStep: {
+                  id: result.currentStep.id,
+                  name: result.currentStep.name,
+                  description: result.currentStep.description,
+                },
+                timestamp: new Date().toISOString(),
+              },
+              null,
+              2,
+            ),
           },
         ],
       };
-
-      // Add debug data if requested
-      if (shouldIncludeDebugInfo()) {
-        response.content.push({
-          type: 'text' as const,
-          text: JSON.stringify(
-            {
-              debug: {
-                placeholderTask: result.placeholderTask,
-                firstStep: result.firstStep,
-                execution: result.workflowExecution,
-              },
-            },
-            null,
-            2,
-          ),
-        });
-      }
-
-      return response;
     } catch (error: any) {
       this.logger.error(`Bootstrap error: ${error.message}`, error);
-
-      const errorEnvelope = {
-        success: false,
-        error: {
-          message: error.message,
-        },
-      };
 
       return {
         content: [
           {
             type: 'text' as const,
-            text: JSON.stringify(errorEnvelope, null, 2),
+            text: JSON.stringify(
+              {
+                success: false,
+                error: {
+                  message: error.message,
+                  code: 'BOOTSTRAP_ERROR',
+                },
+                timestamp: new Date().toISOString(),
+              },
+              null,
+              2,
+            ),
           },
         ],
       };
