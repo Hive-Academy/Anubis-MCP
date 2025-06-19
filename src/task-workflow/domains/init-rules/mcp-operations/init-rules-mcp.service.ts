@@ -6,7 +6,7 @@ import { InitRulesService } from '../init-rules.service';
 // Schema definitions for MCP operations
 const InitRulesInputSchema = z.object({
   agentName: z
-    .enum(['cursor', 'copilot'])
+    .enum(['cursor', 'copilot', 'roocode', 'kilocode'])
     .describe('AI agent to deploy rules for (cursor or copilot)'),
   projectRoot: z
     .string()

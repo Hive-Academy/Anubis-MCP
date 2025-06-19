@@ -9,7 +9,7 @@ export interface AIAgentConfig {
   targetFileName: string;
   requiresFrontmatter: boolean;
   ensureDirectories: string[];
-  specialHandling?: 'roocode';
+  specialHandling?: 'roocode' | 'kilocode'; // Optional special handling for specific agents
 }
 
 @Injectable()
@@ -27,7 +27,7 @@ export class InitRulesService {
     },
     copilot: {
       name: 'GitHub Copilot',
-      sourceTemplate: 'workflow-protocol-xml.md',
+      sourceTemplate: 'workflow-protocol-function-calls.md',
       targetPath: '.github/chatmodes',
       targetFileName: '𓂀𓁢𓋹𝔸ℕ𝕌𝔹𝕀𝕊𓋹𓁢𓂀.chatmode.md',
       requiresFrontmatter: true,
@@ -41,6 +41,15 @@ export class InitRulesService {
       requiresFrontmatter: false, // XML file doesn't need frontmatter
       ensureDirectories: ['.roo', '.roo/rules-anubis'],
       specialHandling: 'roocode', // Add special flag
+    },
+    kilocode: {
+      name: 'KiloCode',
+      sourceTemplate: 'workflow-protocol-xml.md',
+      targetPath: '.kilocode/rules-anubis',
+      targetFileName: 'rules.md',
+      requiresFrontmatter: false, // XML file doesn't need frontmatter
+      ensureDirectories: ['.kilocode', '.kilocode/rules-anubis'],
+      specialHandling: 'kilocode', // Add special flag
     },
   };
 
@@ -97,6 +106,15 @@ export class InitRulesService {
           'custom-mode.json',
         );
         const targetJsonPath = path.join(projectRoot, '.roomodes');
+        await fs.copyFile(sourceJsonPath, targetJsonPath);
+      }
+
+      if (config.specialHandling === 'kilocode') {
+        const sourceJsonPath = path.join(
+          this.templatesPath,
+          'custom-mode.json',
+        );
+        const targetJsonPath = path.join(projectRoot, '.kilocodemodes');
         await fs.copyFile(sourceJsonPath, targetJsonPath);
       }
 
