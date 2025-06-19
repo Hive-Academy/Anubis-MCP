@@ -17,12 +17,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     { id: 'header-container', path: './templates/partials/header.html' },
     { id: 'hero-container', path: './templates/partials/hero.html' },
     {
-      id: 'revolutionary-concept-container',
-      path: './templates/partials/revolutionary-concept.html',
+      id: 'three-pillars-deep-dive-container',
+      path: './templates/partials/three-pillars-deep-dive.html',
     },
     {
-      id: 'problem-solution-container',
-      path: './templates/partials/problem-solution.html',
+      id: 'workflow-showcase-container',
+      path: './templates/partials/workflow-showcase.html',
     },
     {
       id: 'how-it-works-container',
@@ -52,3 +52,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 });
+
+// Global copy function
+window.copyToClipboard = function(text) {
+  navigator.clipboard.writeText(text.trim()).then(() => {
+    // You could add a toast notification here
+    console.log('Copied to clipboard!');
+  });
+};

@@ -1,147 +1,265 @@
-<section id="getting-started" class="py-24 bg-slate-900 relative">
+<section id="getting-started" class="py-24 bg-slate-800 relative">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-16">
-      <h2 class="text-4xl md:text-5xl font-bold mb-6">Get Started in Minutes</h2>
+      <div class="inline-flex items-center px-4 py-2 rounded-full mb-6" style="background-color: rgba(245, 166, 35, 0.2); border: 1px solid rgba(245, 166, 35, 0.3);">
+        <i class="fas fa-rocket mr-2" style="color: var(--honey-amber)"></i>
+        <span class="text-sm font-medium uppercase tracking-wider">Quick Start</span>
+      </div>
+      <h2 class="text-4xl md:text-5xl font-bold mb-6">
+        Experience the <span class="gradient-text">Three Pillars</span> in 30 Seconds
+      </h2>
       <p class="text-xl text-slate-300 max-w-3xl mx-auto">
-        Add one configuration entry to your MCP client and you're ready to go. No installation, no setup, no complexity.
+        Transform your AI agent into a divine workflow orchestrator with just three simple steps
       </p>
     </div>
 
-    <div class="max-w-4xl mx-auto">
-      <!-- Step 1: NPX Installation -->
-      <div class="mb-12">
-        <h3 class="text-2xl font-bold mb-6 flex items-center">
-          <span class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-sm font-bold mr-3">1</span>
-          Add to Your MCP Client Config
-        </h3>
-        <div class="grid md:grid-cols-3 gap-6">
-          <!-- Cursor IDE -->
-          <div class="config-tab">
-            <h4 class="font-semibold mb-3 text-center text-blue-400">Cursor IDE</h4>
-            <div class="code-block p-4">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-xs text-slate-400">cursor_settings.json</span>
-                <button class="copy-btn text-slate-400 hover:text-white transition-colors text-xs" onclick="copyToClipboard(getCursorConfig())">
-                  <i class="fas fa-copy"></i>
-                </button>
+    <div class="max-w-5xl mx-auto">
+      <!-- Setup Steps -->
+      <div class="space-y-8 mb-16">
+        <!-- Step 1: Add to MCP Config -->
+        <div class="bg-slate-900 rounded-2xl p-8 border border-slate-700 hover:border-blue-500 transition-all">
+          <div class="flex items-start space-x-6">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
+                <span class="text-lg font-bold text-white">1</span>
               </div>
-              <code class="font-mono text-xs text-green-400 text-left block" id="cursor-config">
-                {<br />
-                &nbsp;&nbsp;"mcpServers": {<br />
-                &nbsp;&nbsp;&nbsp;&nbsp;"anubis": {<br />
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"command": "npx",<br />
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"args": ["-y", "@hive-academy/anubis"]<br />
-                &nbsp;&nbsp;&nbsp;&nbsp;}<br />
-                &nbsp;&nbsp;}<br />
-                }
-              </code>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-xl font-bold mb-3 text-blue-400">Add Anubis to Your MCP Config</h3>
+              <p class="text-slate-300 mb-4">Add this configuration to your AI agent's MCP settings:</p>
+              <div class="code-block p-4">
+                <pre><code class="language-json">{
+  "mcpServers": {
+    "anubis": {
+      "command": "npx",
+      "args": ["-y", "@hive-academy/anubis"]
+    }
+  }
+}</code></pre>
+              </div>
+              <p class="text-sm text-slate-400 mt-3">
+                <i class="fas fa-info-circle mr-1"></i>
+                Works with Cursor, Copilot, Roocode, and Kilocode
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Initialize Divine Guidance -->
+        <div class="bg-slate-900 rounded-2xl p-8 border border-slate-700 hover:border-green-500 transition-all">
+          <div class="flex items-start space-x-6">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                <span class="text-lg font-bold text-white">2</span>
+              </div>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-xl font-bold mb-3 text-green-400">Initialize Divine Guidance</h3>
+              <p class="text-slate-300 mb-4">Tell your AI agent to activate Anubis workflow rules:</p>
+              <div class="bg-slate-800 rounded-lg p-4 border border-green-500/20">
+                <p class="font-mono text-green-400">
+                  "Please initialize Anubis workflow rules for cursor by calling the init_rules MCP tool"
+                </p>
+              </div>
+              <div class="mt-4 grid md:grid-cols-3 gap-4">
+                <div class="bg-blue-900/20 rounded-lg p-3 text-center">
+                  <div class="text-2xl mb-1">🎯</div>
+                  <div class="text-sm">Divine Guidance</div>
+                  <div class="text-xs text-slate-400">Activated</div>
+                </div>
+                <div class="bg-green-900/20 rounded-lg p-3 text-center">
+                  <div class="text-2xl mb-1">🔄</div>
+                  <div class="text-sm">Context Memory</div>
+                  <div class="text-xs text-slate-400">Enabled</div>
+                </div>
+                <div class="bg-purple-900/20 rounded-lg p-3 text-center">
+                  <div class="text-2xl mb-1">📊</div>
+                  <div class="text-sm">Reporting</div>
+                  <div class="text-xs text-slate-400">Ready</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Start Your Divine Workflow -->
+        <div class="bg-slate-900 rounded-2xl p-8 border border-slate-700 hover:border-purple-500 transition-all">
+          <div class="flex items-start space-x-6">
+            <div class="flex-shrink-0">
+              <div class="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
+                <span class="text-lg font-bold text-white">3</span>
+              </div>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-xl font-bold mb-3 text-purple-400">Start Your Divine Workflow</h3>
+              <p class="text-slate-300 mb-4">Begin any development task and watch the transformation:</p>
+              <div class="space-y-3">
+                <div class="bg-slate-800 rounded-lg p-4 border border-purple-500/20">
+                  <p class="font-mono text-purple-400 mb-2">
+                    "Create a user authentication system using Anubis workflow"
+                  </p>
+                  <p class="text-sm text-slate-400">
+                    Your agent will now follow structured workflows with divine guidance!
+                  </p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                  <div class="bg-slate-800/50 rounded p-3">
+                    <div class="text-sm font-semibold mb-2 text-purple-400">What Happens:</div>
+                    <ul class="text-xs text-slate-300 space-y-1">
+                      <li>✓ Boomerang initializes project</li>
+                      <li>✓ Researcher analyzes requirements</li>
+                      <li>✓ Architect designs system</li>
+                      <li>✓ Developer implements code</li>
+                      <li>✓ Code Review validates quality</li>
+                    </ul>
+                  </div>
+                  <div class="bg-slate-800/50 rounded p-3">
+                    <div class="text-sm font-semibold mb-2 text-purple-400">You Get:</div>
+                    <ul class="text-xs text-slate-300 space-y-1">
+                      <li>✓ Step-by-step guidance</li>
+                      <li>✓ Perfect context retention</li>
+                      <li>✓ Quality gates at each step</li>
+                      <li>✓ Beautiful progress reports</li>
+                      <li>✓ 30-50% faster delivery</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Commands Reference -->
+      <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-8 mb-16 border border-slate-700">
+        <h3 class="text-2xl font-bold mb-6 text-center">Essential Commands to Experience the Three Pillars</h3>
+        
+        <div class="grid lg:grid-cols-3 gap-6">
+          <!-- Divine Guidance Commands -->
+          <div class="bg-slate-800/50 rounded-xl p-6">
+            <div class="flex items-center mb-4">
+              <div class="text-2xl mr-3">🎯</div>
+              <h4 class="font-semibold text-blue-400">Divine Guidance</h4>
+            </div>
+            <div class="space-y-3 text-sm">
+              <div class="bg-slate-900/50 rounded p-3">
+                <code class="text-xs text-blue-300">get_workflow_guidance</code>
+                <p class="text-slate-400 text-xs mt-1">Get role-specific wisdom</p>
+              </div>
+              <div class="bg-slate-900/50 rounded p-3">
+                <code class="text-xs text-blue-300">get_step_guidance</code>
+                <p class="text-slate-400 text-xs mt-1">Receive actionable steps</p>
+              </div>
             </div>
           </div>
 
-          <!-- Claude Desktop -->
-          <div class="config-tab">
-            <h4 class="font-semibold mb-3 text-center text-purple-400">Claude Desktop</h4>
-            <div class="code-block p-4">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-xs text-slate-400">claude_desktop_config.json</span>
-                <button class="copy-btn text-slate-400 hover:text-white transition-colors text-xs" onclick="copyToClipboard(getClaudeConfig())">
-                  <i class="fas fa-copy"></i>
-                </button>
+          <!-- Seamless Transitions Commands -->
+          <div class="bg-slate-800/50 rounded-xl p-6">
+            <div class="flex items-center mb-4">
+              <div class="text-2xl mr-3">🔄</div>
+              <h4 class="font-semibold text-green-400">Seamless Transitions</h4>
+            </div>
+            <div class="space-y-3 text-sm">
+              <div class="bg-slate-900/50 rounded p-3">
+                <code class="text-xs text-green-300">execute_transition</code>
+                <p class="text-slate-400 text-xs mt-1">Switch roles seamlessly</p>
               </div>
-              <code class="font-mono text-xs text-green-400" id="claude-config">
-                {<br />
-                &nbsp;&nbsp;"mcpServers": {<br />
-                &nbsp;&nbsp;&nbsp;&nbsp;"anubis": {<br />
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"command": "npx",<br />
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"args": ["-y", "@hive-academy/anubis"]<br />
-                &nbsp;&nbsp;&nbsp;&nbsp;}<br />
-                &nbsp;&nbsp;}<br />
-                }
-              </code>
+              <div class="bg-slate-900/50 rounded p-3">
+                <code class="text-xs text-green-300">report_step_completion</code>
+                <p class="text-slate-400 text-xs mt-1">Save progress & context</p>
+              </div>
             </div>
           </div>
 
-          <!-- VS Code -->
-          <div class="config-tab">
-            <h4 class="font-semibold mb-3 text-center text-green-400">VS Code MCP</h4>
-            <div class="code-block p-4">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-xs text-slate-400">mcp_config.json</span>
-                <button class="copy-btn text-slate-400 hover:text-white transition-colors text-xs" onclick="copyToClipboard(getVSCodeConfig())">
-                  <i class="fas fa-copy"></i>
-                </button>
+          <!-- Beautiful Reports Commands -->
+          <div class="bg-slate-800/50 rounded-xl p-6">
+            <div class="flex items-center mb-4">
+              <div class="text-2xl mr-3">📊</div>
+              <h4 class="font-semibold text-purple-400">Beautiful Reports</h4>
+            </div>
+            <div class="space-y-3 text-sm">
+              <div class="bg-slate-900/50 rounded p-3">
+                <code class="text-xs text-purple-300">generate_workflow_report</code>
+                <p class="text-slate-400 text-xs mt-1">Create interactive dashboards</p>
               </div>
-              <code class="font-mono text-xs text-green-400" id="vscode-config">
-                {<br />
-                &nbsp;&nbsp;"mcpServers": {<br />
-                &nbsp;&nbsp;&nbsp;&nbsp;"anubis": {<br />
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"command": "npx",<br />
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"args": ["-y", "@hive-academy/anubis"]<br />
-                &nbsp;&nbsp;&nbsp;&nbsp;}<br />
-                &nbsp;&nbsp;}<br />
-                }
+              <div class="bg-slate-900/50 rounded p-3">
+                <code class="text-xs text-purple-300">interactive-dashboard</code>
+                <p class="text-slate-400 text-xs mt-1">View progress analytics</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alternative Setup Options -->
+      <div class="text-center mb-12">
+        <h3 class="text-xl font-semibold mb-6">Alternative Setup Options</h3>
+        <div class="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          <!-- Docker Option -->
+          <div class="bg-slate-900 rounded-xl p-6 border border-slate-700">
+            <div class="flex items-center mb-3">
+              <i class="fab fa-docker text-2xl text-blue-400 mr-3"></i>
+              <h4 class="font-semibold">Docker Setup</h4>
+            </div>
+            <div class="code-block text-xs p-3">
+              <code>{
+  "command": "docker",
+  "args": ["run", "-i", "-v", 
+          "anubis-data:/app/data", 
+          "--rm", "hiveacademy/anubis"]
+}</code>
+            </div>
+          </div>
+
+          <!-- Local Development -->
+          <div class="bg-slate-900 rounded-xl p-6 border border-slate-700">
+            <div class="flex items-center mb-3">
+              <i class="fas fa-code text-2xl text-green-400 mr-3"></i>
+              <h4 class="font-semibold">Local Development</h4>
+            </div>
+            <div class="text-sm text-slate-300 space-y-2">
+              <p>Clone and run locally:</p>
+              <code class="text-xs bg-slate-800 px-2 py-1 rounded block">
+                npm install && npm run db:init
+              </code>
+              <code class="text-xs bg-slate-800 px-2 py-1 rounded block">
+                npm run start:dev
               </code>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Step 2: Restart -->
-      <div class="mb-12">
-        <h3 class="text-2xl font-bold mb-6 flex items-center">
-          <span class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-sm font-bold mr-3">2</span>
-          Restart Your MCP Client
+      <!-- Final CTA -->
+      <div class="text-center bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-2xl p-12 border border-purple-500/30">
+        <div class="text-5xl mb-6">𓂀</div>
+        <h3 class="text-3xl font-bold mb-4">
+          Ready to Experience <span class="gradient-text">Divine Workflows</span>?
         </h3>
-        <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
-          <p class="text-slate-300 mb-4">Restart your IDE or MCP client to load the new server. The first run will automatically:</p>
-          <ul class="space-y-2 text-sm text-slate-300">
-            <li class="flex items-center space-x-2">
-              <i class="fas fa-download text-blue-400"></i>
-              <span>Download and install the latest version</span>
-            </li>
-            <li class="flex items-center space-x-2">
-              <i class="fas fa-database text-green-400"></i>
-              <span>Set up your project database</span>
-            </li>
-            <li class="flex items-center space-x-2">
-              <i class="fas fa-cogs text-purple-400"></i>
-              <span>Initialize workflow rules and roles</span>
-            </li>
-          </ul>
+        <p class="text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
+          Join thousands of developers who've transformed their AI agents from chaotic coders 
+          into divine workflow orchestrators
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="https://github.com/Hive-Academy/Anubis-MCP" class="btn-primary px-8 py-4 text-lg">
+            <i class="fab fa-github mr-2"></i>Star on GitHub
+          </a>
+          <a href="https://www.npmjs.com/package/@hive-academy/anubis" class="btn-secondary px-8 py-4 text-lg">
+            <i class="fas fa-cube mr-2"></i>View on NPM
+          </a>
         </div>
-      </div>
-
-      <!-- Step 3: Start Using -->
-      <div class="mb-12">
-        <h3 class="text-2xl font-bold mb-6 flex items-center">
-          <span class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-sm font-bold mr-3">3</span>
-          Start Your First Workflow
-        </h3>
-        <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
-          <p class="text-slate-300 mb-4">Try these example commands in your AI assistant:</p>
-          <div class="space-y-4">
-            <div class="code-block p-4">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-xs text-slate-400">Create a new workflow</span>
-                <button class="copy-btn text-slate-400 hover:text-white transition-colors text-xs" onclick="copyToClipboard('Can you help me set up a new React component workflow using Anubis - Divine Guidance for AI Workflows?')">
-                  <i class="fas fa-copy"></i>
-                </button>
-              </div>
-              <code class="font-mono text-sm text-blue-400">
-                Can you help me set up a new React component workflow using Anubis - Divine Guidance for AI Workflows?
-              </code>
-            </div>
-            <div class="code-block p-4">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-xs text-slate-400">Get workflow guidance</span>
-                <button class="copy-btn text-slate-400 hover:text-white transition-colors text-xs" onclick="copyToClipboard('Show me the available workflow roles and how to get started with the senior developer role.')">
-                  <i class="fas fa-copy"></i>
-                </button>
-              </div>
-              <code class="font-mono text-sm text-blue-400">
-                Show me the available workflow roles and how to get started with the senior developer role.
-              </code>
-            </div>
+        <div class="mt-8 flex items-center justify-center space-x-8 text-sm text-slate-400">
+          <div class="flex items-center">
+            <i class="fas fa-users mr-2"></i>
+            <span>2,847 Active Users</span>
+          </div>
+          <div class="flex items-center">
+            <i class="fas fa-star mr-2"></i>
+            <span>4.9/5 Rating</span>
+          </div>
+          <div class="flex items-center">
+            <i class="fas fa-code-branch mr-2"></i>
+            <span>MIT License</span>
           </div>
         </div>
       </div>

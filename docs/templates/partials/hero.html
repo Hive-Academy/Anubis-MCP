@@ -1,104 +1,79 @@
-<!-- Hero Section -->
-<section
-  class="min-h-screen tech-gradient flex items-center justify-center relative overflow-hidden"
->
+<!-- Hero Section with Three Pillars Focus -->
+<section class="min-h-screen tech-gradient flex items-center justify-center relative overflow-hidden">
   <!-- Background Animation -->
   <div class="absolute inset-0 opacity-10">
-    <div
-      class="floating absolute top-20 left-10 w-64 h-64 rounded-full blur-3xl"
-      style="background-color: var(--honey-amber)"
-    ></div>
-    <div
-      class="floating absolute bottom-20 right-10 w-64 h-64 rounded-full blur-3xl"
-      style="background-color: var(--electric-blue); animation-delay: -3s"
-    ></div>
-    <div
-      class="floating absolute top-1/2 left-1/2 w-64 h-64 rounded-full blur-3xl"
-      style="background-color: var(--mint-green); animation-delay: -1.5s"
-    ></div>
+    <div class="floating absolute top-20 left-10 w-64 h-64 rounded-full blur-3xl" style="background-color: var(--honey-amber)"></div>
+    <div class="floating absolute bottom-20 right-10 w-64 h-64 rounded-full blur-3xl" style="background-color: var(--electric-blue); animation-delay: -3s"></div>
+    <div class="floating absolute top-1/2 left-1/2 w-64 h-64 rounded-full blur-3xl" style="background-color: var(--mint-green); animation-delay: -1.5s"></div>
   </div>
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-    <div class="hero-content">
-      <!-- Badge -->
-      <div
-        class="inline-flex items-center px-4 py-2 rounded-full mb-8"
-        style="
-          background-color: rgba(245, 166, 35, 0.2);
-          border: 1px solid rgba(245, 166, 35, 0.3);
-        "
-      >
-        <i
-          class="fas fa-check-circle mr-2"
-          style="color: var(--mint-green)"
-        ></i>
-        <span class="text-sm font-medium">MCP Protocol Compliant</span>
-      </div>
-
+    <div class="hero-content mt-8">
+      <!-- Egyptian Symbol -->
+      <div class="text-6xl mb-6 animate-pulse">𓂀</div>
+      
       <!-- Main Headline -->
-      <h1 class="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-        <span class="gradient-text">Divine Guidance</span><br />
-        for AI Workflows
+      <h1 class="text-5xl md:text-7xl font-bold mb-4 leading-tight">
+        <span class="gradient-text">Anubis</span>
       </h1>
-
-      <!-- Subheadline -->
-      <p class="text-xl md:text-2xl text-slate-300 mb-8 max-w-4xl mx-auto">
-        Anubis guides AI agents through quality-driven workflows with
-        <span class="text-blue-400 font-semibold"
-          >Egyptian-inspired wisdom</span
-        >
-        and
-        <span class="text-green-400 font-semibold">divine precision</span>.
+      <p class="text-2xl md:text-3xl text-slate-300 mb-12">
+        Divine Workflow Orchestration for AI Agents
       </p>
 
-      <!-- Stats -->
-      <div
-        class="flex flex-wrap justify-center gap-8 mb-12 text-sm md:text-base"
-      >
-        <div class="flex items-center space-x-2">
-          <i class="fas fa-rocket text-blue-400"></i>
-          <span><strong>30-50%</strong> Faster Development</span>
+      <!-- Three Pillars Visual -->
+      <div class="grid md:grid-cols-3 gap-8 mb-12 max-w-5xl mx-auto">
+        <!-- Pillar 1 -->
+        <div class="group cursor-pointer">
+          <div class="relative overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:scale-105" 
+               style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05)); border: 1px solid rgba(59, 130, 246, 0.3);">
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div class="relative z-10">
+              <div class="text-4xl mb-3">🎯</div>
+              <h3 class="text-xl font-bold mb-2 text-blue-400">Divine Guidance</h3>
+              <p class="text-sm text-slate-300">Step-by-step wisdom for structured AI workflows</p>
+              <div class="mt-4 text-2xl font-bold text-blue-400">30-50% Faster</div>
+            </div>
+          </div>
         </div>
-        <div class="flex items-center space-x-2">
-          <i class="fas fa-shield-alt text-green-400"></i>
-          <span><strong>40-60%</strong> Fewer Defects</span>
+
+        <!-- Pillar 2 -->
+        <div class="group cursor-pointer">
+          <div class="relative overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:scale-105" 
+               style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05)); border: 1px solid rgba(34, 197, 94, 0.3);">
+            <div class="absolute inset-0 bg-gradient-to-br from-green-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div class="relative z-10">
+              <div class="text-4xl mb-3">🔄</div>
+              <h3 class="text-xl font-bold mb-2 text-green-400">Seamless Transitions</h3>
+              <p class="text-sm text-slate-300">Never lose context between roles or sessions</p>
+              <div class="mt-4 text-2xl font-bold text-green-400">100% Retention</div>
+            </div>
+          </div>
         </div>
-        <div class="flex items-center space-x-2">
-          <i class="fas fa-code text-purple-400"></i>
-          <span><strong>25-40%</strong> Higher Productivity</span>
+
+        <!-- Pillar 3 -->
+        <div class="group cursor-pointer">
+          <div class="relative overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:scale-105" 
+               style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(168, 85, 247, 0.05)); border: 1px solid rgba(168, 85, 247, 0.3);">
+            <div class="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div class="relative z-10">
+              <div class="text-4xl mb-3">📊</div>
+              <h3 class="text-xl font-bold mb-2 text-purple-400">Beautiful Reports</h3>
+              <p class="text-sm text-slate-300">Interactive dashboards that stakeholders love</p>
+              <div class="mt-4 text-2xl font-bold text-purple-400">5x Visibility</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- CTA Buttons -->
-      <div class="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-        <button
-          class="btn-primary text-lg px-8 py-4 glow transform hover:scale-105"
-        >
-          <i class="fas fa-play mr-2"></i>Try Now with NPX
-        </button>
-        <a
-          href="https://github.com/Hive-Academy/Anubis-MCP"
-          class="btn-secondary text-lg px-8 py-4 transform hover:scale-105"
-        >
-          <i class="fab fa-github mr-2"></i>View on GitHub
-        </a>
-      </div>
+      <!-- Value Proposition -->
+      <p class="text-xl text-slate-400 mb-8 max-w-3xl mx-auto">
+        Transform your AI agent from a chaotic coder into a divine workflow orchestrator with 
+        <span class="text-white font-semibold">structured guidance</span>, 
+        <span class="text-white font-semibold">perfect memory</span>, and 
+        <span class="text-white font-semibold">stunning analytics</span>
+      </p>
 
-      <!-- Quick Install -->
-      <div class="code-block max-w-2xl mx-auto p-6">
-        <div class="flex items-center justify-between mb-3">
-          <span class="text-slate-400 text-sm">Quick Install</span>
-          <button
-            class="copy-btn text-slate-400 hover:text-white transition-colors"
-            onclick="copyToClipboard('npx -y @hive-academy/anubis')"
-          >
-            <i class="fas fa-copy"></i>
-          </button>
-        </div>
-        <code class="font-mono text-green-400"
-          >npx -y @hive-academy/anubis</code
-        >
-      </div>
+
     </div>
   </div>
 

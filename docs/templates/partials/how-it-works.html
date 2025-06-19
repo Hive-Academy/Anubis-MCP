@@ -1,128 +1,257 @@
 <section id="how-it-works" class="py-24 bg-slate-900 relative">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center mb-16">
-      <h2 class="text-4xl md:text-5xl font-bold mb-6">How It Works</h2>
+      <div class="inline-flex items-center px-4 py-2 rounded-full mb-6" style="background-color: rgba(245, 166, 35, 0.2); border: 1px solid rgba(245, 166, 35, 0.3);">
+        <i class="fas fa-cogs mr-2" style="color: var(--honey-amber)"></i>
+        <span class="text-sm font-medium uppercase tracking-wider">Under The Hood</span>
+      </div>
+      <h2 class="text-4xl md:text-5xl font-bold mb-6">
+        How the <span class="gradient-text">Three Pillars</span> Work Together
+      </h2>
       <p class="text-xl text-slate-300 max-w-3xl mx-auto">
-        MCP-compliant architecture where the server provides intelligent guidance and AI agents execute locally using their own tools.
+        Anubis orchestrates a divine symphony between your AI agent and structured workflows through 
+        12 specialized MCP tools working in perfect harmony
       </p>
     </div>
 
-    <div class="relative">
-      <!-- Timeline Line -->
-      <div class="absolute left-8 top-0 bottom-0 w-0.5 bg-blue-500 timeline-line"></div>
-
-      <div class="space-y-16">
+    <!-- Three-Step Process -->
+    <div class="max-w-5xl mx-auto mb-20">
+      <div class="grid md:grid-cols-3 gap-8">
         <!-- Step 1 -->
-        <div class="relative flex items-center">
-          <div class="timeline-dot"></div>
-          <div class="ml-16 grid md:grid-cols-2 gap-8 items-center w-full">
-            <div class="step-content">
-              <h3 class="text-2xl font-bold text-blue-400 mb-4">1. AI Agent Requests Guidance</h3>
-              <p class="text-slate-300 mb-4">
-                AI agents call the MCP server for intelligent workflow guidance instead of trying to execute commands themselves.
-              </p>
-              <div class="code-block p-4">
-                <code class="font-mono text-sm text-green-400">
-                  get_step_guidance({<br />
-                  &nbsp;&nbsp;taskId: 123,<br />
-                  &nbsp;&nbsp;roleId: 'senior-developer'<br />
-                  });
-                </code>
+        <div class="relative group">
+          <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl blur-lg opacity-20 group-hover:opacity-30 transition-opacity"></div>
+          <div class="relative bg-slate-800 rounded-2xl p-8 h-full border border-slate-700 hover:border-blue-500 transition-all">
+            <div class="text-center mb-6">
+              <div class="w-16 h-16 bg-blue-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-2xl font-bold text-blue-400">1</span>
               </div>
+              <h3 class="text-xl font-bold mb-2">Agent Requests Guidance</h3>
+              <p class="text-sm text-slate-400">Your AI calls Anubis MCP tools</p>
             </div>
-            <div class="step-visual">
-              <div class="feature-card rounded-xl p-6 text-center">
-                <i class="fas fa-robot text-4xl text-blue-400 mb-4"></i>
-                <h4 class="font-semibold mb-2">MCP Protocol</h4>
-                <p class="text-sm text-slate-400">Compliant communication</p>
+            <div class="space-y-3">
+              <div class="bg-slate-900/50 rounded p-3 text-xs">
+                <code class="text-blue-300">get_workflow_guidance()</code>
+                <p class="text-slate-400 mt-1">→ Role identity & capabilities</p>
+              </div>
+              <div class="bg-slate-900/50 rounded p-3 text-xs">
+                <code class="text-blue-300">get_step_guidance()</code>
+                <p class="text-slate-400 mt-1">→ Actionable instructions</p>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Step 2 -->
-        <div class="relative flex items-center">
-          <div class="timeline-dot"></div>
-          <div class="ml-16 grid md:grid-cols-2 gap-8 items-center w-full">
-            <div class="step-visual order-2 md:order-1">
-              <div class="feature-card rounded-xl p-6 text-center">
-                <i class="fas fa-brain text-4xl text-purple-400 mb-4"></i>
-                <h4 class="font-semibold mb-2">Intelligence Engine</h4>
-                <p class="text-sm text-slate-400">Database-driven rules</p>
+        <div class="relative group">
+          <div class="absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl blur-lg opacity-20 group-hover:opacity-30 transition-opacity"></div>
+          <div class="relative bg-slate-800 rounded-2xl p-8 h-full border border-slate-700 hover:border-green-500 transition-all">
+            <div class="text-center mb-6">
+              <div class="w-16 h-16 bg-green-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-2xl font-bold text-green-400">2</span>
               </div>
+              <h3 class="text-xl font-bold mb-2">Anubis Provides Wisdom</h3>
+              <p class="text-sm text-slate-400">Database-driven divine guidance</p>
             </div>
-            <div class="step-content order-1 md:order-2">
-              <h3 class="text-2xl font-bold text-purple-400 mb-4">2. Server Provides Intelligence</h3>
-              <p class="text-slate-300 mb-4">
-                The server generates structured guidance with context-aware recommendations, suggested tools, and success criteria.
-              </p>
-              <div class="code-block p-4">
-                <code class="font-mono text-sm text-green-400">
-                  {<br />
-                  &nbsp;&nbsp;"guidance": "Step-by-step instructions",<br />
-                  &nbsp;&nbsp;"suggestedTools": ["read_file", "edit_file"],<br />
-                  &nbsp;&nbsp;"successCriteria": [...]<br />
-                  }
-                </code>
+            <div class="space-y-3">
+              <div class="bg-slate-900/50 rounded p-3 text-xs">
+                <div class="font-semibold text-green-400 mb-1">Returns:</div>
+                <ul class="text-slate-300 space-y-1">
+                  <li>• Step-by-step approach</li>
+                  <li>• Quality checklist</li>
+                  <li>• Context & decisions</li>
+                  <li>• Validation criteria</li>
+                </ul>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Step 3 -->
-        <div class="relative flex items-center">
-          <div class="timeline-dot"></div>
-          <div class="ml-16 grid md:grid-cols-2 gap-8 items-center w-full">
-            <div class="step-content">
-              <h3 class="text-2xl font-bold text-green-400 mb-4">3. Agent Executes Locally</h3>
-              <p class="text-slate-300 mb-4">
-                AI agents execute commands locally using their own tools, following the intelligent guidance provided by the server.
-              </p>
-              <div class="code-block p-4">
-                <code class="font-mono text-sm text-green-400">
-                  // AI uses its own tools locally<br />
-                  codebase_search("components")<br />
-                  read_file("package.json")<br />
-                  edit_file("src/app.ts")
-                </code>
+        <div class="relative group">
+          <div class="absolute inset-0 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl blur-lg opacity-20 group-hover:opacity-30 transition-opacity"></div>
+          <div class="relative bg-slate-800 rounded-2xl p-8 h-full border border-slate-700 hover:border-purple-500 transition-all">
+            <div class="text-center mb-6">
+              <div class="w-16 h-16 bg-purple-500 bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="text-2xl font-bold text-purple-400">3</span>
+              </div>
+              <h3 class="text-xl font-bold mb-2">Agent Executes & Reports</h3>
+              <p class="text-sm text-slate-400">Local execution with feedback</p>
+            </div>
+            <div class="space-y-3">
+              <div class="bg-slate-900/50 rounded p-3 text-xs">
+                <code class="text-purple-300">report_step_completion()</code>
+                <p class="text-slate-400 mt-1">→ Progress tracking</p>
+              </div>
+              <div class="bg-slate-900/50 rounded p-3 text-xs">
+                <code class="text-purple-300">generate_workflow_report()</code>
+                <p class="text-slate-400 mt-1">→ Beautiful dashboards</p>
               </div>
             </div>
-            <div class="step-visual">
-              <div class="feature-card rounded-xl p-6 text-center">
-                <i class="fas fa-cogs text-4xl text-green-400 mb-4"></i>
-                <h4 class="font-semibold mb-2">Local Execution</h4>
-                <p class="text-sm text-slate-400">AI's own tools</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MCP Tools Grid -->
+    <div class="mb-20">
+      <h3 class="text-2xl font-bold text-center mb-12">
+        12 MCP Tools Powering the Three Pillars
+      </h3>
+      
+      <div class="grid lg:grid-cols-3 gap-8">
+        <!-- Divine Guidance Tools -->
+        <div class="bg-slate-800/50 rounded-xl p-6 border border-blue-500/20">
+          <div class="flex items-center mb-4">
+            <div class="text-3xl mr-3">🎯</div>
+            <h4 class="text-lg font-bold text-blue-400">Divine Guidance Tools</h4>
+          </div>
+          <div class="space-y-2 text-sm">
+            <div class="flex items-start space-x-2">
+              <i class="fas fa-chevron-right text-blue-400 text-xs mt-1"></i>
+              <div>
+                <code class="text-xs bg-blue-900/30 px-1 rounded">get_workflow_guidance</code>
+                <span class="text-slate-400 block text-xs">Role identity & capabilities</span>
+              </div>
+            </div>
+            <div class="flex items-start space-x-2">
+              <i class="fas fa-chevron-right text-blue-400 text-xs mt-1"></i>
+              <div>
+                <code class="text-xs bg-blue-900/30 px-1 rounded">get_step_guidance</code>
+                <span class="text-slate-400 block text-xs">Actionable step instructions</span>
+              </div>
+            </div>
+            <div class="flex items-start space-x-2">
+              <i class="fas fa-chevron-right text-blue-400 text-xs mt-1"></i>
+              <div>
+                <code class="text-xs bg-blue-900/30 px-1 rounded">get_next_available_step</code>
+                <span class="text-slate-400 block text-xs">Dynamic workflow progression</span>
+              </div>
+            </div>
+            <div class="flex items-start space-x-2">
+              <i class="fas fa-chevron-right text-blue-400 text-xs mt-1"></i>
+              <div>
+                <code class="text-xs bg-blue-900/30 px-1 rounded">execute_mcp_operation</code>
+                <span class="text-slate-400 block text-xs">Core business operations</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Step 4 -->
-        <div class="relative flex items-center">
-          <div class="timeline-dot"></div>
-          <div class="ml-16 grid md:grid-cols-2 gap-8 items-center w-full">
-            <div class="step-visual order-2 md:order-1">
-              <div class="feature-card rounded-xl p-6 text-center">
-                <i class="fas fa-chart-line text-4xl text-yellow-400 mb-4"></i>
-                <h4 class="font-semibold mb-2">Analytics</h4>
-                <p class="text-sm text-slate-400">Progress tracking</p>
+        <!-- Seamless Transition Tools -->
+        <div class="bg-slate-800/50 rounded-xl p-6 border border-green-500/20">
+          <div class="flex items-center mb-4">
+            <div class="text-3xl mr-3">🔄</div>
+            <h4 class="text-lg font-bold text-green-400">Seamless Transition Tools</h4>
+          </div>
+          <div class="space-y-2 text-sm">
+            <div class="flex items-start space-x-2">
+              <i class="fas fa-chevron-right text-green-400 text-xs mt-1"></i>
+              <div>
+                <code class="text-xs bg-green-900/30 px-1 rounded">get_role_transitions</code>
+                <span class="text-slate-400 block text-xs">Available transitions</span>
               </div>
             </div>
-            <div class="step-content order-1 md:order-2">
-              <h3 class="text-2xl font-bold text-yellow-400 mb-4">4. Progress Tracking</h3>
-              <p class="text-slate-300 mb-4">
-                AI agents report results back to the server for comprehensive analytics and continuous workflow optimization.
-              </p>
-              <div class="code-block p-4">
-                <code class="font-mono text-sm text-green-400">
-                  report_step_completion({<br />
-                  &nbsp;&nbsp;stepId: 'implementation-setup',<br />
-                  &nbsp;&nbsp;result: 'success'<br />
-                  });
-                </code>
+            <div class="flex items-start space-x-2">
+              <i class="fas fa-chevron-right text-green-400 text-xs mt-1"></i>
+              <div>
+                <code class="text-xs bg-green-900/30 px-1 rounded">validate_transition</code>
+                <span class="text-slate-400 block text-xs">Pre-flight checks</span>
+              </div>
+            </div>
+            <div class="flex items-start space-x-2">
+              <i class="fas fa-chevron-right text-green-400 text-xs mt-1"></i>
+              <div>
+                <code class="text-xs bg-green-900/30 px-1 rounded">execute_transition</code>
+                <span class="text-slate-400 block text-xs">Role handoffs</span>
+              </div>
+            </div>
+            <div class="flex items-start space-x-2">
+              <i class="fas fa-chevron-right text-green-400 text-xs mt-1"></i>
+              <div>
+                <code class="text-xs bg-green-900/30 px-1 rounded">workflow_execution_operations</code>
+                <span class="text-slate-400 block text-xs">State management</span>
+              </div>
+            </div>
+            <div class="flex items-start space-x-2">
+              <i class="fas fa-chevron-right text-green-400 text-xs mt-1"></i>
+              <div>
+                <code class="text-xs bg-green-900/30 px-1 rounded">bootstrap_workflow</code>
+                <span class="text-slate-400 block text-xs">Workflow initialization</span>
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- Reporting Tools -->
+        <div class="bg-slate-800/50 rounded-xl p-6 border border-purple-500/20">
+          <div class="flex items-center mb-4">
+            <div class="text-3xl mr-3">📊</div>
+            <h4 class="text-lg font-bold text-purple-400">Beautiful Reporting Tools</h4>
+          </div>
+          <div class="space-y-2 text-sm">
+            <div class="flex items-start space-x-2">
+              <i class="fas fa-chevron-right text-purple-400 text-xs mt-1"></i>
+              <div>
+                <code class="text-xs bg-purple-900/30 px-1 rounded">generate_workflow_report</code>
+                <span class="text-slate-400 block text-xs">Interactive dashboards</span>
+              </div>
+            </div>
+            <div class="flex items-start space-x-2">
+              <i class="fas fa-chevron-right text-purple-400 text-xs mt-1"></i>
+              <div>
+                <code class="text-xs bg-purple-900/30 px-1 rounded">get_report_status</code>
+                <span class="text-slate-400 block text-xs">Async generation tracking</span>
+              </div>
+            </div>
+            <div class="flex items-start space-x-2">
+              <i class="fas fa-chevron-right text-purple-400 text-xs mt-1"></i>
+              <div>
+                <code class="text-xs bg-purple-900/30 px-1 rounded">get_step_progress</code>
+                <span class="text-slate-400 block text-xs">Real-time progress</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Architecture Benefits -->
+    <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-8 border border-slate-700">
+      <h3 class="text-2xl font-bold text-center mb-8">
+        Why This Architecture Delivers Divine Results
+      </h3>
+      
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="text-center">
+          <div class="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-shield-alt text-2xl text-blue-400"></i>
+          </div>
+          <h4 class="font-semibold mb-2">MCP Compliant</h4>
+          <p class="text-sm text-slate-400">Pure guidance, no execution violations</p>
+        </div>
+        
+        <div class="text-center">
+          <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-database text-2xl text-green-400"></i>
+          </div>
+          <h4 class="font-semibold mb-2">Database-Driven</h4>
+          <p class="text-sm text-slate-400">Dynamic rules embedded in responses</p>
+        </div>
+        
+        <div class="text-center">
+          <div class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-bolt text-2xl text-purple-400"></i>
+          </div>
+          <h4 class="font-semibold mb-2">Lightning Fast</h4>
+          <p class="text-sm text-slate-400">Sub-50ms cached responses</p>
+        </div>
+        
+        <div class="text-center">
+          <div class="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-infinity text-2xl text-yellow-400"></i>
+          </div>
+          <h4 class="font-semibold mb-2">Infinitely Scalable</h4>
+          <p class="text-sm text-slate-400">NestJS + Prisma architecture</p>
         </div>
       </div>
     </div>
