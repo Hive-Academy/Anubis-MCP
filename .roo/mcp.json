@@ -1,11 +1,12 @@
 {
   "mcpServers": {
     "anubis": {
-      "command": "node",
+      "command": "npx",
       "args": [
-        "D:/projects/cursor-workflow/dist/main.js"
+        "--yes",
+        "@hive-academy/anubis@latest"
       ],
-      "disabled": false,
+      "disabled": true,
       "alwaysAllow": []
     }
   }

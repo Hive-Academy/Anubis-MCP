@@ -140,11 +140,6 @@ export class DatabaseConfigManager {
     // CRITICAL: Always respect PROJECT_ROOT environment variable from MCP configuration
     if (process.env.PROJECT_ROOT && path.isAbsolute(process.env.PROJECT_ROOT)) {
       resolvedProjectRoot = process.env.PROJECT_ROOT;
-      if (this.verbose) {
-        console.error(
-          `🎯 Using PROJECT_ROOT from MCP config: ${resolvedProjectRoot}`,
-        );
-      }
     }
     // If running in VS Code extension context, try to find workspace folder as fallback only
     else if (process.env.VSCODE_PID || process.env.TERM_PROGRAM === 'vscode') {
@@ -154,11 +149,6 @@ export class DatabaseConfigManager {
 
       if (workspaceFolder && fs.existsSync(workspaceFolder)) {
         resolvedProjectRoot = workspaceFolder;
-        if (this.verbose) {
-          console.error(
-            `📁 Using VS Code workspace folder: ${resolvedProjectRoot}`,
-          );
-        }
       }
     }
 
@@ -170,21 +160,12 @@ export class DatabaseConfigManager {
       // Create directory if it doesn't exist
       if (!fs.existsSync(dataDirectory)) {
         fs.mkdirSync(dataDirectory, { recursive: true });
-        if (this.verbose) {
-          console.error(`📁 Created data directory: ${dataDirectory}`);
-        }
       }
 
       // Test write permissions with cross-platform approach
       const testFile = path.join(dataDirectory, '.write-test');
       fs.writeFileSync(testFile, 'test');
       fs.unlinkSync(testFile);
-
-      if (this.verbose) {
-        console.error(
-          `✅ Successfully using project data directory: ${dataDirectory}`,
-        );
-      }
     } catch (error) {
       // NO FALLBACK - always fail with clear error message
       const errorMessage = [
@@ -377,7 +358,6 @@ export function setupDatabaseEnvironment(
   // Validate configuration
   const validation = manager.validateConfiguration(config);
   if (!validation.isValid && process.env.NODE_ENV !== 'production') {
-    console.warn('⚠️ Database configuration issues:');
     validation.issues.forEach((issue) => console.warn(`   - ${issue}`));
   }
 

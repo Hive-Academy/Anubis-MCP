@@ -7,7 +7,7 @@
 ![Docker Image Version](https://img.shields.io/docker/v/hiveacademy/anubis)
 [![MCP Server](https://img.shields.io/badge/MCP-Server-blue?style=for-the-badge&logo=docker)](https://hub.docker.com/r/hiveacademy/anubis)
 
-**🚀 [NPM Package](https://www.npmjs.com/package/@hive-academy/anubis)** • **🐳 [Docker Hub](https://hub.docker.com/r/hiveacademy/anubis)** • **📚 [Documentation](memory-bank/)**
+**🚀 [NPM Package](https://www.npmjs.com/package/@hive-academy/anubis)** • **🐳 [Docker Hub](https://hub.docker.com/r/hiveacademy/anubis)** • **📚 [Website](https://hive-academy.github.io/Anubis-MCP/)**
 
 ## 🚀 **QUICK START**
 
