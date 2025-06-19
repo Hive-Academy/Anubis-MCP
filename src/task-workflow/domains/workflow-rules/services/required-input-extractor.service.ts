@@ -34,7 +34,7 @@ export class RequiredInputExtractorService {
     serviceName: string,
     operation?: string,
   ): {
-    schemaDefinition: string;
+    schemaDefinition: Record<string, any>;
   } {
     this.logger.debug(
       `🎯 Extracting schema definition for ${serviceName}.${operation}`,
@@ -75,10 +75,14 @@ export class RequiredInputExtractorService {
     operation: string | undefined,
     _error: any,
   ): {
-    schemaDefinition: string;
+    schemaDefinition: Record<string, any>;
   } {
     return {
-      schemaDefinition: `Failed to extract schema for ${serviceName}${operation ? `.${operation}` : ''}`,
+      schemaDefinition: {
+        error: `Failed to extract schema for ${serviceName}${operation ? '.' + operation : ''}`,
+        serviceName,
+        operation,
+      },
     };
   }
 }

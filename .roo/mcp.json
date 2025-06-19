@@ -5,7 +5,7 @@
       "args": [
         "D:/projects/cursor-workflow/dist/main.js"
       ],
-      "disabled": true,
+      "disabled": false,
       "alwaysAllow": []
     }
   }

@@ -1,7 +1,7 @@
 {
   "workflowSteps": [
     {
-      "name": "git_setup",
+      "name": "git_setup and Memory_bank Analysis",
       "description": "Set up git branch for task work",
       "sequenceNumber": 1,
       "isRequired": true,
@@ -12,7 +12,11 @@
           "Check git repository status with 'git status --porcelain'",
           "Handle any uncommitted changes appropriately",
           "Create feature branch with descriptive name",
-          "Verify branch creation succeeded"
+          "Verify branch creation succeeded",
+          "Check if memory-bank folder exists, if it exists, do Enhanced Memory Bank Analysis:",
+          "1. memory-bank/ProjectOverview.md: Extract business context, features, stakeholder requirements, value propositions",
+          "2. memory-bank/TechnicalArchitecture.md: Extract architecture patterns, component structure, technology stack, performance requirements",
+          "3. memory-bank/DeveloperGuide.md: Extract implementation standards, coding patterns, quality guidelines, testing approaches"
         ]
       },
       "qualityChecklist": [
@@ -45,8 +49,7 @@
       "approach": "Analyze project systematically then create task with findings",
       "approachGuidance": {
         "stepByStep": [
-          "Analyze project structure and identify tech stack",
-          "Test current functionality to verify capabilities",
+          "Combined with the memory bank files analysis, Analyze project structure and identify tech stack",
           "Extract clear requirements from user request",
           "Create task with executionId and codebase analysis",
           "Update task status to 'in-progress'"
