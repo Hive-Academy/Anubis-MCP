@@ -4,9 +4,9 @@
 
 <div align="center">
 
-## 🌟 **Three Pillars of Intelligent Workflow Management** 🌟
+##  **Three Pillars of Intelligent Workflow Management** 
 
-### 🎯 **Intelligent Guidance** | 🔄 **Seamless Transitions** | 📊 **Beautiful Reporting**
+###  **Intelligent Guidance** |  **Seamless Transitions** |  **Beautiful Reporting**
 
 </div>
 
@@ -15,35 +15,35 @@
 ![Docker Image Version](https://img.shields.io/docker/v/hiveacademy/anubis)
 [![MCP Server](https://img.shields.io/badge/MCP-Server-blue?style=for-the-badge&logo=docker)](https://hub.docker.com/r/hiveacademy/anubis)
 
-**🚀 [NPM Package](https://www.npmjs.com/package/@hive-academy/anubis)** • **🐳 [Docker Hub](https://hub.docker.com/r/hiveacademy/anubis)** • **📚 [Website](https://hive-academy.github.io/Anubis-MCP/)**
+** [NPM Package](https://www.npmjs.com/package/@hive-academy/anubis)** • ** [Docker Hub](https://hub.docker.com/r/hiveacademy/anubis)** • ** [Website](https://hive-academy.github.io/Anubis-MCP/)**
 
 ---
 
-## 🎯 **CORE VALUE #1: DIVINE GUIDANCE FOR AI AGENTS**
+##  **CORE VALUE #1: INTELLIGENT GUIDANCE FOR AI AGENTS**
 
-**Your AI agent receives step-by-step intelligent wisdom for every development task:**
+**Your AI agent receives step-by-step intelligent rules for every development task:**
 
 ```javascript
 // Before Anubis: Chaotic, directionless coding
-"Create a user authentication system" → 😵 Where do I start?
+"Create a user authentication system" →  Where do I start?
 
 // With Anubis: Intelligent guidance at every step
 "Create a user authentication system" → 
-  📋 Requirements Analysis (Researcher Role)
-  🏗️ System Architecture (Architect Role)
-  💻 Implementation Plan (Senior Dev Role)
-  ✅ Quality Validation (Code Review Role)
-  📊 Progress Report (Auto-generated)
+   Requirements Analysis (Researcher Role)
+   System Architecture (Architect Role)
+   Implementation Plan (Senior Dev Role)
+   Quality Validation (Code Review Role)
+   Progress Report (Auto-generated)
 ```
 
 **Benefits:**
-- ✅ **30-50% faster development** with structured workflows
-- ✅ **40-60% fewer defects** through quality gates
-- ✅ **100% MCP-compliant** guidance without execution
+-  **30-50% faster development** with structured workflows
+-  **40-60% fewer defects** through quality gates
+-  **100% MCP-compliant** guidance without execution
 
 ---
 
-## 🔄 **CORE VALUE #2: SEAMLESS TASK & ROLE TRANSITIONS**
+##  **CORE VALUE #2: SEAMLESS TASK & ROLE TRANSITIONS**
 
 **Never lose context when switching between roles or continuing tasks:**
 
@@ -62,14 +62,14 @@
 ```
 
 **Features:**
-- 🧠 **Intelligent context preservation** between role switches
-- 📝 **Automatic task handoffs** with full history
-- 🔐 **Role-based boundaries** for focused expertise
-- ⏸️ **Pause and resume** workflows anytime
+-  **Intelligent context preservation** between role switches
+-  **Automatic task handoffs** with full history
+-  **Role-based boundaries** for focused expertise
+-  **Pause and resume** workflows anytime
 
 ---
 
-## 📊 **CORE VALUE #3: BEAUTIFUL HTML REPORTING**
+##  **CORE VALUE #3: BEAUTIFUL HTML REPORTING**
 
 **Transform your workflow data into stunning, interactive reports:**
 
@@ -78,16 +78,16 @@
 </div>
 
 **What you get:**
-- 📈 **Interactive dashboards** with Chart.js visualizations
-- 📱 **Mobile-responsive** Tailwind CSS design
-- 🎯 **Progress tracking** with visual indicators
-- 📊 **Performance analytics** for each role
-- 🔍 **Detailed task breakdowns** with timelines
-- 📄 **Export-ready reports** for stakeholders
+-  **Interactive dashboards** with Chart.js visualizations
+-  **Mobile-responsive** Tailwind CSS design
+-  **Progress tracking** with visual indicators
+-  **Performance analytics** for each role
+-  **Detailed task breakdowns** with timelines
+-  **Export-ready reports** for stakeholders
 
 ---
 
-## 🚀 **QUICK START**
+##  **QUICK START**
 
 ### **Option 1: NPX (Recommended)**
 
@@ -116,11 +116,11 @@
 }
 ```
 
-**✅ Benefits**: Zero installation • Always latest version • Project isolation • Auto-dependency management
+** Benefits**: Zero installation • Always latest version • Project isolation • Auto-dependency management
 
 ---
 
-## 🤖 **SUPERCHARGE YOUR AI AGENT IN 3 STEPS**
+##  **SUPERCHARGE YOUR AI AGENT IN 3 STEPS**
 
 ### **Step 1: Initialize Intelligent Guidance**
 
@@ -144,19 +144,19 @@ Generate an interactive workflow report for the current execution
 
 ---
 
-## 🎭 **INTELLIGENT ROLE SYSTEM**
+##  **INTELLIGENT ROLE SYSTEM**
 
 | Role | Intelligent Purpose | Key Powers |
 |------|----------------|------------|
-| **🎯 Boomerang** | Strategic Orchestration | Project setup, task creation, workflow management |
-| **🔍 Researcher** | Knowledge Gathering | Evidence-based research, feasibility analysis |
-| **🏗️ Architect** | System Design | Technical architecture, implementation planning |
-| **👨‍💻 Senior Developer** | Code Manifestation | High-quality implementation, testing |
-| **✅ Code Review** | Quality Guardian | Security validation, performance review, approval |
+| **Boomerang** | Strategic Orchestration | Project setup, task creation, workflow management |
+| **Researcher** | Knowledge Gathering | Evidence-based research, feasibility analysis |
+| **Architect** | System Design | Technical architecture, implementation planning |
+| **Senior Developer** | Code Manifestation | High-quality implementation, testing |
+| **Code Review** | Quality Guardian | Security validation, performance review, approval |
 
 ---
 
-## 💡 **REAL-WORLD EXAMPLE**
+##  **REAL-WORLD EXAMPLE**
 
 ```javascript
 // 1. Agent receives intelligent guidance
@@ -165,7 +165,7 @@ const guidance = await get_step_guidance({
   roleId: 'senior-developer'
 });
 
-// 2. Anubis provides structured wisdom
+// 2. Anubis provides structured rules
 {
   "guidance": {
     "step": "Implement JWT authentication",
@@ -203,7 +203,7 @@ await report_step_completion({
 
 ---
 
-## 🏗️ **TECHNICAL EXCELLENCE**
+##  **TECHNICAL EXCELLENCE**
 
 **Enterprise-Grade Architecture:**
 - **Backend**: NestJS v11 + TypeScript
@@ -212,7 +212,7 @@ await report_step_completion({
 - **Analytics**: Chart.js + Tailwind CSS
 - **Runtime**: Node.js ≥18.0.0
 
-**✅ Production Ready**: 
+**Production Ready**: 
 - MCP-compliant architecture
 - Zero execution violations
 - 75% test coverage
@@ -243,20 +243,20 @@ npm run test && npm run lint
 
 ---
 
-## 📄 **LICENSE**
+##  **LICENSE**
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🌟 **THE ANUBIS PROMISE**
+##  **THE ANUBIS PROMISE**
 
 <div align="center">
 
 ### **Intelligent Guidance** ✨ **Seamless Transitions** ✨ **Beautiful Reports**
 
-**Transform your AI workflows from chaotic to intelligent. Give your agents the wisdom of the ancients with modern MCP-compliant architecture.**
+**Transform your AI workflows from chaotic to intelligent. Give your agents the rules of the ancients with modern MCP-compliant architecture.**
 
-**🚀 Ready to ascend? Add Anubis to your MCP config now!**
+**Ready to ascend? Add Anubis to your MCP config now!**
 
 </div>

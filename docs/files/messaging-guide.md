@@ -9,7 +9,7 @@ Anubis transforms AI agents from chaotic code generators into intelligent workfl
 ## 🎯 Core Value #1: Intelligent Guidance for AI Agents
 
 ### One-Line Value Prop
-"Transform chaotic AI coding into structured, quality-driven workflows with step-by-step intelligent wisdom"
+"Transform chaotic AI coding into structured, quality-driven workflows with step-by-step intelligent rules"
 
 ### Key Benefits
 - **30-50% faster development** through structured workflows
@@ -73,13 +73,13 @@ Automatic report generation that makes AI development transparent and measurable
 ## 🎬 Elevator Pitches
 
 ### 15-Second Version
-"Anubis gives AI agents intelligent wisdom through structured workflows, perfect memory between sessions, and beautiful progress reports. Setup in 30 seconds, see 30-50% faster development."
+"Anubis gives AI agents intelligent rules through structured workflows, perfect memory between sessions, and beautiful progress reports. Setup in 30 seconds, see 30-50% faster development."
 
 ### 30-Second Version
 "AI agents are powerful but chaotic. Anubis transforms them with three superpowers: Intelligent guidance that provides step-by-step workflows, seamless transitions that preserve all context between sessions, and beautiful HTML reports that show exactly what's being built. It's MCP-compliant, sets up with one line, and delivers 30-50% faster development with 40-60% fewer defects."
 
 ### 60-Second Version
-"Every AI agent has the same problem - they code like caffeinated squirrels, jumping between files with no plan or memory. Anubis solves this with ancient Egyptian wisdom meets modern architecture. 
+"Every AI agent has the same problem - they code like caffeinated squirrels, jumping between files with no plan or memory. Anubis solves this with ancient Egyptian rules meets modern architecture. 
 
 First, intelligent guidance transforms chaos into structured workflows with 5 specialized roles. Second, seamless transitions mean you never lose context - pause Friday, resume Monday like nothing happened. Third, beautiful reports give you interactive dashboards showing exactly what your AI built.
 
@@ -103,7 +103,7 @@ Setup takes 30 seconds with NPX. Results? 30-50% faster development, 40-60% fewe
 ## 💬 Conversation Starters
 
 1. "Is your AI agent coding like a caffeinated squirrel?"
-2. "What if your AI agent had the wisdom of ancient Egypt?"
+2. "What if your AI agent had the rules of ancient Egypt?"
 3. "Tired of losing context every time you switch AI sessions?"
 4. "Finally, see what your AI is actually building"
 5. "From chaos to intelligent order in 30 seconds"
@@ -122,7 +122,7 @@ Setup takes 30 seconds with NPX. Results? 30-50% faster development, 40-60% fewe
 ## 📢 Call-to-Action Variations
 
 1. "Transform your AI workflow in 30 seconds"
-2. "Give your agent intelligent wisdom today"
+2. "Give your agent intelligent rules today"
 3. "Join the workflow revolution"
 4. "Experience the intelligent difference"
 5. "Upgrade to structured AI development"

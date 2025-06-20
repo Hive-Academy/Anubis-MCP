@@ -59,4 +59,4 @@
 **"Transform your AI agent from chaotic coder to intelligent workflow orchestrator in 30 seconds"**
 
 ---
-*Ancient wisdom. Modern architecture. Intelligent results.*
+*Ancient rules. Modern architecture. Intelligent results.*

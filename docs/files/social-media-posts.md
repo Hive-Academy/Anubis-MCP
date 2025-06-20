@@ -9,7 +9,7 @@
 
 Jumping between files, no clear plan, leaving half-finished functions everywhere?
 
-You're not alone. Here's how we fixed it with ancient Egyptian wisdom... 𓂀
+You're not alone. Here's how we fixed it with ancient Egyptian rules... 𓂀
 
 1/ The problem: AI agents are POWERFUL but CHAOTIC
 - No structured approach
@@ -66,7 +66,7 @@ Then tell your agent: "Initialize Anubis workflow rules"
 ✅ 25-40% productivity boost
 ✅ 5x better project visibility
 
-Your AI agent is powerful. Give it the wisdom of the ancients.
+Your AI agent is powerful. Give it the rules of the ancients.
 
 Try Anubis today → github.com/Hive-Academy/Anubis-MCP
 
@@ -98,7 +98,7 @@ AFTER Anubis:
 
 The magic? Three core capabilities:
 
-1️⃣ DIVINE GUIDANCE - Your AI receives step-by-step wisdom for every task
+1️⃣ DIVINE GUIDANCE - Your AI receives step-by-step rules for every task
 2️⃣ SEAMLESS TRANSITIONS - Switch roles without losing any context
 3️⃣ BEAUTIFUL REPORTS - Stakeholder-ready dashboards with one command
 
