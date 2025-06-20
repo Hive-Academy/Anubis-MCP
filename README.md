@@ -19,7 +19,7 @@
 
 ---
 
-## 🎯 **CORE VALUE #1: DIVINE GUIDANCE FOR AI AGENTS**
+## 🎯 **CORE VALUE #1: INTELLIGENT GUIDANCE FOR AI AGENTS**
 
 **Your AI agent receives step-by-step intelligent wisdom for every development task:**
 
