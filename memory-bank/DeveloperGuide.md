@@ -1,8 +1,8 @@
 # 🏺 Developer Guide - Anubis
 
-**Divine Guidance for AI Workflows | Enterprise-Grade MCP Workflow Intelligence System**
+**Intelligent Guidance for AI Workflows | Enterprise-Grade MCP Workflow Intelligence System**
 
-**Anubis is the divine guide for AI workflows - the first MCP-compliant system that embeds intelligent guidance directly into each step, ensuring your AI agents follow complex development processes consistently and reliably.**
+**Anubis is the intelligent guide for AI workflows - the first MCP-compliant system that embeds intelligent guidance directly into each step, ensuring your AI agents follow complex development processes consistently and reliably.**
 
 This guide documents the **Anubis** v1.0.15 - a sophisticated, enterprise-grade workflow management system built with NestJS v11.0.1, Prisma v6.9.0, and @rekog/mcp-nest v1.5.2.
 

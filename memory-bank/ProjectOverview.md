@@ -1,6 +1,6 @@
-# 🏺 Anubis - Divine Guidance for AI Workflows
+# 🏺 Anubis - Intelligent Guidance for AI Workflows
 
-**Anubis is the divine guide for AI workflows - the first MCP-compliant system that embeds intelligent guidance directly into each step, ensuring your AI agents follow complex development processes consistently and reliably.**
+**Anubis is the intelligent guide for AI workflows - the first MCP-compliant system that embeds intelligent guidance directly into each step, ensuring your AI agents follow complex development processes consistently and reliably.**
 
 The Anubis delivers database-driven workflow intelligence through MCP protocol compliance, providing AI agents with structured guidance for software development workflows.
 
