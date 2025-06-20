@@ -3,7 +3,7 @@ FROM node:22-alpine AS builder
 
 # Add metadata labels for Docker Hub
 LABEL org.opencontainers.image.title="Anubis"
-LABEL org.opencontainers.image.description="🏺 𓂀𓁢𓋹𝔸ℕ𝕌𝔹𝕀𝕊𓋹𓁢𓂀 - Divine Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development"
+LABEL org.opencontainers.image.description="🏺 𓂀𓁢𓋹𝔸ℕ𝕌𝔹𝕀𝕊𓋹𓁢𓂀 - Intelligent Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development"
 LABEL org.opencontainers.image.version="1.0.15"
 LABEL org.opencontainers.image.authors="Hive Academy <abdallah@nghive.tech>"
 LABEL org.opencontainers.image.source="https://github.com/Hive-Academy/Anubis-MCP"
@@ -57,7 +57,7 @@ FROM node:22-alpine AS production
 
 # Add same metadata to final image
 LABEL org.opencontainers.image.title="Anubis"
-LABEL org.opencontainers.image.description="🏺 Anubis - Divine Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development"
+LABEL org.opencontainers.image.description="🏺 Anubis - Intelligent Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development"
 LABEL org.opencontainers.image.version="1.0.15"
 LABEL org.opencontainers.image.authors="Hive Academy <abdallah@nghive.tech>"
 LABEL org.opencontainers.image.source="https://github.com/Hive-Academy/Anubis-MCP"

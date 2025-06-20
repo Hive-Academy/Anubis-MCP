@@ -77,7 +77,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       name: process.env.MCP_SERVER_NAME || 'Anubis',
       version: process.env.MCP_SERVER_VERSION || '1.0.0',
       instructions:
-        '🏺 Anubis - Divine Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development',
+        '🏺 Anubis - Intelligent Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development',
       transport: getTransportType(),
       // Additional configuration for HTTP/SSE transports
       ...(getTransportType() === McpTransportType.SSE && {

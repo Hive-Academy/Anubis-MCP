@@ -7,11 +7,11 @@
 - Zero visibility into progress
 
 ## The Solution: Anubis 𓂀
-**Divine guidance for AI workflows**
+**Intelligent guidance for AI workflows**
 
 ### 🌟 Three Core Values 🌟
 
-#### 1️⃣ Divine Guidance
+#### 1️⃣ Intelligent Guidance
 - Step-by-step workflows
 - 5 specialized roles
 - Quality gates built-in
@@ -56,7 +56,7 @@
 - 🐳 Docker: hub.docker.com/r/hiveacademy/anubis
 
 ## One-Liner
-**"Transform your AI agent from chaotic coder to divine workflow orchestrator in 30 seconds"**
+**"Transform your AI agent from chaotic coder to intelligent workflow orchestrator in 30 seconds"**
 
 ---
-*Ancient wisdom. Modern architecture. Divine results.*
+*Ancient wisdom. Modern architecture. Intelligent results.*

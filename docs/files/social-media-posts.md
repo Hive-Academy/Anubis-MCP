@@ -17,10 +17,10 @@ You're not alone. Here's how we fixed it with ancient Egyptian wisdom... 𓂀
 - Zero visibility into progress
 - Quality? What quality?
 
-2/ Enter Anubis: Divine Guidance for AI Workflows 𓂀
+2/ Enter Anubis: Intelligent Guidance for AI Workflows 𓂀
 
 Three superpowers that transform your agent:
-🎯 Divine step-by-step guidance
+🎯 Intelligent step-by-step guidance
 🔄 Seamless context preservation  
 🏆 Beautiful progress reports
 
@@ -48,7 +48,7 @@ Finally, VISIBILITY into what your AI is actually doing 📊
 6/ Setup takes 30 seconds:
 
 Add to your MCP config:
-```json
+>> ```json
 {
   "mcpServers": {
     "anubis": {
@@ -57,7 +57,7 @@ Add to your MCP config:
     }
   }
 }
-```
+>>```
 
 Then tell your agent: "Initialize Anubis workflow rules"
 
@@ -80,7 +80,7 @@ Try Anubis today → github.com/Hive-Academy/Anubis-MCP
 **LinkedIn Post:**
 
 ```
-From Chaos to Divine Order: How Anubis Transformed Our AI Development Workflow
+From Chaos to Intelligent Order: How Anubis Transformed Our AI Development Workflow
 
 Picture this: You ask your AI agent to build a user authentication system.
 
@@ -152,7 +152,7 @@ Every AI coding assistant I've used has the same problem - they're powerful but 
 
 We created Anubis to solve this with 3 core features:
 
-🎯 **Divine Guidance** - Structured workflows with 5 specialized roles (Researcher, Architect, Developer, etc). Each role has specific responsibilities and quality gates.
+🎯 **Intelligent Guidance** - Structured workflows with 5 specialized roles (Researcher, Architect, Developer, etc). Each role has specific responsibilities and quality gates.
 
 🔄 **Seamless Transitions** - Full context preservation between role switches. Pause on Friday, resume Monday with zero friction.
 
@@ -179,7 +179,7 @@ Would love to hear your thoughts on structured AI workflows!
 Your AI agent right now: 🌪️
 Your AI agent with Anubis: 🏛️
 
-Transform chaos into divine order with:
+Transform chaos into intelligent order with:
 ✨ Step-by-step guidance
 ✨ Perfect context memory
 ✨ Beautiful progress reports
@@ -199,7 +199,7 @@ Link in bio 🔗
 **Dev.to / Medium:**
 
 ```
-Title: How We Gave AI Agents Divine Wisdom with MCP-Compliant Architecture
+Title: How We Gave AI Agents Intelligent Wisdom with MCP-Compliant Architecture
 
 Subtitle: Introducing Anubis - Three core capabilities that transform AI workflows
 

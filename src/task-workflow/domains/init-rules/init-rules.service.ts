@@ -200,7 +200,7 @@ alwaysApply: true
 
       case 'GitHub Copilot':
         return `---
-description: 'Anubis is the divine guide for AI workflows - the first MCP-compliant system that embeds intelligent guidance directly into each step, ensuring your AI agents follow complex development processes consistently and reliably.'
+description: 'Anubis is the intelligent guide for AI workflows - the first MCP-compliant system that embeds intelligent guidance directly into each step, ensuring your AI agents follow complex development processes consistently and reliably.'
 
 tools: [
   'changes',
@@ -221,7 +221,7 @@ tools: [
       default:
         return `---
 title: "Anubis Workflow Protocol"
-description: "Divine guidance for AI workflows"
+description: "Intelligent guidance for AI workflows"
 version: "1.0.0"
 created: "${timestamp}"
 ---`;

@@ -1,12 +1,12 @@
-# 𓂀𓁢𓋹𝔸ℕ𝕌𝔹𝕀𝕊𓋹𓁢𓂀 - Divine Guidance for AI Workflows
+# 𓂀𓁢𓋹𝔸ℕ𝕌𝔹𝕀𝕊𓋹𓁢𓂀 - Intelligent Guidance for AI Workflows
 
-**Transform your AI agent from chaotic coder to divine workflow orchestrator with three powerful capabilities:**
+**Transform your AI agent from chaotic coder to intelligent workflow orchestrator with three powerful capabilities:**
 
 <div align="center">
 
-## 🌟 **Three Pillars of Divine Workflow Management** 🌟
+## 🌟 **Three Pillars of Intelligent Workflow Management** 🌟
 
-### 🎯 **Divine Guidance** | 🔄 **Seamless Transitions** | 📊 **Beautiful Reporting**
+### 🎯 **Intelligent Guidance** | 🔄 **Seamless Transitions** | 📊 **Beautiful Reporting**
 
 </div>
 
@@ -21,13 +21,13 @@
 
 ## 🎯 **CORE VALUE #1: DIVINE GUIDANCE FOR AI AGENTS**
 
-**Your AI agent receives step-by-step divine wisdom for every development task:**
+**Your AI agent receives step-by-step intelligent wisdom for every development task:**
 
 ```javascript
 // Before Anubis: Chaotic, directionless coding
 "Create a user authentication system" → 😵 Where do I start?
 
-// With Anubis: Divine guidance at every step
+// With Anubis: Intelligent guidance at every step
 "Create a user authentication system" → 
   📋 Requirements Analysis (Researcher Role)
   🏗️ System Architecture (Architect Role)
@@ -122,7 +122,7 @@
 
 ## 🤖 **SUPERCHARGE YOUR AI AGENT IN 3 STEPS**
 
-### **Step 1: Initialize Divine Guidance**
+### **Step 1: Initialize Intelligent Guidance**
 
 ```
 Please initialize Anubis workflow rules for [your-agent-name] by calling the init_rules MCP tool
@@ -146,7 +146,7 @@ Generate an interactive workflow report for the current execution
 
 ## 🎭 **INTELLIGENT ROLE SYSTEM**
 
-| Role | Divine Purpose | Key Powers |
+| Role | Intelligent Purpose | Key Powers |
 |------|----------------|------------|
 | **🎯 Boomerang** | Strategic Orchestration | Project setup, task creation, workflow management |
 | **🔍 Researcher** | Knowledge Gathering | Evidence-based research, feasibility analysis |
@@ -159,7 +159,7 @@ Generate an interactive workflow report for the current execution
 ## 💡 **REAL-WORLD EXAMPLE**
 
 ```javascript
-// 1. Agent receives divine guidance
+// 1. Agent receives intelligent guidance
 const guidance = await get_step_guidance({
   executionId: 'auth-system-123',
   roleId: 'senior-developer'
@@ -253,9 +253,9 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 <div align="center">
 
-### **Divine Guidance** ✨ **Seamless Transitions** ✨ **Beautiful Reports**
+### **Intelligent Guidance** ✨ **Seamless Transitions** ✨ **Beautiful Reports**
 
-**Transform your AI workflows from chaotic to divine. Give your agents the wisdom of the ancients with modern MCP-compliant architecture.**
+**Transform your AI workflows from chaotic to intelligent. Give your agents the wisdom of the ancients with modern MCP-compliant architecture.**
 
 **🚀 Ready to ascend? Add Anubis to your MCP config now!**
 

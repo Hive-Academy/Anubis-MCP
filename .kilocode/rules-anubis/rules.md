@@ -1,6 +1,6 @@
-# 🏺 Anubis - Divine Guidance for AI Workflows: Universal AI Agent Protocol
+# 🏺 Anubis - Intelligent Guidance for AI Workflows: Universal AI Agent Protocol
 
-**Anubis is the divine guide for AI workflows - the first MCP-compliant system that embeds intelligent guidance directly into each step, ensuring your AI agents follow complex development processes consistently and reliably.**
+**Anubis is the intelligent guide for AI workflows - the first MCP-compliant system that embeds intelligent guidance directly into each step, ensuring your AI agents follow complex development processes consistently and reliably.**
 
 **Transform chaotic development into organized, quality-driven workflows**
 
