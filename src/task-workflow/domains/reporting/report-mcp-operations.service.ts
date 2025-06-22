@@ -191,22 +191,11 @@ export class ReportMcpOperationsService {
 📈 **Summary:**
 ${this.formatSummaryText(summary)}
 
-⚡ **Performance:**
-- Processing Time: ${reportResponse.metadata.processingTime}ms
-- Total Records: ${reportResponse.metadata.totalRecords}
-- Generated: ${reportResponse.metadata.generatedAt}
 
 📁 **File Details:**
-- Format: ${input.outputFormat.toUpperCase()}
 - Location: ${reportResponse.filePath || 'JSON Data'}
 - Size: ${jobStatus.result?.size ? `${(jobStatus.result.size / 1024).toFixed(1)} KB` : 'N/A'}
-
-🎯 **Next Steps:**
-${
-  input.outputFormat === 'html'
-    ? '• Open the HTML file in your browser for interactive dashboard\n• Use built-in filtering and search capabilities\n• Click on tasks for details and MCP commands'
-    : '• Use the JSON data for custom processing\n• Integrate with your own visualization tools'
-}`,
+`,
           },
           {
             type: 'text',
