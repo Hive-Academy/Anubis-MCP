@@ -142,8 +142,16 @@ export class StepExecutionMcpService extends BaseMcpService {
 
         const currentExecution = executionResult.execution;
 
-        // Update context from execution
-        actualTaskId = actualTaskId || currentExecution.taskId || 0;
+        // 🔧 BOOTSTRAP FIX: Update context from execution - HANDLE BOOTSTRAP CASE
+        if (currentExecution.taskId) {
+          actualTaskId = actualTaskId || currentExecution.taskId;
+        } else {
+          // Bootstrap case: execution has no task yet
+          actualTaskId = 0; // Signal bootstrap mode to resolveStepId
+          this.logger.log(
+            'Bootstrap execution detected: no taskId available yet',
+          );
+        }
         currentRoleId = currentExecution.currentRoleId;
 
         // 🔧 CRITICAL FIX: Don't require currentStepId - let guidance service auto-detect
@@ -151,12 +159,13 @@ export class StepExecutionMcpService extends BaseMcpService {
           currentStepId = currentExecution.currentStepId;
         }
 
-        if (!currentRoleId || !actualTaskId) {
+        if (!currentRoleId) {
           return this.buildMinimalResponse({
             error: 'Missing execution context',
             details: {
               hasRoleId: Boolean(currentRoleId),
               hasTaskId: Boolean(actualTaskId),
+              isBootstrapMode: actualTaskId === 0,
             },
           });
         }

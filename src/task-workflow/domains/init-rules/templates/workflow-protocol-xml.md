@@ -32,10 +32,10 @@ _Follow these rules precisely to ensure successful workflow execution_
 ╠═══════════════════════════════════════════════╣     ╠═══════════════════════════════════════════════╣
 ║ ❌ NEVER implement/modify code                ║     ║ ❌ NEVER implement/modify code                ║
 ║ ❌ NEVER create files or directories          ║     ║ ❌ NEVER create files or directories          ║
-║ ❌ NEVER run file modification commands       ║     ║ ❌ NEVER make system modifications            ║
+║ ✅ MAY run terminal commands (e.g., git, analysis) ║     ║ ✅ DO research and documentation only         ║
 ║                                               ║     ║                                               ║
-║ ✅ DO strategic analysis only                 ║     ║ ✅ DO research and documentation only         ║
-║ ✅ DO delegate implementation                 ║     ║ ✅ DO provide findings and recommendations    ║
+║ ✅ DO strategic analysis only                 ║     ║ ✅ DO provide findings and recommendations    ║
+║ ✅ DO delegate implementation                 ║     ║ ✅ DO use read-only commands for analysis     ║
 ║ ✅ DO create specifications                   ║     ║ ✅ DO use read-only commands for analysis     ║
 ╚═══════════════════════════════════════════════╝     ╚═══════════════════════════════════════════════╝
 
@@ -71,13 +71,14 @@ When a workflow is interrupted by questions or discussions:
 
 1. **PRESERVE STATE** - Maintain current role and execution context
 2. **ADDRESS QUERY** - Answer the user's question or clarification
-3. **RESUME PROTOCOL** - Explicitly state "Resuming workflow as [current role]" 
+3. **RESUME PROTOCOL** - Explicitly state "Resuming workflow as [current role]"
 4. **NEVER SWITCH ROLES** - Unless explicitly transitioning through MCP tools
 5. **INCORPORATE NEW CONTEXT** - Integrate new information without abandoning workflow steps
 
 ### 🛑 INTERRUPTION RECOVERY PROCEDURE
 
 If you detect you've broken workflow:
+
 1. STOP implementation immediately
 2. ACKNOWLEDGE the protocol violation clearly
 3. RESTORE your last valid role state
@@ -145,6 +146,7 @@ If you detect you've broken workflow:
 ```
 
 **If active workflow found**: Present these specific options:
+
 ```
 Active Workflow Detected
 
@@ -195,8 +197,9 @@ Please select an option (A/B/C/D) to proceed.
 ```
 
 From the bootstrap response, **IMMEDIATELY extract and save**:
+
 1. `executionId` - Required for all subsequent MCP operations
-2. `roleId` - Your role's unique capabilities identifier  
+2. `roleId` - Your role's unique capabilities identifier
 3. `taskId` - Primary task identifier for the workflow
 
 ### Phase 2: Step Execution Cycle
@@ -236,6 +239,7 @@ From the bootstrap response, **IMMEDIATELY extract and save**:
 #### 4. Validate Against Quality Checklist
 
 For EACH item in the qualityChecklist:
+
 1. Understand what the requirement is asking
 2. Gather objective evidence of completion
 3. Verify evidence meets the requirement
@@ -401,13 +405,13 @@ When all steps are completed in the final role:
 
 ## XML Troubleshooting Guide
 
-| Issue                             | XML Diagnostic                                         | Solution                                                        |
-| --------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------- |
-| "No step guidance available"      | Verify XML syntax and parameter values                 | Use proper `<use_mcp_tool>` format with `get_step_guidance`     |
-| "Command execution failed"        | Check your local tool XML syntax                       | Retry 3 times, report detailed error in executionData           |
-| "Quality check validation failed" | Review specific checklist items from guidance response | Fix issues, re-validate, only proceed when all pass             |
-| "ExecutionId parameter missing"   | Check XML parameter structure                          | Always include executionId in arguments JSON                    |
-| "Schema parameter mismatch"       | Compare XML against mcpOperations guidance             | Use exact structure from guidance mcpOperations section         |
+| Issue                             | XML Diagnostic                                         | Solution                                                    |
+| --------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------- |
+| "No step guidance available"      | Verify XML syntax and parameter values                 | Use proper `<use_mcp_tool>` format with `get_step_guidance` |
+| "Command execution failed"        | Check your local tool XML syntax                       | Retry 3 times, report detailed error in executionData       |
+| "Quality check validation failed" | Review specific checklist items from guidance response | Fix issues, re-validate, only proceed when all pass         |
+| "ExecutionId parameter missing"   | Check XML parameter structure                          | Always include executionId in arguments JSON                |
+| "Schema parameter mismatch"       | Compare XML against mcpOperations guidance             | Use exact structure from guidance mcpOperations section     |
 
 ---
 

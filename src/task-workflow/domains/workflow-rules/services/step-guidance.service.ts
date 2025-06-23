@@ -172,7 +172,32 @@ export class StepGuidanceService {
     context: StepGuidanceContext,
   ): Promise<string | null> {
     try {
-      // First, validate and sync execution state
+      // 🔧 BOOTSTRAP MODE DETECTION: Handle case where we have no valid taskId (bootstrap sequence)
+      if (!context.taskId || context.taskId === 0) {
+        this.logger.log(
+          'Bootstrap mode detected: resolving stepId without taskId',
+        );
+
+        // In bootstrap mode, we should have the first step for the role
+        // Get it directly from the role's first step
+        const firstStep = await this.stepQueryService.getFirstStepForRole(
+          context.roleId,
+        );
+
+        if (firstStep) {
+          this.logger.log(
+            `Bootstrap: resolved to first step for role: ${firstStep.id} (${firstStep.name})`,
+          );
+          return firstStep.id;
+        } else {
+          this.logger.error(
+            `Bootstrap: no first step found for role: ${context.roleId}`,
+          );
+          return null;
+        }
+      }
+
+      // Standard flow: validate and sync execution state
       const stateValidation =
         await this.stepQueryService.validateAndSyncExecutionState(
           context.taskId.toString(),

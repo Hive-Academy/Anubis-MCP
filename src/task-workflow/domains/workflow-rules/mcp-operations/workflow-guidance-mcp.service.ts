@@ -5,23 +5,38 @@ import { WorkflowGuidanceService } from '../services/workflow-guidance.service';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { WorkflowExecution } from 'generated/prisma';
 
-const GetWorkflowGuidanceInputSchema = z.object({
-  roleName: z
-    .enum([
-      'boomerang',
-      'researcher',
-      'architect',
-      'senior-developer',
-      'code-review',
-    ])
-    .describe('Current role name for workflow guidance'),
-  taskId: z.number().describe('Task ID for context-specific guidance'),
-  roleId: z.string().describe('Role ID for transition context'),
-  projectPath: z
-    .string()
-    .optional()
-    .describe('Project path for project-specific context'),
-});
+const GetWorkflowGuidanceInputSchema = z
+  .object({
+    roleName: z
+      .enum([
+        'boomerang',
+        'researcher',
+        'architect',
+        'senior-developer',
+        'code-review',
+      ])
+      .describe('Current role name for workflow guidance'),
+    taskId: z
+      .number()
+      .optional()
+      .describe('Task ID for context (optional during bootstrap)'),
+    roleId: z.string().describe('Role ID for transition context'),
+    executionId: z
+      .string()
+      .optional()
+      .describe('Execution ID (alternative to taskId)'),
+    projectPath: z
+      .string()
+      .optional()
+      .describe('Project path for project-specific context'),
+  })
+  .refine(
+    (data) => data.taskId !== undefined || data.executionId !== undefined,
+    {
+      message: 'Either taskId or executionId must be provided',
+      path: ['taskId', 'executionId'],
+    },
+  );
 
 type GetWorkflowGuidanceInput = z.infer<typeof GetWorkflowGuidanceInputSchema>;
 
@@ -51,28 +66,46 @@ export class WorkflowGuidanceMcpService {
   async getWorkflowGuidance(input: GetWorkflowGuidanceInput): Promise<any> {
     try {
       this.logger.log(
-        `🔍 Getting workflow guidance for: ${input.roleName}, task: ${input.taskId}, roleId: ${input.roleId}`,
+        `🔍 Getting workflow guidance for: ${input.roleName}, task: ${input.taskId}, executionId: ${input.executionId}, roleId: ${input.roleId}`,
       );
 
-      // 🔧 FIX: Normalize taskId to number for consistent handling
-      const taskId =
-        typeof input.taskId === 'string'
-          ? parseInt(input.taskId)
-          : input.taskId;
+      // 🔧 BOOTSTRAP FIX: Handle both taskId and executionId
+      let currentExecution;
+      let contextTaskId: number;
 
-      if (isNaN(taskId)) {
-        throw new Error(`Invalid taskId: ${input.taskId}`);
+      if (input.executionId) {
+        // Query by executionId (bootstrap mode)
+        currentExecution = await this.prisma.workflowExecution.findUnique({
+          where: { id: input.executionId },
+          include: {
+            currentRole: true,
+            currentStep: true,
+          },
+        });
+        contextTaskId = currentExecution?.taskId || 0; // Use 0 for bootstrap mode
+      } else if (input.taskId !== undefined) {
+        // Query by taskId (normal mode)
+        const taskId =
+          typeof input.taskId === 'string'
+            ? parseInt(input.taskId)
+            : input.taskId;
+
+        if (isNaN(taskId)) {
+          throw new Error(`Invalid taskId: ${input.taskId}`);
+        }
+
+        currentExecution = await this.prisma.workflowExecution.findFirst({
+          where: { taskId: taskId },
+          include: {
+            currentRole: true,
+            currentStep: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        });
+        contextTaskId = taskId;
+      } else {
+        throw new Error('Either taskId or executionId must be provided');
       }
-
-      // 🆕 ENHANCEMENT: Verify execution state before providing guidance
-      const currentExecution = await this.prisma.workflowExecution.findFirst({
-        where: { taskId: taskId },
-        include: {
-          currentRole: true,
-          currentStep: true,
-        },
-        orderBy: { createdAt: 'desc' },
-      });
 
       if (currentExecution) {
         this.logger.log(
@@ -111,12 +144,12 @@ export class WorkflowGuidanceMcpService {
         }
       } else {
         this.logger.warn(
-          `⚠️ No workflow execution found for task ${taskId}. This may indicate the workflow hasn't been properly initialized.`,
+          `⚠️ No workflow execution found for task ${contextTaskId}. This may indicate the workflow hasn't been properly initialized.`,
         );
       }
 
       const context = {
-        taskId: taskId,
+        taskId: contextTaskId,
         projectPath: input.projectPath,
       };
 
