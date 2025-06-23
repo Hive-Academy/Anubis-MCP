@@ -120,6 +120,7 @@ export class StepExecutionMcpService extends BaseMcpService {
       let currentStepId = input.stepId;
       let currentRoleId = input.roleId;
       let actualTaskId = input.taskId;
+      let resolvedExecutionId = input.executionId;
 
       // Get execution context if needed
       if (!currentStepId || !actualTaskId) {
@@ -169,12 +170,14 @@ export class StepExecutionMcpService extends BaseMcpService {
             },
           });
         }
+        resolvedExecutionId = executionResult.execution.id;
       }
 
       // ✅ ENHANCED: Use transition-aware StepGuidanceService
       const guidance = await this.stepGuidanceService.getStepGuidance({
         taskId: actualTaskId,
         roleId: currentRoleId,
+        executionId: resolvedExecutionId,
         stepId: currentStepId, // May be undefined - guidance service handles this
         validateTransitionState: true, // Enable transition state detection
       });

@@ -6,11 +6,13 @@ import {
 } from '../utils/step-service-shared.utils';
 import { McpActionData, StepQueryService } from './step-query.service';
 import { RequiredInputExtractorService } from './required-input-extractor.service';
+import { WorkflowExecutionService } from './workflow-execution.service';
 
 export interface StepGuidanceContext {
   taskId: number;
   roleId: string;
   stepId?: string; // Made optional to support auto-detection
+  executionId?: string; // NEW: required for bootstrap progress tracking
   validateTransitionState?: boolean;
 }
 
@@ -52,6 +54,7 @@ export class StepGuidanceService {
   constructor(
     private readonly stepQueryService: StepQueryService,
     private readonly requiredInputService: RequiredInputExtractorService,
+    private readonly workflowExecutionService: WorkflowExecutionService,
   ) {}
 
   /**
@@ -178,8 +181,51 @@ export class StepGuidanceService {
           'Bootstrap mode detected: resolving stepId without taskId',
         );
 
-        // In bootstrap mode, we should have the first step for the role
-        // Get it directly from the role's first step
+        // NEW LOGIC ➜ use executionId to detect progression past first step
+        if (context.executionId) {
+          const exec = await this.workflowExecutionService.getExecutionById(
+            context.executionId,
+          );
+
+          if (exec) {
+            // If we have already completed at least one step, try to return the next step
+            const lastCompleted = (exec.executionState as any)
+              ?.lastCompletedStep?.id;
+
+            if (
+              exec.stepsCompleted > 0 &&
+              exec.currentStepId &&
+              lastCompleted === exec.currentStepId
+            ) {
+              const nextStep =
+                await this.stepQueryService.getNextStepAfterCompletion(
+                  exec.currentStepId,
+                );
+
+              if (nextStep) {
+                this.logger.log(
+                  `Bootstrap progression: resolved NEXT step ${nextStep.id} (${nextStep.name}) after completing ${exec.stepsCompleted} steps`,
+                );
+                return nextStep.id;
+              }
+
+              // Fallback to currentStepId if no next step exists (end of role steps)
+              this.logger.log(
+                `Bootstrap progression: no further steps, returning currentStepId ${exec.currentStepId}`,
+              );
+              return exec.currentStepId;
+            }
+
+            // If zero steps completed, just return currentStepId (initial first step)
+            if (exec.currentStepId) {
+              this.logger.log(
+                `Bootstrap initial: using execution.currentStepId ${exec.currentStepId}`,
+              );
+              return exec.currentStepId;
+            }
+          }
+        }
+
         const firstStep = await this.stepQueryService.getFirstStepForRole(
           context.roleId,
         );
