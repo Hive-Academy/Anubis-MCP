@@ -10,6 +10,7 @@ import {
   ConfigurableService,
   BaseServiceConfig,
 } from '../utils/configurable-service.base';
+import { ProgressMetrics } from '../types/progress-calculator.types';
 
 // Configuration interfaces to eliminate hardcoding
 export interface DataEnricherConfig extends BaseServiceConfig {
@@ -46,13 +47,6 @@ export interface NextStep {
   name: string;
   status: 'pending' | 'ready' | 'completed' | 'skipped';
   description?: string;
-}
-
-export interface ProgressMetrics {
-  percentage: number;
-  stepsCompleted: number;
-  totalSteps: number;
-  estimatedCompletion: string | null;
 }
 
 export interface ProgressOverview {
@@ -324,11 +318,11 @@ export class ExecutionDataEnricherService extends ConfigurableService<DataEnrich
       | 'in-progress'
       | 'near-completion'
       | 'completed';
-    if (basicMetrics.percentage >= 100) {
+    if (basicMetrics.percentage! >= 100) {
       progressPhase = 'completed';
-    } else if (basicMetrics.percentage >= 80) {
+    } else if (basicMetrics.percentage! >= 80) {
       progressPhase = 'near-completion';
-    } else if (basicMetrics.percentage > 10) {
+    } else if (basicMetrics.percentage! > 10) {
       progressPhase = 'in-progress';
     } else {
       progressPhase = 'starting';
@@ -342,7 +336,7 @@ export class ExecutionDataEnricherService extends ConfigurableService<DataEnrich
     const expectedStepsPerHour = 2; // Configurable assumption
     const expectedSteps = Math.max(1, hoursElapsed * expectedStepsPerHour);
     const efficiency = ExecutionDataUtils.calculatePercentage(
-      basicMetrics.stepsCompleted,
+      basicMetrics.stepsCompleted!,
       expectedSteps,
       roundingPrecision,
     );
@@ -350,7 +344,7 @@ export class ExecutionDataEnricherService extends ConfigurableService<DataEnrich
     return {
       ...basicMetrics,
       percentage: ExecutionDataUtils.roundProgress(
-        basicMetrics.percentage,
+        basicMetrics.percentage!,
         roundingPrecision,
       ),
       progressPhase,

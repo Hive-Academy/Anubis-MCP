@@ -1,21 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ProgressMetrics } from '../types/progress-calculator.types';
 import {
-  WorkflowExecutionService,
-  CreateWorkflowExecutionInput,
-} from './workflow-execution.service';
+  BaseServiceConfig,
+  ConfigurableService,
+} from '../utils/configurable-service.base';
 import {
-  ExecutionDataEnricherService,
-  EnrichedExecutionData,
-} from './execution-data-enricher.service';
-import {
-  ExecutionAnalyticsService,
   CompletionSummary,
+  ExecutionAnalyticsService,
   ProgressOverview,
 } from './execution-analytics.service';
+import { ExecutionDataEnricherService } from './execution-data-enricher.service';
 import {
-  ConfigurableService,
-  BaseServiceConfig,
-} from '../utils/configurable-service.base';
+  CreateWorkflowExecutionInput,
+  WorkflowExecutionService,
+  WorkflowExecutionWithRelations,
+} from './workflow-execution.service';
 
 // Configuration interfaces to eliminate hardcoding
 export interface ExecutionOperationsConfig extends BaseServiceConfig {
@@ -37,10 +36,10 @@ export interface ExecutionOperationsConfig extends BaseServiceConfig {
 }
 
 export interface ExecutionResult {
-  execution: any;
+  execution: WorkflowExecutionWithRelations;
   nextSteps?: any[];
   recommendations?: string[];
-  progressUpdate?: any;
+  progressMatrix?: ProgressMetrics;
   nextActions?: any[];
   completionSummary?: CompletionSummary;
   finalRecommendations?: string[];
@@ -48,7 +47,7 @@ export interface ExecutionResult {
 }
 
 export interface ExecutionsSummary {
-  executions: any[];
+  executions: WorkflowExecutionWithRelations[];
   summary: {
     total: number;
     byRole: Record<string, number>;
@@ -61,7 +60,6 @@ export interface WorkflowExecutionInput {
   executionId?: string;
   roleName?: string;
   executionMode?: 'GUIDED' | 'AUTOMATED' | 'HYBRID';
-  autoCreatedTask?: boolean;
   executionContext?: Record<string, any>;
   updateData?: Record<string, any>;
   stepId?: string;
@@ -71,7 +69,6 @@ export interface WorkflowExecutionInput {
       operation: string;
       parameters: Record<string, any>;
     }>;
-    executionMode?: 'sequential' | 'parallel';
     continueOnFailure?: boolean;
   };
 }
@@ -175,7 +172,6 @@ export class WorkflowExecutionOperationsService extends ConfigurableService<Exec
       currentRoleId: input.roleName!, // Safe after validation
       executionMode:
         input.executionMode || this.getConfigValue('defaults').executionMode,
-      autoCreatedTask: input.autoCreatedTask,
       executionContext: input.executionContext,
     };
 
@@ -196,7 +192,7 @@ export class WorkflowExecutionOperationsService extends ConfigurableService<Exec
   async getExecution(input: WorkflowExecutionInput): Promise<ExecutionResult> {
     this.validateInput(input, 'get');
 
-    let execution: any;
+    let execution: WorkflowExecutionWithRelations | null;
 
     if (!input.executionId) {
       if (!input.taskId) {
@@ -216,8 +212,7 @@ export class WorkflowExecutionOperationsService extends ConfigurableService<Exec
       );
     }
 
-    const enrichedData = await this.dataEnricher.enrichExecutionData(execution);
-    return this.convertToExecutionResult(enrichedData);
+    return await this.dataEnricher.enrichExecutionData(execution);
   }
 
   /**
@@ -316,12 +311,12 @@ export class WorkflowExecutionOperationsService extends ConfigurableService<Exec
     const nextActions = await this.dataEnricher.getNextStepsForExecution(
       execution.id,
     );
-    const progressUpdate =
+    const progressMatrix =
       this.dataEnricher.calculateProgressMetrics(execution);
 
     return {
       execution,
-      progressUpdate,
+      progressMatrix,
       nextActions,
     };
   }
@@ -361,20 +356,6 @@ export class WorkflowExecutionOperationsService extends ConfigurableService<Exec
         byRole: this.analytics.groupExecutionsByRole(executions),
         progressOverview: this.analytics.calculateOverallProgress(executions),
       },
-    };
-  }
-
-  /**
-   * Convert enriched data to execution result format
-   */
-  private convertToExecutionResult(
-    enrichedData: EnrichedExecutionData,
-  ): ExecutionResult {
-    return {
-      execution: enrichedData.execution,
-      nextSteps: enrichedData.nextSteps,
-      progressUpdate: enrichedData.progressMetrics,
-      availableTransitions: enrichedData.availableTransitions,
     };
   }
 }

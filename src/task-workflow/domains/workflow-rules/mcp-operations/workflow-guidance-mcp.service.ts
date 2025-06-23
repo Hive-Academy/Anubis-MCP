@@ -15,9 +15,7 @@ const GetWorkflowGuidanceInputSchema = z.object({
       'code-review',
     ])
     .describe('Current role name for workflow guidance'),
-  taskId: z
-    .union([z.string(), z.number()])
-    .describe('Task ID for context-specific guidance'),
+  taskId: z.number().describe('Task ID for context-specific guidance'),
   roleId: z.string().describe('Role ID for transition context'),
   projectPath: z
     .string()
