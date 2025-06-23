@@ -5,6 +5,7 @@ import { StepQueryService, WorkflowStep } from './step-query.service';
 import { getErrorMessage } from '../utils/type-safety.utils';
 import { StepDataUtils } from '../utils/step-data.utils';
 import { PrismaService } from '../../../../prisma/prisma.service';
+import { WorkflowExecutionService } from './workflow-execution.service';
 
 // ===================================================================
 // 🔥 STEP EXECUTION SERVICE - CONSOLIDATED SERVICE (PHASE 2)
@@ -90,6 +91,7 @@ export class StepExecutionService {
     private readonly progressService: StepProgressTrackerService,
     private readonly queryService: StepQueryService,
     private readonly prisma: PrismaService,
+    private readonly workflowExecutionService: WorkflowExecutionService,
   ) {
     this.logger.log(
       '✅ StepExecutionService initialized - Consolidated service with core execution',
@@ -235,30 +237,34 @@ export class StepExecutionService {
         );
 
         if (currentExecution) {
+          // Update execution core fields (currentStepId, stepsCompleted)
           await this.prisma.workflowExecution.update({
             where: { id: executionId },
             data: {
               currentStepId: nextStep?.id || null,
               stepsCompleted: (currentExecution.stepsCompleted || 0) + 1,
-              executionState: {
-                ...((currentExecution.executionState as Record<string, any>) ||
-                  {}),
-                lastCompletedStep: {
-                  id: stepId,
-                  completedAt: new Date().toISOString(),
-                  result,
-                },
-                ...(nextStep && {
-                  currentStep: {
-                    id: nextStep.id,
-                    name: nextStep.name,
-                    sequenceNumber: nextStep.sequenceNumber,
-                    assignedAt: new Date().toISOString(),
-                  },
-                }),
-              },
             },
           });
+
+          // Update executionState via validated helper
+          await this.workflowExecutionService.updateExecutionState(
+            executionId,
+            {
+              lastCompletedStep: {
+                id: stepId,
+                completedAt: new Date().toISOString(),
+                result,
+              },
+              ...(nextStep && {
+                currentStep: {
+                  id: nextStep.id,
+                  name: nextStep.name,
+                  sequenceNumber: nextStep.sequenceNumber,
+                  assignedAt: new Date().toISOString(),
+                },
+              }),
+            },
+          );
         }
 
         return {
