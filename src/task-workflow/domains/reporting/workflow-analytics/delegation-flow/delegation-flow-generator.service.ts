@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DelegationFlowData } from '../../shared/types/report-data.types';
 
 /**
@@ -9,15 +9,10 @@ import { DelegationFlowData } from '../../shared/types/report-data.types';
  */
 @Injectable()
 export class DelegationFlowGeneratorService {
-  private readonly logger = new Logger(DelegationFlowGeneratorService.name);
-
   /**
    * Generate delegation flow HTML using type-safe data
    */
   generateDelegationFlow(data: DelegationFlowData): string {
-    this.logger.log('Generating type-safe delegation flow HTML');
-    this.logger.log(`Task: ${data.task.name}`);
-
     return `
 <!DOCTYPE html>
 <html lang="en">

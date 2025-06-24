@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
-import { ZodSchema, z } from 'zod';
-import { WorkflowGuidanceService } from '../services/workflow-guidance.service';
-import { PrismaService } from '../../../../prisma/prisma.service';
 import { WorkflowExecution } from 'generated/prisma';
+import { ZodSchema, z } from 'zod';
+import { PrismaService } from '../../../../prisma/prisma.service';
 import { WorkflowExecutionService } from '../services/workflow-execution.service';
+import { WorkflowGuidanceService } from '../services/workflow-guidance.service';
 
 const GetWorkflowGuidanceInputSchema = z
   .object({
@@ -51,8 +51,6 @@ type GetWorkflowGuidanceInput = z.infer<typeof GetWorkflowGuidanceInputSchema>;
  */
 @Injectable()
 export class WorkflowGuidanceMcpService {
-  private readonly logger = new Logger(WorkflowGuidanceMcpService.name);
-
   constructor(
     private readonly workflowGuidanceService: WorkflowGuidanceService,
     private readonly prisma: PrismaService,
@@ -67,10 +65,6 @@ export class WorkflowGuidanceMcpService {
   })
   async getWorkflowGuidance(input: GetWorkflowGuidanceInput): Promise<any> {
     try {
-      this.logger.log(
-        `🔍 Getting workflow guidance for: ${input.roleName}, task: ${input.taskId}, executionId: ${input.executionId}, roleId: ${input.roleId}`,
-      );
-
       // 🔧 BOOTSTRAP FIX: Handle both taskId and executionId
       let currentExecution;
       let contextTaskId: number;
@@ -110,23 +104,8 @@ export class WorkflowGuidanceMcpService {
       }
 
       if (currentExecution) {
-        this.logger.log(
-          `✅ Found execution: ${currentExecution.id}, currentRoleId: ${currentExecution.currentRoleId}, currentStepId: ${currentExecution.currentStepId}`,
-        );
-
-        // Verify role consistency
-        if (currentExecution.currentRoleId !== input.roleId) {
-          this.logger.warn(
-            `⚠️ Role mismatch: execution has roleId ${currentExecution.currentRoleId}, but requested roleId is ${input.roleId}`,
-          );
-        }
-
         // Check if execution has proper step assignment
         if (!currentExecution.currentStepId) {
-          this.logger.error(
-            `🚨 CRITICAL: Execution ${currentExecution.id} has no currentStepId. This indicates a role transition issue.`,
-          );
-
           // Try to find and assign the first step for the current role
           const firstStepForRole = await this.prisma.workflowStep.findFirst({
             where: { roleId: currentExecution.currentRoleId },
@@ -134,20 +113,12 @@ export class WorkflowGuidanceMcpService {
           });
 
           if (firstStepForRole) {
-            this.logger.log(
-              `🔄 Auto-fixing: Assigning first step ${firstStepForRole.name} (${firstStepForRole.id}) to execution`,
-            );
-
             await this.fixMissingCurrentStep(
               currentExecution,
               firstStepForRole,
             );
           }
         }
-      } else {
-        this.logger.warn(
-          `⚠️ No workflow execution found for task ${contextTaskId}. This may indicate the workflow hasn't been properly initialized.`,
-        );
       }
 
       const context = {
@@ -191,11 +162,6 @@ export class WorkflowGuidanceMcpService {
         ],
       };
     } catch (error: any) {
-      this.logger.error(
-        `❌ Error getting workflow guidance: ${error.message}`,
-        error,
-      );
-
       return {
         content: [
           {

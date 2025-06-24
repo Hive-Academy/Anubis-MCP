@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { WorkflowExecutionWithRelations } from './workflow-execution.service';
-import { ExecutionDataUtils } from '../utils/execution-data.utils';
+import { Injectable } from '@nestjs/common';
 import {
-  ConfigurableService,
   BaseServiceConfig,
+  ConfigurableService,
 } from '../utils/configurable-service.base';
+import { ExecutionDataUtils } from '../utils/execution-data.utils';
+import { WorkflowExecutionWithRelations } from './workflow-execution.service';
 
 // Define ProgressOverview interface locally to remove dependency
 export interface ProgressOverview {
@@ -62,8 +62,6 @@ export interface QualityMetrics {
  */
 @Injectable()
 export class ExecutionAnalyticsService extends ConfigurableService<ExecutionAnalyticsConfig> {
-  private readonly logger = new Logger(ExecutionAnalyticsService.name);
-
   // Configuration with sensible defaults
   protected readonly defaultConfig: ExecutionAnalyticsConfig = {
     defaults: {
@@ -99,11 +97,6 @@ export class ExecutionAnalyticsService extends ConfigurableService<ExecutionAnal
   constructor() {
     super();
     this.initializeConfig();
-  }
-
-  // Optional: Override configuration change hook
-  protected onConfigUpdate(): void {
-    this.logger.log('Execution analytics configuration updated');
   }
 
   /**

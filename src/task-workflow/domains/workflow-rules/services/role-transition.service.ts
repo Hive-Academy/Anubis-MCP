@@ -1,6 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { RoleTransition } from 'generated/prisma';
-import * as path from 'path';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { WorkflowExecutionService } from './workflow-execution.service';
 
@@ -51,8 +50,6 @@ export interface AvailableTransition {
 
 @Injectable()
 export class RoleTransitionService {
-  private readonly logger = new Logger(RoleTransitionService.name);
-
   // Configuration with sensible defaults
   private readonly qualityGateConfig: QualityGateConfig = {
     testCoverageThreshold: 80,
@@ -93,48 +90,40 @@ export class RoleTransitionService {
   async getAvailableTransitions(
     fromRoleName: string,
   ): Promise<AvailableTransition[]> {
-    try {
-      const fromRole = await this.prisma.workflowRole.findUnique({
-        where: { name: fromRoleName },
-      });
+    const fromRole = await this.prisma.workflowRole.findUnique({
+      where: { name: fromRoleName },
+    });
 
-      if (!fromRole) {
-        throw new Error(`Role '${fromRoleName}' not found`);
-      }
-
-      const transitions = await this.prisma.roleTransition.findMany({
-        where: {
-          fromRoleId: fromRole.id,
-          isActive: true,
-        },
-        include: {
-          fromRole: true,
-          toRole: true,
-        },
-      });
-
-      return transitions.map((transition) => ({
-        id: transition.id,
-        transitionName: transition.transitionName,
-        fromRole: {
-          name: transition.fromRole.name,
-          description: transition.fromRole.description,
-        },
-        toRole: {
-          name: transition.toRole.name,
-          description: transition.toRole.description,
-        },
-        conditions: null, // Will be populated from structured conditions
-        requirements: null, // Will be populated from structured requirements
-        handoffGuidance: null, // Will be populated from structured data
-      }));
-    } catch (error) {
-      this.logger.error(
-        `Error getting available transitions for role ${fromRoleName}:`,
-        error,
-      );
-      throw error;
+    if (!fromRole) {
+      throw new Error(`Role '${fromRoleName}' not found`);
     }
+
+    const transitions = await this.prisma.roleTransition.findMany({
+      where: {
+        fromRoleId: fromRole.id,
+        isActive: true,
+      },
+      include: {
+        fromRole: true,
+        toRole: true,
+      },
+    });
+
+    return transitions.map((transition) => ({
+      id: transition.id,
+      transitionName: transition.transitionName,
+      fromRole: {
+        name: transition.fromRole.name,
+        description: transition.fromRole.description,
+      },
+      toRole: {
+        name: transition.toRole.name,
+        description: transition.toRole.description,
+      },
+      conditions: null, // Will be populated from structured conditions
+      requirements: null, // Will be populated from structured requirements
+      handoffGuidance: null, // Will be populated from structured data
+    }));
   }
 
   /**
@@ -184,7 +173,6 @@ export class RoleTransitionService {
         warnings: warnings.length > 0 ? warnings : undefined,
       };
     } catch (error) {
-      this.logger.error(`Error validating transition ${transitionId}:`, error);
       return {
         valid: false,
         errors: [`Validation error: ${error.message}`],
@@ -244,7 +232,6 @@ export class RoleTransitionService {
         newRoleId: transition.toRole.id,
       };
     } catch (error) {
-      this.logger.error(`Error executing transition ${transitionId}:`, error);
       return {
         success: false,
         message: `Transition execution failed: ${error.message}`,
@@ -334,7 +321,6 @@ export class RoleTransitionService {
       case 'reviewCompleted':
         return this.checkReviewCompleted(context);
       default:
-        this.logger.warn(`Unknown condition: ${conditionName}`);
         return true; // Unknown conditions pass by default
     }
   }
@@ -426,26 +412,11 @@ export class RoleTransitionService {
     return score;
   }
 
-  // Helper methods for deliverable and quality gate checking
-
-  private resolveProjectPath(
-    filePath: string,
-    context: { roleId: string; taskId: string; projectPath?: string },
-  ): string {
-    if (path.isAbsolute(filePath)) {
-      return filePath;
-    }
-
-    const projectRoot = context.projectPath || process.cwd();
-    return path.resolve(projectRoot, filePath);
-  }
-
   /**
    * Update quality gate configuration
    */
   updateQualityGateConfig(config: Partial<QualityGateConfig>): void {
     Object.assign(this.qualityGateConfig, config);
-    this.logger.log('Quality gate configuration updated');
   }
 
   /**
@@ -453,7 +424,6 @@ export class RoleTransitionService {
    */
   updateScoringConfig(config: Partial<TransitionScoringConfig>): void {
     Object.assign(this.scoringConfig, config);
-    this.logger.log('Transition scoring configuration updated');
   }
 
   /**
@@ -477,69 +447,48 @@ export class RoleTransitionService {
     newRoleId: string,
     handoffMessage?: string,
   ): Promise<void> {
-    try {
-      // Get the workflow execution for this task
-      const execution = await this.prisma.workflowExecution.findFirst({
-        where: { taskId: Number(taskId) },
-        orderBy: { createdAt: 'desc' },
-      });
+    // Get the workflow execution for this task
+    const execution = await this.prisma.workflowExecution.findFirst({
+      where: { taskId: Number(taskId) },
+      orderBy: { createdAt: 'desc' },
+    });
 
-      if (!execution) {
-        this.logger.warn(`No workflow execution found for task ${taskId}`);
-        return;
-      }
-
-      // Get the first step for the new role
-      const firstStep = await this.prisma.workflowStep.findFirst({
-        where: { roleId: newRoleId },
-        orderBy: { sequenceNumber: 'asc' },
-      });
-
-      if (!firstStep) {
-        this.logger.warn(`No steps found for new role ${newRoleId}`);
-      }
-
-      // Update core fields first
-      await this.prisma.workflowExecution.update({
-        where: { id: execution.id },
-        data: {
-          currentRoleId: newRoleId,
-          currentStepId: firstStep?.id || null,
-          updatedAt: new Date(),
-        },
-      });
-
-      // Update executionState via helper
-      await this.workflowExecutionService.updateExecutionState(execution.id, {
-        phase: 'role_transitioned',
-        lastTransition: {
-          timestamp: new Date().toISOString(),
-          newRoleId,
-          handoffMessage: handoffMessage || 'Role transition executed',
-        },
-        ...(firstStep && {
-          currentStep: {
-            id: firstStep.id,
-            name: firstStep.name,
-            sequenceNumber: firstStep.sequenceNumber,
-            assignedAt: new Date().toISOString(),
-          },
-        }),
-      });
-
-      this.logger.log(
-        `Workflow execution state updated for task ${taskId}: role transition to ${newRoleId}${
-          firstStep
-            ? ` with first step: ${firstStep.name}`
-            : ' (no steps available)'
-        }`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `Error updating workflow execution state for transition:`,
-        error,
-      );
-      // Don't throw - transition should still succeed even if state update fails
+    if (!execution) {
+      return;
     }
+
+    // Get the first step for the new role
+    const firstStep = await this.prisma.workflowStep.findFirst({
+      where: { roleId: newRoleId },
+      orderBy: { sequenceNumber: 'asc' },
+    });
+
+    // Update core fields first
+    await this.prisma.workflowExecution.update({
+      where: { id: execution.id },
+      data: {
+        currentRoleId: newRoleId,
+        currentStepId: firstStep?.id || null,
+        updatedAt: new Date(),
+      },
+    });
+
+    // Update executionState via helper
+    await this.workflowExecutionService.updateExecutionState(execution.id, {
+      phase: 'role_transitioned',
+      lastTransition: {
+        timestamp: new Date().toISOString(),
+        newRoleId,
+        handoffMessage: handoffMessage || 'Role transition executed',
+      },
+      ...(firstStep && {
+        currentStep: {
+          id: firstStep.id,
+          name: firstStep.name,
+          sequenceNumber: firstStep.sequenceNumber,
+          assignedAt: new Date().toISOString(),
+        },
+      }),
+    });
   }
 }

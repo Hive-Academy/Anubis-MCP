@@ -1,12 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { McpFileManagerService } from './shared/mcp-file-manager.service';
+import { McpReportRouterService } from './shared/mcp-report-router.service';
+import { McpResponseBuilderService } from './shared/mcp-response-builder.service';
 import {
+  McpHealthStatus,
   McpReportRequest,
   McpReportResponse,
-  McpHealthStatus,
 } from './shared/mcp-types';
-import { McpReportRouterService } from './shared/mcp-report-router.service';
-import { McpFileManagerService } from './shared/mcp-file-manager.service';
-import { McpResponseBuilderService } from './shared/mcp-response-builder.service';
 
 /**
  * MCP Orchestrator Service
@@ -15,8 +15,6 @@ import { McpResponseBuilderService } from './shared/mcp-response-builder.service
  */
 @Injectable()
 export class McpOrchestratorService {
-  private readonly logger = new Logger(McpOrchestratorService.name);
-
   constructor(
     private readonly reportRouter: McpReportRouterService,
     private readonly fileManager: McpFileManagerService,
@@ -31,8 +29,6 @@ export class McpOrchestratorService {
     const reportId = this.fileManager.generateReportId();
 
     try {
-      this.logger.log(`MCP Report Request: ${JSON.stringify(request)}`);
-
       // Route request to appropriate service
       const result = await this.reportRouter.routeRequest(request);
 
@@ -67,7 +63,6 @@ export class McpOrchestratorService {
       );
     } catch (error) {
       const processingTime = Date.now() - startTime;
-      this.logger.error(`MCP Report generation failed: ${error.message}`);
 
       return this.responseBuilder.buildErrorResponse(
         reportId,
@@ -121,7 +116,6 @@ export class McpOrchestratorService {
           : 'Some services unhealthy',
       };
     } catch (error) {
-      this.logger.error(`Health check failed: ${error.message}`);
       return {
         healthy: false,
         services: {
@@ -138,7 +132,6 @@ export class McpOrchestratorService {
    * Clear caches (delegated to individual services)
    */
   clearCaches(): void {
-    this.logger.log('Cache clearing delegated to individual services');
     // Individual services handle their own caching
   }
 

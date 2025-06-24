@@ -1,7 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { CodeReview, CompletionReport, Prisma } from 'generated/prisma';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { ReviewOperationsInput } from './schemas/review-operations.schema';
-import { CodeReview, CompletionReport, Prisma } from 'generated/prisma';
 
 // Type-safe interfaces for review operations
 export interface ReviewOperationResult {
@@ -46,8 +46,6 @@ export interface CompletionSummary {
  */
 @Injectable()
 export class ReviewOperationsService {
-  private readonly logger = new Logger(ReviewOperationsService.name);
-
   constructor(private readonly prisma: PrismaService) {}
 
   async executeReviewOperation(
@@ -56,10 +54,6 @@ export class ReviewOperationsService {
     const startTime = performance.now();
 
     try {
-      this.logger.debug(`Review Operation: ${input.operation}`, {
-        taskId: input.taskId,
-      });
-
       let result:
         | CodeReview
         | CompletionReport
@@ -98,8 +92,6 @@ export class ReviewOperationsService {
         },
       };
     } catch (error: any) {
-      this.logger.error(`Review operation failed:`, error);
-
       return {
         success: false,
         error: {

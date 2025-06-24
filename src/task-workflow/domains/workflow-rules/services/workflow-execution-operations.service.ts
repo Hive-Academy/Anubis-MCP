@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ProgressMetrics } from '../types/progress-calculator.types';
 import {
   BaseServiceConfig,
@@ -81,8 +81,6 @@ export interface WorkflowExecutionInput {
  */
 @Injectable()
 export class WorkflowExecutionOperationsService extends ConfigurableService<ExecutionOperationsConfig> {
-  private readonly logger = new Logger(WorkflowExecutionOperationsService.name);
-
   // Configuration with sensible defaults
   protected readonly defaultConfig: ExecutionOperationsConfig = {
     defaults: {
@@ -109,11 +107,6 @@ export class WorkflowExecutionOperationsService extends ConfigurableService<Exec
   ) {
     super();
     this.initializeConfig();
-  }
-
-  // Optional: Override configuration change hook
-  protected onConfigUpdate(): void {
-    this.logger.log('Execution operations configuration updated');
   }
 
   /**

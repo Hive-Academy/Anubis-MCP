@@ -1,18 +1,18 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InteractiveDashboardGeneratorService } from '../dashboard/interactive-dashboard/interactive-dashboard-generator.service';
 import { SimpleReportGeneratorService } from '../dashboard/simple-report/simple-report-generator.service';
 import { ImplementationPlanGeneratorService } from '../task-management/implementation-plan/view/implementation-plan-generator.service';
 import { TaskDetailGeneratorService } from '../task-management/task-detail/view/task-detail-generator.service';
 import { DelegationFlowGeneratorService } from '../workflow-analytics/delegation-flow/delegation-flow-generator.service';
-import { DelegationFlowData } from './types/report-data.types';
 import { RolePerformanceGeneratorService } from '../workflow-analytics/role-performance/role-performance-generator.service';
+import { DelegationFlowData } from './types/report-data.types';
 
-import { RolePerformanceData } from './types/report-data.types';
 import { WorkflowAnalyticsGeneratorService } from '../workflow-analytics/workflow-analytics/workflow-analytics-generator.service';
 import { WorkflowAnalyticsData } from '../workflow-analytics/workflow-analytics/workflow-analytics.service';
 import {
   ImplementationPlanReportData,
   InteractiveDashboardData,
+  RolePerformanceData,
   SimpleReportData,
   TaskDetailData,
 } from './types/report-data.types';
@@ -26,8 +26,6 @@ import {
  */
 @Injectable()
 export class HtmlGeneratorFactoryService {
-  private readonly logger = new Logger(HtmlGeneratorFactoryService.name);
-
   constructor(
     private readonly interactiveDashboardGenerator: InteractiveDashboardGeneratorService,
     private readonly simpleReportGenerator: SimpleReportGeneratorService,
@@ -52,8 +50,6 @@ export class HtmlGeneratorFactoryService {
       | RolePerformanceData
       | WorkflowAnalyticsData,
   ): string {
-    this.logger.log(`Generating ${reportType} report using factory pattern`);
-
     switch (reportType) {
       case 'interactive-dashboard':
       case 'dashboard':
@@ -94,7 +90,6 @@ export class HtmlGeneratorFactoryService {
         );
 
       default:
-        this.logger.error(`Unknown report type: ${reportType}`);
         throw new Error(`Unsupported report type: ${reportType}`);
     }
   }

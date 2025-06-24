@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   ProjectBehavioralProfile,
   ProjectContext,
@@ -6,8 +6,8 @@ import {
 } from 'generated/prisma';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import {
-  ConfigurableService,
   BaseServiceConfig,
+  ConfigurableService,
 } from '../utils/configurable-service.base';
 
 // Simplified configuration for role-focused guidance only
@@ -61,8 +61,6 @@ export interface RoleContext {
 
 @Injectable()
 export class WorkflowGuidanceService extends ConfigurableService<GuidanceConfig> {
-  private readonly logger = new Logger(WorkflowGuidanceService.name);
-
   // Default configuration implementation (required by ConfigurableService)
   protected readonly defaultConfig: GuidanceConfig = {
     defaults: {
@@ -84,11 +82,6 @@ export class WorkflowGuidanceService extends ConfigurableService<GuidanceConfig>
     this.initializeConfig();
   }
 
-  // Optional: Override configuration change hook
-  protected onConfigUpdate(): void {
-    this.logger.log('Guidance configuration updated');
-  }
-
   /**
    * FOCUSED: Get ONLY role/persona context - NO step details
    * Call this ONCE when switching roles to get the persona context
@@ -98,43 +91,35 @@ export class WorkflowGuidanceService extends ConfigurableService<GuidanceConfig>
     roleName: string,
     context: RoleContext,
   ): Promise<WorkflowGuidance> {
-    try {
-      // Get role information
-      const role = await this.getWorkflowRole(roleName);
-      if (!role) {
-        throw new Error(`Workflow role '${roleName}' not found`);
-      }
-
-      // Get project context if available
-      const projectContext = await this.getProjectContext(context.projectPath);
-
-      // Get project-specific behavioral profile
-      const behavioralProfile = await this.getProjectBehavioralProfile(
-        projectContext?.id,
-        roleName,
-      );
-
-      // FOCUSED: Build role-only guidance structure (NO step details)
-      const roleGuidance: WorkflowGuidance = {
-        currentRole: role,
-        projectContext: {
-          projectType: projectContext?.projectType,
-          behavioralProfile: behavioralProfile,
-          detectedPatterns: projectContext
-            ? await this.getProjectPatterns(projectContext.id)
-            : [],
-          qualityStandards: behavioralProfile?.qualityStandards,
-        },
-      };
-
-      return roleGuidance;
-    } catch (error) {
-      this.logger.error(
-        `Error getting workflow guidance for role ${roleName}:`,
-        error,
-      );
-      throw error;
+    // Get role information
+    const role = await this.getWorkflowRole(roleName);
+    if (!role) {
+      throw new Error(`Workflow role '${roleName}' not found`);
     }
+
+    // Get project context if available
+    const projectContext = await this.getProjectContext(context.projectPath);
+
+    // Get project-specific behavioral profile
+    const behavioralProfile = await this.getProjectBehavioralProfile(
+      projectContext?.id,
+      roleName,
+    );
+
+    // FOCUSED: Build role-only guidance structure (NO step details)
+    const roleGuidance: WorkflowGuidance = {
+      currentRole: role,
+      projectContext: {
+        projectType: projectContext?.projectType,
+        behavioralProfile: behavioralProfile,
+        detectedPatterns: projectContext
+          ? await this.getProjectPatterns(projectContext.id)
+          : [],
+        qualityStandards: behavioralProfile?.qualityStandards,
+      },
+    };
+
+    return roleGuidance;
   }
 
   // Private helper methods focused on role/persona guidance only

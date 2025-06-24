@@ -2,15 +2,12 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
-  Logger,
 } from '@nestjs/common';
 import { Prisma } from 'generated/prisma';
 import { PrismaErrorHandler } from '../types';
 
 @Injectable()
 export class PrismaErrorHandlerService implements PrismaErrorHandler {
-  private readonly logger = new Logger(PrismaErrorHandlerService.name);
-
   private isPrismaError(
     err: unknown,
   ): err is Prisma.PrismaClientKnownRequestError {
@@ -47,13 +44,6 @@ export class PrismaErrorHandlerService implements PrismaErrorHandler {
     };
 
     if (this.isPrismaError(error)) {
-      this.logger.error('Prisma error occurred', {
-        code: error.code,
-        message: error.message,
-        meta: error.meta,
-        ...errorMetadata,
-      });
-
       switch (error.code) {
         case 'P2025':
           throw new NotFoundException({
@@ -102,12 +92,6 @@ export class PrismaErrorHandlerService implements PrismaErrorHandler {
 
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error';
-
-    this.logger.error('Non-Prisma error occurred', {
-      message: errorMessage,
-      stack: error instanceof Error ? error.stack : undefined,
-      ...errorMetadata,
-    });
 
     throw new InternalServerErrorException({
       message: `Failed to process request for task ${taskId}: ${errorMessage}`,

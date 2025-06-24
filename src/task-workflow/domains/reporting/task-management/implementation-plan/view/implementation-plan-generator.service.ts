@@ -1,9 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ImplementationPlanReportData } from '../../../shared/types/report-data.types';
-import { ImplementationPlanHeaderViewService } from './implementation-plan-header-view.service';
 import { ImplementationPlanContentViewService } from './implementation-plan-content-view.service';
-import { ImplementationPlanStylesViewService } from './implementation-plan-styles-view.service';
+import { ImplementationPlanHeaderViewService } from './implementation-plan-header-view.service';
 import { ImplementationPlanScriptsViewService } from './implementation-plan-scripts-view.service';
+import { ImplementationPlanStylesViewService } from './implementation-plan-styles-view.service';
 
 /**
  * Implementation Plan Generator Service
@@ -14,8 +14,6 @@ import { ImplementationPlanScriptsViewService } from './implementation-plan-scri
  */
 @Injectable()
 export class ImplementationPlanGeneratorService {
-  private readonly logger = new Logger(ImplementationPlanGeneratorService.name);
-
   constructor(
     private readonly headerViewService: ImplementationPlanHeaderViewService,
     private readonly contentViewService: ImplementationPlanContentViewService,
@@ -27,11 +25,6 @@ export class ImplementationPlanGeneratorService {
    * Generate complete implementation plan HTML using type-safe data and focused view services
    */
   generateImplementationPlan(data: ImplementationPlanReportData): string {
-    this.logger.log(
-      'Generating type-safe implementation plan HTML using focused view services',
-    );
-    this.logger.log(`Task: ${data.task.name}`);
-
     // Calculate real metrics for the implementation plan
     const planMetrics = this.calculatePlanMetrics(data);
 

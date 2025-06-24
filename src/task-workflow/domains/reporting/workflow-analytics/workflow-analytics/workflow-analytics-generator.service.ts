@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 // Use the actual data structure from the workflow analytics service
 interface WorkflowAnalyticsData {
@@ -66,15 +66,10 @@ interface WorkflowAnalyticsData {
  */
 @Injectable()
 export class WorkflowAnalyticsGeneratorService {
-  private readonly logger = new Logger(WorkflowAnalyticsGeneratorService.name);
-
   /**
    * Generate workflow analytics HTML using real database data
    */
   generateWorkflowAnalytics(data: WorkflowAnalyticsData): string {
-    this.logger.log('Generating type-safe workflow analytics HTML');
-    this.logger.log(`Analytics for ${data.summary.totalTasks} tasks`);
-
     return `
 <!DOCTYPE html>
 <html lang="en">

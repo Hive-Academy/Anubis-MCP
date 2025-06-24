@@ -1,14 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InteractiveDashboardData } from '../../shared/types/report-data.types';
-import { HtmlHeadGenerator } from './view/html-head.generator';
-import { HeaderGenerator } from './view/header.generator';
-import { MetricsCardsGenerator } from './view/metrics-cards.generator';
 import { ChartsGenerator } from './view/charts.generator';
-import { TasksListGenerator } from './view/tasks-list.generator';
 import { DelegationsTableGenerator } from './view/delegations-table.generator';
-import { QuickActionsGenerator } from './view/quick-actions.generator';
 import { FooterGenerator } from './view/footer.generator';
+import { HeaderGenerator } from './view/header.generator';
+import { HtmlHeadGenerator } from './view/html-head.generator';
+import { MetricsCardsGenerator } from './view/metrics-cards.generator';
+import { QuickActionsGenerator } from './view/quick-actions.generator';
 import { ScriptsGenerator } from './view/scripts.generator';
+import { TasksListGenerator } from './view/tasks-list.generator';
 
 /**
  * Interactive Dashboard Generator Service (Refactored)
@@ -18,10 +18,6 @@ import { ScriptsGenerator } from './view/scripts.generator';
  */
 @Injectable()
 export class InteractiveDashboardGeneratorService {
-  private readonly logger = new Logger(
-    InteractiveDashboardGeneratorService.name,
-  );
-
   constructor(
     private readonly htmlHeadGenerator: HtmlHeadGenerator,
     private readonly headerGenerator: HeaderGenerator,
@@ -38,15 +34,7 @@ export class InteractiveDashboardGeneratorService {
    * Generate complete interactive dashboard HTML using focused generators
    */
   generateInteractiveDashboard(data: InteractiveDashboardData): string {
-    this.logger.log(
-      'Generating type-safe interactive dashboard HTML using focused generators',
-    );
-    this.logger.log(
-      `Tasks: ${data.tasks.length}, Delegations: ${data.delegations.length}`,
-    );
-
-    try {
-      return `
+    return `
 <!DOCTYPE html>
 <html lang="en" class="h-full">
 <head>
@@ -72,12 +60,5 @@ export class InteractiveDashboardGeneratorService {
     ${this.scriptsGenerator.generateScripts(data)}
 </body>
 </html>`;
-    } catch (error) {
-      this.logger.error(`Failed to generate dashboard HTML: ${error.message}`);
-      this.logger.error(
-        `Data received - Tasks: ${data.tasks.length}, Delegations: ${data.delegations.length}`,
-      );
-      throw error;
-    }
   }
 }

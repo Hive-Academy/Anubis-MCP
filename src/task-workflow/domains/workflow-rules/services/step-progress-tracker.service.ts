@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import {
   isDefined,
@@ -95,8 +95,6 @@ export interface RoleProgressSummary {
  */
 @Injectable()
 export class StepProgressTrackerService {
-  private readonly logger = new Logger(StepProgressTrackerService.name);
-
   constructor(private readonly prisma: PrismaService) {}
 
   /**
@@ -139,11 +137,8 @@ export class StepProgressTrackerService {
         },
       });
 
-      this.logger.log(`Step progress tracking started: ${stepId}`);
-
       return this.transformProgressRecord(progressRecord);
     } catch (error) {
-      this.logger.error(`Failed to start step progress tracking:`, error);
       throw new StepProgressError(
         `Failed to start progress tracking: ${getErrorMessage(error)}`,
         'StepProgressTrackerService',
@@ -192,13 +187,8 @@ export class StepProgressTrackerService {
         },
       });
 
-      this.logger.log(
-        `Step progress updated: ${stepId} (${update.completedActions}/${update.totalActions})`,
-      );
-
       return this.transformProgressRecord(progressRecord);
     } catch (error) {
-      this.logger.error(`Failed to update step progress:`, error);
       throw new StepProgressError(
         `Failed to update progress: ${getErrorMessage(error)}`,
         'StepProgressTrackerService',
@@ -250,13 +240,8 @@ export class StepProgressTrackerService {
         },
       });
 
-      this.logger.log(
-        `Step completed successfully: ${stepId} (${completion.duration}ms)`,
-      );
-
       return this.transformProgressRecord(progressRecord);
     } catch (error) {
-      this.logger.error(`Failed to complete step:`, error);
       throw new StepProgressError(
         `Failed to complete step: ${getErrorMessage(error)}`,
         'StepProgressTrackerService',
@@ -299,11 +284,8 @@ export class StepProgressTrackerService {
         },
       });
 
-      this.logger.error(`Step failed: ${stepId}`, failure.errors);
-
       return this.transformProgressRecord(progressRecord);
     } catch (error) {
-      this.logger.error(`Failed to mark step as failed:`, error);
       throw new StepProgressError(
         `Failed to mark step as failed: ${getErrorMessage(error)}`,
         'StepProgressTrackerService',
@@ -328,8 +310,7 @@ export class StepProgressTrackerService {
       }
 
       return this.transformProgressRecord(progressRecord);
-    } catch (error) {
-      this.logger.error(`Failed to get step progress:`, error);
+    } catch (_error) {
       return null;
     }
   }
@@ -376,7 +357,6 @@ export class StepProgressTrackerService {
         successRate,
       };
     } catch (error) {
-      this.logger.error(`Failed to get role progress summary:`, error);
       throw new StepProgressError(
         `Failed to get role progress summary: ${getErrorMessage(error)}`,
         'StepProgressTrackerService',
@@ -469,10 +449,7 @@ export class StepProgressTrackerService {
           executionData: JSON.parse(JSON.stringify(executionData)),
         },
       });
-
-      this.logger.log(`✅ Step completed: ${stepId} (${duration}ms)`);
     } catch (error) {
-      this.logger.error(`Failed to complete step with tracking:`, error);
       throw new StepProgressError(
         `Failed to complete step with tracking: ${getErrorMessage(error)}`,
         'StepProgressTrackerService',

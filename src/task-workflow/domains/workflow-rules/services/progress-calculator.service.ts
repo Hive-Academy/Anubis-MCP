@@ -1,16 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../../prisma/prisma.service';
-import { WorkflowGuidance } from './workflow-guidance.service';
 import {
-  ProgressMetrics,
   ProgressCalculationResult,
+  ProgressMetrics,
 } from '../types/progress-calculator.types';
-import { getErrorMessage, createErrorResult } from '../utils/type-safety.utils';
+import { createErrorResult } from '../utils/type-safety.utils';
+import { WorkflowGuidance } from './workflow-guidance.service';
 
 @Injectable()
 export class ProgressCalculatorService {
-  private readonly logger = new Logger(ProgressCalculatorService.name);
-
   constructor(private readonly prisma: PrismaService) {}
 
   /**
@@ -73,10 +71,6 @@ export class ProgressCalculatorService {
         nextMilestone,
       };
 
-      this.logger.debug(
-        `Calculated progress for task ${taskId}: ${JSON.stringify(metrics)}`,
-      );
-
       return {
         success: true,
         metrics,
@@ -87,10 +81,6 @@ export class ProgressCalculatorService {
         },
       };
     } catch (error) {
-      this.logger.error(
-        `Failed to calculate progress for task ${taskId}:`,
-        getErrorMessage(error),
-      );
       return createErrorResult(error, 'Progress calculation failed');
     }
   }

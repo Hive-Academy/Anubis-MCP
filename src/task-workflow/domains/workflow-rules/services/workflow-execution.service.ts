@@ -1,11 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { WorkflowExecution, WorkflowExecutionMode } from 'generated/prisma';
 import { PrismaService } from '../../../../prisma/prisma.service';
-import { ExecutionDataUtils } from '../utils/execution-data.utils';
 import {
-  ConfigurableService,
   BaseServiceConfig,
+  ConfigurableService,
 } from '../utils/configurable-service.base';
+import { ExecutionDataUtils } from '../utils/execution-data.utils';
 import {
   WorkflowExecutionState,
   WorkflowExecutionStateSchema,
@@ -72,8 +72,6 @@ export interface WorkflowExecutionWithRelations extends WorkflowExecution {
  */
 @Injectable()
 export class WorkflowExecutionService extends ConfigurableService<ExecutionServiceConfig> {
-  private readonly logger = new Logger(WorkflowExecutionService.name);
-
   // Default configuration implementation (required by ConfigurableService)
   protected readonly defaultConfig: ExecutionServiceConfig = {
     defaults: {
@@ -105,11 +103,6 @@ export class WorkflowExecutionService extends ConfigurableService<ExecutionServi
     this.initializeConfig();
   }
 
-  // Optional: Override configuration change hook
-  protected onConfigUpdate(): void {
-    this.logger.log('Execution service configuration updated');
-  }
-
   /**
    * Validate input parameters
    */
@@ -139,71 +132,52 @@ export class WorkflowExecutionService extends ConfigurableService<ExecutionServi
   async createExecution(
     input: CreateWorkflowExecutionInput,
   ): Promise<WorkflowExecutionWithRelations> {
-    try {
-      this.validateInput(input);
-      this.logger.debug(
-        `Creating workflow execution for ${input.taskId ? `task ${input.taskId}` : 'bootstrap workflow'}`,
-      );
+    this.validateInput(input);
 
-      // Get the first step for the role to assign as currentStepId
-      const firstStep = await this.prisma.workflowStep.findFirst({
-        where: { roleId: input.currentRoleId },
-        orderBy: { sequenceNumber: 'asc' },
-      });
+    // Get the first step for the role to assign as currentStepId
+    const firstStep = await this.prisma.workflowStep.findFirst({
+      where: { roleId: input.currentRoleId },
+      orderBy: { sequenceNumber: 'asc' },
+    });
 
-      if (!firstStep) {
-        this.logger.warn(`No steps found for role ${input.currentRoleId}`);
-      }
+    // Build create data with optional taskId
+    const createData: any = {
+      currentRoleId: input.currentRoleId,
+      currentStepId: firstStep?.id || null,
+      executionMode:
+        input.executionMode || this.getConfigValue('defaults').executionMode,
+      autoCreatedTask: input.autoCreatedTask || false,
+      executionContext: input.executionContext || {},
+      executionState: {
+        phase: this.getConfigValue('phases').initialized,
+        currentContext: input.executionContext || {},
+        progressMarkers: [],
+        ...(firstStep && {
+          currentStep: {
+            id: firstStep.id,
+            name: firstStep.name,
+            sequenceNumber: firstStep.sequenceNumber,
+            assignedAt: new Date().toISOString(),
+          },
+        }),
+      },
+    };
 
-      // Build create data with optional taskId
-      const createData: any = {
-        currentRoleId: input.currentRoleId,
-        currentStepId: firstStep?.id || null,
-        executionMode:
-          input.executionMode || this.getConfigValue('defaults').executionMode,
-        autoCreatedTask: input.autoCreatedTask || false,
-        executionContext: input.executionContext || {},
-        executionState: {
-          phase: this.getConfigValue('phases').initialized,
-          currentContext: input.executionContext || {},
-          progressMarkers: [],
-          ...(firstStep && {
-            currentStep: {
-              id: firstStep.id,
-              name: firstStep.name,
-              sequenceNumber: firstStep.sequenceNumber,
-              assignedAt: new Date().toISOString(),
-            },
-          }),
-        },
-      };
-
-      // Only add taskId if provided
-      if (input.taskId !== undefined) {
-        createData.taskId = input.taskId;
-      }
-
-      const execution = await this.prisma.workflowExecution.create({
-        data: createData,
-        include: {
-          task: true,
-          currentRole: true,
-          currentStep: true,
-        },
-      });
-
-      this.logger.log(
-        `Workflow execution created: ${execution.id}${
-          firstStep
-            ? ` with first step: ${firstStep.name}`
-            : ' (no steps available)'
-        }`,
-      );
-      return execution;
-    } catch (error) {
-      this.logger.error('Failed to create workflow execution:', error);
-      throw error;
+    // Only add taskId if provided
+    if (input.taskId !== undefined) {
+      createData.taskId = input.taskId;
     }
+
+    const execution = await this.prisma.workflowExecution.create({
+      data: createData,
+      include: {
+        task: true,
+        currentRole: true,
+        currentStep: true,
+      },
+    });
+
+    return execution;
   }
 
   /**
@@ -252,24 +226,17 @@ export class WorkflowExecutionService extends ConfigurableService<ExecutionServi
     executionId: string,
     updateData: Record<string, any>,
   ): Promise<WorkflowExecutionWithRelations> {
-    try {
-      this.logger.debug(`Updating workflow execution ${executionId}`);
+    const execution = await this.prisma.workflowExecution.update({
+      where: { id: executionId },
+      data: updateData,
+      include: {
+        task: true,
+        currentRole: true,
+        currentStep: true,
+      },
+    });
 
-      const execution = await this.prisma.workflowExecution.update({
-        where: { id: executionId },
-        data: updateData,
-        include: {
-          task: true,
-          currentRole: true,
-          currentStep: true,
-        },
-      });
-
-      return execution;
-    } catch (error) {
-      this.logger.error('Failed to update workflow execution:', error);
-      throw error;
-    }
+    return execution;
   }
 
   /**

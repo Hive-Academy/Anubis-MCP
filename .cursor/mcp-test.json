@@ -16,14 +16,19 @@
     },
     "anubis": {
       "command": "npx",
-      "args": ["--yes", "@hive-academy/anubis@latest"],
+      "args": [
+        "--yes",
+        "@hive-academy/anubis@latest"
+      ],
       "env": {
         "PROJECT_ROOT": "D:/projects/cursor-workflow"
       }
     },
     "anubis": {
       "command": "node",
-      "args": ["D:/projects/cursor-workflow/dist/main.js"]
+      "args": [
+        "D:/projects/cursor-workflow/dist/main.js"
+      ]
     }
   }
 },
@@ -45,4 +50,3 @@
     }
   }
 }
-

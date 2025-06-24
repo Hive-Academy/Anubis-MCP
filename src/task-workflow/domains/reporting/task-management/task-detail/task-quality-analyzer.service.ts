@@ -30,8 +30,6 @@ export class TaskQualityAnalyzerService {
     };
     recommendations: string[];
   } {
-    this.logger.log(`Analyzing quality metrics for task: ${data.task.name}`);
-
     const codebaseQuality = this.analyzeCodebaseQuality(data.codebaseAnalysis);
     const implementationQuality = this.analyzeImplementationQuality(data);
     const documentationQuality = this.analyzeDocumentationQuality(data);
