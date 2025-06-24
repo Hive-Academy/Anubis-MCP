@@ -113,9 +113,47 @@
       "actions": []
     },
     {
+      "name": "create_pull_request",
+      "description": "Create comprehensive pull request with implementation summary",
+      "sequenceNumber": 4,
+      "isRequired": true,
+      "stepType": "ACTION",
+      "approach": "Comprehensive pull request creation with detailed description",
+      "approachGuidance": {
+        "stepByStep": [
+          "Generate comprehensive file change summary",
+          "Create detailed PR description with implementation overview",
+          "Include documentation updates summary in PR",
+          "Provide reviewer guidance and validation steps",
+          "Create pull request with comprehensive details"
+        ]
+      },
+      "qualityChecklist": [
+        "Comprehensive file change summary generated",
+        "Detailed PR description created with implementation overview",
+        "Documentation updates summarized in PR",
+        "Reviewer guidance and validation steps provided",
+        "Pull request created with comprehensive details"
+      ],
+      "conditions": [
+        {
+          "name": "documentation_updated",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "check": "step_completed",
+            "parameters": {
+              "stepName": "update_documentation"
+            }
+          },
+          "isRequired": true
+        }
+      ],
+      "actions": []
+    },
+    {
       "name": "complete_workflow",
       "description": "Complete task and workflow execution",
-      "sequenceNumber": 4,
+      "sequenceNumber": 5,
       "isRequired": true,
       "stepType": "ACTION",
       "approach": "Complete both task and workflow execution with final status",
