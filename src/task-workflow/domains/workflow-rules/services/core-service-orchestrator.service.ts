@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { TaskOperationsService } from '../../core-workflow/task-operations.service';
-import { PlanningOperationsService } from '../../core-workflow/planning-operations.service';
-import { WorkflowOperationsService } from '../../core-workflow/workflow-operations.service';
-import { ReviewOperationsService } from '../../core-workflow/review-operations.service';
-import { ResearchOperationsService } from '../../core-workflow/research-operations.service';
+import { Injectable } from '@nestjs/common';
 import { IndividualSubtaskOperationsService } from '../../core-workflow/individual-subtask-operations.service';
+import { PlanningOperationsService } from '../../core-workflow/planning-operations.service';
+import { ResearchOperationsService } from '../../core-workflow/research-operations.service';
+import { ReviewOperationsService } from '../../core-workflow/review-operations.service';
+import { TaskOperationsService } from '../../core-workflow/task-operations.service';
+import { WorkflowOperationsService } from '../../core-workflow/workflow-operations.service';
 import { getErrorMessage } from '../utils/type-safety.utils';
 
 // ===================================================================
@@ -77,8 +77,6 @@ export class InvalidOperationError extends Error {
  */
 @Injectable()
 export class CoreServiceOrchestrator {
-  private readonly logger = new Logger(CoreServiceOrchestrator.name);
-
   // Supported services mapping - initialized after constructor
   private serviceMap!: Map<string, CoreService>;
 
@@ -113,10 +111,6 @@ export class CoreServiceOrchestrator {
     const startTime = performance.now();
 
     try {
-      this.logger.debug(
-        `Executing MCP service call: ${serviceName}.${operation}`,
-      );
-
       // Simple validation
       this.validateServiceCall(serviceName, operation);
 
@@ -129,10 +123,6 @@ export class CoreServiceOrchestrator {
 
       const duration = performance.now() - startTime;
 
-      this.logger.debug(
-        `MCP service call completed: ${serviceName}.${operation} (${Math.round(duration)}ms)`,
-      );
-
       return {
         success: true,
         serviceName,
@@ -142,11 +132,6 @@ export class CoreServiceOrchestrator {
       };
     } catch (error) {
       const duration = performance.now() - startTime;
-
-      this.logger.error(
-        `MCP service call failed: ${serviceName}.${operation}`,
-        error,
-      );
 
       return {
         success: false,
@@ -167,10 +152,6 @@ export class CoreServiceOrchestrator {
   ): Promise<McpBatchExecutionResult> {
     const startTime = performance.now();
     const results: McpServiceCallResult[] = [];
-
-    this.logger.debug(
-      `Executing batch MCP service calls: ${operations.length} operations`,
-    );
 
     for (const operation of operations) {
       const result = await this.executeServiceCall(
@@ -319,85 +300,72 @@ export class CoreServiceOrchestrator {
     executionMode: 'sequential' | 'parallel' = 'sequential',
     continueOnFailure: boolean = false,
   ): Promise<unknown> {
-    try {
-      this.logger.debug(`Executing step with services: ${stepId}`, {
-        serviceCallsCount: serviceCalls.length,
+    if (!serviceCalls || serviceCalls.length === 0) {
+      throw new Error(`No service calls provided for step: ${stepId}`);
+    }
+
+    // Convert to MCP service operations format
+    const operations: McpServiceOperation[] = serviceCalls.map((call) => ({
+      serviceName: call.serviceName,
+      operation: call.operation,
+      parameters: call.parameters,
+    }));
+
+    // Execute based on mode
+    if (executionMode === 'parallel') {
+      // Execute all operations in parallel
+      const results = await this.executeBatchServiceCalls(operations);
+
+      if (!results.overallSuccess && !continueOnFailure) {
+        throw new Error(
+          `Step execution failed: ${stepId}. ${results.failureCount} of ${operations.length} operations failed.`,
+        );
+      }
+
+      return {
+        stepId,
         executionMode,
-        continueOnFailure,
-      });
+        results: results.results,
+        overallSuccess: results.overallSuccess,
+        successCount: results.successCount,
+        failureCount: results.failureCount,
+        totalDuration: results.totalDuration,
+      };
+    } else {
+      // Execute operations sequentially
+      const results: McpServiceCallResult[] = [];
+      let totalDuration = 0;
 
-      if (!serviceCalls || serviceCalls.length === 0) {
-        throw new Error(`No service calls provided for step: ${stepId}`);
-      }
+      for (const operation of operations) {
+        const result = await this.executeServiceCall(
+          operation.serviceName,
+          operation.operation,
+          operation.parameters,
+        );
 
-      // Convert to MCP service operations format
-      const operations: McpServiceOperation[] = serviceCalls.map((call) => ({
-        serviceName: call.serviceName,
-        operation: call.operation,
-        parameters: call.parameters,
-      }));
+        results.push(result);
+        totalDuration += result.duration;
 
-      // Execute based on mode
-      if (executionMode === 'parallel') {
-        // Execute all operations in parallel
-        const results = await this.executeBatchServiceCalls(operations);
-
-        if (!results.overallSuccess && !continueOnFailure) {
+        // Stop on failure if not continuing on failure
+        if (!result.success && !continueOnFailure) {
           throw new Error(
-            `Step execution failed: ${stepId}. ${results.failureCount} of ${operations.length} operations failed.`,
+            `Step execution failed at operation ${operation.serviceName}.${operation.operation}: ${result.error}`,
           );
         }
-
-        return {
-          stepId,
-          executionMode,
-          results: results.results,
-          overallSuccess: results.overallSuccess,
-          successCount: results.successCount,
-          failureCount: results.failureCount,
-          totalDuration: results.totalDuration,
-        };
-      } else {
-        // Execute operations sequentially
-        const results: McpServiceCallResult[] = [];
-        let totalDuration = 0;
-
-        for (const operation of operations) {
-          const result = await this.executeServiceCall(
-            operation.serviceName,
-            operation.operation,
-            operation.parameters,
-          );
-
-          results.push(result);
-          totalDuration += result.duration;
-
-          // Stop on failure if not continuing on failure
-          if (!result.success && !continueOnFailure) {
-            throw new Error(
-              `Step execution failed at operation ${operation.serviceName}.${operation.operation}: ${result.error}`,
-            );
-          }
-        }
-
-        const successCount = results.filter((r) => r.success).length;
-        const failureCount = results.length - successCount;
-
-        return {
-          stepId,
-          executionMode,
-          results,
-          overallSuccess: successCount > 0,
-          successCount,
-          failureCount,
-          totalDuration,
-        };
       }
-    } catch (error) {
-      this.logger.error(`Step execution with services failed: ${stepId}`, {
-        error: getErrorMessage(error),
-      });
-      throw error;
+
+      const successCount = results.filter((r) => r.success).length;
+      const failureCount = results.length - successCount;
+
+      return {
+        stepId,
+        executionMode,
+        results,
+        overallSuccess: successCount > 0,
+        successCount,
+        failureCount,
+        totalDuration,
+      };
     }
   }
 }

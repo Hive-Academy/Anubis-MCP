@@ -1,7 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { Comment, Prisma, ResearchReport } from 'generated/prisma';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { ResearchOperationsInput } from './schemas/research-operations.schema';
-import { ResearchReport, Comment, Prisma } from 'generated/prisma';
 
 // Type-safe interfaces for research operations
 export interface ResearchOperationResult {
@@ -46,8 +46,6 @@ export interface CommentSummary {
  */
 @Injectable()
 export class ResearchOperationsService {
-  private readonly logger = new Logger(ResearchOperationsService.name);
-
   constructor(private readonly prisma: PrismaService) {}
 
   async executeResearchOperation(
@@ -56,10 +54,6 @@ export class ResearchOperationsService {
     const startTime = performance.now();
 
     try {
-      this.logger.debug(`Research Operation: ${input.operation}`, {
-        taskId: input.taskId,
-      });
-
       let result:
         | ResearchReport
         | Comment
@@ -98,8 +92,6 @@ export class ResearchOperationsService {
         },
       };
     } catch (error: any) {
-      this.logger.error(`Research operation failed:`, error);
-
       return {
         success: false,
         error: {

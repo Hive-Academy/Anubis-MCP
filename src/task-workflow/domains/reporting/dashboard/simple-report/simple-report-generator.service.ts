@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { SimpleReportData } from '../../shared/types/report-data.types';
 
 /**
@@ -9,15 +9,10 @@ import { SimpleReportData } from '../../shared/types/report-data.types';
  */
 @Injectable()
 export class SimpleReportGeneratorService {
-  private readonly logger = new Logger(SimpleReportGeneratorService.name);
-
   /**
    * Generate simple report HTML using type-safe data
    */
   generateSimpleReport(data: SimpleReportData): string {
-    this.logger.log('Generating type-safe simple report HTML');
-    this.logger.log(`Tasks: ${data.tasks.length}`);
-
     return `
 <!DOCTYPE html>
 <html lang="en">

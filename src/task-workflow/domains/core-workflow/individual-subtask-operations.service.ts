@@ -1,7 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { Prisma, Subtask } from 'generated/prisma';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { IndividualSubtaskOperationsInput } from './schemas/individual-subtask-operations.schema';
-import { Subtask, Prisma } from 'generated/prisma';
 
 // Type-safe interfaces for subtask operations
 export interface SubtaskOperationResult {
@@ -113,8 +113,6 @@ interface BatchCompletionResult {
  */
 @Injectable()
 export class IndividualSubtaskOperationsService {
-  private readonly logger = new Logger(IndividualSubtaskOperationsService.name);
-
   constructor(private readonly prisma: PrismaService) {}
 
   async executeIndividualSubtaskOperation(
@@ -123,11 +121,6 @@ export class IndividualSubtaskOperationsService {
     const startTime = performance.now();
 
     try {
-      this.logger.debug(`Individual Subtask Operation: ${input.operation}`, {
-        taskId: input.taskId,
-        subtaskId: input.subtaskId,
-      });
-
       let result:
         | Subtask
         | SubtaskWithDependencies
@@ -165,8 +158,6 @@ export class IndividualSubtaskOperationsService {
         },
       };
     } catch (error: any) {
-      this.logger.error(`Individual subtask operation failed:`, error);
-
       return {
         success: false,
         error: {
@@ -360,16 +351,7 @@ export class IndividualSubtaskOperationsService {
           taskId,
           updatedSubtask.batchId,
         );
-
-        if (batchCompletionResult.completionTriggered) {
-          this.logger.log(
-            `Automatic batch completion triggered for batch ${updatedSubtask.batchId} after completing subtask ${updatedSubtask.name}`,
-          );
-        }
-      } catch (error: any) {
-        this.logger.warn(
-          `Failed to check batch completion for batch ${updatedSubtask.batchId}: ${error.message}`,
-        );
+      } catch (_error: any) {
         // Don't fail the subtask update if batch completion check fails
       }
     }
@@ -678,11 +660,6 @@ export class IndividualSubtaskOperationsService {
         this.generateBatchImplementationNotes(subtasks);
       const completionSummary = `Automatic batch completion: All ${subtasks.length} subtasks completed successfully`;
 
-      // Log the automatic completion
-      this.logger.log(
-        `Automatic batch completion detected for ${batchId} in task ${taskId}`,
-      );
-
       return {
         batchCompleted: true,
         completionTriggered: true,
@@ -698,7 +675,6 @@ export class IndividualSubtaskOperationsService {
         message: `Batch ${batchId} automatically completed - all ${subtasks.length} subtasks finished`,
       };
     } catch (error: any) {
-      this.logger.error(`Batch completion check failed for ${batchId}:`, error);
       return {
         batchCompleted: false,
         completionTriggered: false,

@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ZodSchema } from 'zod';
 
 // Import ALL schemas dynamically
-import { TaskOperationsSchema } from '../../core-workflow/schemas/task-operations.schema';
+import { IndividualSubtaskOperationsSchema } from '../../core-workflow/schemas/individual-subtask-operations.schema';
 import { PlanningOperationsSchema } from '../../core-workflow/schemas/planning-operations.schema';
-import { WorkflowOperationsSchema } from '../../core-workflow/schemas/workflow-operations.schema';
 import { ResearchOperationsSchema } from '../../core-workflow/schemas/research-operations.schema';
 import { ReviewOperationsSchema } from '../../core-workflow/schemas/review-operations.schema';
-import { IndividualSubtaskOperationsSchema } from '../../core-workflow/schemas/individual-subtask-operations.schema';
+import { TaskOperationsSchema } from '../../core-workflow/schemas/task-operations.schema';
+import { WorkflowOperationsSchema } from '../../core-workflow/schemas/workflow-operations.schema';
 
 /**
  * 🎯 SCHEMA DEFINITION GENERATOR SERVICE - FULLY DYNAMIC
@@ -31,8 +31,6 @@ import { IndividualSubtaskOperationsSchema } from '../../core-workflow/schemas/i
  */
 @Injectable()
 export class SchemaDefinitionGeneratorService {
-  private readonly logger = new Logger(SchemaDefinitionGeneratorService.name);
-
   // 🎯 DYNAMIC: Schema registry - automatically includes all imported schemas
   private readonly schemaRegistry: Record<string, ZodSchema> = {
     TaskOperations: TaskOperationsSchema,
@@ -64,11 +62,7 @@ export class SchemaDefinitionGeneratorService {
       return {
         schemaDefinition,
       };
-    } catch (error) {
-      this.logger.error(
-        `Failed to generate schema definition for ${serviceName}.${operation}`,
-        error,
-      );
+    } catch (_error) {
       return {
         schemaDefinition: {},
       };
@@ -98,10 +92,6 @@ export class SchemaDefinitionGeneratorService {
       // Return full schema if no operation-specific extraction possible
       return fullSchema;
     } catch (error) {
-      this.logger.warn(
-        `Failed to parse schema for ${serviceName}, using fallback`,
-        error,
-      );
       return {
         type: 'unknown',
         description: `Failed to parse schema for ${serviceName}: ${error.message}`,
@@ -149,11 +139,7 @@ export class SchemaDefinitionGeneratorService {
       };
 
       return operationSchema;
-    } catch (error) {
-      this.logger.warn(
-        `Failed to extract operation-specific schema for ${operation}`,
-        error,
-      );
+    } catch (_error) {
       return fullSchema;
     }
   }

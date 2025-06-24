@@ -1,11 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { StepDataUtils } from '../utils/step-data.utils';
 import {
   extractStreamlinedGuidance,
   StepNotFoundError,
 } from '../utils/step-service-shared.utils';
-import { McpActionData, StepQueryService } from './step-query.service';
 import { RequiredInputExtractorService } from './required-input-extractor.service';
+import { McpActionData, StepQueryService } from './step-query.service';
 import { WorkflowExecutionService } from './workflow-execution.service';
 
 export interface StepGuidanceContext {
@@ -49,8 +49,6 @@ export class StepConfigNotFoundError extends Error {
  */
 @Injectable()
 export class StepGuidanceService {
-  private readonly logger = new Logger(StepGuidanceService.name);
-
   constructor(
     private readonly stepQueryService: StepQueryService,
     private readonly requiredInputService: RequiredInputExtractorService,
@@ -66,103 +64,85 @@ export class StepGuidanceService {
   async getStepGuidance(
     context: StepGuidanceContext,
   ): Promise<StepGuidanceResult> {
-    try {
-      // 🔧 CRITICAL FIX: Auto-detect step if not provided (common after transitions)
-      let stepId = context.stepId;
+    // 🔧 CRITICAL FIX: Auto-detect step if not provided (common after transitions)
+    let stepId = context.stepId;
 
-      if (!stepId || context.validateTransitionState !== false) {
-        const resolvedStepId = await this.resolveStepId(context);
+    if (!stepId || context.validateTransitionState !== false) {
+      const resolvedStepId = await this.resolveStepId(context);
 
-        if (!resolvedStepId) {
-          throw new StepNotFoundError(
-            'unknown',
-            'StepGuidanceService',
-            'getStepGuidance - could not resolve stepId for current context',
-          );
-        }
-
-        stepId = resolvedStepId;
+      if (!resolvedStepId) {
+        throw new StepNotFoundError(
+          'unknown',
+          'StepGuidanceService',
+          'getStepGuidance - could not resolve stepId for current context',
+        );
       }
 
-      // Get step with MCP actions
-      const step = await this.stepQueryService.getStepWithMcpActions(stepId);
+      stepId = resolvedStepId;
+    }
 
-      if (!step) {
+    // Get step with MCP actions
+    const step = await this.stepQueryService.getStepWithMcpActions(stepId);
+
+    if (!step) {
+      throw new StepNotFoundError(
+        stepId,
+        'StepGuidanceService',
+        'getStepGuidance',
+      );
+    }
+
+    // Validate step belongs to current role
+    if (step.roleId !== context.roleId) {
+      // Try to find correct step for current role
+      const correctStep = await this.stepQueryService.getNextAvailableStep(
+        context.taskId.toString(),
+        context.roleId,
+        { checkTransitionState: true },
+      );
+
+      if (correctStep) {
+        return await this.getStepGuidance({
+          ...context,
+          stepId: correctStep.id,
+          validateTransitionState: false, // Avoid infinite recursion
+        });
+      } else {
         throw new StepNotFoundError(
           stepId,
           'StepGuidanceService',
-          'getStepGuidance',
+          `Step role mismatch: step belongs to ${step.roleId}, requested for ${context.roleId}`,
         );
       }
-
-      // Validate step belongs to current role
-      if (step.roleId !== context.roleId) {
-        this.logger.warn(
-          `Step ${stepId} belongs to role ${step.roleId} but requested for role ${context.roleId}. Attempting to find correct step.`,
-        );
-
-        // Try to find correct step for current role
-        const correctStep = await this.stepQueryService.getNextAvailableStep(
-          context.taskId.toString(),
-          context.roleId,
-          { checkTransitionState: true },
-        );
-
-        if (correctStep) {
-          return await this.getStepGuidance({
-            ...context,
-            stepId: correctStep.id,
-            validateTransitionState: false, // Avoid infinite recursion
-          });
-        } else {
-          throw new StepNotFoundError(
-            stepId,
-            'StepGuidanceService',
-            `Step role mismatch: step belongs to ${step.roleId}, requested for ${context.roleId}`,
-          );
-        }
-      }
-
-      // Extract MCP actions with dynamic parameter information
-      const mcpActions = step.mcpActions.map((action: McpActionData) => {
-        return {
-          ...action,
-          schema: this.requiredInputService.extractFromServiceSchema(
-            action.serviceName,
-            action.operation,
-          ),
-        };
-      });
-
-      // Get guidance from database step data
-      const enhancedGuidance = extractStreamlinedGuidance(step);
-
-      this.logger.log(
-        `Step guidance prepared for step: ${stepId} (${step.name}) for role: ${context.roleId}`,
-      );
-
-      return {
-        step: StepDataUtils.extractStepInfo(step),
-        mcpActions,
-        qualityChecklist: enhancedGuidance.qualityChecklist,
-        stepByStep: enhancedGuidance.stepByStep,
-        approach: step.approach,
-        guidance: step.stepGuidance,
-        transitionContext: {
-          stepResolved: stepId !== context.stepId,
-          originalStepId: context.stepId,
-          resolvedStepId: stepId,
-        },
-      };
-    } catch (error) {
-      this.logger.error(`Error getting step guidance for context:`, {
-        taskId: context.taskId,
-        roleId: context.roleId,
-        stepId: context.stepId,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      throw error;
     }
+
+    // Extract MCP actions with dynamic parameter information
+    const mcpActions = step.mcpActions.map((action: McpActionData) => {
+      return {
+        ...action,
+        schema: this.requiredInputService.extractFromServiceSchema(
+          action.serviceName,
+          action.operation,
+        ),
+      };
+    });
+
+    // Get guidance from database step data
+    const enhancedGuidance = extractStreamlinedGuidance(step);
+
+    return {
+      step: StepDataUtils.extractStepInfo(step),
+      mcpActions,
+      qualityChecklist: enhancedGuidance.qualityChecklist,
+      stepByStep: enhancedGuidance.stepByStep,
+      approach: step.approach,
+      guidance: step.stepGuidance,
+      transitionContext: {
+        stepResolved: stepId !== context.stepId,
+        originalStepId: context.stepId,
+        resolvedStepId: stepId,
+      },
+    };
   }
 
   /**
@@ -174,8 +154,6 @@ export class StepGuidanceService {
   private async handleBootstrap(
     context: StepGuidanceContext,
   ): Promise<string | null> {
-    this.logger.log('Bootstrap mode detected: resolving stepId without taskId');
-
     // Use executionId to detect progression past first step
     if (context.executionId) {
       const exec = await this.workflowExecutionService.getExecutionById(
@@ -197,22 +175,13 @@ export class StepGuidanceService {
             );
 
           if (nextStep) {
-            this.logger.log(
-              `Bootstrap progression: resolved NEXT step ${nextStep.id} (${nextStep.name}) after completing ${exec.stepsCompleted} steps`,
-            );
             return nextStep.id;
           }
 
-          this.logger.log(
-            `Bootstrap progression: no further steps, returning currentStepId ${exec.currentStepId}`,
-          );
           return exec.currentStepId;
         }
 
         if (exec.currentStepId) {
-          this.logger.log(
-            `Bootstrap initial: using execution.currentStepId ${exec.currentStepId}`,
-          );
           return exec.currentStepId;
         }
       }
@@ -222,14 +191,9 @@ export class StepGuidanceService {
       context.roleId,
     );
     if (firstStep) {
-      this.logger.log(
-        `Bootstrap: resolved to first step for role: ${firstStep.id} (${firstStep.name})`,
-      );
       return firstStep.id;
     }
-    this.logger.error(
-      `Bootstrap: no first step found for role: ${context.roleId}`,
-    );
+
     return null;
   }
 
@@ -243,11 +207,6 @@ export class StepGuidanceService {
       );
 
     if (stateValidation.isValid && stateValidation.currentStep) {
-      this.logger.log(
-        `Resolved stepId from execution state: ${stateValidation.currentStep.id}${
-          stateValidation.corrected ? ' (state corrected)' : ''
-        }`,
-      );
       return stateValidation.currentStep.id;
     }
 
@@ -258,9 +217,6 @@ export class StepGuidanceService {
     );
 
     if (nextStep) {
-      this.logger.log(
-        `Resolved stepId from next available step: ${nextStep.id} (${nextStep.name})`,
-      );
       return nextStep.id;
     }
 
@@ -274,12 +230,8 @@ export class StepGuidanceService {
       context.roleId,
     );
     if (firstStep) {
-      this.logger.log(
-        `Resolved stepId from first step for role: ${firstStep.id} (${firstStep.name})`,
-      );
       return firstStep.id;
     }
-    this.logger.error(`Could not resolve stepId for role: ${context.roleId}`);
     return null;
   }
 
@@ -298,8 +250,7 @@ export class StepGuidanceService {
 
       // Fallback
       return await this.findFallbackStep(context);
-    } catch (error) {
-      this.logger.error('Error resolving stepId:', error);
+    } catch (_error) {
       return null;
     }
   }

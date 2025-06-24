@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { RolePerformanceData } from '../../shared/types/report-data.types';
 
 /**
@@ -9,15 +9,10 @@ import { RolePerformanceData } from '../../shared/types/report-data.types';
  */
 @Injectable()
 export class RolePerformanceGeneratorService {
-  private readonly logger = new Logger(RolePerformanceGeneratorService.name);
-
   /**
    * Generate role performance HTML using type-safe data
    */
   generateRolePerformance(data: RolePerformanceData): string {
-    this.logger.log('Generating type-safe role performance HTML');
-    this.logger.log(`Analyzing ${data.roleMetrics.length} roles`);
-
     return `
 <!DOCTYPE html>
 <html lang="en">

@@ -1,5 +1,5 @@
 // src/task-workflow/domains/reporting/report-mcp-operations.service.ts
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { McpOrchestratorService } from './mcp-orchestrator.service';
@@ -95,7 +95,6 @@ interface ReportJobStatus {
 
 @Injectable()
 export class ReportMcpOperationsService {
-  private readonly logger = new Logger(ReportMcpOperationsService.name);
   private readonly reportJobs = new Map<string, ReportJobStatus>();
 
   constructor(private readonly mcpOrchestrator: McpOrchestratorService) {}
@@ -107,10 +106,6 @@ export class ReportMcpOperationsService {
   })
   async generateWorkflowReport(input: GenerateReportInput): Promise<any> {
     const jobId = `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-    this.logger.log(
-      `Starting simplified report generation: ${jobId} (${input.reportType})`,
-    );
 
     // Initialize job status
     const jobStatus: ReportJobStatus = {
@@ -170,10 +165,6 @@ export class ReportMcpOperationsService {
           : 0,
       };
 
-      this.logger.log(
-        `Simplified report generation completed: ${jobId} (${reportResponse.metadata.processingTime}ms)`,
-      );
-
       // Prepare optimized response
       const summary = this.generateReportSummary(
         reportResponse.data,
@@ -215,8 +206,6 @@ ${this.formatSummaryText(summary)}
         ],
       };
     } catch (error: any) {
-      this.logger.error(`Simplified report generation failed: ${jobId}`, error);
-
       // Update job status
       jobStatus.status = 'failed';
       jobStatus.completedAt = new Date();
@@ -359,7 +348,6 @@ ${jobStatus.error ? `❌ Error: ${jobStatus.error}` : ''}`,
     for (const [jobId, job] of this.reportJobs.entries()) {
       if (job.startedAt < cutoffTime) {
         this.reportJobs.delete(jobId);
-        this.logger.log(`Cleaned up old job: ${jobId}`);
       }
     }
   }

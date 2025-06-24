@@ -1,11 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { TaskDetailData } from '../../shared/types/report-data.types';
+import { Injectable } from '@nestjs/common';
 import {
-  TaskWithRelations,
   DelegationRecordWithRelations,
   ImplementationPlanWithRelations,
   SubtaskWithRelations,
+  TaskWithRelations,
 } from '../../shared/types';
+import { TaskDetailData } from '../../shared/types/report-data.types';
 
 /**
  * Task Detail Builder Service
@@ -16,8 +16,6 @@ import {
  */
 @Injectable()
 export class TaskDetailBuilderService {
-  private readonly logger = new Logger(TaskDetailBuilderService.name);
-
   /**
    * Build complete TaskDetailData structure from database entities
    * Uses database types as source of truth
@@ -28,8 +26,6 @@ export class TaskDetailBuilderService {
     subtasks: SubtaskWithRelations[],
     delegations: DelegationRecordWithRelations[],
   ): TaskDetailData {
-    this.logger.log(`Building task detail data for task: ${task.name}`);
-
     return {
       task: this.buildTaskInfo(task),
       description: task.taskDescription

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { z } from 'zod';
 // EnvelopeBuilderService removed - using minimal responses
@@ -226,8 +226,6 @@ type WorkflowExecutionInputSchema = z.infer<typeof WorkflowExecutionSchema>;
  */
 @Injectable()
 export class WorkflowExecutionMcpService {
-  private readonly logger = new Logger(WorkflowExecutionMcpService.name);
-
   constructor(
     private readonly executionOps: WorkflowExecutionOperationsService,
   ) {}
@@ -241,12 +239,6 @@ export class WorkflowExecutionMcpService {
     content: Array<{ type: 'text'; text: string }>;
   }> {
     try {
-      this.logger.debug(`Workflow Execution: ${input.operation}`, {
-        taskId: input.taskId,
-        executionId: input.executionId,
-        operation: input.operation,
-      });
-
       const workflowInput: WorkflowExecutionInput = {
         taskId: input.taskId,
         executionId: input.executionId,
@@ -328,7 +320,6 @@ export class WorkflowExecutionMcpService {
         ],
       };
     } catch (error: unknown) {
-      this.logger.error(`Workflow execution failed:`, error);
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
 

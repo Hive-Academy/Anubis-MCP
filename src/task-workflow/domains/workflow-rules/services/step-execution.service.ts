@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../../../prisma/prisma.service';
+import { StepDataUtils } from '../utils/step-data.utils';
+import { getErrorMessage } from '../utils/type-safety.utils';
 import { StepGuidanceService } from './step-guidance.service';
 import { StepProgressTrackerService } from './step-progress-tracker.service';
 import { StepQueryService, WorkflowStep } from './step-query.service';
-import { getErrorMessage } from '../utils/type-safety.utils';
-import { StepDataUtils } from '../utils/step-data.utils';
-import { PrismaService } from '../../../../prisma/prisma.service';
 import { WorkflowExecutionService } from './workflow-execution.service';
 
 // ===================================================================
@@ -84,19 +84,13 @@ export interface ValidationResult {
 
 @Injectable()
 export class StepExecutionService {
-  private readonly logger = new Logger(StepExecutionService.name);
-
   constructor(
     private readonly guidanceService: StepGuidanceService,
     private readonly progressService: StepProgressTrackerService,
     private readonly queryService: StepQueryService,
     private readonly prisma: PrismaService,
     private readonly workflowExecutionService: WorkflowExecutionService,
-  ) {
-    this.logger.log(
-      '✅ StepExecutionService initialized - Consolidated service with core execution',
-    );
-  }
+  ) {}
 
   // ===================================================================
   // 🎯 CORE EXECUTION METHODS (Merged from StepExecutionCoreService)
@@ -109,8 +103,6 @@ export class StepExecutionService {
     context: StepExecutionContext,
   ): Promise<StepExecutionResult> {
     try {
-      this.logger.debug(`Executing step: ${context.stepId}`);
-
       // Start progress tracking (from core service)
       await this.progressService.startStep(
         context.stepId,
@@ -125,10 +117,6 @@ export class StepExecutionService {
         taskId: parseInt(context.taskId),
       });
 
-      this.logger.log(
-        `Step guidance prepared for AI execution: ${context.stepId}`,
-      );
-
       return {
         success: true,
         guidance,
@@ -138,8 +126,6 @@ export class StepExecutionService {
       await this.progressService.failStep(context.stepId, {
         errors: [`Guidance preparation failed: ${getErrorMessage(error)}`],
       });
-
-      this.logger.error(`Failed to execute step: ${getErrorMessage(error)}`);
       throw error;
     }
   }
@@ -150,37 +136,32 @@ export class StepExecutionService {
   async processExecutionResults(
     context: ExecutionResultContext,
   ): Promise<ProcessingResult> {
-    try {
-      const validationResult = this.validateExecutionResults(context.results);
+    const validationResult = this.validateExecutionResults(context.results);
 
-      if (validationResult.isValid) {
-        await this.progressService.completeStep(context.stepId, {
-          result: 'SUCCESS',
-          mcpResults: context.results,
-          duration: context.executionTime,
-        });
+    if (validationResult.isValid) {
+      await this.progressService.completeStep(context.stepId, {
+        result: 'SUCCESS',
+        mcpResults: context.results,
+        duration: context.executionTime,
+      });
 
-        return {
-          success: true,
-          stepCompleted: true,
-          nextStepRecommendation: this.getNextStepRecommendation(context),
-        };
-      } else {
-        await this.progressService.failStep(context.stepId, {
-          errors: validationResult.errors,
-          mcpResults: context.results,
-        });
+      return {
+        success: true,
+        stepCompleted: true,
+        nextStepRecommendation: this.getNextStepRecommendation(context),
+      };
+    } else {
+      await this.progressService.failStep(context.stepId, {
+        errors: validationResult.errors,
+        mcpResults: context.results,
+      });
 
-        return {
-          success: false,
-          stepCompleted: false,
-          errors: validationResult.errors,
-          retryRecommendation: this.getRetryRecommendation(validationResult),
-        };
-      }
-    } catch (error) {
-      this.logger.error(`Failed to process execution results:`, error);
-      throw error;
+      return {
+        success: false,
+        stepCompleted: false,
+        errors: validationResult.errors,
+        retryRecommendation: this.getRetryRecommendation(validationResult),
+      };
     }
   }
 
@@ -193,116 +174,94 @@ export class StepExecutionService {
     result: 'success' | 'failure',
     executionData?: unknown,
   ) {
-    try {
-      this.logger.debug(`Processing step completion: ${stepId} -> ${result}`);
+    // Get current execution to get taskId and roleId
+    const execution = await this.prisma.workflowExecution.findUnique({
+      where: { id: executionId },
+      select: { taskId: true, currentRoleId: true },
+    });
 
-      // Get current execution to get taskId and roleId
-      const execution = await this.prisma.workflowExecution.findUnique({
-        where: { id: executionId },
-        select: { taskId: true, currentRoleId: true },
-      });
-
-      if (!execution) {
-        throw new Error(`Execution not found: ${executionId}`);
-      }
-
-      // Update step progress tied to execution
-      await this.prisma.workflowStepProgress.create({
-        data: {
-          executionId: executionId,
-          taskId: execution.taskId?.toString(),
-          stepId,
-          roleId: execution.currentRoleId,
-          status: result === 'success' ? 'COMPLETED' : 'FAILED',
-          startedAt: new Date(),
-          completedAt: result === 'success' ? new Date() : null,
-          failedAt: result === 'failure' ? new Date() : null,
-          result: result === 'success' ? 'SUCCESS' : 'FAILURE',
-          executionData: executionData
-            ? JSON.parse(JSON.stringify(executionData))
-            : null,
-        },
-      });
-
-      // If step completed successfully, advance to next step
-      if (result === 'success') {
-        const nextStep =
-          await this.queryService.getNextStepAfterCompletion(stepId);
-
-        // Update workflow execution to point to next step
-        const currentExecution = await this.prisma.workflowExecution.findUnique(
-          {
-            where: { id: executionId },
-          },
-        );
-
-        if (currentExecution) {
-          // Update execution core fields (currentStepId, stepsCompleted)
-          await this.prisma.workflowExecution.update({
-            where: { id: executionId },
-            data: {
-              currentStepId: nextStep?.id || null,
-              stepsCompleted: (currentExecution.stepsCompleted || 0) + 1,
-            },
-          });
-
-          // Update executionState via validated helper
-          await this.workflowExecutionService.updateExecutionState(
-            executionId,
-            {
-              lastCompletedStep: {
-                id: stepId,
-                completedAt: new Date().toISOString(),
-                result,
-              },
-              ...(nextStep && {
-                currentStep: {
-                  id: nextStep.id,
-                  name: nextStep.name,
-                  sequenceNumber: nextStep.sequenceNumber,
-                  assignedAt: new Date().toISOString(),
-                },
-              }),
-            },
-          );
-        }
-
-        return {
-          success: true,
-          stepId,
-          executionData,
-          nextStep: nextStep
-            ? {
-                id: nextStep.id,
-                name: nextStep.name,
-                sequenceNumber: nextStep.sequenceNumber,
-              }
-            : null,
-        };
-      }
-
-      return { success: false, stepId, executionData };
-    } catch (error) {
-      this.logger.error(
-        `Failed to process step completion: ${getErrorMessage(error)}`,
-      );
-      throw error;
+    if (!execution) {
+      throw new Error(`Execution not found: ${executionId}`);
     }
+
+    // Update step progress tied to execution
+    await this.prisma.workflowStepProgress.create({
+      data: {
+        executionId: executionId,
+        taskId: execution.taskId?.toString(),
+        stepId,
+        roleId: execution.currentRoleId,
+        status: result === 'success' ? 'COMPLETED' : 'FAILED',
+        startedAt: new Date(),
+        completedAt: result === 'success' ? new Date() : null,
+        failedAt: result === 'failure' ? new Date() : null,
+        result: result === 'success' ? 'SUCCESS' : 'FAILURE',
+        executionData: executionData
+          ? JSON.parse(JSON.stringify(executionData))
+          : null,
+      },
+    });
+
+    // If step completed successfully, advance to next step
+    if (result === 'success') {
+      const nextStep =
+        await this.queryService.getNextStepAfterCompletion(stepId);
+
+      // Update workflow execution to point to next step
+      const currentExecution = await this.prisma.workflowExecution.findUnique({
+        where: { id: executionId },
+      });
+
+      if (currentExecution) {
+        // Update execution core fields (currentStepId, stepsCompleted)
+        await this.prisma.workflowExecution.update({
+          where: { id: executionId },
+          data: {
+            currentStepId: nextStep?.id || null,
+            stepsCompleted: (currentExecution.stepsCompleted || 0) + 1,
+          },
+        });
+
+        // Update executionState via validated helper
+        await this.workflowExecutionService.updateExecutionState(executionId, {
+          lastCompletedStep: {
+            id: stepId,
+            completedAt: new Date().toISOString(),
+            result,
+          },
+          ...(nextStep && {
+            currentStep: {
+              id: nextStep.id,
+              name: nextStep.name,
+              sequenceNumber: nextStep.sequenceNumber,
+              assignedAt: new Date().toISOString(),
+            },
+          }),
+        });
+      }
+
+      return {
+        success: true,
+        stepId,
+        executionData,
+        nextStep: nextStep
+          ? {
+              id: nextStep.id,
+              name: nextStep.name,
+              sequenceNumber: nextStep.sequenceNumber,
+            }
+          : null,
+      };
+    }
+
+    return { success: false, stepId, executionData };
   }
 
   /**
    * Get step progress - basic implementation
    */
   getStepProgress(taskId: number): unknown {
-    try {
-      this.logger.debug(`Getting step progress for task: ${taskId}`);
-      return { taskId, status: 'in_progress' };
-    } catch (error) {
-      this.logger.error(
-        `Failed to get step progress: ${getErrorMessage(error)}`,
-      );
-      throw error;
-    }
+    return { taskId, status: 'in_progress' };
   }
 
   /**
@@ -313,17 +272,11 @@ export class StepExecutionService {
     roleId: string,
   ): Promise<WorkflowStep | null> {
     try {
-      this.logger.debug(
-        `Getting next available step - Task: ${taskId}, Role: ${roleId}`,
-      );
       return await this.queryService.getNextAvailableStep(
         taskId.toString(),
         roleId,
       );
-    } catch (error) {
-      this.logger.error(
-        `Failed to get next available step: ${getErrorMessage(error)}`,
-      );
+    } catch (_error) {
       return null;
     }
   }

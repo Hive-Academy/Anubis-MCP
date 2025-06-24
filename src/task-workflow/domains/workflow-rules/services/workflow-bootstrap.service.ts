@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../../prisma/prisma.service';
 
 // Simplified bootstrap input - just execution setup
@@ -25,8 +25,6 @@ export interface BootstrapWorkflowInput {
  */
 @Injectable()
 export class WorkflowBootstrapService {
-  private readonly logger = new Logger(WorkflowBootstrapService.name);
-
   constructor(private readonly prisma: PrismaService) {}
 
   /**
@@ -46,13 +44,7 @@ export class WorkflowBootstrapService {
    * - Step 5: Role delegation
    */
   async bootstrapWorkflow(input: BootstrapWorkflowInput): Promise<any> {
-    const startTime = Date.now();
-
     try {
-      this.logger.log(
-        `Starting workflow execution with role: ${input.initialRole}`,
-      );
-
       // Single transaction for workflow execution creation
       const result = await this.prisma.$transaction(async (tx) => {
         // Step 1: Get role with full context including capabilities
@@ -157,11 +149,6 @@ export class WorkflowBootstrapService {
         };
       });
 
-      const duration = Date.now() - startTime;
-      this.logger.log(
-        `Workflow execution started in ${duration}ms - Ready for step execution`,
-      );
-
       // Return execution data for immediate workflow start
       return {
         success: true,
@@ -176,7 +163,6 @@ export class WorkflowBootstrapService {
         currentRole: result.role,
       };
     } catch (error) {
-      this.logger.error(`Bootstrap failed:`, error);
       return {
         success: false,
         message: `Bootstrap failed: ${error.message}`,

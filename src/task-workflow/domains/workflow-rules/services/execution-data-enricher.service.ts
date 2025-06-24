@@ -1,16 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../../prisma/prisma.service';
-import { getErrorMessage } from '../utils/type-safety.utils';
+import { ProgressMetrics } from '../types/progress-calculator.types';
+import {
+  BaseServiceConfig,
+  ConfigurableService,
+} from '../utils/configurable-service.base';
 import { ExecutionDataUtils } from '../utils/execution-data.utils';
 import { RoleTransitionService } from './role-transition.service';
 import { StepExecutionService } from './step-execution.service';
 import { WorkflowExecutionWithRelations } from './workflow-execution.service';
 import { WorkflowGuidanceService } from './workflow-guidance.service';
-import {
-  ConfigurableService,
-  BaseServiceConfig,
-} from '../utils/configurable-service.base';
-import { ProgressMetrics } from '../types/progress-calculator.types';
 
 // Configuration interfaces to eliminate hardcoding
 export interface DataEnricherConfig extends BaseServiceConfig {
@@ -69,8 +68,6 @@ export interface EnrichedExecutionData {
  */
 @Injectable()
 export class ExecutionDataEnricherService extends ConfigurableService<DataEnricherConfig> {
-  private readonly logger = new Logger(ExecutionDataEnricherService.name);
-
   // Configuration with sensible defaults
   protected readonly defaultConfig: DataEnricherConfig = {
     defaults: {
@@ -121,11 +118,6 @@ export class ExecutionDataEnricherService extends ConfigurableService<DataEnrich
     this.initializeConfig();
   }
 
-  // Optional: Override configuration change hook
-  protected onConfigUpdate(): void {
-    this.logger.log('Data enricher configuration updated');
-  }
-
   /**
    * Enrich execution with all additional context data
    */
@@ -159,7 +151,6 @@ export class ExecutionDataEnricherService extends ConfigurableService<DataEnrich
       });
 
       if (!execution) {
-        this.logger.warn(`Execution not found: ${executionId}`);
         return [
           {
             name: this.getConfigValue('fallbackSteps').executionNotFound.name,
@@ -208,8 +199,7 @@ export class ExecutionDataEnricherService extends ConfigurableService<DataEnrich
             nextStep.description || `Execute ${nextStep.description}`,
         },
       ];
-    } catch (error) {
-      this.logger.warn('Failed to get next steps:', getErrorMessage(error));
+    } catch (_error) {
       return [
         {
           name: this.getConfigValue('fallbackSteps').errorFallback.name,
@@ -231,11 +221,7 @@ export class ExecutionDataEnricherService extends ConfigurableService<DataEnrich
       return await this.roleTransition.getAvailableTransitions(
         execution.currentRoleId,
       );
-    } catch (error) {
-      this.logger.warn(
-        'Failed to get available transitions:',
-        getErrorMessage(error),
-      );
+    } catch (_error) {
       return [];
     }
   }
@@ -367,11 +353,7 @@ export class ExecutionDataEnricherService extends ConfigurableService<DataEnrich
       try {
         const metrics = this.calculateProgressMetrics(execution);
         results.set(execution.id, metrics);
-      } catch (error) {
-        this.logger.warn(
-          `Failed to calculate progress for execution ${execution.id}:`,
-          getErrorMessage(error),
-        );
+      } catch (_error) {
         // Set fallback metrics
         results.set(execution.id, {
           percentage: 0,

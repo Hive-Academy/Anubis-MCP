@@ -1,6 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
-import * as path from 'path';
+import { Injectable } from '@nestjs/common';
 import * as fs from 'fs';
+import * as path from 'path';
 
 /**
  * MCP File Manager Service
@@ -9,8 +9,6 @@ import * as fs from 'fs';
  */
 @Injectable()
 export class McpFileManagerService {
-  private readonly logger = new Logger(McpFileManagerService.name);
-
   /**
    * Get the correct project root path for reports
    */
@@ -37,28 +35,22 @@ export class McpFileManagerService {
     basePath?: string,
     outputFormat: 'html' | 'json' = 'html',
   ): Promise<string> {
-    try {
-      const extension = outputFormat === 'json' ? 'json' : 'html';
-      const fileName = `${reportType}-${identifier}-${Date.now()}.${extension}`;
+    const extension = outputFormat === 'json' ? 'json' : 'html';
+    const fileName = `${reportType}-${identifier}-${Date.now()}.${extension}`;
 
-      // Always use project root, never data directory
-      const projectRoot = this.getProjectRoot(basePath);
-      const filePath = path.join(
-        projectRoot,
-        'workflow-reports',
-        'interactive',
-        fileName,
-      );
+    // Always use project root, never data directory
+    const projectRoot = this.getProjectRoot(basePath);
+    const filePath = path.join(
+      projectRoot,
+      'workflow-reports',
+      'interactive',
+      fileName,
+    );
 
-      await this.ensureDirectoryExists(path.dirname(filePath));
-      await fs.promises.writeFile(filePath, content, 'utf8');
+    await this.ensureDirectoryExists(path.dirname(filePath));
+    await fs.promises.writeFile(filePath, content, 'utf8');
 
-      this.logger.log(`Report saved to: ${filePath}`);
-      return filePath;
-    } catch (error) {
-      this.logger.error(`Failed to save report file: ${error.message}`);
-      throw error;
-    }
+    return filePath;
   }
 
   /**
@@ -69,7 +61,6 @@ export class McpFileManagerService {
       await fs.promises.access(dirPath);
     } catch {
       await fs.promises.mkdir(dirPath, { recursive: true });
-      this.logger.log(`Created directory: ${dirPath}`);
     }
   }
 
@@ -87,34 +78,28 @@ export class McpFileManagerService {
     basePath?: string,
     maxAgeHours: number = 24,
   ): Promise<number> {
-    try {
-      // Always use project root, never data directory
-      const projectRoot = this.getProjectRoot(basePath);
-      const reportsDir = path.join(
-        projectRoot,
-        'workflow-reports',
-        'interactive',
-      );
+    // Always use project root, never data directory
+    const projectRoot = this.getProjectRoot(basePath);
+    const reportsDir = path.join(
+      projectRoot,
+      'workflow-reports',
+      'interactive',
+    );
 
-      const files = await fs.promises.readdir(reportsDir);
-      const cutoffTime = Date.now() - maxAgeHours * 60 * 60 * 1000;
-      let deletedCount = 0;
+    const files = await fs.promises.readdir(reportsDir);
+    const cutoffTime = Date.now() - maxAgeHours * 60 * 60 * 1000;
+    let deletedCount = 0;
 
-      for (const file of files) {
-        const filePath = path.join(reportsDir, file);
-        const stats = await fs.promises.stat(filePath);
+    for (const file of files) {
+      const filePath = path.join(reportsDir, file);
+      const stats = await fs.promises.stat(filePath);
 
-        if (stats.mtime.getTime() < cutoffTime) {
-          await fs.promises.unlink(filePath);
-          deletedCount++;
-        }
+      if (stats.mtime.getTime() < cutoffTime) {
+        await fs.promises.unlink(filePath);
+        deletedCount++;
       }
-
-      this.logger.log(`Cleaned up ${deletedCount} old report files`);
-      return deletedCount;
-    } catch (error) {
-      this.logger.warn(`Failed to cleanup old reports: ${error.message}`);
-      return 0;
     }
+
+    return deletedCount;
   }
 }

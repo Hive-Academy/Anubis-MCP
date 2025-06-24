@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { IReportDataService } from './interfaces';
 import {
@@ -17,85 +17,73 @@ import {
  */
 @Injectable()
 export class ReportDataService implements IReportDataService {
-  private readonly logger = new Logger(ReportDataService.name);
-
   constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Get tasks with comprehensive relations
    */
   async getTasks(filters: ReportFilters = {}): Promise<TaskWithRelations[]> {
-    try {
-      const where = this.buildTaskWhereClause(filters);
+    const where = this.buildTaskWhereClause(filters);
 
-      const tasks = await this.prisma.task.findMany({
-        where,
-        include: {
-          delegationRecords: {
-            include: {
-              task: true,
-            },
-            orderBy: { delegationTimestamp: 'asc' },
+    const tasks = await this.prisma.task.findMany({
+      where,
+      include: {
+        delegationRecords: {
+          include: {
+            task: true,
           },
-          workflowTransitions: {
-            orderBy: { transitionTimestamp: 'asc' },
-          },
-          implementationPlans: {
-            include: {
-              subtasks: {
-                orderBy: { sequenceNumber: 'asc' },
-              },
-            },
-            orderBy: { createdAt: 'asc' },
-          },
-          codebaseAnalysis: true,
-          taskDescription: true,
+          orderBy: { delegationTimestamp: 'asc' },
         },
-        orderBy: { createdAt: 'desc' },
-      });
+        workflowTransitions: {
+          orderBy: { transitionTimestamp: 'asc' },
+        },
+        implementationPlans: {
+          include: {
+            subtasks: {
+              orderBy: { sequenceNumber: 'asc' },
+            },
+          },
+          orderBy: { createdAt: 'asc' },
+        },
+        codebaseAnalysis: true,
+        taskDescription: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
 
-      return tasks as TaskWithRelations[];
-    } catch (error) {
-      this.logger.error(`Failed to fetch tasks: ${error.message}`);
-      throw error;
-    }
+    return tasks as TaskWithRelations[];
   }
 
   /**
    * Get single task with relations
    */
   async getTask(taskId: number): Promise<TaskWithRelations | null> {
-    try {
-      return (await this.prisma.task.findUnique({
-        where: { id: taskId },
-        include: {
-          delegationRecords: {
-            include: {
-              task: {
-                select: { id: true, name: true },
-              },
+    return (await this.prisma.task.findUnique({
+      where: { id: taskId },
+      include: {
+        delegationRecords: {
+          include: {
+            task: {
+              select: { id: true, name: true },
             },
-            orderBy: { delegationTimestamp: 'asc' },
           },
-          workflowTransitions: {
-            orderBy: { transitionTimestamp: 'asc' },
-          },
-          implementationPlans: {
-            include: {
-              subtasks: {
-                orderBy: { sequenceNumber: 'asc' },
-              },
-            },
-            orderBy: { createdAt: 'asc' },
-          },
-          codebaseAnalysis: true,
-          taskDescription: true,
+          orderBy: { delegationTimestamp: 'asc' },
         },
-      })) as TaskWithRelations | null;
-    } catch (error) {
-      this.logger.error(`Failed to fetch task ${taskId}: ${error.message}`);
-      throw error;
-    }
+        workflowTransitions: {
+          orderBy: { transitionTimestamp: 'asc' },
+        },
+        implementationPlans: {
+          include: {
+            subtasks: {
+              orderBy: { sequenceNumber: 'asc' },
+            },
+          },
+          orderBy: { createdAt: 'asc' },
+        },
+        codebaseAnalysis: true,
+        taskDescription: true,
+      },
+    })) as TaskWithRelations | null;
   }
 
   /**
@@ -104,22 +92,17 @@ export class ReportDataService implements IReportDataService {
   async getDelegationRecords(
     filters: ReportFilters = {},
   ): Promise<DelegationRecordWithRelations[]> {
-    try {
-      const where = this.buildDelegationWhereClause(filters);
+    const where = this.buildDelegationWhereClause(filters);
 
-      return (await this.prisma.delegationRecord.findMany({
-        where,
-        include: {
-          task: {
-            select: { id: true, name: true, slug: true },
-          },
+    return (await this.prisma.delegationRecord.findMany({
+      where,
+      include: {
+        task: {
+          select: { id: true, name: true, slug: true },
         },
-        orderBy: { delegationTimestamp: 'desc' },
-      })) as DelegationRecordWithRelations[];
-    } catch (error) {
-      this.logger.error(`Failed to fetch delegation records: ${error.message}`);
-      throw error;
-    }
+      },
+      orderBy: { delegationTimestamp: 'desc' },
+    })) as DelegationRecordWithRelations[];
   }
 
   /**
@@ -128,24 +111,17 @@ export class ReportDataService implements IReportDataService {
   async getWorkflowTransitions(
     filters: ReportFilters = {},
   ): Promise<WorkflowTransitionWithRelations[]> {
-    try {
-      const where = this.buildWorkflowWhereClause(filters);
+    const where = this.buildWorkflowWhereClause(filters);
 
-      return (await this.prisma.workflowTransition.findMany({
-        where,
-        include: {
-          task: {
-            select: { id: true, name: true, slug: true },
-          },
+    return (await this.prisma.workflowTransition.findMany({
+      where,
+      include: {
+        task: {
+          select: { id: true, name: true, slug: true },
         },
-        orderBy: { transitionTimestamp: 'desc' },
-      })) as WorkflowTransitionWithRelations[];
-    } catch (error) {
-      this.logger.error(
-        `Failed to fetch workflow transitions: ${error.message}`,
-      );
-      throw error;
-    }
+      },
+      orderBy: { transitionTimestamp: 'desc' },
+    })) as WorkflowTransitionWithRelations[];
   }
 
   /**
@@ -154,54 +130,38 @@ export class ReportDataService implements IReportDataService {
   async getImplementationPlans(
     taskId: number,
   ): Promise<ImplementationPlanWithRelations[]> {
-    try {
-      return (await this.prisma.implementationPlan.findMany({
-        where: { taskId },
-        include: {
-          subtasks: {
-            orderBy: { sequenceNumber: 'asc' },
-          },
+    return (await this.prisma.implementationPlan.findMany({
+      where: { taskId },
+      include: {
+        subtasks: {
+          orderBy: { sequenceNumber: 'asc' },
         },
-        orderBy: { createdAt: 'asc' },
-      })) as ImplementationPlanWithRelations[];
-    } catch (error) {
-      this.logger.error(
-        `Failed to fetch implementation plans for ${taskId}: ${error.message}`,
-      );
-      throw error;
-    }
+      },
+      orderBy: { createdAt: 'asc' },
+    })) as ImplementationPlanWithRelations[];
   }
 
   /**
    * Get subtasks for a specific task
    */
   async getSubtasks(taskId: number): Promise<SubtaskWithRelations[]> {
-    try {
-      // First get implementation plan IDs for this task
-      const implementationPlans = await this.prisma.implementationPlan.findMany(
-        {
-          where: { taskId },
-          select: { id: true },
-        },
-      );
+    // First get implementation plan IDs for this task
+    const implementationPlans = await this.prisma.implementationPlan.findMany({
+      where: { taskId },
+      select: { id: true },
+    });
 
-      const planIds = implementationPlans.map((plan) => plan?.id);
+    const planIds = implementationPlans.map((plan) => plan?.id);
 
-      return (await this.prisma.subtask.findMany({
-        where: {
-          planId: { in: planIds },
-        },
-        include: {
-          implementationPlan: { select: { id: true, overview: true } },
-        },
-        orderBy: { sequenceNumber: 'asc' },
-      })) as SubtaskWithRelations[];
-    } catch (error) {
-      this.logger.error(
-        `Failed to fetch subtasks for ${taskId}: ${error.message}`,
-      );
-      throw error;
-    }
+    return (await this.prisma.subtask.findMany({
+      where: {
+        planId: { in: planIds },
+      },
+      include: {
+        implementationPlan: { select: { id: true, overview: true } },
+      },
+      orderBy: { sequenceNumber: 'asc' },
+    })) as SubtaskWithRelations[];
   }
 
   /**
@@ -225,77 +185,72 @@ export class ReportDataService implements IReportDataService {
       completionRate: number;
     };
   }> {
-    try {
-      const where = this.buildTaskWhereClause(filters);
+    const where = this.buildTaskWhereClause(filters);
 
-      // Task statistics
-      const tasks = await this.prisma.task.findMany({
-        where,
-        select: {
-          status: true,
-          priority: true,
-          createdAt: true,
-          completionDate: true,
-        },
-      });
+    // Task statistics
+    const tasks = await this.prisma.task.findMany({
+      where,
+      select: {
+        status: true,
+        priority: true,
+        createdAt: true,
+        completionDate: true,
+      },
+    });
 
-      const taskStats = {
-        total: tasks.length,
-        byStatus: this.groupByField(tasks, 'status'),
-        byPriority: this.groupByField(tasks, 'priority'),
-      };
+    const taskStats = {
+      total: tasks.length,
+      byStatus: this.groupByField(tasks, 'status'),
+      byPriority: this.groupByField(tasks, 'priority'),
+    };
 
-      // Delegation statistics
-      const delegations = await this.prisma.delegationRecord.findMany({
-        where: this.buildDelegationWhereClause(filters),
-        select: {
-          toMode: true,
-          delegationTimestamp: true,
-          fromMode: true,
-          message: true,
-          taskId: true,
-        },
-      });
+    // Delegation statistics
+    const delegations = await this.prisma.delegationRecord.findMany({
+      where: this.buildDelegationWhereClause(filters),
+      select: {
+        toMode: true,
+        delegationTimestamp: true,
+        fromMode: true,
+        message: true,
+        taskId: true,
+      },
+    });
 
-      const delegationStats = {
-        total: delegations.length,
-        successful: delegations.filter((d) => d.toMode === 'completed').length,
-        failed: delegations.filter((d) => d.toMode === 'needs-changes').length,
-        byRole: this.groupByField(delegations, 'toMode'),
-      };
+    const delegationStats = {
+      total: delegations.length,
+      successful: delegations.filter((d) => d.toMode === 'completed').length,
+      failed: delegations.filter((d) => d.toMode === 'needs-changes').length,
+      byRole: this.groupByField(delegations, 'toMode'),
+    };
 
-      // Performance statistics
-      const completedTasks = tasks.filter((t) => t.completionDate);
-      const completedDelegations = delegations.filter(
-        (d) => d.delegationTimestamp,
-      );
+    // Performance statistics
+    const completedTasks = tasks.filter((t) => t.completionDate);
+    const completedDelegations = delegations.filter(
+      (d) => d.delegationTimestamp,
+    );
 
-      const performanceStats = {
-        averageTaskDuration: this.calculateAverageDuration(
-          completedTasks.map((t) => ({
-            start: t.createdAt,
-            end: t.completionDate!,
-          })),
-        ),
-        averageDelegationDuration: this.calculateAverageDuration(
-          completedDelegations.map((d) => ({
-            start: d.delegationTimestamp,
-            end: d.delegationTimestamp,
-          })),
-        ),
-        completionRate:
-          tasks.length > 0 ? (completedTasks.length / tasks.length) * 100 : 0,
-      };
+    const performanceStats = {
+      averageTaskDuration: this.calculateAverageDuration(
+        completedTasks.map((t) => ({
+          start: t.createdAt,
+          end: t.completionDate!,
+        })),
+      ),
+      averageDelegationDuration: this.calculateAverageDuration(
+        completedDelegations.map((d) => ({
+          start: d.delegationTimestamp,
+          end: d.delegationTimestamp,
+        })),
+      ),
+      completionRate:
+        tasks.length > 0 ? (completedTasks.length / tasks.length) * 100 : 0,
+    };
 
-      return {
-        taskStats,
-        delegationStats,
-        performanceStats,
-      };
-    } catch (error) {
-      this.logger.error(`Failed to fetch aggregated stats: ${error.message}`);
-      throw error;
-    }
+    return {
+      taskStats,
+      delegationStats,
+      performanceStats,
+    };
   }
 
   // Private helper methods

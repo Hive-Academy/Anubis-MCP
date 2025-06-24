@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { WorkflowBootstrapService } from '../services/workflow-bootstrap.service';
@@ -26,8 +26,6 @@ type BootstrapWorkflowInputType = z.infer<typeof BootstrapWorkflowInputSchema>;
 
 @Injectable()
 export class WorkflowBootstrapMcpService {
-  private readonly logger = new Logger(WorkflowBootstrapMcpService.name);
-
   constructor(private readonly bootstrapService: WorkflowBootstrapService) {}
 
   @Tool({
@@ -38,10 +36,6 @@ export class WorkflowBootstrapMcpService {
   })
   async bootstrapWorkflow(input: BootstrapWorkflowInputType): Promise<any> {
     try {
-      this.logger.log(
-        `Starting workflow execution with role: ${input.initialRole}`,
-      );
-
       // Bootstrap the workflow execution
       const result = await this.bootstrapService.bootstrapWorkflow(input);
 
@@ -100,8 +94,6 @@ export class WorkflowBootstrapMcpService {
         ],
       };
     } catch (error: any) {
-      this.logger.error(`Bootstrap error: ${error.message}`, error);
-
       return {
         content: [
           {

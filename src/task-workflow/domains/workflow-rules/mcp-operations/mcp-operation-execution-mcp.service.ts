@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { CoreServiceOrchestrator } from '../services/core-service-orchestrator.service';
 import { RequiredInputExtractorService } from '../services/required-input-extractor.service';
-import { getErrorMessage } from '../utils/type-safety.utils';
 import { BaseMcpService } from '../utils/mcp-response.utils';
+import { getErrorMessage } from '../utils/type-safety.utils';
 
 // ===================================================================
 // 🔥 MCP OPERATION EXECUTION SERVICE - DEDICATED MCP_CALL HANDLER
@@ -70,8 +70,6 @@ type GetOperationSchemaInput = z.infer<typeof GetOperationSchemaInputSchema>;
  */
 @Injectable()
 export class McpOperationExecutionMcpService extends BaseMcpService {
-  private readonly logger = new Logger(McpOperationExecutionMcpService.name);
-
   constructor(
     private readonly coreServiceOrchestrator: CoreServiceOrchestrator,
     private readonly requiredInputService: RequiredInputExtractorService,
@@ -91,10 +89,6 @@ export class McpOperationExecutionMcpService extends BaseMcpService {
   })
   getOperationSchema(input: GetOperationSchemaInput) {
     try {
-      this.logger.log(
-        `Getting schema for: ${input.serviceName}${input.operation ? `.${input.operation}` : ''}`,
-      );
-
       // Extract schema using the same service that step guidance uses
       const schemaResult = this.requiredInputService.extractFromServiceSchema(
         input.serviceName,
@@ -130,15 +124,6 @@ export class McpOperationExecutionMcpService extends BaseMcpService {
   })
   async executeMcpOperation(input: ExecuteMcpOperationInput) {
     try {
-      this.logger.log(
-        `Executing MCP operation: ${input.serviceName}.${input.operation}`,
-      );
-
-      // Log the exact parameters received for debugging
-      this.logger.debug(
-        `Parameters received: ${JSON.stringify(input.parameters, null, 2)}`,
-      );
-
       // Validate that the operation is supported
       const supportedServices =
         this.coreServiceOrchestrator.getSupportedServices();

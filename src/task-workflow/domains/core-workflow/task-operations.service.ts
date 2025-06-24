@@ -1,12 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service';
-import { TaskOperationsInput } from './schemas/task-operations.schema';
+import { Injectable } from '@nestjs/common';
 import {
-  Task,
-  TaskDescription,
   CodebaseAnalysis,
   Prisma,
+  Task,
+  TaskDescription,
 } from 'generated/prisma';
+import { PrismaService } from '../../../prisma/prisma.service';
+import { TaskOperationsInput } from './schemas/task-operations.schema';
 
 // Type-safe interfaces for service operations
 export interface TaskOperationResult {
@@ -73,8 +73,6 @@ export interface TaskListResult {
  */
 @Injectable()
 export class TaskOperationsService {
-  private readonly logger = new Logger(TaskOperationsService.name);
-
   constructor(private readonly prisma: PrismaService) {}
 
   /**
@@ -87,11 +85,6 @@ export class TaskOperationsService {
     const startTime = performance.now();
 
     try {
-      this.logger.debug(`Task Operation: ${input.operation}`, {
-        taskId: input.taskId ?? 'unknown',
-        operation: input.operation,
-      });
-
       let result: any;
 
       switch (input.operation) {
@@ -116,15 +109,6 @@ export class TaskOperationsService {
 
       const responseTime = performance.now() - startTime;
 
-      this.logger.debug(
-        `Task operation completed in ${responseTime.toFixed(2)}ms`,
-        {
-          operation: input.operation,
-          taskId: input.taskId ?? 'unknown',
-          responseTime,
-        },
-      );
-
       // Return type-safe data for internal service use
       return {
         success: true,
@@ -136,8 +120,6 @@ export class TaskOperationsService {
         },
       };
     } catch (error: any) {
-      this.logger.error(`Task operation failed:`, error);
-
       return {
         success: false,
         error: {
@@ -184,21 +166,10 @@ export class TaskOperationsService {
 
       // CRITICAL: Link task to workflow execution if executionId provided
       if (executionId) {
-        try {
-          await tx.workflowExecution.update({
-            where: { id: executionId },
-            data: { taskId: taskId },
-          });
-          this.logger.debug(
-            `Linked task ${taskId} to execution ${executionId}`,
-          );
-        } catch (error) {
-          this.logger.error(
-            `Failed to link task to execution: ${error.message}`,
-          );
-          // Don't fail the entire transaction, but log the error
-          // The task creation should still succeed even if linking fails
-        }
+        await tx.workflowExecution.update({
+          where: { id: executionId },
+          data: { taskId: taskId },
+        });
       }
 
       // Create task description if provided

@@ -1,20 +1,20 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ReportDataService } from '../../shared/report-data.service';
-import { ReportTransformService } from '../../shared/report-transform.service';
 import { ReportMetadataService } from '../../shared/report-metadata.service';
-import { ImplementationPlanBuilderService } from './implementation-plan-builder.service';
-import { ImplementationPlanAnalyzerService } from './implementation-plan-analyzer.service';
-import { ImplementationPlanGeneratorService } from './view/implementation-plan-generator.service';
+import { ReportTransformService } from '../../shared/report-transform.service';
+import {
+  ImplementationPlanWithRelations,
+  TaskWithRelations,
+} from '../../shared/types';
 import {
   ImplementationPlanReportData,
   Priority,
   Role,
   TaskStatus,
 } from '../../shared/types/report-data.types';
-import {
-  TaskWithRelations,
-  ImplementationPlanWithRelations,
-} from '../../shared/types';
+import { ImplementationPlanAnalyzerService } from './implementation-plan-analyzer.service';
+import { ImplementationPlanBuilderService } from './implementation-plan-builder.service';
+import { ImplementationPlanGeneratorService } from './view/implementation-plan-generator.service';
 
 /**
  * Implementation Plan Service (Refactored)
@@ -31,8 +31,6 @@ import {
  */
 @Injectable()
 export class ImplementationPlanService {
-  private readonly logger = new Logger(ImplementationPlanService.name);
-
   constructor(
     private readonly reportDataService: ReportDataService,
     private readonly reportTransformService: ReportTransformService,
@@ -46,10 +44,6 @@ export class ImplementationPlanService {
    * Generate implementation plan report using clean architecture pattern
    */
   async generateImplementationPlanReport(taskId: string): Promise<string> {
-    this.logger.log(
-      `Generating implementation plan report for task: ${taskId}`,
-    );
-
     try {
       // Fetch comprehensive task data with implementation plans and subtasks
       const taskData: TaskWithRelations | null =
@@ -97,15 +91,8 @@ export class ImplementationPlanService {
       const htmlReport =
         this.generatorService.generateImplementationPlan(reportData);
 
-      this.logger.log(
-        `Implementation plan report generated successfully for task: ${taskId}`,
-      );
       return htmlReport;
     } catch (error) {
-      this.logger.error(
-        `Failed to generate implementation plan report for task ${taskId}:`,
-        error,
-      );
       return this.generateErrorPage(taskId, error);
     }
   }

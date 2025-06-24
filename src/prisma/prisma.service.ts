@@ -8,11 +8,9 @@ export class PrismaService
 {
   async onModuleInit() {
     await this.$connect();
-    // console.log('Prisma client connected.');
   }
 
   async onModuleDestroy() {
     await this.$disconnect();
-    // console.log('Prisma client disconnected.');
   }
 }

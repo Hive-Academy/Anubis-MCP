@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InteractiveDashboardService } from '../dashboard/interactive-dashboard/interactive-dashboard.service';
+import { ImplementationPlanService } from '../task-management/implementation-plan/implementation-plan.service';
 import { TaskDetailService } from '../task-management/task-detail/task-detail.service';
 import { DelegationFlowService } from '../workflow-analytics/delegation-flow/delegation-flow.service';
-import { ImplementationPlanService } from '../task-management/implementation-plan/implementation-plan.service';
-import { WorkflowAnalyticsService } from '../workflow-analytics/workflow-analytics/workflow-analytics.service';
 import { RolePerformanceService } from '../workflow-analytics/role-performance/role-performance.service';
-import { InteractiveDashboardService } from '../dashboard/interactive-dashboard/interactive-dashboard.service';
+import { WorkflowAnalyticsService } from '../workflow-analytics/workflow-analytics/workflow-analytics.service';
 import { McpReportRequest } from './mcp-types';
 
 /**
@@ -14,8 +14,6 @@ import { McpReportRequest } from './mcp-types';
  */
 @Injectable()
 export class McpReportRouterService {
-  private readonly logger = new Logger(McpReportRouterService.name);
-
   constructor(
     private readonly taskDetailService: TaskDetailService,
     private readonly delegationFlowService: DelegationFlowService,
@@ -29,8 +27,6 @@ export class McpReportRouterService {
    * Route request to appropriate service and generate report
    */
   async routeRequest(request: McpReportRequest): Promise<any> {
-    this.logger.log(`Routing MCP request: ${request.reportType}`);
-
     const filters = this.processFilters(
       request.filters || {},
       request.basePath,

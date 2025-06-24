@@ -4,7 +4,7 @@ FROM node:22-alpine AS builder
 # Add metadata labels for Docker Hub
 LABEL org.opencontainers.image.title="Anubis"
 LABEL org.opencontainers.image.description="🏺 𓂀𓁢𓋹𝔸ℕ𝕌𝔹𝕀𝕊𓋹𓁢𓂀 - Intelligent Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development"
-LABEL org.opencontainers.image.version="1.0.15"
+LABEL org.opencontainers.image.version="1.1.23"
 LABEL org.opencontainers.image.authors="Hive Academy <abdallah@nghive.tech>"
 LABEL org.opencontainers.image.source="https://github.com/Hive-Academy/Anubis-MCP"
 LABEL org.opencontainers.image.documentation="https://github.com/Hive-Academy/Anubis-MCP/blob/main/README.md"
@@ -24,6 +24,12 @@ COPY . .
 RUN npx prisma generate
 RUN npm run build
 
+# STRATEGIC: Compile seed script for production use (ts-node not available in production)
+# Create a Docker-specific version of the seed script with correct import paths
+RUN sed 's|from '\''../generated/prisma'\''|from '\''/app/generated/prisma'\''|g' scripts/prisma-seed.ts > scripts/prisma-seed-docker.ts && \
+    npx tsc scripts/prisma-seed-docker.ts --outDir dist/scripts --moduleResolution node --target es2020 --module commonjs --esModuleInterop true --allowSyntheticDefaultImports true --strict false && \
+    mv dist/scripts/prisma-seed-docker.js dist/scripts/prisma-seed.js
+
 # Create necessary directories for reports
 RUN mkdir -p temp/reports temp/rendered-reports templates/reports
 
@@ -33,18 +39,19 @@ RUN mkdir -p temp/reports temp/rendered-reports templates/reports
 # ================================================================================================
 FROM builder AS migration-deployer
 
-# Set build-time database configuration for migration deployment
-ENV DATABASE_URL="file:./build-time-migration-db.db"
-
 # Create build-time database directory
 RUN mkdir -p ./build-time-db
+
+# Set build-time database configuration for migration deployment
+ENV DATABASE_URL="file:./build-time-db/workflow.db"
 
 # STRATEGIC BUILD-TIME MIGRATION AND SEEDING DEPLOYMENT
 # Deploy all migrations and seed essential workflow data during build
 RUN echo "🔧 DEPLOYING MIGRATIONS AND SEEDING DATA AT BUILD-TIME for instant startup UX..." && \
     npx prisma migrate deploy --schema=./prisma/schema.prisma && \
     echo "✅ BUILD-TIME MIGRATION DEPLOYMENT SUCCESSFUL" && \
-    npx prisma db seed && \
+    echo "🌱 BUILD-TIME DATABASE SEEDING..." && \
+    node dist/scripts/prisma-seed.js && \
     echo "✅ BUILD-TIME DATABASE SEEDING SUCCESSFUL" && \
     ls -la ./build-time-db/ && \
     npx prisma db pull --schema=./prisma/schema.prisma --print && \
@@ -58,7 +65,7 @@ FROM node:22-alpine AS production
 # Add same metadata to final image
 LABEL org.opencontainers.image.title="Anubis"
 LABEL org.opencontainers.image.description="🏺 Anubis - Intelligent Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development"
-LABEL org.opencontainers.image.version="1.0.15"
+LABEL org.opencontainers.image.version="1.1.24"
 LABEL org.opencontainers.image.authors="Hive Academy <abdallah@nghive.tech>"
 LABEL org.opencontainers.image.source="https://github.com/Hive-Academy/Anubis-MCP"
 LABEL org.opencontainers.image.documentation="https://github.com/Hive-Academy/Anubis-MCP/blob/main/README.md"
@@ -125,10 +132,34 @@ RUN mkdir -p /app/reports/rendered \
 # Ensure temp and templates directories exist with proper permissions (for other functionality)
 RUN chown -R nestjs:nodejs /app/temp /app/templates
 
+# Create startup script to initialize database if needed
+RUN echo '#!/bin/bash' > /app/init-db.sh && \
+    echo 'set -e' >> /app/init-db.sh && \
+    echo 'echo "🔍 Checking database initialization..."' >> /app/init-db.sh && \
+    echo 'if [ ! -f "/app/data/workflow.db" ] || [ ! -s "/app/data/workflow.db" ]; then' >> /app/init-db.sh && \
+    echo '  echo "📋 Database not found or empty, initializing from build-time template..."' >> /app/init-db.sh && \
+    echo '  if [ -f "/app/build-time-db/workflow.db" ]; then' >> /app/init-db.sh && \
+    echo '    cp /app/build-time-db/workflow.db /app/data/workflow.db' >> /app/init-db.sh && \
+    echo '    echo "✅ Database initialized from build-time template"' >> /app/init-db.sh && \
+    echo '  else' >> /app/init-db.sh && \
+    echo '    echo "⚠️  Build-time database not found, running migrations..."' >> /app/init-db.sh && \
+    echo '    npx prisma migrate deploy' >> /app/init-db.sh && \
+    echo '    echo "🌱 Running database seeding..."' >> /app/init-db.sh && \
+    echo '    node dist/scripts/prisma-seed.js' >> /app/init-db.sh && \
+    echo '    echo "✅ Database migrations and seeding completed"' >> /app/init-db.sh && \
+    echo '  fi' >> /app/init-db.sh && \
+    echo 'else' >> /app/init-db.sh && \
+    echo '  echo "✅ Database already exists and populated"' >> /app/init-db.sh && \
+    echo 'fi' >> /app/init-db.sh && \
+    echo 'echo "🚀 Starting Anubis MCP Server..."' >> /app/init-db.sh && \
+    echo 'exec "$@"' >> /app/init-db.sh && \
+    chmod +x /app/init-db.sh && \
+    chown nestjs:nodejs /app/init-db.sh
+
 # Set default environment variables with unified database configuration
 ENV RUNNING_IN_DOCKER="true"
 ENV MCP_SERVER_NAME="Anubis"
-ENV MCP_SERVER_VERSION="1.0.15"
+ENV MCP_SERVER_VERSION="1.1.23"
 ENV MCP_TRANSPORT_TYPE="STDIO"
 ENV NODE_ENV="production"
 ENV PORT="3000"
@@ -149,6 +180,6 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD if [ "$MCP_TRANSPORT_TYPE" = "STDIO" ]; then exit 0; else curl -f http://localhost:$PORT/health || exit 1; fi
 
-# STRATEGIC SIMPLIFICATION: Direct startup without entrypoint complexity
-# MCP servers expect immediate availability for protocol communication
+# STRATEGIC ENHANCEMENT: Use initialization script to ensure database is properly set up
+ENTRYPOINT ["/app/init-db.sh"]
 CMD ["node", "dist/main.js"]

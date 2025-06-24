@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { TaskDetailData } from '../../shared/types/report-data.types';
+import { Injectable } from '@nestjs/common';
 import {
-  FormattedTaskData,
   FormattedDelegationData,
+  FormattedTaskData,
   SubtaskWithRelations,
 } from '../../shared/types';
+import { TaskDetailData } from '../../shared/types/report-data.types';
 
 /**
  * Task Progress Analyzer Service
@@ -15,8 +15,6 @@ import {
  */
 @Injectable()
 export class TaskProgressAnalyzerService {
-  private readonly logger = new Logger(TaskProgressAnalyzerService.name);
-
   /**
    * Calculate comprehensive workflow progress
    */
@@ -169,10 +167,6 @@ export class TaskProgressAnalyzerService {
       (completedSubtasks / totalSubtasks) * 100,
     );
     const overallProgress = this.calculateWeightedProgress(subtasks);
-
-    this.logger.log(
-      `Task progress calculated: ${completionRate}% completion rate, ${overallProgress}% overall progress`,
-    );
 
     return {
       overallProgress,

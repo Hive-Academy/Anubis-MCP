@@ -1,9 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { RoleTransitionService } from '../services/role-transition.service';
-import { getErrorMessage } from '../utils/type-safety.utils';
 import { BaseMcpService } from '../utils/mcp-response.utils';
+import { getErrorMessage } from '../utils/type-safety.utils';
 
 // ===================================================================
 // 🔥 ROLE TRANSITION MCP SERVICE - COMPLETE REVAMP FOR MINIMAL RESPONSES
@@ -65,8 +65,6 @@ type GetTransitionHistoryInput = z.infer<
  */
 @Injectable()
 export class RoleTransitionMcpService extends BaseMcpService {
-  private readonly logger = new Logger(RoleTransitionMcpService.name);
-
   constructor(private readonly roleTransitionService: RoleTransitionService) {
     super();
   }
@@ -83,10 +81,6 @@ export class RoleTransitionMcpService extends BaseMcpService {
   })
   async getRoleTransitions(input: GetRoleTransitionsInput) {
     try {
-      this.logger.log(
-        `Getting role transitions for: ${input.fromRoleName}, task: ${input.taskId}`,
-      );
-
       const context = {
         taskId: input.taskId.toString(),
         roleId: input.roleId,
@@ -146,10 +140,6 @@ export class RoleTransitionMcpService extends BaseMcpService {
   })
   async validateTransition(input: ValidateTransitionInput) {
     try {
-      this.logger.log(
-        `Validating transition: ${input.transitionId} for task: ${input.taskId}`,
-      );
-
       const context = {
         taskId: input.taskId.toString(),
         roleId: input.roleId,
@@ -190,10 +180,6 @@ export class RoleTransitionMcpService extends BaseMcpService {
   })
   async executeTransition(input: ExecuteTransitionInput) {
     try {
-      this.logger.log(
-        `Executing transition: ${input.transitionId} for task: ${input.taskId}`,
-      );
-
       const context = {
         taskId: input.taskId.toString(),
         roleId: input.roleId,
@@ -234,8 +220,6 @@ export class RoleTransitionMcpService extends BaseMcpService {
   })
   async getTransitionHistory(input: GetTransitionHistoryInput) {
     try {
-      this.logger.log(`Getting transition history for task: ${input.taskId}`);
-
       const history = await this.roleTransitionService.getTransitionHistory(
         input.taskId,
       );

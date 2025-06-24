@@ -1,7 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { ImplementationPlan, Prisma, Subtask } from 'generated/prisma';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { PlanningOperationsInput } from './schemas/planning-operations.schema';
-import { ImplementationPlan, Subtask, Prisma } from 'generated/prisma';
 
 // Type-safe interfaces for planning operations
 export interface PlanningOperationResult {
@@ -58,8 +58,6 @@ export interface PlanWithSubtasks extends ImplementationPlan {
  */
 @Injectable()
 export class PlanningOperationsService {
-  private readonly logger = new Logger(PlanningOperationsService.name);
-
   constructor(private readonly prisma: PrismaService) {}
 
   async executePlanningOperation(
@@ -68,11 +66,6 @@ export class PlanningOperationsService {
     const startTime = performance.now();
 
     try {
-      this.logger.debug(`Planning Operation: ${input.operation}`, {
-        taskId: input.taskId,
-        batchId: input.batchId,
-      });
-
       let result:
         | ImplementationPlan
         | Subtask[]
@@ -115,8 +108,6 @@ export class PlanningOperationsService {
         },
       };
     } catch (error: any) {
-      this.logger.error(`Planning operation failed:`, error);
-
       return {
         success: false,
         error: {

@@ -1,12 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ReportDataService } from '../../shared/report-data.service';
 import { ReportMetadataService } from '../../shared/report-metadata.service';
 import { ReportTransformService } from '../../shared/report-transform.service';
 import { ReportFilters } from '../../shared/types';
 // Note: Using generator's expected data structure, not the types file interface
 import { WorkflowAnalyticsCalculatorService } from './workflow-analytics-calculator.service';
-import { WorkflowSummaryService } from './workflow-summary.service';
 import { WorkflowAnalyticsGeneratorService } from './workflow-analytics-generator.service';
+import { WorkflowSummaryService } from './workflow-summary.service';
 
 export interface WorkflowAnalyticsData {
   summary: {
@@ -67,8 +67,6 @@ export interface WorkflowAnalyticsData {
 
 @Injectable()
 export class WorkflowAnalyticsService {
-  private readonly logger = new Logger(WorkflowAnalyticsService.name);
-
   constructor(
     private readonly dataService: ReportDataService,
     private readonly transformService: ReportTransformService,
@@ -84,73 +82,63 @@ export class WorkflowAnalyticsService {
   async generateReport(
     filters: ReportFilters = {},
   ): Promise<WorkflowAnalyticsData> {
-    try {
-      this.logger.log('Generating workflow analytics report');
+    // Get data using shared services
+    const tasks = await this.dataService.getTasks(filters);
+    const delegations = await this.dataService.getDelegationRecords(filters);
+    const transitions = await this.dataService.getWorkflowTransitions(filters);
 
-      // Get data using shared services
-      const tasks = await this.dataService.getTasks(filters);
-      const delegations = await this.dataService.getDelegationRecords(filters);
-      const transitions =
-        await this.dataService.getWorkflowTransitions(filters);
+    // Transform data
+    const formattedTasks = tasks.map((task) =>
+      this.transformService.formatTaskData(task),
+    );
+    const formattedDelegations =
+      this.transformService.formatDelegationData(delegations);
+    const formattedTransitions =
+      this.transformService.formatWorkflowData(transitions);
 
-      // Transform data
-      const formattedTasks = tasks.map((task) =>
-        this.transformService.formatTaskData(task),
-      );
-      const formattedDelegations =
-        this.transformService.formatDelegationData(delegations);
-      const formattedTransitions =
-        this.transformService.formatWorkflowData(transitions);
+    // Calculate analytics using focused services
+    const summary = this.summaryService.calculateSummaryStats(
+      formattedTasks,
+      formattedDelegations,
+    );
 
-      // Calculate analytics using focused services
-      const summary = this.summaryService.calculateSummaryStats(
-        formattedTasks,
+    const taskAnalytics =
+      this.analyticsCalculator.calculateTaskAnalytics(formattedTasks);
+
+    const delegationAnalytics =
+      this.analyticsCalculator.calculateDelegationAnalytics(
         formattedDelegations,
+        delegations,
       );
 
-      const taskAnalytics =
-        this.analyticsCalculator.calculateTaskAnalytics(formattedTasks);
-
-      const delegationAnalytics =
-        this.analyticsCalculator.calculateDelegationAnalytics(
-          formattedDelegations,
-          delegations,
-        );
-
-      const performanceMetrics =
-        this.analyticsCalculator.calculatePerformanceMetrics(
-          formattedDelegations,
-          formattedTransitions,
-        );
-
-      // Generate metadata
-      const metadata = this.metadataService.generateMetadata(
-        'workflow-analytics',
-        'workflow-analytics-service',
+    const performanceMetrics =
+      this.analyticsCalculator.calculatePerformanceMetrics(
+        formattedDelegations,
+        formattedTransitions,
       );
 
-      return {
-        summary,
-        taskAnalytics,
-        delegationAnalytics,
-        performanceMetrics,
-        metadata: {
-          generatedAt: metadata.generatedAt,
-          reportType: 'workflow-analytics' as const,
-          version: metadata.version,
-          generatedBy: metadata.generatedBy || 'workflow-analytics-service',
-          timeframe: {
-            startDate: filters.startDate,
-            endDate: filters.endDate,
-          },
+    // Generate metadata
+    const metadata = this.metadataService.generateMetadata(
+      'workflow-analytics',
+      'workflow-analytics-service',
+    );
+
+    return {
+      summary,
+      taskAnalytics,
+      delegationAnalytics,
+      performanceMetrics,
+      metadata: {
+        generatedAt: metadata.generatedAt,
+        reportType: 'workflow-analytics' as const,
+        version: metadata.version,
+        generatedBy: metadata.generatedBy || 'workflow-analytics-service',
+        timeframe: {
+          startDate: filters.startDate,
+          endDate: filters.endDate,
         },
-      };
-    } catch (error) {
-      this.logger.error(
-        `Failed to generate workflow analytics report: ${error.message}`,
-      );
-      throw error;
-    }
+      },
+    };
   }
 
   /**

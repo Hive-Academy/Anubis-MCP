@@ -1,8 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { TaskDetailData } from '../../../shared/types/report-data.types';
-import { TaskDetailHeaderViewService } from './task-detail-header-view.service';
-import { TaskDetailContentViewService } from './task-detail-content-view.service';
 import { TaskDetailAnalysisViewService } from './task-detail-analysis-view.service';
+import { TaskDetailContentViewService } from './task-detail-content-view.service';
+import { TaskDetailHeaderViewService } from './task-detail-header-view.service';
 
 /**
  * Task Detail Generator Service
@@ -12,8 +12,6 @@ import { TaskDetailAnalysisViewService } from './task-detail-analysis-view.servi
  */
 @Injectable()
 export class TaskDetailGeneratorService {
-  private readonly logger = new Logger(TaskDetailGeneratorService.name);
-
   constructor(
     private readonly headerViewService: TaskDetailHeaderViewService,
     private readonly contentViewService: TaskDetailContentViewService,
@@ -24,11 +22,6 @@ export class TaskDetailGeneratorService {
    * Generate complete task detail HTML using type-safe data and focused view services
    */
   generateTaskDetail(data: TaskDetailData): string {
-    this.logger.log(
-      'Generating type-safe task detail HTML using focused view services',
-    );
-    this.logger.log(`Task: ${data.task.name}`);
-
     return `
 <!DOCTYPE html>
 <html lang="en">

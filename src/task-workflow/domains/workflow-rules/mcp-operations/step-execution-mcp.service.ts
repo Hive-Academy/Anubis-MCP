@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { StepExecutionService } from '../services/step-execution.service';
 import { StepGuidanceService } from '../services/step-guidance.service';
-import { WorkflowExecutionOperationsService } from '../services/workflow-execution-operations.service';
 import { WorkflowStep } from '../services/step-query.service';
+import { WorkflowExecutionOperationsService } from '../services/workflow-execution-operations.service';
 import { BaseMcpService } from '../utils/mcp-response.utils';
 import { getErrorMessage } from '../utils/type-safety.utils';
 
@@ -91,8 +91,6 @@ type GetNextStepInput = z.infer<typeof GetNextStepInputSchema>;
  */
 @Injectable()
 export class StepExecutionMcpService extends BaseMcpService {
-  private readonly logger = new Logger(StepExecutionMcpService.name);
-
   constructor(
     private readonly stepExecutionService: StepExecutionService,
     private readonly stepGuidanceService: StepGuidanceService,
@@ -112,10 +110,6 @@ export class StepExecutionMcpService extends BaseMcpService {
   })
   async getStepGuidance(input: GetStepGuidanceInput) {
     try {
-      this.logger.log(
-        `Getting step guidance for ${input.taskId ? `task: ${input.taskId}` : `execution: ${input.executionId}`}, role: ${input.roleId}`,
-      );
-
       // 🔧 CRITICAL FIX: Enhanced to handle post-transition scenarios
       let currentStepId = input.stepId;
       let currentRoleId = input.roleId;
@@ -149,9 +143,6 @@ export class StepExecutionMcpService extends BaseMcpService {
         } else {
           // Bootstrap case: execution has no task yet
           actualTaskId = 0; // Signal bootstrap mode to resolveStepId
-          this.logger.log(
-            'Bootstrap execution detected: no taskId available yet',
-          );
         }
         currentRoleId = currentExecution.currentRoleId;
 
@@ -205,10 +196,6 @@ export class StepExecutionMcpService extends BaseMcpService {
   })
   async reportStepCompletion(input: ReportStepCompletionInput) {
     try {
-      this.logger.log(
-        `Reporting step completion: ${input.stepId}, result: ${input.result}`,
-      );
-
       let executionId = input.executionId;
 
       if (!executionId && input.taskId) {
@@ -274,8 +261,6 @@ export class StepExecutionMcpService extends BaseMcpService {
   })
   async getStepProgress(input: GetStepProgressInput) {
     try {
-      this.logger.log(`Getting step progress for task: ${input.id}`);
-
       // ✅ DELEGATE to WorkflowExecutionOperationsService
       const executionResult =
         await this.workflowExecutionOperationsService.getExecution({
@@ -322,10 +307,6 @@ export class StepExecutionMcpService extends BaseMcpService {
   })
   async getNextAvailableStep(input: GetNextStepInput) {
     try {
-      this.logger.log(
-        `Getting next step for role: ${input.roleId}, task: ${input.id}`,
-      );
-
       // ✅ DELEGATE to WorkflowExecutionOperationsService
       const executionResult =
         await this.workflowExecutionOperationsService.getExecution({

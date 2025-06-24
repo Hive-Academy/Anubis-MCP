@@ -1,7 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { DelegationRecord, Prisma, WorkflowTransition } from 'generated/prisma';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { WorkflowOperationsInput } from './schemas/workflow-operations.schema';
-import { DelegationRecord, WorkflowTransition, Prisma } from 'generated/prisma';
 
 // Type-safe interfaces for workflow operations
 export interface WorkflowOperationResult {
@@ -34,8 +34,6 @@ export interface WorkflowOperationResult {
  */
 @Injectable()
 export class WorkflowOperationsService {
-  private readonly logger = new Logger(WorkflowOperationsService.name);
-
   constructor(private readonly prisma: PrismaService) {}
 
   async executeWorkflowOperation(
@@ -44,11 +42,6 @@ export class WorkflowOperationsService {
     const startTime = performance.now();
 
     try {
-      this.logger.debug(`Workflow Operation: ${input.operation}`, {
-        taskId: input.taskId,
-        operation: input.operation,
-      });
-
       let result: DelegationRecord | WorkflowTransition | DelegationRecord[];
 
       switch (input.operation) {
@@ -80,8 +73,6 @@ export class WorkflowOperationsService {
         },
       };
     } catch (error: any) {
-      this.logger.error(`Workflow operation failed:`, error);
-
       return {
         success: false,
         error: {

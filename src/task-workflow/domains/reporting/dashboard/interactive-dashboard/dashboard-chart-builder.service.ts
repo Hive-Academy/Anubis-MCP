@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { FormattedDelegationData, FormattedTaskData } from '../../shared/types';
 import {
   ChartValidationError,
@@ -11,7 +11,6 @@ import {
 
 @Injectable()
 export class DashboardChartBuilderService {
-  private readonly logger = new Logger(DashboardChartBuilderService.name);
   /**
    * Build all chart data for the dashboard
    */
@@ -236,7 +235,6 @@ export class DashboardChartBuilderService {
 
       // Validate chart configuration
       if (!isValidChartConfiguration(chart)) {
-        this.logger.warn('Invalid chart configuration for role performance');
         throw new ChartValidationError(
           'Role performance chart configuration is invalid',
           'rolePerformanceChart',
@@ -294,7 +292,6 @@ export class DashboardChartBuilderService {
 
     // Validate chart configuration
     if (!isValidChartConfiguration(chart)) {
-      this.logger.warn('Invalid chart configuration for role performance');
       throw new ChartValidationError(
         'Role performance chart configuration is invalid',
         'rolePerformanceChart',
@@ -416,14 +413,9 @@ export class DashboardChartBuilderService {
         } else if (task.creationDate) {
           // Fallback to creation date for completed tasks without completion date
           completionMonth = task.creationDate.slice(0, 7);
-          this.logger.warn(
-            `Task ${task.taskId} marked as completed but has no completionDate, using creationDate`,
-          );
         } else {
           // Skip if no date information available
-          this.logger.warn(
-            `Task ${task.taskId} marked as completed but has no date information`,
-          );
+
           return;
         }
 

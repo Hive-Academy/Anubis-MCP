@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { InitRulesService } from '../init-rules.service';
@@ -20,8 +20,6 @@ type InitRulesInput = z.infer<typeof InitRulesInputSchema>;
 
 @Injectable()
 export class InitRulesMcpService {
-  private readonly logger = new Logger(InitRulesMcpService.name);
-
   constructor(private readonly initRulesService: InitRulesService) {}
 
   /**
@@ -35,8 +33,6 @@ export class InitRulesMcpService {
   })
   async InitRules(input: InitRulesInput) {
     try {
-      this.logger.log(`Deploying rules for agent: ${input.agentName}`);
-
       const projectRoot = input.projectRoot || process.cwd();
 
       // Choose template based on agent
@@ -70,7 +66,6 @@ export class InitRulesMcpService {
         ],
       };
     } catch (error) {
-      this.logger.error(`Failed to deploy rules: ${error.message}`);
       return {
         content: [
           {
