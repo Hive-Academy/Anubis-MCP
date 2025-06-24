@@ -1,11 +1,14 @@
 export interface ProgressMetrics {
-  currentStepProgress: number;
-  roleProgress: number;
-  overallProgress: number;
-  completedSteps: number;
-  totalSteps: number;
+  currentStepProgress?: number;
+  roleProgress?: number;
+  overallProgress?: number;
+  completedSteps?: number;
+  totalSteps?: number;
   estimatedTimeRemaining?: string;
   nextMilestone?: string;
+  percentage?: number;
+  stepsCompleted?: number;
+  estimatedCompletion?: string | null;
 }
 
 export interface ExecutionHistory {

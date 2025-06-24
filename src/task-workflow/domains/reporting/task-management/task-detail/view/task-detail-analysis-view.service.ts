@@ -201,7 +201,7 @@ export class TaskDetailAnalysisViewService {
             Problems Identified
         </h3>
         <div class="space-y-4">
-            ${this.formatProblemsData(analysis.problemsIdentified)}
+            ${analysis.problemsIdentified ? this.formatProblemsData(analysis.problemsIdentified) : 'No Problems Identified'}
         </div>
     </div>`;
   }

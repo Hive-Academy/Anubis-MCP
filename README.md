@@ -2,28 +2,131 @@
 
 **Transform your AI agent from chaotic coder to intelligent workflow orchestrator with three powerful capabilities:**
 
-<a href="https://glama.ai/mcp/servers/@Hive-Academy/Anubis-MCP">
-  <img width="380" height="200" src="https://glama.ai/mcp/servers/@Hive-Academy/Anubis-MCP/badge" alt="𓂀𓁢𓋹𝔸ℕ𝕌𝔹𝕀𝕊𓋹𓁢𓂀 - Intelligent Guidance for MCP server" />
-</a>
-
 <div align="center">
 
-##  **Three Pillars of Intelligent Workflow Management** 
+## **Three Pillars of Intelligent Workflow Management**
 
-###  **Intelligent Guidance** |  **Seamless Transitions** |  **Beautiful Reporting**
-
-</div>
+### **Intelligent Guidance** | **Seamless Transitions** | **Beautiful Reporting**
 
 ![Docker Pulls](https://img.shields.io/docker/pulls/hiveacademy/anubis)
 ![Docker Image Size](https://img.shields.io/docker/image-size/hiveacademy/anubis)
 ![Docker Image Version](https://img.shields.io/docker/v/hiveacademy/anubis)
 [![MCP Server](https://img.shields.io/badge/MCP-Server-blue?style=for-the-badge&logo=docker)](https://hub.docker.com/r/hiveacademy/anubis)
 
-** [NPM Package](https://www.npmjs.com/package/@hive-academy/anubis)** • ** [Docker Hub](https://hub.docker.com/r/hiveacademy/anubis)** • ** [Website](https://hive-academy.github.io/Anubis-MCP/)**
+**[NPM Package](https://www.npmjs.com/package/@hive-academy/anubis)** • **[Docker Hub](https://hub.docker.com/r/hiveacademy/anubis)** • **[Website](https://hive-academy.github.io/Anubis-MCP/)**
 
---- 
+<a href="https://glama.ai/mcp/servers/@Hive-Academy/Anubis-MCP">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@Hive-Academy/Anubis-MCP/badge" alt="𓂀𓁢𓋹𝔸ℕ𝕌𝔹𝕀𝕊𓋹𓁢𓂀 - Intelligent Guidance for MCP server" />
+</a>
 
-##  **CORE VALUE #1: INTELLIGENT GUIDANCE FOR AI AGENTS**
+</div>
+
+---
+
+## **QUICK START**
+
+### **Option 1: NPX (Recommended)**
+
+> Add to your MCP client config
+
+```json
+{
+  "mcpServers": {
+    "anubis": {
+      "command": "npx",
+      "args": ["-y", "@hive-academy/anubis"]
+    }
+  }
+}
+```
+
+### **Option 2: Docker**
+
+```json
+{
+  "mcpServers": {
+    "anubis": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "-v",
+        "anubis-data:/app/data",
+        "--rm",
+        "hiveacademy/anubis"
+      ]
+    }
+  }
+}
+```
+
+---
+
+## ** INITIALIZE CUSTOM-MODES ( AGENT RULES) **
+
+> Once you get the mcp server running you need to initialize the rules (custom-modes) for the agent you are using
+
+**Supported Agents**: `cursor` • `copilot` • `roocode` • `kilocode`
+
+### **Step 1: Initialize Intelligent Guidance**
+
+```
+Please initialize Anubis workflow rules for [your-agent-name] by calling the init_rules MCP tool
+```
+
+### **Step 2: Start Your Workflow**
+
+```
+Begin a new workflow for [your-project] with Anubis guidance
+```
+
+## **ROOCODE Setup Example**
+
+[![Anubis MCP server Demo](https://img.youtube.com/vi/NPWrGJ_lRqY/0.jpg)](https://www.youtube.com/embed/NPWrGJ_lRqY?si=dXFzTf-qJqNRzOu6&start=477)
+
+## **Cursor Setup Example**
+
+**For Cursor users, here's a complete setup example:**
+
+1. **Install MCP Server in Cursor:**
+   - Open Cursor Settings (`Cmd/Ctrl + ,`)
+   - Navigate to "Extensions" → "MCP Servers"
+   - Add new server configuration:
+   ```
+   "anubis": {
+     "command": "npx",
+     "args": ["-y", "@hive-academy/anubis"]
+   }
+   ```
+2. **Initialize Cursor Rules**
+
+- Make Sure the mcp server is working and active.
+- ask the agent to `Please initialize Anubis workflow rules for cursor by calling the init_rules MCP tool`.
+- you should see a file generated at .cursor/rules with the name `000-workflow-core.mdc`
+- Head over to cursor rules and make sure the rules file are added and active.
+
+### Now You are ready to start you first task 🚀.
+
+> Hint: an important first step task is to generate memory-bank files
+> Ask the agent to `Please create a task to analyze codebase and generate memory-bank files (ProjectOverview.md, TechnicalArchitecture.md, and DeveloperGuide.md)`
+
+## **Claude Code Setup Example**
+
+- To install the mcp server use this command `claude mcp add anubis npx -y @hive-academy/anubis`
+
+  > make sure you are on the poject root you want to install this into.
+
+- To make sure it's installed correctly run `claude mcp list` you should see a server with name `anubis`.
+
+- now you will need to do a very important step:
+  - Download this rules markdown file [Anubis Rules](https://github.com/Hive-Academy/Anubis-MCP/blob/main/.roo/rules-anubis/rules.md)
+  - Save it inside your project for example inside a folder names `rules` and file name `anubis-rules.md`.
+  - Then open your CLAUDE.md file and add the following:
+    `Anubis Workflow @rules/anubis-rules.md`
+
+---
+
+## **CORE VALUE #1: INTELLIGENT GUIDANCE FOR AI AGENTS**
 
 **Your AI agent receives step-by-step intelligent rules for every development task:**
 
@@ -32,7 +135,7 @@
 "Create a user authentication system" →  Where do I start?
 
 // With Anubis: Intelligent guidance at every step
-"Create a user authentication system" → 
+"Create a user authentication system" →
    Requirements Analysis (Researcher Role)
    System Architecture (Architect Role)
    Implementation Plan (Senior Dev Role)
@@ -41,13 +144,14 @@
 ```
 
 **Benefits:**
--  **30-50% faster development** with structured workflows
--  **40-60% fewer defects** through quality gates
--  **100% MCP-compliant** guidance without execution
+
+- **30-50% faster development** with structured workflows
+- **40-60% fewer defects** through quality gates
+- **100% MCP-compliant** guidance without execution
 
 ---
 
-##  **CORE VALUE #2: SEAMLESS TASK & ROLE TRANSITIONS**
+## **CORE VALUE #2: SEAMLESS TASK & ROLE TRANSITIONS**
 
 **Never lose context when switching between roles or continuing tasks:**
 
@@ -66,14 +170,15 @@
 ```
 
 **Features:**
--  **Intelligent context preservation** between role switches
--  **Automatic task handoffs** with full history
--  **Role-based boundaries** for focused expertise
--  **Pause and resume** workflows anytime
+
+- **Intelligent context preservation** between role switches
+- **Automatic task handoffs** with full history
+- **Role-based boundaries** for focused expertise
+- **Pause and resume** workflows anytime
 
 ---
 
-##  **CORE VALUE #3: BEAUTIFUL HTML REPORTING**
+## **CORE VALUE #3: BEAUTIFUL HTML REPORTING**
 
 **Transform your workflow data into stunning, interactive reports:**
 
@@ -82,85 +187,29 @@
 </div>
 
 **What you get:**
--  **Interactive dashboards** with Chart.js visualizations
--  **Mobile-responsive** Tailwind CSS design
--  **Progress tracking** with visual indicators
--  **Performance analytics** for each role
--  **Detailed task breakdowns** with timelines
--  **Export-ready reports** for stakeholders
+
+- **Interactive dashboards** with Chart.js visualizations
+- **Mobile-responsive** Tailwind CSS design
+- **Progress tracking** with visual indicators
+- **Performance analytics** for each role
+- **Detailed task breakdowns** with timelines
+- **Export-ready reports** for stakeholders
 
 ---
 
-##  **QUICK START**
+## **INTELLIGENT ROLE SYSTEM**
 
-### **Option 1: NPX (Recommended)**
-
-```json
-// Add to your MCP client config
-{
-  "mcpServers": {
-    "anubis": {
-      "command": "npx",
-      "args": ["-y", "@hive-academy/anubis"]
-    }
-  }
-}
-```
-
-### **Option 2: Docker**
-
-```json
-{
-  "mcpServers": {
-    "anubis": {
-      "command": "docker", 
-      "args": ["run", "-i", "-v", "anubis-data:/app/data", "--rm", "hiveacademy/anubis"]
-    }
-  }
-}
-```
-
-** Benefits**: Zero installation • Always latest version • Project isolation • Auto-dependency management
+| Role                 | Intelligent Purpose     | Key Powers                                        |
+| -------------------- | ----------------------- | ------------------------------------------------- |
+| **Boomerang**        | Strategic Orchestration | Project setup, task creation, workflow management |
+| **Researcher**       | Knowledge Gathering     | Evidence-based research, feasibility analysis     |
+| **Architect**        | System Design           | Technical architecture, implementation planning   |
+| **Senior Developer** | Code Manifestation      | High-quality implementation, testing              |
+| **Code Review**      | Quality Guardian        | Security validation, performance review, approval |
 
 ---
 
-##  **SUPERCHARGE YOUR AI AGENT IN 3 STEPS**
-
-### **Step 1: Initialize Intelligent Guidance**
-
-```
-Please initialize Anubis workflow rules for [your-agent-name] by calling the init_rules MCP tool
-```
-
-### **Step 2: Start Your Workflow**
-
-```
-Begin a new workflow for [your-project] with Anubis guidance
-```
-
-### **Step 3: Generate Beautiful Reports**
-
-```
-Generate an interactive workflow report for the current execution
-```
-
-**Supported Agents**: `cursor` • `copilot` • `roocode` • `kilocode`
-
----
-
-##  **INTELLIGENT ROLE SYSTEM**
-
-| Role | Intelligent Purpose | Key Powers |
-|------|----------------|------------|
-| **Boomerang** | Strategic Orchestration | Project setup, task creation, workflow management |
-| **Researcher** | Knowledge Gathering | Evidence-based research, feasibility analysis |
-| **Architect** | System Design | Technical architecture, implementation planning |
-| **Senior Developer** | Code Manifestation | High-quality implementation, testing |
-| **Code Review** | Quality Guardian | Security validation, performance review, approval |
-
----
-
-##  **REAL-WORLD EXAMPLE**
+## **REAL-WORLD EXAMPLE**
 
 ```javascript
 // 1. Agent receives intelligent guidance
@@ -207,16 +256,18 @@ await report_step_completion({
 
 ---
 
-##  **TECHNICAL EXCELLENCE**
+## **TECHNICAL EXCELLENCE**
 
 **Enterprise-Grade Architecture:**
+
 - **Backend**: NestJS v11 + TypeScript
-- **Database**: Prisma ORM + SQLite/PostgreSQL  
+- **Database**: Prisma ORM + SQLite/PostgreSQL
 - **MCP**: @rekog/mcp-nest v1.5.2
 - **Analytics**: Chart.js + Tailwind CSS
 - **Runtime**: Node.js ≥18.0.0
 
-**Production Ready**: 
+**Production Ready**:
+
 - MCP-compliant architecture
 - Zero execution violations
 - 75% test coverage
@@ -227,7 +278,7 @@ await report_step_completion({
 ## 📚 **DOCUMENTATION**
 
 - **[📖 Technical Architecture](memory-bank/TechnicalArchitecture.md)** - System design & patterns
-- **[🚀 Developer Guide](memory-bank/DeveloperGuide.md)** - Setup & development workflows  
+- **[🚀 Developer Guide](memory-bank/DeveloperGuide.md)** - Setup & development workflows
 - **[🎯 Project Overview](memory-bank/ProjectOverview.md)** - Business context & strategy
 - **[📊 Report Examples](docs/showcase/)** - Sample workflow reports
 
@@ -239,7 +290,7 @@ await report_step_completion({
 # Development setup
 npm install && npm run db:init && npm run start:dev
 
-# Quality checks  
+# Quality checks
 npm run test && npm run lint
 ```
 
@@ -247,13 +298,13 @@ npm run test && npm run lint
 
 ---
 
-##  **LICENSE**
+## **LICENSE**
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
-##  **THE ANUBIS PROMISE**
+## **THE ANUBIS PROMISE**
 
 <div align="center">
 

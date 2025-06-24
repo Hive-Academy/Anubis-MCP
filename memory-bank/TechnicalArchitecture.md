@@ -684,6 +684,26 @@ The system includes comprehensive architectural validation:
 - **Performance Monitoring**: Tracks response times and resource usage
 - **Quality Gate Enforcement**: Automated quality validation
 
+## ✅ Recent Refactor: Centralized Workflow Execution State Handling (v1.1.15)
+
+To improve reliability during bootstrap and step progression, the execution-state write logic has been centralized:
+
+- **`WorkflowExecutionState` Interface & Zod Schema** (`workflow-execution-state.schema.ts`)
+  - Runtime-validated representation of execution progress, last transition, and progress markers.
+  - Guarantees structural consistency across all state writes.
+- **`updateExecutionState` Helper** (`WorkflowExecutionService`)
+  - Merges partial state patches with current state, validates via Zod, and persists atomically.
+  - Used by `RoleTransitionService`, `StepExecutionService`, `WorkflowGuidanceMcpService`, and others.
+
+Benefits:
+
+1. **Consistency** – Every state mutation passes the same schema check.
+2. **Maintainability** – Single helper replaces scattered `executionState` updates.
+3. **Type-Safety** – Compile-time type plus runtime validation.
+4. **Observability** – Progress markers and timestamps updated centrally, simplifying analytics.
+
+All legacy direct writes have been refactored to use the helper. Unit & integration tests cover schema validation (happy & failure paths) and concurrency safety.
+
 ---
 
 **The Anubis represents a sophisticated, enterprise-grade architecture that combines the power of NestJS v11.0.1, Prisma v6.9.0, and MCP protocol compliance to deliver intelligent workflow guidance for AI-assisted development.**

@@ -37,47 +37,9 @@
       ]
     },
     {
-      "name": "execute_git_integration",
-      "description": "Execute git operations with error handling and remote sync",
-      "sequenceNumber": 2,
-      "isRequired": true,
-      "stepType": "ACTION",
-      "approach": "Comprehensive git integration with validation and error handling",
-      "approachGuidance": {
-        "stepByStep": [
-          "Execute git status to verify clean working directory",
-          "Verify current branch is feature branch (not main/master)",
-          "Stage all implementation changes with git add",
-          "Create comprehensive integration commit with detailed message",
-          "Push feature branch to remote with error handling"
-        ]
-      },
-      "qualityChecklist": [
-        "Git status verified with clean working directory",
-        "Feature branch confirmed (not main/master)",
-        "All implementation changes staged and committed",
-        "Comprehensive commit message created",
-        "Feature branch successfully pushed to remote"
-      ],
-      "conditions": [
-        {
-          "name": "context_gathered",
-          "conditionType": "PREVIOUS_STEP_COMPLETED",
-          "logic": {
-            "check": "step_completed",
-            "parameters": {
-              "stepName": "gather_integration_context"
-            }
-          },
-          "isRequired": true
-        }
-      ],
-      "actions": []
-    },
-    {
       "name": "update_documentation",
       "description": "Update documentation based on implementation changes",
-      "sequenceNumber": 3,
+      "sequenceNumber": 2,
       "isRequired": true,
       "stepType": "ACTION",
       "approach": "Intelligent documentation assessment with targeted updates",
@@ -105,6 +67,44 @@
             "check": "step_completed",
             "parameters": {
               "stepName": "execute_git_integration"
+            }
+          },
+          "isRequired": true
+        }
+      ],
+      "actions": []
+    },
+    {
+      "name": "execute_git_integration",
+      "description": "Execute git operations with error handling and remote sync",
+      "sequenceNumber": 3,
+      "isRequired": true,
+      "stepType": "ACTION",
+      "approach": "Comprehensive git integration with validation and error handling",
+      "approachGuidance": {
+        "stepByStep": [
+          "Execute git status to verify clean working directory",
+          "Verify current branch is feature branch (not main/master)",
+          "Stage all implementation changes with git add",
+          "Create comprehensive integration commit with detailed message",
+          "Push feature branch to remote with error handling"
+        ]
+      },
+      "qualityChecklist": [
+        "Git status verified with clean working directory",
+        "Feature branch confirmed (not main/master)",
+        "All implementation changes staged and committed",
+        "Comprehensive commit message created",
+        "Feature branch successfully pushed to remote"
+      ],
+      "conditions": [
+        {
+          "name": "context_gathered",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "check": "step_completed",
+            "parameters": {
+              "stepName": "gather_integration_context"
             }
           },
           "isRequired": true

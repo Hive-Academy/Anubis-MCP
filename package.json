@@ -1,6 +1,6 @@
 {
   "name": "@hive-academy/anubis",
-  "version": "1.1.15",
+  "version": "1.1.22",
   "description": "🏺 Anubis - Intelligent Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development",
   "author": "Hive Academy <abdallah@nghive.tech>",
   "license": "MIT",
@@ -42,7 +42,6 @@
   },
   "files": [
     "dist/**/*",
-    "data-template/**/*",
     "prisma/**/*",
     "package.json",
     "README.md"
@@ -61,11 +60,9 @@
     "db:generate": "npx prisma generate",
     "db:init": "npm run db:generate && npm run db:migrate && npm run db:seed",
     "db:seed": "npx prisma db seed",
-    "setup:force": "npm run db:generate",
     "lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
-    "rules:gen": "ts-node scripts/reset-and-seed-workflow-rules.ts",
     "db:reset": "ts-node scripts/complete-database-reset.ts"
   },
   "dependencies": {
@@ -80,11 +77,11 @@
     "ejs": "^3.1.10",
     "express": "^4.19.2",
     "fastmcp": "^1.27.6",
+    "prisma": "^6.9.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "uuid": "^11.1.0",
-    "zod": "^3.24.4",
-    "prisma": "^6.9.0"
+    "zod": "^3.24.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -99,6 +96,7 @@
     "@types/node": "^22.10.7",
     "@types/supertest": "^6.0.2",
     "@types/uuid": "^10.0.0",
+    "cross-env": "^7.0.3",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",

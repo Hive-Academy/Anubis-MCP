@@ -163,7 +163,7 @@
     {
       "name": "role_transition",
       "description": "Transition to architect role with research findings",
-      "sequenceNumber": 6,
+      "sequenceNumber": 5,
       "isRequired": true,
       "stepType": "ACTION",
       "approach": "Execute transition to architect with comprehensive research handoff",

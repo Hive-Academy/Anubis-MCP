@@ -116,11 +116,14 @@ export class StepExecutionMcpService extends BaseMcpService {
         `Getting step guidance for ${input.taskId ? `task: ${input.taskId}` : `execution: ${input.executionId}`}, role: ${input.roleId}`,
       );
 
-      // Get current execution to find current step if not provided
+      // 🔧 CRITICAL FIX: Enhanced to handle post-transition scenarios
       let currentStepId = input.stepId;
       let currentRoleId = input.roleId;
+      let actualTaskId = input.taskId;
+      let resolvedExecutionId = input.executionId;
 
-      if (!currentStepId) {
+      // Get execution context if needed
+      if (!currentStepId || !actualTaskId) {
         const executionQuery =
           input.taskId !== undefined
             ? { taskId: input.taskId }
@@ -134,28 +137,49 @@ export class StepExecutionMcpService extends BaseMcpService {
         if (!executionResult.execution) {
           return this.buildMinimalResponse({
             error: 'No active execution found',
+            guidance: 'Please ensure workflow is properly initialized',
           });
         }
 
         const currentExecution = executionResult.execution;
-        const executionStepId = currentExecution.currentStepId;
+
+        // 🔧 BOOTSTRAP FIX: Update context from execution - HANDLE BOOTSTRAP CASE
+        if (currentExecution.taskId) {
+          actualTaskId = actualTaskId || currentExecution.taskId;
+        } else {
+          // Bootstrap case: execution has no task yet
+          actualTaskId = 0; // Signal bootstrap mode to resolveStepId
+          this.logger.log(
+            'Bootstrap execution detected: no taskId available yet',
+          );
+        }
         currentRoleId = currentExecution.currentRoleId;
 
-        if (!executionStepId || !currentRoleId) {
-          return this.buildMinimalResponse({
-            error: 'No current step or role found',
-          });
+        // 🔧 CRITICAL FIX: Don't require currentStepId - let guidance service auto-detect
+        if (currentExecution.currentStepId) {
+          currentStepId = currentExecution.currentStepId;
         }
 
-        currentStepId = executionStepId;
+        if (!currentRoleId) {
+          return this.buildMinimalResponse({
+            error: 'Missing execution context',
+            details: {
+              hasRoleId: Boolean(currentRoleId),
+              hasTaskId: Boolean(actualTaskId),
+              isBootstrapMode: actualTaskId === 0,
+            },
+          });
+        }
+        resolvedExecutionId = executionResult.execution.id;
       }
 
-      // ✅ DELEGATE to dedicated StepGuidanceService
-      const actualTaskId = input.taskId || 0;
+      // ✅ ENHANCED: Use transition-aware StepGuidanceService
       const guidance = await this.stepGuidanceService.getStepGuidance({
         taskId: actualTaskId,
         roleId: currentRoleId,
-        stepId: currentStepId!,
+        executionId: resolvedExecutionId,
+        stepId: currentStepId, // May be undefined - guidance service handles this
+        validateTransitionState: true, // Enable transition state detection
       });
 
       // Return clean guidance without artificial fields
@@ -344,6 +368,7 @@ export class StepExecutionMcpService extends BaseMcpService {
               taskId: input.id,
               roleId: nextStep.roleId,
               stepId: nextStep.id,
+              executionId: execution.id,
             })
           : null,
         status: nextStep ? 'step_available' : 'no_steps_available',

@@ -86,7 +86,26 @@
           "isRequired": true
         }
       ],
-      "actions": []
+      "actions": [
+        {
+          "name": "get_next_subtask",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "SubtaskOperations",
+            "operation": "get_next_subtask"
+          },
+          "sequenceOrder": 1
+        },
+        {
+          "name": "update_subtask_in_progress",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "SubtaskOperations",
+            "operation": "update_subtask"
+          },
+          "sequenceOrder": 2
+        }
+      ]
     },
     {
       "name": "validate_implementation",
