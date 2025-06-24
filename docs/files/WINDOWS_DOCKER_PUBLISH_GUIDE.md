@@ -59,10 +59,10 @@ docker run --rm test-mcp-workflow --help
    docker buildx create --name mcp-builder --use --bootstrap
 
    # Build and push for multiple platforms
-   docker buildx build `
-     --platform linux/amd64,linux/arm64 `
-     --tag hiveacademy/anubis:latest `
-   --tag hiveacademy/anubis:1.0.0 `
+   docker buildx build
+     --platform linux/amd64,linux/arm64
+     --tag hiveacademy/anubis:latest
+   --tag hiveacademy/anubis:1.0.0
      --push .
    ```
 
