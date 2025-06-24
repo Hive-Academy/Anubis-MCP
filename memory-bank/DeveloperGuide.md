@@ -853,6 +853,19 @@ async customOperation(): Promise<any> {
 }
 ```
 
+### Writing to `executionState`
+
+Always use `WorkflowExecutionService.updateExecutionState(executionId, patch)` instead of direct `prisma.workflowExecution.update`. The helper merges patches, validates against the `WorkflowExecutionState` Zod schema, and prevents invalid states.
+
+```typescript
+await workflowExecutionService.updateExecutionState(execution.id, {
+  phase: 'in-progress',
+  lastProgressUpdate: new Date().toISOString(),
+});
+```
+
+This ensures all state mutations follow the centralized contract and are type-safe.
+
 ---
 
 **🚀 This developer guide provides comprehensive guidance for working with the Anubis. The system represents a sophisticated, enterprise-grade architecture that combines NestJS v11.0.1, Prisma v6.9.0, and MCP protocol compliance to deliver intelligent workflow guidance for AI agents in software development.**

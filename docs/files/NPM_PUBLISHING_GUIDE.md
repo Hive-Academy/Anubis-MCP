@@ -6,7 +6,7 @@ This guide documents the optimized NPM publishing process for the Anubis MCP Ser
 
 The Anubis package uses a **pre-built approach** that:
 
-- ✅ **Bundles a pre-seeded database** (589.8kB)
+- ✅ **Bundles a pre-seeded database** (`prisma/data/workflow.db`, ~589 kB)
 - ✅ **Excludes generated Prisma files** (saves 99.5% space)
 - ✅ **Uses runtime Prisma generation** for NPM packages
 - ✅ **Copies database to user's project directory** (not NPM cache)
@@ -27,7 +27,7 @@ npm view @hive-academy/anubis version
 
 ```bash
 # Ensure pre-seeded database exists
-ls -la data-template/workflow.db
+ls -la prisma/data/workflow.db
 # Should be ~589.8kB
 
 # If missing, regenerate:
@@ -51,8 +51,8 @@ ls -lh *.tgz
 ### Step 1: Clean Build
 
 ```bash
-# Clean and rebuild
-npm run build
+# Clean build and generate Prisma client
+npm run prepublishOnly   # or let npm publish run it automatically
 
 # Verify no generated folder is included
 # (package.json excludes "generated/**/*")
@@ -86,10 +86,12 @@ npm view @hive-academy/anubis version
 ├── dist/                           # Compiled TypeScript
 │   ├── cli.js                     # Main entry point
 │   └── ...                        # All compiled services
-├── data-template/
-│   └── workflow.db                # Pre-seeded database (589.8kB)
 ├── enhanced-workflow-rules/       # Workflow definitions
-├── prisma/                        # Schema and migrations
+├── prisma/                        # Schema, migrations, seed patches, data
+│   ├── data/
+│   │   └── workflow.db            # Pre-seeded database (~589 kB)
+│   └── scripts/
+│       └── prisma-seed.js         # Idempotent runtime seed script
 └── package.json
 ```
 
@@ -105,9 +107,12 @@ npm view @hive-academy/anubis version
 When users run `npx @hive-academy/anubis`:
 
 1. **Package Installation**: NPM downloads 465kB package to cache
-2. **Prisma Generation**: CLI generates Prisma client at runtime
-3. **Database Copy**: Pre-seeded DB copied to user's `PROJECT_ROOT/data/`
-4. **Server Start**: NestJS app starts with copied database
+2. **Prisma Generation**: CLI generates Prisma client at runtime if it doesn't exist
+3. **Database Copy**: Pre-seeded DB copied to user's `PROJECT_ROOT/data/` (only on first run)
+4. **Runtime Upgrade**:
+   1. CLI applies any pending Prisma migrations (`prisma migrate deploy`)
+   2. CLI executes the idempotent `prisma-seed.js` script, which UPSERTs core tables so new workflow data appears without touching user-generated records
+   3. NestJS app starts
 
 ## 🔧 Configuration Files
 
@@ -119,7 +124,6 @@ When users run `npx @hive-academy/anubis`:
     "dist/**/*",
     "enhanced-workflow-rules/**/*",
     "prisma/**/*",
-    "data-template/**/*",
     "package.json",
     "README.md"
   ],
@@ -144,7 +148,7 @@ When users run `npx @hive-academy/anubis`:
 
 ### Issue: Database Not Found
 
-**Cause**: Missing `data-template/workflow.db`
+**Cause**: Missing `prisma/data/workflow.db`
 **Solution**:
 
 ```bash
@@ -168,6 +172,16 @@ npm run db:seed
 # Ensure Prisma schema is valid
 npx prisma validate
 ```
+
+### Issue: Seed Script Errors
+
+**Cause**: `dist/scripts/prisma-seed.js` not found or throws.
+
+**Solution**:
+
+1. Ensure you ran `npm run build` so the TypeScript seed compiles to JS.
+2. Verify the script finishes locally with `node dist/scripts/prisma-seed.js --runtime`.
+3. Check that every insert/ update in the seed uses `createMany({ skipDuplicates: true })` or an UPSERT so it is safe to run repeatedly.
 
 ## 📊 Performance Metrics
 

@@ -31,20 +31,6 @@ docker login
 # Enter your Docker Hub username and password
 ```
 
-#### Step 2: Security Audit and Cleanup
-
-```powershell
-# Run our security cleanup script
-.\scripts\clean-for-publish.ps1
-
-# This will:
-# ✅ Remove log files
-# ✅ Clean database files
-# ✅ Handle .env configuration
-# ✅ Update .gitignore
-# ✅ Verify repository state
-```
-
 #### Step 3: Test Your Application
 
 ```powershell
@@ -64,31 +50,7 @@ docker run --rm test-mcp-workflow --help
 
 ### 🚀 Publication Process
 
-#### Option A: Quick Publication (Enhanced PowerShell Script)
-
-```powershell
-# Set your Docker Hub username (optional - defaults to hiveacademy)
-$env:DOCKER_HUB_USERNAME = "hiveacademy"  # Replace with your username
-
-# Run the enhanced publication script
-.\scripts\docker-publish.ps1
-
-# Or with specific options
-.\scripts\docker-publish.ps1 -Version "1.0.0" -Verbose -DockerHubUsername "yourusername"
-
-# Skip pre-build tests for faster builds
-.\scripts\docker-publish.ps1 -SkipTests
-```
-
-**New Features in Enhanced Script:**
-
-- ✅ **Automatic validation** of required files and Docker status
-- ✅ **Integrated testing** of the published image
-- ✅ **Multi-platform builds** (AMD64 + ARM64)
-- ✅ **Comprehensive error handling** with troubleshooting tips
-- ✅ **Build-time database seeding** verification
-
-#### Option B: Manual Step-by-Step
+#### Option A: Manual Step-by-Step
 
 1. **Build Multi-Platform Image**:
 

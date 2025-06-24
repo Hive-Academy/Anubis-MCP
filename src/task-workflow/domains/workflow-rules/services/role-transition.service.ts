@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { RoleTransition } from 'generated/prisma';
 import * as path from 'path';
 import { PrismaService } from '../../../../prisma/prisma.service';
+import { WorkflowExecutionService } from './workflow-execution.service';
 
 // Configuration interfaces to eliminate hardcoding
 export interface QualityGateConfig {
@@ -81,7 +82,10 @@ export class RoleTransitionService {
     ],
   };
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private workflowExecutionService: WorkflowExecutionService,
+  ) {}
 
   /**
    * Get available role transitions for a given role
@@ -495,12 +499,18 @@ export class RoleTransitionService {
         this.logger.warn(`No steps found for new role ${newRoleId}`);
       }
 
-      // Update workflow execution state
-      const currentExecutionState =
-        (execution.executionState as Record<string, any>) || {};
+      // Update core fields first
+      await this.prisma.workflowExecution.update({
+        where: { id: execution.id },
+        data: {
+          currentRoleId: newRoleId,
+          currentStepId: firstStep?.id || null,
+          updatedAt: new Date(),
+        },
+      });
 
-      const updatedExecutionState = {
-        ...currentExecutionState,
+      // Update executionState via helper
+      await this.workflowExecutionService.updateExecutionState(execution.id, {
         phase: 'role_transitioned',
         lastTransition: {
           timestamp: new Date().toISOString(),
@@ -515,16 +525,6 @@ export class RoleTransitionService {
             assignedAt: new Date().toISOString(),
           },
         }),
-      };
-
-      await this.prisma.workflowExecution.update({
-        where: { id: execution.id },
-        data: {
-          currentRoleId: newRoleId,
-          currentStepId: firstStep?.id || null,
-          executionState: updatedExecutionState,
-          updatedAt: new Date(),
-        },
       });
 
       this.logger.log(

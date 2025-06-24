@@ -171,129 +171,135 @@ export class StepGuidanceService {
    * Automatically determines the correct step ID for the current role and task,
    * especially useful after role transitions where stepId might be missing or incorrect
    */
+  private async handleBootstrap(
+    context: StepGuidanceContext,
+  ): Promise<string | null> {
+    this.logger.log('Bootstrap mode detected: resolving stepId without taskId');
+
+    // Use executionId to detect progression past first step
+    if (context.executionId) {
+      const exec = await this.workflowExecutionService.getExecutionById(
+        context.executionId,
+      );
+
+      if (exec) {
+        const lastCompleted = (exec.executionState as any)?.lastCompletedStep
+          ?.id;
+
+        if (
+          exec.stepsCompleted > 0 &&
+          exec.currentStepId &&
+          lastCompleted === exec.currentStepId
+        ) {
+          const nextStep =
+            await this.stepQueryService.getNextStepAfterCompletion(
+              exec.currentStepId,
+            );
+
+          if (nextStep) {
+            this.logger.log(
+              `Bootstrap progression: resolved NEXT step ${nextStep.id} (${nextStep.name}) after completing ${exec.stepsCompleted} steps`,
+            );
+            return nextStep.id;
+          }
+
+          this.logger.log(
+            `Bootstrap progression: no further steps, returning currentStepId ${exec.currentStepId}`,
+          );
+          return exec.currentStepId;
+        }
+
+        if (exec.currentStepId) {
+          this.logger.log(
+            `Bootstrap initial: using execution.currentStepId ${exec.currentStepId}`,
+          );
+          return exec.currentStepId;
+        }
+      }
+    }
+
+    const firstStep = await this.stepQueryService.getFirstStepForRole(
+      context.roleId,
+    );
+    if (firstStep) {
+      this.logger.log(
+        `Bootstrap: resolved to first step for role: ${firstStep.id} (${firstStep.name})`,
+      );
+      return firstStep.id;
+    }
+    this.logger.error(
+      `Bootstrap: no first step found for role: ${context.roleId}`,
+    );
+    return null;
+  }
+
+  private async resolveFromExecution(
+    context: StepGuidanceContext,
+  ): Promise<string | null> {
+    const stateValidation =
+      await this.stepQueryService.validateAndSyncExecutionState(
+        context.taskId.toString(),
+        context.roleId,
+      );
+
+    if (stateValidation.isValid && stateValidation.currentStep) {
+      this.logger.log(
+        `Resolved stepId from execution state: ${stateValidation.currentStep.id}${
+          stateValidation.corrected ? ' (state corrected)' : ''
+        }`,
+      );
+      return stateValidation.currentStep.id;
+    }
+
+    const nextStep = await this.stepQueryService.getNextAvailableStep(
+      context.taskId.toString(),
+      context.roleId,
+      { checkTransitionState: true, validateContext: true },
+    );
+
+    if (nextStep) {
+      this.logger.log(
+        `Resolved stepId from next available step: ${nextStep.id} (${nextStep.name})`,
+      );
+      return nextStep.id;
+    }
+
+    return null;
+  }
+
+  private async findFallbackStep(
+    context: StepGuidanceContext,
+  ): Promise<string | null> {
+    const firstStep = await this.stepQueryService.getFirstStepForRole(
+      context.roleId,
+    );
+    if (firstStep) {
+      this.logger.log(
+        `Resolved stepId from first step for role: ${firstStep.id} (${firstStep.name})`,
+      );
+      return firstStep.id;
+    }
+    this.logger.error(`Could not resolve stepId for role: ${context.roleId}`);
+    return null;
+  }
+
   private async resolveStepId(
     context: StepGuidanceContext,
   ): Promise<string | null> {
     try {
-      // 🔧 BOOTSTRAP MODE DETECTION: Handle case where we have no valid taskId (bootstrap sequence)
+      // Bootstrap scenario
       if (!context.taskId || context.taskId === 0) {
-        this.logger.log(
-          'Bootstrap mode detected: resolving stepId without taskId',
-        );
-
-        // NEW LOGIC ➜ use executionId to detect progression past first step
-        if (context.executionId) {
-          const exec = await this.workflowExecutionService.getExecutionById(
-            context.executionId,
-          );
-
-          if (exec) {
-            // If we have already completed at least one step, try to return the next step
-            const lastCompleted = (exec.executionState as any)
-              ?.lastCompletedStep?.id;
-
-            if (
-              exec.stepsCompleted > 0 &&
-              exec.currentStepId &&
-              lastCompleted === exec.currentStepId
-            ) {
-              const nextStep =
-                await this.stepQueryService.getNextStepAfterCompletion(
-                  exec.currentStepId,
-                );
-
-              if (nextStep) {
-                this.logger.log(
-                  `Bootstrap progression: resolved NEXT step ${nextStep.id} (${nextStep.name}) after completing ${exec.stepsCompleted} steps`,
-                );
-                return nextStep.id;
-              }
-
-              // Fallback to currentStepId if no next step exists (end of role steps)
-              this.logger.log(
-                `Bootstrap progression: no further steps, returning currentStepId ${exec.currentStepId}`,
-              );
-              return exec.currentStepId;
-            }
-
-            // If zero steps completed, just return currentStepId (initial first step)
-            if (exec.currentStepId) {
-              this.logger.log(
-                `Bootstrap initial: using execution.currentStepId ${exec.currentStepId}`,
-              );
-              return exec.currentStepId;
-            }
-          }
-        }
-
-        const firstStep = await this.stepQueryService.getFirstStepForRole(
-          context.roleId,
-        );
-
-        if (firstStep) {
-          this.logger.log(
-            `Bootstrap: resolved to first step for role: ${firstStep.id} (${firstStep.name})`,
-          );
-          return firstStep.id;
-        } else {
-          this.logger.error(
-            `Bootstrap: no first step found for role: ${context.roleId}`,
-          );
-          return null;
-        }
+        return await this.handleBootstrap(context);
       }
 
-      // Standard flow: validate and sync execution state
-      const stateValidation =
-        await this.stepQueryService.validateAndSyncExecutionState(
-          context.taskId.toString(),
-          context.roleId,
-        );
+      // Standard execution path
+      const resolved = await this.resolveFromExecution(context);
+      if (resolved) return resolved;
 
-      if (stateValidation.isValid && stateValidation.currentStep) {
-        this.logger.log(
-          `Resolved stepId from execution state: ${stateValidation.currentStep.id}${
-            stateValidation.corrected ? ' (state corrected)' : ''
-          }`,
-        );
-        return stateValidation.currentStep.id;
-      }
-
-      // Fallback: get next available step using transition-aware logic
-      const nextStep = await this.stepQueryService.getNextAvailableStep(
-        context.taskId.toString(),
-        context.roleId,
-        { checkTransitionState: true, validateContext: true },
-      );
-
-      if (nextStep) {
-        this.logger.log(
-          `Resolved stepId from next available step: ${nextStep.id} (${nextStep.name})`,
-        );
-        return nextStep.id;
-      }
-
-      // Last resort: get first step for role
-      const firstStep = await this.stepQueryService.getFirstStepForRole(
-        context.roleId,
-      );
-
-      if (firstStep) {
-        this.logger.log(
-          `Resolved stepId from first step for role: ${firstStep.id} (${firstStep.name})`,
-        );
-        return firstStep.id;
-      }
-
-      this.logger.error(`Could not resolve stepId for context:`, {
-        taskId: context.taskId,
-        roleId: context.roleId,
-        stateValidation,
-      });
-
-      return null;
+      // Fallback
+      return await this.findFallbackStep(context);
     } catch (error) {
-      this.logger.error(`Error resolving stepId:`, error);
+      this.logger.error('Error resolving stepId:', error);
       return null;
     }
   }

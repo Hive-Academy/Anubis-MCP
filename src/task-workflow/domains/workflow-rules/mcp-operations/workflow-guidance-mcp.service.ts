@@ -4,6 +4,7 @@ import { ZodSchema, z } from 'zod';
 import { WorkflowGuidanceService } from '../services/workflow-guidance.service';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { WorkflowExecution } from 'generated/prisma';
+import { WorkflowExecutionService } from '../services/workflow-execution.service';
 
 const GetWorkflowGuidanceInputSchema = z
   .object({
@@ -55,6 +56,7 @@ export class WorkflowGuidanceMcpService {
   constructor(
     private readonly workflowGuidanceService: WorkflowGuidanceService,
     private readonly prisma: PrismaService,
+    private readonly workflowExecutionService: WorkflowExecutionService,
   ) {}
 
   @Tool({
@@ -236,25 +238,30 @@ export class WorkflowGuidanceMcpService {
       approach: string;
     },
   ) {
+    // Persist simple relational update first (without executionState)
     await this.prisma.workflowExecution.update({
       where: { id: currentExecution.id },
       data: {
         currentStepId: firstStepForRole.id,
-        executionState: {
-          ...((currentExecution.executionState as Record<string, any>) || {}),
-          currentStep: {
-            id: firstStepForRole.id,
-            name: firstStepForRole.name,
-            sequenceNumber: firstStepForRole.sequenceNumber,
-            assignedAt: new Date().toISOString(),
-          },
-          autoFixed: {
-            timestamp: new Date().toISOString(),
-            reason: 'Missing currentStepId after workflow guidance request',
-            assignedStep: firstStepForRole.name,
-          },
-        },
       },
     });
+
+    // Use validated helper for state patching
+    await this.workflowExecutionService.updateExecutionState(
+      currentExecution.id,
+      {
+        currentStep: {
+          id: firstStepForRole.id,
+          name: firstStepForRole.name,
+          sequenceNumber: firstStepForRole.sequenceNumber,
+          assignedAt: new Date().toISOString(),
+        },
+        autoFixed: {
+          timestamp: new Date().toISOString(),
+          reason: 'Missing currentStepId after workflow guidance request',
+          assignedStep: firstStepForRole.name,
+        },
+      } as any, // Partial of WorkflowExecutionState
+    );
   }
 }

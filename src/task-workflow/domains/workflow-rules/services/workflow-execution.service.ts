@@ -6,6 +6,10 @@ import {
   ConfigurableService,
   BaseServiceConfig,
 } from '../utils/configurable-service.base';
+import {
+  WorkflowExecutionState,
+  WorkflowExecutionStateSchema,
+} from '../utils/workflow-execution-state.schema';
 
 // Configuration interfaces to eliminate hardcoding
 export interface ExecutionServiceConfig extends BaseServiceConfig {
@@ -362,5 +366,34 @@ export class WorkflowExecutionService extends ConfigurableService<ExecutionServi
       retryCount: newRecoveryAttempts,
       maxRetries: currentExecution.maxRecoveryAttempts,
     };
+  }
+
+  // -----------------------------------------------------------------------------
+  // NEW HELPER: Validated executionState update (DRY & SAFE)
+  // -----------------------------------------------------------------------------
+  async updateExecutionState(
+    executionId: string,
+    patch: Partial<WorkflowExecutionState>,
+  ): Promise<void> {
+    // Fetch current execution
+    const exec = await this.getExecutionById(executionId);
+
+    const currentState = (exec.executionState ||
+      {}) as Partial<WorkflowExecutionState>;
+
+    const newState: WorkflowExecutionState = {
+      ...currentState,
+      ...patch,
+    } as WorkflowExecutionState;
+
+    // Runtime validation – throws if schema mismatch
+    WorkflowExecutionStateSchema.parse(newState);
+
+    await this.prisma.workflowExecution.update({
+      where: { id: executionId },
+      data: {
+        executionState: newState as unknown as Record<string, any>,
+      },
+    });
   }
 }
