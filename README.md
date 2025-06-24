@@ -15,6 +15,10 @@
 
 **[NPM Package](https://www.npmjs.com/package/@hive-academy/anubis)** • **[Docker Hub](https://hub.docker.com/r/hiveacademy/anubis)** • **[Website](https://hive-academy.github.io/Anubis-MCP/)**
 
+<a href="https://glama.ai/mcp/servers/@Hive-Academy/Anubis-MCP">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@Hive-Academy/Anubis-MCP/badge" alt="𓂀𓁢𓋹𝔸ℕ𝕌𝔹𝕀𝕊𓋹𓁢𓂀 - Intelligent Guidance for MCP server" />
+</a>
+
 </div>
 
 ---
