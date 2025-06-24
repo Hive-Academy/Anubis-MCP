@@ -78,7 +78,7 @@ Begin a new workflow for [your-project] with Anubis guidance
 
 ## **ROOCODE Setup Example**
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/NPWrGJ_lRqY?si=dXFzTf-qJqNRzOu6&amp;start=477" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+[![Anubis MCP server Demo](https://img.youtube.com/vi/NPWrGJ_lRqY/0.jpg)](https://www.youtube.com/embed/NPWrGJ_lRqY?si=dXFzTf-qJqNRzOu6&start=477)
 
 ## **Cursor Setup Example**
 
