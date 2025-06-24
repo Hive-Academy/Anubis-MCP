@@ -50,11 +50,6 @@ function setupPrebuiltDatabase(dbConfig: any): void {
 
 function runPrismaMigrations(verbose: boolean): void {
   try {
-    // Ensure Prisma client is generated before we later require it
-    execSync('npx prisma generate', {
-      stdio: verbose ? 'inherit' : 'ignore',
-    });
-
     execSync('npx prisma migrate deploy', {
       stdio: verbose ? 'inherit' : 'ignore',
     });
@@ -63,65 +58,25 @@ function runPrismaMigrations(verbose: boolean): void {
   }
 }
 
-async function ensureSeedIsUpToDate(verbose: boolean): Promise<void> {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { PrismaClient } =
-    require('generated/prisma') as typeof import('generated/prisma');
-  const prisma = new PrismaClient();
-
+function runSeedScript(verbose: boolean): void {
   const packageRoot = path.resolve(
     path.dirname(require.resolve('@hive-academy/anubis/package.json')),
   );
-  const seedDir = path.join(packageRoot, 'prisma', 'seed-patches');
 
-  if (!fs.existsSync(seedDir)) {
-    await prisma.$disconnect();
-    return; // No patches bundled
+  const seedPath = path.join(packageRoot, 'dist', 'scripts', 'prisma-seed.js');
+
+  if (!fs.existsSync(seedPath)) {
+    console.warn('[Anubis] Seed script not found, skipping.');
+    return;
   }
 
   try {
-    await prisma.$connect();
-
-    await prisma.$executeRawUnsafe(
-      'CREATE TABLE IF NOT EXISTS _meta (key TEXT PRIMARY KEY, value TEXT);',
-    );
-
-    const rows: Array<{ value: string }> = await prisma.$queryRawUnsafe(
-      "SELECT value FROM _meta WHERE key = 'seed_version';",
-    );
-
-    let currentVersion = 0;
-    if (rows.length) {
-      const num = Number(rows[0].value);
-      if (!Number.isNaN(num)) currentVersion = num;
-    } else {
-      await prisma.$executeRawUnsafe(
-        "INSERT OR IGNORE INTO _meta (key, value) VALUES ('seed_version', 0);",
-      );
-    }
-
-    const patches = fs
-      .readdirSync(seedDir)
-      .filter((f) => /^\d+_.*\.sql$/.test(f))
-      .sort((a, b) => Number(a.split('_')[0]) - Number(b.split('_')[0]))
-      .filter((f) => Number(f.split('_')[0]) > currentVersion);
-
-    for (const file of patches) {
-      const version = Number(file.split('_')[0]);
-      const sql = fs.readFileSync(path.join(seedDir, file), 'utf8');
-
-      if (verbose) console.log(`[Anubis] Applying seed patch ${file}`);
-
-      await prisma.$executeRawUnsafe(sql);
-
-      await prisma.$executeRawUnsafe(
-        `UPDATE _meta SET value = ${version} WHERE key = 'seed_version';`,
-      );
-    }
+    execSync(`node "${seedPath}" --runtime`, {
+      stdio: verbose ? 'inherit' : 'ignore',
+      env: { ...process.env },
+    });
   } catch (err) {
-    console.error('[Anubis] Failed to apply seed patches', err);
-  } finally {
-    await prisma.$disconnect();
+    console.error('[Anubis] Failed to execute seed script', err);
   }
 }
 
@@ -145,7 +100,7 @@ async function bootstrap() {
 
   // Apply schema migrations and seed patches (does not touch user data)
   runPrismaMigrations(verbose);
-  await ensureSeedIsUpToDate(verbose);
+  runSeedScript(verbose);
 
   // Start NestJS application
   const app = await NestFactory.createApplicationContext(AppModule, {

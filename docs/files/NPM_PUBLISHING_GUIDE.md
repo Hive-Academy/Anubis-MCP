@@ -35,23 +35,7 @@ npm run db:reset
 npm run db:seed
 ```
 
-### 3. **Generate Incremental Seed Patch**
-
-Each time you modify `prisma-seed.ts` you must generate a forward-only SQL patch so existing users receive the new data without wiping their own.
-
-```bash
-# Creates prisma/seed-patches/NNN_YYYY-MM-DD.sql (skips if no diff)
-npm run gen:seed-patch
-```
-
-ℹ️ `gen:seed-patch` relies on the `sqldiff` utility that ships with the SQLite CLI tools. Install one of:
-
-1. Add the tools to your PATH manually ( https://sqlite.org/download.html )
-2. Or install the dev dependency that bundles binaries: `npm i -D sqlite-tools-bin` (already in package.json)
-
-The script will automatically pick the bundled binary when present.
-
-### 4. **Package Size Verification**
+### 3. **Package Size Verification**
 
 ```bash
 # Check what will be included
@@ -64,10 +48,10 @@ ls -lh *.tgz
 
 ## 🚀 Publishing Process
 
-### Step 1: Clean Build & Seed Patch Generation
+### Step 1: Clean Build
 
 ```bash
-# Clean, rebuild, generate Prisma client & seed patch
+# Clean build and generate Prisma client
 npm run prepublishOnly   # or let npm publish run it automatically
 
 # Verify no generated folder is included
@@ -106,7 +90,8 @@ npm view @hive-academy/anubis version
 ├── prisma/                        # Schema, migrations, seed patches, data
 │   ├── data/
 │   │   └── workflow.db            # Pre-seeded database (~589 kB)
-│   └── seed-patches/              # Incremental seed SQL files (000_init_meta.sql, 001_*.sql …)
+│   └── scripts/
+│       └── prisma-seed.js         # Idempotent runtime seed script
 └── package.json
 ```
 
@@ -122,11 +107,11 @@ npm view @hive-academy/anubis version
 When users run `npx @hive-academy/anubis`:
 
 1. **Package Installation**: NPM downloads 465kB package to cache
-2. **Prisma Generation**: CLI generates Prisma client at runtime
-3. **Database Copy**: Pre-seeded DB copied to user's `PROJECT_ROOT/data/`
+2. **Prisma Generation**: CLI generates Prisma client at runtime if it doesn't exist
+3. **Database Copy**: Pre-seeded DB copied to user's `PROJECT_ROOT/data/` (only on first run)
 4. **Runtime Upgrade**:
    1. CLI applies any pending Prisma migrations (`prisma migrate deploy`)
-   2. CLI runs SQL files in `prisma/seed-patches/` whose version number is higher than `_meta.seed_version` in the user DB
+   2. CLI executes the idempotent `prisma-seed.js` script, which UPSERTs core tables so new workflow data appears without touching user-generated records
    3. NestJS app starts
 
 ## 🔧 Configuration Files
@@ -143,7 +128,7 @@ When users run `npx @hive-academy/anubis`:
     "README.md"
   ],
   "scripts": {
-    "prepublishOnly": "npm run build && npm run db:generate && npm run gen:seed-patch"
+    "prepublishOnly": "npm run build && npm run db:generate"
   }
 }
 ```
@@ -188,18 +173,15 @@ npm run db:seed
 npx prisma validate
 ```
 
-### Issue: Seed Patch Generation Fails (sqldiff not found)
+### Issue: Seed Script Errors
 
-**Cause**: SQLite CLI utilities missing
+**Cause**: `dist/scripts/prisma-seed.js` not found or throws.
+
 **Solution**:
 
-```bash
-# Option A – system-wide
-choco install sqlite  # Windows example
-
-# Option B – project-local (already in devDeps)
-npm i -D sqlite-tools-bin
-```
+1. Ensure you ran `npm run build` so the TypeScript seed compiles to JS.
+2. Verify the script finishes locally with `node dist/scripts/prisma-seed.js --runtime`.
+3. Check that every insert/ update in the seed uses `createMany({ skipDuplicates: true })` or an UPSERT so it is safe to run repeatedly.
 
 ## 📊 Performance Metrics
 

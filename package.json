@@ -49,7 +49,7 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
-    "prepublishOnly": "npm run build && npm run db:generate && npm run gen:seed-patch",
+    "prepublishOnly": "npm run build && npm run db:generate",
     "postinstall": "npm run db:generate",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -60,7 +60,6 @@
     "db:generate": "prisma generate",
     "db:init": "npm run db:generate && npm run db:migrate && npm run db:seed",
     "db:seed": "prisma db seed",
-    "gen:seed-patch": "ts-node scripts/generate-seed-patch.ts",
     "lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
