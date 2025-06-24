@@ -5,6 +5,8 @@ import { AppModule } from './app.module';
 import { setupDatabaseEnvironment } from './utils/database-config';
 import * as fs from 'fs';
 import * as path from 'path';
+import { execSync } from 'child_process';
+import { PrismaClient } from '@prisma/client';
 
 /**
  * ANUBIS MCP SERVER - PRE-BUILT PACKAGE APPROACH
@@ -28,7 +30,12 @@ function setupPrebuiltDatabase(dbConfig: any): void {
   const packageRoot = path.resolve(
     path.dirname(require.resolve('@hive-academy/anubis/package.json')),
   );
-  const templateDbPath = path.join(packageRoot, 'data-template', 'workflow.db');
+  const templateDbPath = path.join(
+    packageRoot,
+    'prisma',
+    'data',
+    'workflow.db',
+  );
 
   if (!fs.existsSync(templateDbPath)) {
     throw new Error(
@@ -38,6 +45,77 @@ function setupPrebuiltDatabase(dbConfig: any): void {
 
   // Copy the pre-built database to the final destination
   fs.copyFileSync(templateDbPath, dbConfig.databasePath);
+}
+
+// -------------------- RUNTIME DATABASE MAINTENANCE --------------------
+
+function runPrismaMigrations(verbose: boolean): void {
+  try {
+    execSync('npx prisma migrate deploy', {
+      stdio: verbose ? 'inherit' : 'ignore',
+    });
+  } catch (error) {
+    console.error('[Anubis] Failed to apply Prisma migrations', error);
+  }
+}
+
+async function ensureSeedIsUpToDate(verbose: boolean): Promise<void> {
+  const prisma = new PrismaClient();
+
+  const packageRoot = path.resolve(
+    path.dirname(require.resolve('@hive-academy/anubis/package.json')),
+  );
+  const seedDir = path.join(packageRoot, 'prisma', 'seed-patches');
+
+  if (!fs.existsSync(seedDir)) {
+    await prisma.$disconnect();
+    return; // No patches bundled
+  }
+
+  try {
+    await prisma.$connect();
+
+    await prisma.$executeRawUnsafe(
+      'CREATE TABLE IF NOT EXISTS _meta (key TEXT PRIMARY KEY, value TEXT);',
+    );
+
+    const rows: Array<{ value: string }> = await prisma.$queryRawUnsafe(
+      "SELECT value FROM _meta WHERE key = 'seed_version';",
+    );
+
+    let currentVersion = 0;
+    if (rows.length) {
+      const num = Number(rows[0].value);
+      if (!Number.isNaN(num)) currentVersion = num;
+    } else {
+      await prisma.$executeRawUnsafe(
+        "INSERT OR IGNORE INTO _meta (key, value) VALUES ('seed_version', 0);",
+      );
+    }
+
+    const patches = fs
+      .readdirSync(seedDir)
+      .filter((f) => /^\d+_.*\.sql$/.test(f))
+      .sort((a, b) => Number(a.split('_')[0]) - Number(b.split('_')[0]))
+      .filter((f) => Number(f.split('_')[0]) > currentVersion);
+
+    for (const file of patches) {
+      const version = Number(file.split('_')[0]);
+      const sql = fs.readFileSync(path.join(seedDir, file), 'utf8');
+
+      if (verbose) console.log(`[Anubis] Applying seed patch ${file}`);
+
+      await prisma.$executeRawUnsafe(sql);
+
+      await prisma.$executeRawUnsafe(
+        `UPDATE _meta SET value = ${version} WHERE key = 'seed_version';`,
+      );
+    }
+  } catch (err) {
+    console.error('[Anubis] Failed to apply seed patches', err);
+  } finally {
+    await prisma.$disconnect();
+  }
 }
 
 async function bootstrap() {
@@ -57,6 +135,10 @@ async function bootstrap() {
 
   // Setup pre-built database by copying the template
   setupPrebuiltDatabase(dbConfig);
+
+  // Apply schema migrations and seed patches (does not touch user data)
+  runPrismaMigrations(verbose);
+  await ensureSeedIsUpToDate(verbose);
 
   // Start NestJS application
   const app = await NestFactory.createApplicationContext(AppModule, {

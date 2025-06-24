@@ -6,7 +6,7 @@ This guide documents the optimized NPM publishing process for the Anubis MCP Ser
 
 The Anubis package uses a **pre-built approach** that:
 
-- ✅ **Bundles a pre-seeded database** (589.8kB)
+- ✅ **Bundles a pre-seeded database** (`prisma/data/workflow.db`, ~589 kB)
 - ✅ **Excludes generated Prisma files** (saves 99.5% space)
 - ✅ **Uses runtime Prisma generation** for NPM packages
 - ✅ **Copies database to user's project directory** (not NPM cache)
@@ -27,7 +27,7 @@ npm view @hive-academy/anubis version
 
 ```bash
 # Ensure pre-seeded database exists
-ls -la data-template/workflow.db
+ls -la prisma/data/workflow.db
 # Should be ~589.8kB
 
 # If missing, regenerate:
@@ -35,7 +35,23 @@ npm run db:reset
 npm run db:seed
 ```
 
-### 3. **Package Size Verification**
+### 3. **Generate Incremental Seed Patch**
+
+Each time you modify `prisma-seed.ts` you must generate a forward-only SQL patch so existing users receive the new data without wiping their own.
+
+```bash
+# Creates prisma/seed-patches/NNN_YYYY-MM-DD.sql (skips if no diff)
+npm run gen:seed-patch
+```
+
+ℹ️ `gen:seed-patch` relies on the `sqldiff` utility that ships with the SQLite CLI tools. Install one of:
+
+1. Add the tools to your PATH manually ( https://sqlite.org/download.html )
+2. Or install the dev dependency that bundles binaries: `npm i -D sqlite-tools-bin` (already in package.json)
+
+The script will automatically pick the bundled binary when present.
+
+### 4. **Package Size Verification**
 
 ```bash
 # Check what will be included
@@ -48,11 +64,11 @@ ls -lh *.tgz
 
 ## 🚀 Publishing Process
 
-### Step 1: Clean Build
+### Step 1: Clean Build & Seed Patch Generation
 
 ```bash
-# Clean and rebuild
-npm run build
+# Clean, rebuild, generate Prisma client & seed patch
+npm run prepublishOnly   # or let npm publish run it automatically
 
 # Verify no generated folder is included
 # (package.json excludes "generated/**/*")
@@ -86,10 +102,11 @@ npm view @hive-academy/anubis version
 ├── dist/                           # Compiled TypeScript
 │   ├── cli.js                     # Main entry point
 │   └── ...                        # All compiled services
-├── data-template/
-│   └── workflow.db                # Pre-seeded database (589.8kB)
 ├── enhanced-workflow-rules/       # Workflow definitions
-├── prisma/                        # Schema and migrations
+├── prisma/                        # Schema, migrations, seed patches, data
+│   ├── data/
+│   │   └── workflow.db            # Pre-seeded database (~589 kB)
+│   └── seed-patches/              # Incremental seed SQL files (000_init_meta.sql, 001_*.sql …)
 └── package.json
 ```
 
@@ -107,7 +124,10 @@ When users run `npx @hive-academy/anubis`:
 1. **Package Installation**: NPM downloads 465kB package to cache
 2. **Prisma Generation**: CLI generates Prisma client at runtime
 3. **Database Copy**: Pre-seeded DB copied to user's `PROJECT_ROOT/data/`
-4. **Server Start**: NestJS app starts with copied database
+4. **Runtime Upgrade**:
+   1. CLI applies any pending Prisma migrations (`prisma migrate deploy`)
+   2. CLI runs SQL files in `prisma/seed-patches/` whose version number is higher than `_meta.seed_version` in the user DB
+   3. NestJS app starts
 
 ## 🔧 Configuration Files
 
@@ -119,12 +139,11 @@ When users run `npx @hive-academy/anubis`:
     "dist/**/*",
     "enhanced-workflow-rules/**/*",
     "prisma/**/*",
-    "data-template/**/*",
     "package.json",
     "README.md"
   ],
   "scripts": {
-    "prepublishOnly": "npm run build && npm run db:generate"
+    "prepublishOnly": "npm run build && npm run db:generate && npm run gen:seed-patch"
   }
 }
 ```
@@ -144,7 +163,7 @@ When users run `npx @hive-academy/anubis`:
 
 ### Issue: Database Not Found
 
-**Cause**: Missing `data-template/workflow.db`
+**Cause**: Missing `prisma/data/workflow.db`
 **Solution**:
 
 ```bash
@@ -167,6 +186,19 @@ npm run db:seed
 ```bash
 # Ensure Prisma schema is valid
 npx prisma validate
+```
+
+### Issue: Seed Patch Generation Fails (sqldiff not found)
+
+**Cause**: SQLite CLI utilities missing
+**Solution**:
+
+```bash
+# Option A – system-wide
+choco install sqlite  # Windows example
+
+# Option B – project-local (already in devDeps)
+npm i -D sqlite-tools-bin
 ```
 
 ## 📊 Performance Metrics

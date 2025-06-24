@@ -22,5 +22,4 @@ prisma/anubis.db
 data
 /workflow-reports
 /.vscode
-/data-template
 /.vscode/mcp.json

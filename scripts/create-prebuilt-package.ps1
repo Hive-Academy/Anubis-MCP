@@ -13,7 +13,7 @@ Write-Host "================================" -ForegroundColor Cyan
 # Step 1: Clean previous builds
 Write-Host "`nCleaning previous builds..." -ForegroundColor Yellow
 if (Test-Path "dist") { Remove-Item -Recurse -Force "dist" }
-if (Test-Path "data-template") { Remove-Item -Recurse -Force "data-template" }
+if (Test-Path "prisma/data") { Remove-Item -Recurse -Force "prisma/data" }
 if (Test-Path "*.tgz") { Remove-Item -Force "*.tgz" }
 
 # Step 2: Build the application
@@ -26,11 +26,11 @@ if ($LASTEXITCODE -ne 0) {
 
 # Step 3: Create template database directory
 Write-Host "`nCreating template database..." -ForegroundColor Yellow
-New-Item -ItemType Directory -Force -Path "data-template" | Out-Null
+New-Item -ItemType Directory -Force -Path "prisma/data" | Out-Null
 
 # Step 4: Generate pre-seeded database
 Write-Host "Generating pre-seeded database..." -ForegroundColor Yellow
-$env:DATABASE_URL = "file:./data-template/workflow.db"
+$env:DATABASE_URL = "file:./prisma/data/workflow.db"
 
 # Run migrations
 Write-Host "  Running migrations..." -ForegroundColor Gray
@@ -50,7 +50,7 @@ if ($LASTEXITCODE -ne 0) {
 
 
 
-$dbSize = (Get-Item "data-template/workflow.db").Length
+$dbSize = (Get-Item "prisma/data/workflow.db").Length
 Write-Host "  Database created successfully ($([math]::Round($dbSize/1KB, 2)) KB)" -ForegroundColor Green
 
 # Step 6: Create simplified CLI for pre-built mode
@@ -92,7 +92,7 @@ async function startPrebuiltServer() {
     
     // Step 2: Copy pre-built database if it doesn't exist
     if (!fs.existsSync(dbPath)) {
-      const templateDbPath = path.join(__dirname, '..', 'data-template', 'workflow.db');
+      const templateDbPath = path.join(__dirname, '..', 'prisma', 'data', 'workflow.db');
       
       if (fs.existsSync(templateDbPath)) {
         fs.copyFileSync(templateDbPath, dbPath);
@@ -149,7 +149,7 @@ if ($packageFiles) {
   Write-Host "`nPackage includes:" -ForegroundColor Yellow
   Write-Host "   Compiled application (dist/)" -ForegroundColor Green
   Write-Host "   Pre-built Prisma client (generated/)" -ForegroundColor Green
-  Write-Host "   Pre-seeded database (data-template/)" -ForegroundColor Green
+  Write-Host "   Pre-seeded database (prisma/data/)" -ForegroundColor Green
   Write-Host "   Workflow rules (enhanced-workflow-rules/)" -ForegroundColor Green
   Write-Host "   Simplified launcher (no runtime complexity)" -ForegroundColor Green
 }
