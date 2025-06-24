@@ -115,9 +115,77 @@
       "actions": []
     },
     {
+      "name": "intelligent_review_decision_and_workflow_completion",
+      "description": "Make evidence-based review decision and execute appropriate role transition based on review outcome",
+      "sequenceNumber": 4,
+      "isRequired": true,
+      "stepType": "ACTION",
+      "approach": "Evidence-based decision making with direct role transition execution based on review outcome",
+      "approachGuidance": {
+        "stepByStep": [
+          "Evaluate all validation evidence against approval criteria for informed decision",
+          "Apply deterministic decision criteria to determine APPROVED or NEEDS_CHANGES",
+          "Create comprehensive review report with findings, evidence, and decision rationale",
+          "Determine appropriate role transition based on decision outcome",
+          "Execute the appropriate execute_transition tool directly with proper context",
+          "Ensure comprehensive documentation of decision rationale and next steps"
+        ],
+        "decisionMakingSteps": [
+          "Assess overall implementation quality against established standards",
+          "Evaluate requirements satisfaction completeness based on evidence",
+          "Consider production readiness and any remaining risks or concerns",
+          "Apply decision criteria to determine APPROVED or NEEDS_CHANGES outcome"
+        ],
+        "roleTransitionSelectionSteps": [
+          "IF decision is APPROVED: Use execute_transition with 'code_review_to_integration_engineer' transitionId",
+          "IF decision is NEEDS_CHANGES: Use execute_transition with 'code_review_to_architect' transitionId",
+          "Document specific reasons for transition selection based on review findings",
+          "Include clear guidance for next steps in handoffMessage"
+        ],
+        "transitionExecutionSteps": [
+          "Create detailed review report with findings, evidence, and decision rationale",
+          "Call execute_transition tool directly (available to agent, not MCP_CALL)",
+          "Use appropriate transitionId based on decision outcome",
+          "Provide comprehensive handoffMessage with review context and next steps"
+        ]
+      },
+      "qualityChecklist": [
+        "Review decision based on comprehensive evidence evaluation and risk assessment",
+        "Deterministic criteria applied to select appropriate role transition",
+        "Implementation quality, requirements satisfaction, and production readiness considered",
+        "Comprehensive review report created with findings, evidence, and decision rationale",
+        "Correct role transition executed directly using execute_transition tool",
+        "Context preservation comprehensive with clear rationale and handoff information for receiving role"
+      ],
+      "conditions": [
+        {
+          "name": "criteria_verification_completed",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "check": "step_completed",
+            "parameters": {
+              "stepName": "verify_acceptance_criteria"
+            }
+          },
+          "isRequired": true
+        }
+      ],
+      "actions": [
+        {
+          "name": "create_comprehensive_review_report",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "ReviewOperations",
+            "operation": "create_review"
+          },
+          "sequenceOrder": 1
+        }
+      ]
+    },
+    {
       "name": "make_review_decision",
       "description": "Make code review decision and execute appropriate transition",
-      "sequenceNumber": 4,
+      "sequenceNumber": 5,
       "isRequired": true,
       "stepType": "ACTION",
       "approach": "Evidence-based decision making with appropriate role transition",

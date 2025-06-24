@@ -368,6 +368,7 @@ export class StepExecutionMcpService extends BaseMcpService {
               taskId: input.id,
               roleId: nextStep.roleId,
               stepId: nextStep.id,
+              executionId: execution.id,
             })
           : null,
         status: nextStep ? 'step_available' : 'no_steps_available',
