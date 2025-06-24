@@ -6,7 +6,6 @@ import { setupDatabaseEnvironment } from './utils/database-config';
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
-import { PrismaClient } from '@prisma/client';
 
 /**
  * ANUBIS MCP SERVER - PRE-BUILT PACKAGE APPROACH
@@ -51,6 +50,11 @@ function setupPrebuiltDatabase(dbConfig: any): void {
 
 function runPrismaMigrations(verbose: boolean): void {
   try {
+    // Ensure Prisma client is generated before we later require it
+    execSync('npx prisma generate', {
+      stdio: verbose ? 'inherit' : 'ignore',
+    });
+
     execSync('npx prisma migrate deploy', {
       stdio: verbose ? 'inherit' : 'ignore',
     });
@@ -60,6 +64,9 @@ function runPrismaMigrations(verbose: boolean): void {
 }
 
 async function ensureSeedIsUpToDate(verbose: boolean): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { PrismaClient } =
+    require('generated/prisma') as typeof import('generated/prisma');
   const prisma = new PrismaClient();
 
   const packageRoot = path.resolve(
