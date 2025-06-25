@@ -1,11 +1,8 @@
 name: Build and Publish Docker Image
 
 on:
-  push:
-    branches: [main, docker-release]
-    tags: ['v*']
   pull_request:
-    branches: [main, docker-release]
+    branches: [publish-docker]
   release:
     types: [published]
   # Manual trigger for emergency releases
@@ -299,7 +296,7 @@ jobs:
             - ✅ Version labels updated
 
             **Test Installation (after merge):**
-            \`\`\`bash
+            \\\`\\\`\\\`bash
             # Pull and run
             docker pull ${{ env.IMAGE_NAME }}:${{ steps.version_sync.outputs.target_version }}
             docker run --rm -i -v mcp-data:/app/data ${{ env.IMAGE_NAME }}:${{ steps.version_sync.outputs.target_version }}
@@ -307,10 +304,10 @@ jobs:
             # Or use latest
             docker pull ${{ env.IMAGE_NAME }}:latest
             docker run --rm -i -v mcp-data:/app/data ${{ env.IMAGE_NAME }}:latest
-            \`\`\`
+            \\\`\\\`\\\`
 
             **Claude Desktop MCP Configuration:**
-            \`\`\`json
+            \\\`\\\`\\\`json
             {
               "mcpServers": {
                 "anubis": {
@@ -323,7 +320,7 @@ jobs:
                 }
               }
             }
-            \`\`\``;
+            \\\`\\\`\\\``;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
