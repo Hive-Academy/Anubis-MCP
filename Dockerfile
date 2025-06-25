@@ -95,6 +95,10 @@ RUN mkdir -p /app/data/anubis-reports/temp \
 RUN mkdir -p /app/reports/rendered \
     && chown -R nestjs:nodejs /app/reports
 
+# Create workspace directory for init rules output (mounted from host)
+RUN mkdir -p /app/workspace \
+    && chown -R nestjs:nodejs /app/workspace
+
 # Ensure temp and templates directories exist with proper permissions
 RUN chown -R nestjs:nodejs /app/temp /app/templates
 
