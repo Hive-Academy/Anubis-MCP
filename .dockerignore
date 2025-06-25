@@ -1,6 +1,6 @@
-# Development database files
-prisma/data/
-*.db
+# Development database files (but keep the pre-seeded template)
+# prisma/data/ - INCLUDE for pre-seeded database template
+# *.db - INCLUDE workflow.db template
 *.db-journal
 *.db-wal
 *.db-shm

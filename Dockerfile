@@ -52,6 +52,7 @@ RUN if [ ! -d "./prisma/migrations" ]; then echo "❌ Migrations directory not f
 
 # Set build-time database configuration for migration deployment
 ENV DATABASE_URL="file:./build-time-db/workflow.db"
+ENV NODE_ENV="production"
 
 # STRATEGIC BUILD-TIME MIGRATION AND SEEDING DEPLOYMENT
 # Deploy all migrations and seed essential workflow data during build

@@ -115,7 +115,9 @@ jobs:
             echo "🔧 Regenerating database template..."
             mkdir -p prisma/data
             echo "🔧 Setting up database URL: $DATABASE_URL"
-            npm run db:reset
+            echo "🏗️ Creating database schema..."
+            npx prisma db push --accept-data-loss
+            echo "🌱 Seeding database..."
             npm run db:seed
             
             if [ -f "prisma/data/workflow.db" ]; then
@@ -187,7 +189,7 @@ jobs:
           echo "🔍 Validating Prisma schema..."
           npx prisma validate
           echo "✅ Prisma schema validation passed"
-          
+
           # Verify generated folder is excluded
           if [ -d "generated" ]; then
             echo "⚠️ Generated folder exists - verifying it's excluded from package"
