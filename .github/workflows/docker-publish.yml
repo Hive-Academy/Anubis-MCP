@@ -155,7 +155,6 @@ jobs:
             maintainer=Hive Academy <abdallah@nghive.tech>
             version=${{ steps.version_sync.outputs.target_version }}
             anubis.version=${{ steps.version_sync.outputs.target_version }}
-            anubis.build.date=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
             anubis.npm.sync=${{ inputs.sync_with_npm }}
             anubis.version.strategy=${{ steps.version_sync.outputs.version_strategy }}
 
