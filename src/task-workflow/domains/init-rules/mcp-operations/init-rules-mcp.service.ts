@@ -7,13 +7,23 @@ import { InitRulesService } from '../init-rules.service';
 const InitRulesInputSchema = z.object({
   agentName: z
     .enum(['cursor', 'copilot', 'roocode', 'kilocode'])
-    .describe('AI agent to deploy rules for (cursor or copilot)'),
+    .describe('AI agent to deploy rules for'),
   projectRoot: z
     .string()
     .optional()
     .describe(
       'Root directory of the target project. Defaults to current working directory.',
     ),
+  workflowType: z
+    .enum(['turbo', 'multiRole'])
+    .optional()
+    .describe(
+      'Workflow type to deploy: turbo for focused rapid development, multiRole for collaborative multi-role complex workflows. Defaults to multiRole.',
+    ),
+  templateFile: z
+    .string()
+    .optional()
+    .describe('Optional specific template file to use instead of the default'),
 });
 
 type InitRulesInput = z.infer<typeof InitRulesInputSchema>;
@@ -28,23 +38,20 @@ export class InitRulesMcpService {
   @Tool({
     name: 'init_rules',
     description:
-      'Initialize Anubis workflow rules to specified AI agent (cursor or copilot)',
+      'Initialize Anubis workflow rules to specified AI agent with workflow type selection',
     parameters: InitRulesInputSchema as ZodSchema<InitRulesInput>,
   })
   async InitRules(input: InitRulesInput) {
     try {
       const projectRoot = input.projectRoot || process.cwd();
 
-      // Choose template based on agent
-      const templateFile =
-        input.agentName === 'cursor'
-          ? 'workflow-protocol-function-calls.md'
-          : 'workflow-protocol-xml.md';
-
       const result = await this.initRulesService.InitRules(
         input.agentName,
         projectRoot,
-        templateFile,
+        {
+          workflowType: input.workflowType,
+          templateFile: input.templateFile,
+        },
       );
 
       return {
@@ -56,7 +63,10 @@ export class InitRulesMcpService {
                 success: result.success,
                 message:
                   'message' in result ? result.message : 'No message available',
-                data: { targetFile: result.targetFile },
+                data: {
+                  targetFile: result.targetFile,
+                  workflowType: result.workflowType,
+                },
                 timestamp: new Date().toISOString(),
               },
               null,

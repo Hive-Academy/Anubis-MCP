@@ -10,6 +10,7 @@ export interface AIAgentConfig {
   requiresFrontmatter: boolean;
   ensureDirectories: string[];
   specialHandling?: 'roocode' | 'kilocode'; // Optional special handling for specific agents
+  turboTemplate?: string; // Optional turbo-dev specific template
 }
 
 @Injectable()
@@ -19,7 +20,8 @@ export class InitRulesService {
   private readonly agentConfigs: Record<string, AIAgentConfig> = {
     cursor: {
       name: 'Cursor IDE',
-      sourceTemplate: 'workflow-protocol-function-calls.md',
+      sourceTemplate: 'multi-role-workflow-protocol.md',
+      turboTemplate: 'turbo-dev-protocol.md',
       targetPath: '.cursor/rules',
       targetFileName: '000-workflow-core.mdc',
       requiresFrontmatter: true,
@@ -27,7 +29,8 @@ export class InitRulesService {
     },
     copilot: {
       name: 'GitHub Copilot',
-      sourceTemplate: 'workflow-protocol-function-calls.md',
+      sourceTemplate: 'multi-role-workflow-protocol.md',
+      turboTemplate: 'turbo-dev-protocol.md',
       targetPath: '.github/chatmodes',
       targetFileName: '𓂀𓁢𓋹𝔸ℕ𝕌𝔹𝕀𝕊𓋹𓁢𓂀.chatmode.md',
       requiresFrontmatter: true,
@@ -57,17 +60,21 @@ export class InitRulesService {
    * Deploy Anubis workflow rules to specified AI agent
    * @param agentName - The AI agent to deploy rules for
    * @param projectRoot - Root directory of the target project
-   * @param templateFile - Optional template file to use instead of the default
+   * @param options - Optional configuration including workflowType and templateFile
    * @returns Promise with deployment result
    */
   async InitRules(
     agentName: string,
     projectRoot: string,
-    templateFile?: string,
+    options?: {
+      workflowType?: 'turbo' | 'multiRole';
+      templateFile?: string;
+    },
   ): Promise<{
     success: boolean;
     message: string;
     targetFile?: string;
+    workflowType?: string;
   }> {
     const config = this.agentConfigs[agentName];
     if (!config) {
@@ -81,15 +88,30 @@ export class InitRulesService {
       // Ensure target directories exist
       await this.ensureDirectories(projectRoot, config.ensureDirectories);
 
-      // Use the provided template file if specified, otherwise use the default from config
-      const templateToUse = templateFile || config.sourceTemplate;
+      // Determine which template to use
+      let templateToUse: string;
+      let workflowType: string;
+
+      if (options?.templateFile) {
+        // Use explicit template file if provided
+        templateToUse = options.templateFile;
+        workflowType = 'custom';
+      } else if (options?.workflowType === 'turbo' && config.turboTemplate) {
+        // Use turbo template if requested and available
+        templateToUse = config.turboTemplate;
+        workflowType = 'turbo';
+      } else {
+        // Use default (multiRole) template
+        templateToUse = config.sourceTemplate;
+        workflowType = 'multiRole';
+      }
 
       // Read source template
       const sourceContent = await this.readTemplate(templateToUse);
 
       // Process content (add frontmatter if required)
       const processedContent = config.requiresFrontmatter
-        ? this.addFrontmatter(sourceContent, config)
+        ? this.addFrontmatter(sourceContent, config, workflowType)
         : sourceContent;
 
       // Write to target location
@@ -120,8 +142,9 @@ export class InitRulesService {
 
       return {
         success: true,
-        message: `Successfully deployed Anubis rules for ${config.name}`,
+        message: `Successfully deployed Anubis ${workflowType} rules for ${config.name}`,
         targetFile: targetFilePath,
+        workflowType,
       };
     } catch (error) {
       return {
@@ -173,34 +196,47 @@ export class InitRulesService {
   /**
    * Add frontmatter to content if required
    */
-  private addFrontmatter(content: string, config: AIAgentConfig): string {
+  private addFrontmatter(
+    content: string,
+    config: AIAgentConfig,
+    workflowType?: string,
+  ): string {
     // Check if content already has frontmatter
     if (content.startsWith('---')) {
       return content;
     }
 
     // Add basic frontmatter based on agent type
-    const frontmatter = this.generateFrontmatter(config);
+    const frontmatter = this.generateFrontmatter(config, workflowType);
     return `${frontmatter}\n\n${content}`;
   }
 
   /**
    * Generate appropriate frontmatter for the agent
    */
-  private generateFrontmatter(config: AIAgentConfig): string {
+  private generateFrontmatter(
+    config: AIAgentConfig,
+    workflowType?: string,
+  ): string {
     const timestamp = new Date().toISOString();
+    const workflowTypeLabel =
+      workflowType === 'turbo'
+        ? ' - Turbo-Dev Mode'
+        : workflowType === 'multiRole'
+          ? ' - Multi-Role Mode'
+          : '';
 
     switch (config.name) {
       case 'Cursor IDE':
         return `---
-description: 
+description: Anubis Workflow Protocol${workflowTypeLabel}
 globs: 
 alwaysApply: true
 ---`;
 
       case 'GitHub Copilot':
         return `---
-description: 'Anubis is the intelligent guide for AI workflows - the first MCP-compliant system that embeds intelligent guidance directly into each step, ensuring your AI agents follow complex development processes consistently and reliably.'
+description: 'Anubis${workflowTypeLabel} - Intelligent guidance for AI workflows. The first MCP-compliant system that embeds intelligent guidance directly into each step, ensuring your AI agents follow complex development processes consistently and reliably.'
 
 tools: [
   'changes',
@@ -220,7 +256,7 @@ tools: [
 
       default:
         return `---
-title: "Anubis Workflow Protocol"
+title: "Anubis Workflow Protocol${workflowTypeLabel}"
 description: "Intelligent guidance for AI workflows"
 version: "1.0.0"
 created: "${timestamp}"

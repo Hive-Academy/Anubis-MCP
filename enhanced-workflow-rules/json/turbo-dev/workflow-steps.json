@@ -1,41 +1,50 @@
 {
   "workflowSteps": [
     {
-      "name": "turbo_setup_and_analysis",
-      "description": "Rapid setup with git integration and comprehensive codebase analysis",
+      "name": "turbo_intelligent_setup_and_context",
+      "description": "Intelligent context gathering with git setup, memory bank analysis, and smart research decision-making",
       "sequenceNumber": 1,
       "isRequired": true,
       "stepType": "ACTION",
-      "approach": "Streamlined setup combining git operations with deep codebase analysis",
+      "approach": "Smart context aggregation with intelligent research decision integration",
       "approachGuidance": {
         "stepByStep": [
-          "Check git repository status with 'git status --porcelain'",
-          "Handle any uncommitted changes appropriately",
-          "Create feature branch with descriptive name following format: 'turbo/[task-description]'",
-          "Verify branch creation succeeded",
-          "Enhanced Memory Bank Analysis (if memory-bank folder exists):",
-          "1. memory-bank/ProjectOverview.md: Extract business context, features, stakeholder requirements",
-          "2. memory-bank/TechnicalArchitecture.md: Extract architecture patterns, component structure, technology stack",
-          "3. memory-bank/DeveloperGuide.md: Extract implementation standards, coding patterns, quality guidelines",
-          "Analyze project structure and identify tech stack",
-          "Test current functionality to understand existing behavior",
-          "Extract clear requirements from user request",
-          "Create task with executionId, codebase analysis, and memory bank insights",
-          "Update task status to 'in-progress'"
+          "**Phase 1: Git and Context Intelligence**",
+          "- Check git repository status with 'git status --porcelain'",
+          "- Handle uncommitted changes and create feature branch: 'turbo/[task-description]'",
+          "- Check for existing workflow context from active executions",
+          "- If memory-bank exists, extract key insights from ProjectOverview.md, TechnicalArchitecture.md, DeveloperGuide.md",
+          "- Analyze project structure and tech stack (only if not available in context)",
+          "",
+          "**Phase 2: Intelligent Research Decision**",
+          "- Extract clear requirements from user request",
+          "- Test current functionality to understand existing behavior patterns",
+          "- Evaluate task complexity against known capabilities and patterns:",
+          "  * Known technologies/patterns → Direct implementation",
+          "  * Unknown patterns/integration challenges → Research needed",
+          "  * New external APIs/libraries → Research needed",
+          "  * Complex architectural decisions → Research needed",
+          "",
+          "**Phase 3: Conditional Research Execution**",
+          "- IF research needed: Execute integrated research process:",
+          "  * Identify critical research questions (technical unknowns, integration challenges)",
+          "  * Conduct focused research using web_search and documentation analysis",
+          "  * Extract actionable implementation recommendations",
+          "  * Create research findings using ResearchOperations.create_research",
+          "  * Use get_operation_schema('ResearchOperations', 'create_research') for correct parameters",
+          "- ELSE: Proceed with existing knowledge and patterns"
         ]
       },
       "qualityChecklist": [
-        "Git repository exists and is functional",
-        "Working directory status checked and handled appropriately",
-        "Feature branch created with proper 'turbo/' naming convention",
-        "Branch checkout successful and verified",
-        "Memory bank analysis completed (if available) with key insights extracted",
-        "Project structure and tech stack documented",
-        "Current functionality tested and behavior understood",
-        "Requirements extracted and clearly defined from user request",
-        "Task created with executionId linked to workflow",
-        "Task includes comprehensive codebase analysis and memory bank context",
-        "Task status updated to 'in-progress'"
+        "Git repository functional with clean feature branch created",
+        "Existing context intelligently gathered and validated",
+        "Memory bank insights extracted (if available)",
+        "Project structure and tech stack understood",
+        "Requirements clearly extracted from user request",
+        "Research necessity decision made with clear reasoning",
+        "If research conducted: Critical questions identified and answered",
+        "If research conducted: Actionable implementation recommendations documented",
+        "Complete context prepared for enhanced subtask creation"
       ],
       "conditions": [
         {
@@ -52,251 +61,142 @@
           "isRequired": true
         }
       ],
-      "actions": [
-        {
-          "name": "create_task",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "TaskOperations",
-            "operation": "create",
-            "requiredParameters": [
-              "executionId",
-              "taskData",
-              "description",
-              "codebaseAnalysis"
-            ]
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "update_task_status",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "TaskOperations",
-            "operation": "update",
-            "requiredParameters": [
-              "taskId",
-              "taskData"
-            ]
-          },
-          "sequenceOrder": 2
-        }
-      ]
+      "actions": []
     },
     {
-      "name": "focused_implementation_planning",
-      "description": "Create focused implementation plan and subtasks for targeted execution",
+      "name": "turbo_enhanced_task_and_subtask_creation",
+      "description": "Create task with research-enhanced subtasks containing complete implementation context",
       "sequenceNumber": 2,
       "isRequired": true,
       "stepType": "ACTION",
-      "approach": "Rapid planning focused on immediate implementation needs",
+      "approach": "Create comprehensive task with research-informed subtasks for immediate execution",
       "approachGuidance": {
         "stepByStep": [
-          "Analyze task context and requirements from previous step",
-          "Create focused implementation plan targeting specific changes needed",
-          "Break down implementation into focused subtasks (3-7 subtasks maximum)",
-          "Ensure subtasks are implementation-focused, not documentation-heavy",
-          "Validate plan aligns with existing architecture patterns",
-          "Create subtasks immediately while context is fresh"
+          "Create task with enhanced subtasks using TaskOperations.create_with_subtasks:",
+          "- Use get_operation_schema('TaskOperations', 'create_with_subtasks') to get correct parameters",
+          "- Include executionId, taskData, description, codebaseAnalysis, and subtasks",
+          "",
+          "Break down implementation into focused subtasks (3-7 maximum):",
+          "",
+          "**For each subtask, include comprehensive implementation details:**",
+          "- **Implementation Strategy**: Detailed approach leveraging research findings",
+          "- **Research-Informed Decisions**: Technical decisions based on research (if conducted)",
+          "- **Specific Implementation Path**: Exact files to modify with code examples",
+          "- **Architecture Integration**: How subtask aligns with existing patterns",
+          "- **Quality Framework**: Testing requirements, validation steps, quality gates",
+          "- **Performance & Security**: Targets and considerations from research",
+          "- **Dependencies & Integration**: Points and external dependencies identified",
+          "",
+          "**Subtask Enhancement Principles:**",
+          "- Incorporate research recommendations directly into implementation approach",
+          "- Specify exact code patterns and architectural decisions",
+          "- Include validation criteria that leverage research insights",
+          "- Ensure subtasks are implementation-ready without additional research",
+          "- Organize in logical execution batches with clear dependencies",
+          "",
+          "Update task status to 'in-progress' using TaskOperations.update:",
+          "- Use get_operation_schema('TaskOperations', 'update') for correct parameters",
+          "- Include taskId and taskData with status: 'in-progress'"
         ]
       },
       "qualityChecklist": [
-        "Task context and requirements fully understood",
-        "Implementation plan created with clear, focused approach",
-        "Subtasks created (3-7 maximum) focusing on actual implementation work",
-        "No unnecessary documentation subtasks created",
-        "Plan aligns with existing architecture and patterns",
-        "Subtasks are specific, actionable, and testable"
+        "Task created with comprehensive context including research insights",
+        "Task linked to workflow execution with executionId",
+        "Subtasks (3-7 maximum) created with research-enhanced implementation context",
+        "Each subtask includes research-informed technical decisions and approach",
+        "Each subtask specifies exact files, code patterns, and architectural integration",
+        "Quality constraints include research-based validation and testing requirements",
+        "Performance targets and security considerations integrated from research",
+        "Dependencies and integration points clearly defined with research insights",
+        "Subtasks are implementation-ready without requiring additional research",
+        "Logical batch organization with clear sequencing and dependencies",
+        "Task status updated to 'in-progress' for immediate execution"
       ],
       "conditions": [
         {
-          "name": "setup_analysis_completed",
+          "name": "intelligent_setup_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "turbo_setup_and_analysis"
+              "stepName": "turbo_intelligent_setup_and_context"
             }
           },
           "isRequired": true
         }
       ],
-      "actions": [
-        {
-          "name": "get_task_context",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "TaskOperations",
-            "operation": "get"
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "create_implementation_plan",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "PlanningOperations",
-            "operation": "create"
-          },
-          "sequenceOrder": 2
-        },
-        {
-          "name": "create_subtasks",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "PlanningOperations",
-            "operation": "create_subtasks"
-          },
-          "sequenceOrder": 3
-        }
-      ]
+      "actions": []
     },
     {
-      "name": "turbo_implementation_execution",
-      "description": "Execute all subtasks with testing and validation in rapid succession",
+      "name": "turbo_execution_and_completion",
+      "description": "Rapid implementation execution with integrated testing, validation, and workflow completion",
       "sequenceNumber": 3,
       "isRequired": true,
       "stepType": "ACTION",
-      "approach": "Rapid iterative implementation with immediate testing and validation",
+      "approach": "Streamlined execution loop with comprehensive testing and immediate completion",
       "approachGuidance": {
         "stepByStep": [
-          "Get implementation plan and subtasks context",
-          "Execute subtask implementation loop:",
-          "1. Get next subtask using SubtaskOperations.get_next_subtask",
-          "2. Update subtask status to 'in-progress'",
-          "3. Implement following established patterns and code quality standards",
-          "4. Test implementation immediately (unit tests, integration tests, manual validation)",
-          "5. Commit changes with descriptive subtask-specific message",
-          "6. Update subtask to 'completed' with implementation evidence",
-          "7. Repeat until no more subtasks available",
-          "Validate complete implementation against original requirements"
+          "**Phase 1: Context Preparation**",
+          "- Get task context with all subtasks using TaskOperations.get:",
+          "  * Use get_operation_schema('TaskOperations', 'get') for correct parameters",
+          "  * Include taskId and includeSubtasks=true",
+          "- Validate research-enhanced implementation approach is clear",
+          "",
+          "**Phase 2: Rapid Implementation Loop**",
+          "Execute for each subtask until completion:",
+          "1. Get next subtask using SubtaskOperations.get_next_subtask:",
+          "   * Use get_operation_schema('SubtaskOperations', 'get_next_subtask') for parameters",
+          "2. Update subtask status to 'in-progress' using SubtaskOperations.update_subtask:",
+          "   * Use get_operation_schema('SubtaskOperations', 'update_subtask') for parameters",
+          "3. Implement using research-informed approach and established patterns",
+          "4. Execute immediate validation (unit tests, integration tests, manual verification)",
+          "5. Commit changes with descriptive, research-context-aware message",
+          "6. Update subtask to 'completed' with comprehensive evidence:",
+          "   * Use get_operation_schema('SubtaskOperations', 'update_subtask') for parameters",
+          "7. Continue until all subtasks completed",
+          "",
+          "**Phase 3: Integrated Completion**",
+          "- Run complete test suite for regression validation",
+          "- Validate all acceptance criteria met against original requirements",
+          "- Verify code follows SOLID principles and research recommendations",
+          "- Validate git history is clean and descriptive",
+          "- Update task to 'completed' using TaskOperations.update:",
+          "  * Use get_operation_schema('TaskOperations', 'update') for parameters",
+          "  * Include comprehensive implementation evidence",
+          "- Execute workflow completion using WorkflowOperations.complete_execution:",
+          "  * Use get_operation_schema('WorkflowOperations', 'complete_execution') for parameters",
+          "  * Include executionId and completionData with research integration success",
+          "- Document research integration success and quality metrics"
         ]
       },
       "qualityChecklist": [
-        "Implementation plan and subtasks context retrieved",
-        "All available subtasks processed and completed",
-        "Each subtask implemented following established patterns and standards",
-        "Comprehensive testing performed for each implementation (unit, integration, manual)",
-        "Individual commits made after each subtask completion with clear messages",
-        "All subtasks updated to 'completed' status with detailed evidence",
-        "Complete implementation validated against original task requirements",
-        "No regressions introduced to existing functionality"
+        "Task context retrieved with research-enhanced subtasks",
+        "All subtasks processed and completed using research-informed approach",
+        "Each implementation follows research recommendations and established patterns",
+        "Comprehensive testing performed (unit, integration, manual) with research validation",
+        "Git commits include research context and clear implementation messages",
+        "All subtasks completed with detailed evidence including research integration",
+        "Complete test suite validates no regressions with research recommendations applied",
+        "All acceptance criteria met with research-enhanced quality standards",
+        "Code follows SOLID principles and incorporates research best practices",
+        "Git history is clean with research-context-aware commit messages",
+        "Task completed with comprehensive evidence of research integration success",
+        "Workflow execution completed with research impact documented in deliverables"
       ],
       "conditions": [
         {
-          "name": "planning_completed",
+          "name": "enhanced_task_creation_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "focused_implementation_planning"
+              "stepName": "turbo_enhanced_task_and_subtask_creation"
             }
           },
           "isRequired": true
         }
       ],
-      "actions": [
-        {
-          "name": "get_implementation_plan",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "PlanningOperations",
-            "operation": "get_plan"
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "get_next_subtask",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "SubtaskOperations",
-            "operation": "get_next_subtask"
-          },
-          "sequenceOrder": 2
-        },
-        {
-          "name": "update_subtask_in_progress",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "SubtaskOperations",
-            "operation": "update_subtask"
-          },
-          "sequenceOrder": 3
-        }
-      ]
-    },
-    {
-      "name": "turbo_quality_validation_and_completion",
-      "description": "Comprehensive quality validation and complete task and workflow execution",
-      "sequenceNumber": 4,
-      "isRequired": true,
-      "stepType": "ACTION",
-      "approach": "Complete both task and workflow execution with final validation and status",
-      "approachGuidance": {
-        "stepByStep": [
-          "Run complete test suite to ensure no regressions",
-          "Validate all acceptance criteria are met from original task",
-          "Verify code follows established patterns and SOLID principles",
-          "Check error handling and edge cases are properly covered",
-          "Validate git history is clean with appropriate commit messages",
-          "Update task status to 'completed' with comprehensive evidence",
-          "Execute workflow completion with final status and deliverables",
-          "Document completion evidence and quality metrics",
-          "Ensure proper workflow closure and state cleanup"
-        ]
-      },
-      "qualityChecklist": [
-        "Complete test suite runs successfully with no failures",
-        "All original acceptance criteria validated and confirmed met",
-        "Code follows established patterns, SOLID principles, and quality standards",
-        "Error handling properly implemented for edge cases",
-        "Git history is clean with descriptive, appropriate commit messages",
-        "Task updated to 'completed' status with comprehensive implementation evidence",
-        "Workflow execution completed with final status and deliverables documented",
-        "Completion evidence and quality metrics documented",
-        "Workflow closure and state cleanup verified"
-      ],
-      "conditions": [
-        {
-          "name": "implementation_completed",
-          "conditionType": "PREVIOUS_STEP_COMPLETED",
-          "logic": {
-            "check": "step_completed",
-            "parameters": {
-              "stepName": "turbo_implementation_execution"
-            }
-          },
-          "isRequired": true
-        }
-      ],
-      "actions": [
-        {
-          "name": "update_task_completed",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "TaskOperations",
-            "operation": "update",
-            "requiredParameters": [
-              "taskId",
-              "taskData"
-            ]
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "complete_workflow_execution",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "WorkflowOperations",
-            "operation": "complete_execution",
-            "requiredParameters": [
-              "executionId",
-              "completionData"
-            ]
-          },
-          "sequenceOrder": 2
-        }
-      ]
+      "actions": []
     }
   ]
 }

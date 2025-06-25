@@ -4,6 +4,7 @@ import {
   Prisma,
   Task,
   TaskDescription,
+  Subtask,
 } from 'generated/prisma';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { TaskOperationsInput } from './schemas/task-operations.schema';
@@ -11,7 +12,11 @@ import { TaskOperationsInput } from './schemas/task-operations.schema';
 // Type-safe interfaces for service operations
 export interface TaskOperationResult {
   success: boolean;
-  data?: TaskWithRelations | TaskWithRelations[] | TaskListResult;
+  data?:
+    | TaskWithRelations
+    | TaskWithRelations[]
+    | TaskListResult
+    | TaskWithSubtasks;
   error?: {
     message: string;
     code: string;
@@ -46,6 +51,22 @@ export interface TaskWithRelations extends Task {
   workflowExecutions?: Prisma.WorkflowExecutionGetPayload<
     Record<string, never>
   >[];
+}
+
+// NEW: Enhanced interface for tasks with subtasks
+export interface TaskWithSubtasks extends TaskWithRelations {
+  subtasks: Subtask[];
+  subtaskSummary?: {
+    total: number;
+    completed: number;
+    inProgress: number;
+    notStarted: number;
+    batches: Array<{
+      batchId: string;
+      batchTitle: string;
+      count: number;
+    }>;
+  };
 }
 
 export interface TaskListResult {
@@ -90,6 +111,9 @@ export class TaskOperationsService {
       switch (input.operation) {
         case 'create':
           result = await this.createTask(input);
+          break;
+        case 'create_with_subtasks':
+          result = await this.createTaskWithSubtasks(input);
           break;
         case 'update':
           result = await this.updateTask(input);
@@ -210,6 +234,157 @@ export class TaskOperationsService {
         taskDescription,
         codebaseAnalysis: analysis,
       } as TaskWithRelations;
+    });
+
+    return result;
+  }
+
+  /**
+   * NEW: Create task with subtasks directly - eliminates implementation plan
+   */
+  private async createTaskWithSubtasks(
+    input: TaskOperationsInput,
+  ): Promise<TaskWithSubtasks> {
+    const { taskData, description, codebaseAnalysis, executionId, subtasks } =
+      input;
+
+    if (!taskData?.name) {
+      throw new Error('Task name is required for creation');
+    }
+
+    if (!subtasks || subtasks.length === 0) {
+      throw new Error(
+        'Subtasks are required for create_with_subtasks operation',
+      );
+    }
+
+    // Create task with subtasks in transaction
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Generate unique slug from task name
+      const slug = await this.ensureUniqueSlug(
+        this.generateSlugFromName(taskData.name!),
+      );
+
+      // Create the task with proper Prisma types
+      const task = await tx.task.create({
+        data: {
+          name: taskData.name!,
+          slug,
+          status: taskData.status || 'not-started',
+          priority: taskData.priority || 'Medium',
+          dependencies: taskData.dependencies || [],
+          gitBranch: taskData.gitBranch,
+          owner: 'turbo-dev', // Default owner for direct creation
+          currentMode: 'turbo-dev',
+        } satisfies Prisma.TaskCreateInput,
+      });
+
+      // Use the auto-generated taskId for related records
+      const taskId = task.id;
+
+      // CRITICAL: Link task to workflow execution if executionId provided
+      if (executionId) {
+        await tx.workflowExecution.update({
+          where: { id: executionId },
+          data: { taskId: taskId },
+        });
+      }
+
+      // Create task description if provided
+      let taskDescription: TaskDescription | null = null;
+      if (description) {
+        taskDescription = await tx.taskDescription.create({
+          data: {
+            task: { connect: { id: taskId } },
+            description: description.description || '',
+            businessRequirements: description.businessRequirements || '',
+            technicalRequirements: description.technicalRequirements || '',
+            acceptanceCriteria: description.acceptanceCriteria || [],
+          } satisfies Prisma.TaskDescriptionCreateInput,
+        });
+      }
+
+      // Create codebase analysis if provided
+      let analysis: CodebaseAnalysis | null = null;
+      if (codebaseAnalysis) {
+        analysis = await tx.codebaseAnalysis.create({
+          data: {
+            task: { connect: { id: taskId } },
+            architectureFindings: codebaseAnalysis.architectureFindings || {},
+            problemsIdentified: codebaseAnalysis.problemsIdentified || {},
+            implementationContext: codebaseAnalysis.implementationContext || {},
+            integrationPoints: codebaseAnalysis.integrationPoints || {},
+            qualityAssessment: codebaseAnalysis.qualityAssessment || {},
+            filesCovered: codebaseAnalysis.filesCovered || [],
+            technologyStack: codebaseAnalysis.technologyStack || {},
+            analyzedBy: codebaseAnalysis.analyzedBy || 'system',
+          } satisfies Prisma.CodebaseAnalysisCreateInput,
+        });
+      }
+
+      // Create subtasks directly without implementation plan - PURE DIRECT LINKING
+      const createdSubtasks: Subtask[] = [];
+      for (const subtaskData of subtasks) {
+        const subtask = await tx.subtask.create({
+          data: {
+            task: { connect: { id: taskId } },
+            // No planId - direct task-subtask relationship
+            name: subtaskData.name,
+            description: subtaskData.description,
+            sequenceNumber: subtaskData.sequenceNumber,
+            status: subtaskData.status || 'not-started',
+            batchId: subtaskData.batchId || 'default-batch',
+            batchTitle: subtaskData.batchTitle || 'Implementation Tasks',
+            estimatedDuration: subtaskData.estimatedDuration,
+
+            // Enhanced implementation details
+            implementationOverview: subtaskData.implementationOverview,
+            implementationApproach: subtaskData.implementationApproach,
+            technicalDecisions: subtaskData.technicalDecisions || {},
+            filesToModify: subtaskData.filesToModify || [],
+            codeExamples: subtaskData.codeExamples || {},
+
+            // Strategic context
+            strategicGuidance: subtaskData.strategicGuidance || {},
+            architecturalContext: subtaskData.architecturalContext,
+            architecturalRationale: subtaskData.architecturalRationale || {},
+
+            // Quality and constraints
+            qualityConstraints: subtaskData.qualityConstraints || {},
+            qualityGates: subtaskData.qualityGates || {},
+            acceptanceCriteria: subtaskData.acceptanceCriteria || [],
+            successCriteria: subtaskData.successCriteria || {},
+            testingRequirements: subtaskData.testingRequirements || {},
+
+            // Implementation specifications
+            technicalSpecifications: subtaskData.technicalSpecifications || {},
+            performanceTargets: subtaskData.performanceTargets || {},
+            securityConsiderations: subtaskData.securityConsiderations || {},
+            errorHandlingStrategy: subtaskData.errorHandlingStrategy,
+
+            // Dependencies and integration
+            dependencies: subtaskData.dependencies || [],
+            integrationPoints: subtaskData.integrationPoints || {},
+            externalDependencies: subtaskData.externalDependencies || {},
+
+            // Evidence and validation
+            validationSteps: subtaskData.validationSteps || {},
+          } satisfies Prisma.SubtaskCreateInput,
+        });
+        createdSubtasks.push(subtask);
+      }
+
+      // Generate subtask summary
+      const subtaskSummary = this.generateSubtaskSummary(createdSubtasks);
+
+      // Return as TaskWithSubtasks for consistent interface
+      return {
+        ...task,
+        taskDescription,
+        codebaseAnalysis: analysis,
+        subtasks: createdSubtasks,
+        subtaskSummary,
+      } as TaskWithSubtasks;
     });
 
     return result;
@@ -336,7 +511,13 @@ export class TaskOperationsService {
   private async getTask(
     input: TaskOperationsInput,
   ): Promise<TaskWithRelations> {
-    const { taskId, slug, includeDescription, includeAnalysis } = input;
+    const {
+      taskId,
+      slug,
+      includeDescription,
+      includeAnalysis,
+      includeSubtasks,
+    } = input;
 
     if (!taskId && !slug) {
       throw new Error('Either Task ID or Task Slug is required for retrieval');
@@ -349,6 +530,11 @@ export class TaskOperationsService {
     if (includeAnalysis) {
       include.codebaseAnalysis = true;
     }
+    if (includeSubtasks) {
+      include.subtasks = {
+        orderBy: { sequenceNumber: 'asc' },
+      };
+    }
 
     // Use slug first, fallback to taskId
     const whereClause = slug ? { slug } : { id: taskId };
@@ -360,6 +546,15 @@ export class TaskOperationsService {
 
     if (!task) {
       throw new Error(`Task not found: ${slug || taskId}`);
+    }
+
+    // If subtasks are included, generate summary and return TaskWithSubtasks
+    if (includeSubtasks && task.subtasks) {
+      const subtaskSummary = this.generateSubtaskSummary(task.subtasks);
+      return {
+        ...task,
+        subtaskSummary,
+      } as TaskWithSubtasks;
     }
 
     return task as TaskWithRelations;
@@ -444,5 +639,45 @@ export class TaskOperationsService {
     });
 
     return !!existingTask;
+  }
+
+  /**
+   * Generate subtask summary for TaskWithSubtasks interface
+   */
+  private generateSubtaskSummary(subtasks: Subtask[]) {
+    const total = subtasks.length;
+    const completed = subtasks.filter((s) => s.status === 'completed').length;
+    const inProgress = subtasks.filter(
+      (s) => s.status === 'in-progress',
+    ).length;
+    const notStarted = subtasks.filter(
+      (s) => s.status === 'not-started',
+    ).length;
+
+    // Group by batch
+    const batchMap = new Map<string, { batchTitle: string; count: number }>();
+    subtasks.forEach((subtask) => {
+      const batchId = subtask.batchId || 'no-batch';
+      const batchTitle = subtask.batchTitle || 'Untitled Batch';
+
+      if (!batchMap.has(batchId)) {
+        batchMap.set(batchId, { batchTitle, count: 0 });
+      }
+      batchMap.get(batchId)!.count++;
+    });
+
+    const batches = Array.from(batchMap.entries()).map(([batchId, info]) => ({
+      batchId,
+      batchTitle: info.batchTitle,
+      count: info.count,
+    }));
+
+    return {
+      total,
+      completed,
+      inProgress,
+      notStarted,
+      batches,
+    };
   }
 }

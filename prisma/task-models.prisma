@@ -18,7 +18,7 @@ model Task {
 
   // Relationships
   taskDescription       TaskDescription?
-  implementationPlans   ImplementationPlan[]
+  implementationPlans   ImplementationPlan[] // Keep for backward compatibility during transition
   subtasks              Subtask[]
   delegationRecords     DelegationRecord[]
   researchReports       ResearchReport[]
@@ -86,7 +86,7 @@ model ImplementationPlan {
 model Subtask {
   id                    Int      @id @default(autoincrement())
   taskId                Int
-  planId                Int
+  planId                Int?     // Made optional - subtasks can be directly linked to tasks
   name                  String
   description           String
   sequenceNumber        Int
@@ -100,19 +100,44 @@ model Subtask {
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
-  // Enhanced subtask fields for evidence collection and dependency tracking
-  strategicGuidance     Json?    // Strategic guidance for this specific subtask
-  qualityConstraints    Json?    // Quality constraints and requirements
-  successCriteria       Json?    // Success criteria for completion validation
-  architecturalRationale Json?   // Architectural rationale for this subtask
-  acceptanceCriteria    Json?    // Acceptance criteria for this subtask
-  technicalSpecifications Json?  // Technical specifications and requirements
-  dependencies          Json?    // Dependencies on other subtasks or external factors
-  completionEvidence    Json?    // Evidence of completion for quality validation
-  actualDuration        String?  // Actual time taken for completion
+  // ENHANCED: Detailed implementation context for direct execution
+  // Implementation Details
+  implementationOverview    String?   // Overview of what this subtask accomplishes
+  implementationApproach    String?   // Detailed approach for implementing this specific subtask
+  technicalDecisions        Json?     // Technical decisions specific to this subtask
+  filesToModify             Json?     // Specific files this subtask will modify
+  codeExamples              Json?     // Code examples and patterns to follow
+  
+  // Strategic Context
+  strategicGuidance         Json?     // Strategic guidance for this specific subtask
+  architecturalContext      String?   // How this subtask fits into overall architecture
+  architecturalRationale    Json?     // Architectural rationale for this subtask
+  
+  // Quality and Constraints
+  qualityConstraints        Json?     // Quality constraints and requirements
+  qualityGates              Json?     // Quality gates specific to this subtask
+  acceptanceCriteria        Json?     // Acceptance criteria for this subtask
+  successCriteria           Json?     // Success criteria for completion validation
+  testingRequirements       Json?     // Specific testing requirements for this subtask
+  
+  // Implementation Specifications
+  technicalSpecifications   Json?     // Technical specifications and requirements
+  performanceTargets        Json?     // Performance targets for this subtask
+  securityConsiderations    Json?     // Security considerations for this subtask
+  errorHandlingStrategy     String?   // Error handling approach for this subtask
+  
+  // Dependencies and Integration
+  dependencies              Json?     // Dependencies on other subtasks or external factors
+  integrationPoints         Json?     // Integration points with other components
+  externalDependencies      Json?     // External system dependencies
+  
+  // Evidence and Validation
+  completionEvidence        Json?     // Evidence of completion for quality validation
+  validationSteps           Json?     // Steps to validate completion
+  actualDuration            String?   // Actual time taken for completion
 
   task                  Task     @relation(fields: [taskId], references: [id])
-  implementationPlan    ImplementationPlan @relation(fields: [planId], references: [id])
+  implementationPlan    ImplementationPlan? @relation(fields: [planId], references: [id]) // Made optional
   dependencies_from     SubtaskDependency[] @relation("DependentSubtask")
   dependencies_to       SubtaskDependency[] @relation("RequiredSubtask")
   comments              Comment[]

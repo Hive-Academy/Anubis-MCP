@@ -162,12 +162,134 @@ export const TechnologyStackSchema = z.object({
 });
 
 // ===================================================================
+// 🎯 NEW: ENHANCED SUBTASK SCHEMA FOR DIRECT EXECUTION
+// ===================================================================
+// Subtask Schema with comprehensive implementation context - eliminates implementation plan
+export const SubtaskDataSchema = z.object({
+  name: z.string().describe('Subtask name'),
+  description: z.string().describe('Detailed subtask description'),
+  sequenceNumber: z.number().describe('Order within task'),
+  batchId: z.string().optional().describe('Batch identifier for grouping'),
+  batchTitle: z.string().optional().describe('Batch title'),
+  status: z
+    .enum(['not-started', 'in-progress', 'completed'])
+    .optional()
+    .default('not-started'),
+  estimatedDuration: z
+    .string()
+    .optional()
+    .describe('Estimated completion time'),
+
+  // Implementation Details
+  implementationOverview: z
+    .string()
+    .optional()
+    .describe('Overview of what this subtask accomplishes'),
+  implementationApproach: z
+    .string()
+    .optional()
+    .describe('Detailed approach for implementing this specific subtask'),
+  technicalDecisions: z
+    .record(z.any())
+    .optional()
+    .describe('Technical decisions specific to this subtask'),
+  filesToModify: z
+    .array(z.string())
+    .optional()
+    .describe('Specific files this subtask will modify'),
+  codeExamples: z
+    .record(z.string())
+    .optional()
+    .describe('Code examples and patterns to follow'),
+
+  // Strategic Context
+  strategicGuidance: z
+    .record(z.any())
+    .optional()
+    .describe('Strategic guidance for this specific subtask'),
+  architecturalContext: z
+    .string()
+    .optional()
+    .describe('How this subtask fits into overall architecture'),
+  architecturalRationale: z
+    .record(z.any())
+    .optional()
+    .describe('Architectural rationale for this subtask'),
+
+  // Quality and Constraints
+  qualityConstraints: z
+    .record(z.any())
+    .optional()
+    .describe('Quality constraints and requirements'),
+  qualityGates: z
+    .record(z.any())
+    .optional()
+    .describe('Quality gates specific to this subtask'),
+  acceptanceCriteria: z
+    .array(z.string())
+    .optional()
+    .describe('Acceptance criteria for this subtask'),
+  successCriteria: z
+    .record(z.any())
+    .optional()
+    .describe('Success criteria for completion validation'),
+  testingRequirements: z
+    .record(z.any())
+    .optional()
+    .describe('Specific testing requirements for this subtask'),
+
+  // Implementation Specifications
+  technicalSpecifications: z
+    .record(z.any())
+    .optional()
+    .describe('Technical specifications and requirements'),
+  performanceTargets: z
+    .record(z.any())
+    .optional()
+    .describe('Performance targets for this subtask'),
+  securityConsiderations: z
+    .record(z.any())
+    .optional()
+    .describe('Security considerations for this subtask'),
+  errorHandlingStrategy: z
+    .string()
+    .optional()
+    .describe('Error handling approach for this subtask'),
+
+  // Dependencies and Integration
+  dependencies: z
+    .array(z.string())
+    .optional()
+    .describe('Dependencies on other subtasks or external factors'),
+  integrationPoints: z
+    .record(z.any())
+    .optional()
+    .describe('Integration points with other components'),
+  externalDependencies: z
+    .record(z.any())
+    .optional()
+    .describe('External system dependencies'),
+
+  // Evidence and Validation
+  validationSteps: z
+    .record(z.any())
+    .optional()
+    .describe('Steps to validate completion'),
+});
+
+// ===================================================================
 // 🎯 MAIN TASK OPERATIONS SCHEMA WITH STRUCTURED VALIDATION
 // ===================================================================
 
 export const TaskOperationsSchema = z
   .object({
-    operation: z.enum(['create', 'update', 'get', 'list']),
+    operation: z.enum([
+      'create',
+      'update',
+      'get',
+      'list',
+      'create_with_subtasks',
+    ]), // Added new operation
 
     // Required for get and update operations
     taskId: z.number().optional(),
@@ -225,11 +347,21 @@ export const TaskOperationsSchema = z
       })
       .optional(),
 
+    // NEW: Direct subtask creation - eliminates implementation plan
+    subtasks: z
+      .array(SubtaskDataSchema)
+      .optional()
+      .describe('Subtasks to create directly with task'),
+
     // For filtering/querying
     status: z.string().optional(),
     priority: z.string().optional(),
     includeDescription: z.boolean().optional(),
     includeAnalysis: z.boolean().optional(),
+    includeSubtasks: z
+      .boolean()
+      .optional()
+      .describe('Include subtasks in response'),
   })
   .refine(
     (data) => {
@@ -247,7 +379,10 @@ export const TaskOperationsSchema = z
   .refine(
     (data) => {
       // For 'create' operations, require taskData with name
-      if (data.operation === 'create') {
+      if (
+        data.operation === 'create' ||
+        data.operation === 'create_with_subtasks'
+      ) {
         return data.taskData?.name !== undefined;
       }
       return true;
@@ -259,7 +394,10 @@ export const TaskOperationsSchema = z
   .refine(
     (data) => {
       // For 'create' operations, require executionId for workflow linking
-      if (data.operation === 'create') {
+      if (
+        data.operation === 'create' ||
+        data.operation === 'create_with_subtasks'
+      ) {
         return data.executionId !== undefined;
       }
       return true;
@@ -280,6 +418,19 @@ export const TaskOperationsSchema = z
     {
       message: "For 'update' operations, 'taskId' is required",
     },
+  )
+  .refine(
+    (data) => {
+      // For 'create_with_subtasks' operations, require subtasks array
+      if (data.operation === 'create_with_subtasks') {
+        return data.subtasks !== undefined && data.subtasks.length > 0;
+      }
+      return true;
+    },
+    {
+      message:
+        "For 'create_with_subtasks' operations, 'subtasks' array is required and must not be empty",
+    },
   );
 
 export type TaskOperationsInput = z.infer<typeof TaskOperationsSchema>;
@@ -291,3 +442,6 @@ export type ImplementationContext = z.infer<typeof ImplementationContextSchema>;
 export type IntegrationPoints = z.infer<typeof IntegrationPointsSchema>;
 export type QualityAssessment = z.infer<typeof QualityAssessmentSchema>;
 export type TechnologyStack = z.infer<typeof TechnologyStackSchema>;
+
+// Export new subtask schema
+export type SubtaskData = z.infer<typeof SubtaskDataSchema>;
