@@ -1,18 +1,14 @@
 {
   "mcpServers": {
-    "anubis-test": {
-      "command": "docker",
+    "anubis": {
+      "command": "npx",
       "args": [
-        "run",
-        "--rm",
-        "-i",
-        "--network=host",
-        "-v",
-        "D:/projects/cursor-workflow/test-data:/app/data",
-        "-v",
-        "D:/projects/cursor-workflow/workflow-reports:/app/data/anubis-mcp-reports",
-        "anubis-test"
-      ]
+        "--yes",
+        "@hive-academy/anubis@latest"
+      ],
+      "env": {
+        "PROJECT_ROOT": "D:/projects/cursor-workflow"
+      }
     }
   }
 }
