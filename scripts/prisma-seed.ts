@@ -79,6 +79,7 @@ const ROLES = [
   'senior-developer',
   'code-review',
   'integration-engineer',
+  'turbo-dev',
 ];
 
 // Determine the correct path for JSON files based on environment

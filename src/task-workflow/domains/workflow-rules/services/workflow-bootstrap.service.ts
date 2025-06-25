@@ -9,7 +9,8 @@ export interface BootstrapWorkflowInput {
     | 'researcher'
     | 'architect'
     | 'senior-developer'
-    | 'code-review';
+    | 'code-review'
+    | 'turbo-dev';
   executionMode?: 'GUIDED' | 'AUTOMATED' | 'HYBRID';
   projectPath?: string;
 }

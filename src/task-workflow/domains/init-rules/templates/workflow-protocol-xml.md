@@ -51,16 +51,16 @@ _Follow these rules precisely to ensure successful workflow execution_
 ║ ✅ DO use read-only commands for analysis     ║     ║                                               ║
 ╚═══════════════════════════════════════════════╝     ╚═══════════════════════════════════════════════╝
 
-╔═══════════════════════════════════════════════╗
-║ 🔴 CODE REVIEW                               ║
-╠═══════════════════════════════════════════════╣
-║ ❌ NEVER implement fixes directly             ║
-║ ❌ NEVER create or modify files               ║
-║                                               ║
-║ ✅ DO review and provide feedback only        ║
-║ ✅ DO identify issues and delegate fixes      ║
-║                                               ║
-╚═══════════════════════════════════════════════╝
+╔═══════════════════════════════════════════════╗     ╔═══════════════════════════════════════════════╗
+║ 🔴 CODE REVIEW                               ║     ║ ⚡ TURBO-DEV                                  ║
+╠═══════════════════════════════════════════════╣     ╠═══════════════════════════════════════════════╣
+║ ❌ NEVER implement fixes directly             ║     ║ ✅ DO rapid analysis and implementation       ║
+║ ❌ NEVER create or modify files               ║     ║ ✅ DO create, modify, and manage files        ║
+║                                               ║     ║ ✅ DO focused planning and execution          ║
+║ ✅ DO review and provide feedback only        ║     ║ ✅ DO testing and quality validation          ║
+║ ✅ DO identify issues and delegate fixes      ║     ║ ✅ DO git operations and commits              ║
+║                                               ║     ║ ❌ NEVER make major architectural decisions   ║
+╚═══════════════════════════════════════════════╝     ╚═══════════════════════════════════════════════╝
 ```
 
 ---
@@ -127,6 +127,81 @@ If you detect you've broken workflow:
 
 ---
 
+## 🎯 WORKFLOW MODE DECISION FRAMEWORK
+
+Before starting any workflow, evaluate the user's request to determine the appropriate workflow mode:
+
+### Quick Assessment Questions
+
+**Ask yourself these questions to determine workflow mode:**
+
+1. **Scope Assessment**: Is this a focused change to existing functionality?
+2. **Complexity Assessment**: Does this require major architectural decisions?
+3. **Time Sensitivity**: Is this a quick fix or enhancement?
+4. **Dependencies**: Does this affect multiple system components?
+
+### Decision Matrix
+
+| Request Type             | Indicators                                       | Recommended Mode  | Bootstrap Role |
+| ------------------------ | ------------------------------------------------ | ----------------- | -------------- |
+| **Bug Fixes**            | Single component, clear issue, existing tests    | **TURBO-DEV**     | `turbo-dev`    |
+| **Small Features**       | Limited scope, existing patterns, <5 files       | **TURBO-DEV**     | `turbo-dev`    |
+| **Quick Improvements**   | Performance tweaks, UI updates, config changes   | **TURBO-DEV**     | `turbo-dev`    |
+| **Major Features**       | New components, multiple integrations, >10 files | **FULL WORKFLOW** | `boomerang`    |
+| **Architecture Changes** | System design, new patterns, strategic decisions | **FULL WORKFLOW** | `boomerang`    |
+| **Complex Integrations** | External APIs, new tech stack, unknown patterns  | **FULL WORKFLOW** | `boomerang`    |
+
+### Mode Selection Examples
+
+**✅ TURBO-DEV Mode Examples:**
+
+- "Fix the login validation bug"
+- "Add a new field to the user profile form"
+- "Improve the loading spinner animation"
+- "Update the error message for invalid inputs"
+- "Optimize the database query in UserService"
+
+**✅ FULL WORKFLOW Mode Examples:**
+
+- "Build a new authentication system"
+- "Integrate with a third-party payment provider"
+- "Redesign the entire user dashboard"
+- "Implement real-time notifications across the app"
+- "Add multi-language support to the application"
+
+### Bootstrap Decision Process
+
+```xml
+<!-- Evaluate user request first -->
+<!-- For TURBO-DEV mode (focused tasks, quick fixes) -->
+<use_mcp_tool>
+<server_name>anubis</server_name>
+<tool_name>bootstrap_workflow</tool_name>
+<arguments>
+{
+  "initialRole": "turbo-dev",
+  "executionMode": "GUIDED",
+  "projectPath": "/full/project/path"
+}
+</arguments>
+</use_mcp_tool>
+
+<!-- For FULL WORKFLOW mode (complex features, architectural changes) -->
+<use_mcp_tool>
+<server_name>anubis</server_name>
+<tool_name>bootstrap_workflow</tool_name>
+<arguments>
+{
+  "initialRole": "boomerang",
+  "executionMode": "GUIDED",
+  "projectPath": "/full/project/path"
+}
+</arguments>
+</use_mcp_tool>
+```
+
+---
+
 ## Workflow Execution Phases
 
 ### Phase 1: Startup & Initialization
@@ -183,6 +258,20 @@ Please select an option (A/B/C/D) to proceed.
 **If no active workflow or starting new workflow**: Bootstrap a new one:
 
 ```xml
+<!-- For TURBO-DEV mode (focused tasks, quick fixes) -->
+<use_mcp_tool>
+<server_name>anubis</server_name>
+<tool_name>bootstrap_workflow</tool_name>
+<arguments>
+{
+  "initialRole": "turbo-dev",
+  "executionMode": "GUIDED",
+  "projectPath": "/full/project/path"
+}
+</arguments>
+</use_mcp_tool>
+
+<!-- For FULL WORKFLOW mode (complex features, architectural changes) -->
 <use_mcp_tool>
 <server_name>anubis</server_name>
 <tool_name>bootstrap_workflow</tool_name>
