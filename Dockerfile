@@ -26,9 +26,12 @@ RUN npm run build
 
 # STRATEGIC: Compile seed script for production use (ts-node not available in production)
 # Create a Docker-specific version of the seed script with correct import paths
-RUN sed 's|from '\''../generated/prisma'\''|from '\''/app/generated/prisma'\''|g' scripts/prisma-seed.ts > scripts/prisma-seed-docker.ts && \
-    npx tsc scripts/prisma-seed-docker.ts --outDir dist/scripts --moduleResolution node --target es2020 --module commonjs --esModuleInterop true --allowSyntheticDefaultImports true --strict false && \
-    mv dist/scripts/prisma-seed-docker.js dist/scripts/prisma-seed.js
+RUN echo "🔧 Creating Docker-compatible seed script..." && \
+    sed 's|from '\''../generated/prisma'\''|from '\''/app/generated/prisma'\''|g' scripts/prisma-seed.ts > scripts/prisma-seed-docker.ts && \
+    echo "🔧 Compiling seed script..." && \
+    npx tsc scripts/prisma-seed-docker.ts --outDir dist/scripts --moduleResolution node --target es2020 --module commonjs --esModuleInterop true --allowSyntheticDefaultImports true --strict false --skipLibCheck && \
+    mv dist/scripts/prisma-seed-docker.js dist/scripts/prisma-seed.js && \
+    echo "✅ Docker seed script compiled successfully"
 
 # Create necessary directories for reports
 RUN mkdir -p temp/reports temp/rendered-reports templates/reports
@@ -60,6 +63,9 @@ RUN echo "🔧 DEPLOYING MIGRATIONS AND SEEDING DATA AT BUILD-TIME for instant s
     echo "🏗️ Creating database and running migrations..." && \
     npx prisma db push --schema=./prisma/schema.prisma --accept-data-loss && \
     echo "✅ BUILD-TIME DATABASE CREATION SUCCESSFUL" && \
+    echo "🔄 Regenerating Prisma client for build-time database..." && \
+    npx prisma generate && \
+    echo "✅ Prisma client regenerated" && \
     echo "🌱 BUILD-TIME DATABASE SEEDING..." && \
     node dist/scripts/prisma-seed.js && \
     echo "✅ BUILD-TIME DATABASE SEEDING SUCCESSFUL" && \
