@@ -1,0 +1,367 @@
+name: Build and Publish NPM Package
+
+on:
+  push:
+    branches: [main, npm-release]
+    tags: ['v*']
+  pull_request:
+    branches: [main, npm-release]
+  release:
+    types: [published]
+  # Manual trigger for emergency releases
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      skip_tests:
+        description: 'Skip tests (emergency only)'
+        required: false
+        default: false
+        type: boolean
+  # Make this workflow reusable
+  workflow_call:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: false
+        default: 'patch'
+        type: string
+      skip_tests:
+        description: 'Skip tests (emergency only)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NPM_REGISTRY: https://registry.npmjs.org/
+  PACKAGE_NAME: '@hive-academy/anubis'
+
+jobs:
+  validate-and-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Need full history for version bumping
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          registry-url: ${{ env.NPM_REGISTRY }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        if: ${{ !inputs.skip_tests }}
+        run: npm test
+
+      # ===================================================================
+      # 📋 PRE-PUBLISHING CHECKLIST AUTOMATION
+      # ===================================================================
+
+      - name: Check current NPM version
+        id: current_version
+        run: |
+          CURRENT_NPM_VERSION=$(npm view ${{ env.PACKAGE_NAME }} version 2>/dev/null || echo "0.0.0")
+          CURRENT_LOCAL_VERSION=$(node -p "require('./package.json').version")
+          echo "npm_version=$CURRENT_NPM_VERSION" >> $GITHUB_OUTPUT
+          echo "local_version=$CURRENT_LOCAL_VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Current NPM version: $CURRENT_NPM_VERSION"
+          echo "📦 Current local version: $CURRENT_LOCAL_VERSION"
+
+      - name: Version bump (if workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          npm version ${{ inputs.version_type }} --no-git-tag-version
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "🔄 Version bumped to: $NEW_VERSION"
+
+      - name: Database template verification
+        run: |
+          echo "🔍 Verifying pre-seeded database template..."
+          if [ -f "prisma/data/workflow.db" ]; then
+            DB_SIZE=$(ls -lh prisma/data/workflow.db | awk '{print $5}')
+            echo "✅ Pre-seeded database found: $DB_SIZE"
+            
+            # Verify it's approximately the expected size (~589kB)
+            DB_SIZE_BYTES=$(stat -f%z prisma/data/workflow.db 2>/dev/null || stat -c%s prisma/data/workflow.db)
+            if [ $DB_SIZE_BYTES -gt 500000 ] && [ $DB_SIZE_BYTES -lt 700000 ]; then
+              echo "✅ Database size is within expected range (500kB-700kB)"
+            else
+              echo "⚠️ Database size ($DB_SIZE_BYTES bytes) is outside expected range"
+              exit 1
+            fi
+                     else
+             echo "❌ Pre-seeded database not found at prisma/data/workflow.db"
+             echo "🔧 Regenerating database template..."
+             mkdir -p prisma/data
+             npm run db:reset
+             npm run db:seed
+            
+            if [ -f "prisma/data/workflow.db" ]; then
+              echo "✅ Database template regenerated successfully"
+            else
+              echo "❌ Failed to generate database template"
+              exit 1
+            fi
+          fi
+
+      - name: Package size verification
+        run: |
+          echo "📦 Verifying package size..."
+
+          # Dry run to check what will be included
+          echo "📋 Package contents (dry run):"
+          npm pack --dry-run
+
+          # Create actual package and check size
+          PACKAGE_FILE=$(npm pack)
+          PACKAGE_SIZE=$(ls -lh $PACKAGE_FILE | awk '{print $5}')
+          PACKAGE_SIZE_BYTES=$(stat -f%z $PACKAGE_FILE 2>/dev/null || stat -c%s $PACKAGE_FILE)
+
+          echo "📦 Package file: $PACKAGE_FILE"
+          echo "📦 Package size: $PACKAGE_SIZE ($PACKAGE_SIZE_BYTES bytes)"
+
+          # Verify size is reasonable (~465kB, definitely under 10MB)
+          if [ $PACKAGE_SIZE_BYTES -gt 10485760 ]; then  # 10MB
+            echo "❌ Package too large! Size: $PACKAGE_SIZE"
+            echo "💡 Check if 'generated/**/*' is properly excluded in package.json"
+            exit 1
+          elif [ $PACKAGE_SIZE_BYTES -gt 1048576 ]; then  # 1MB
+            echo "⚠️ Package larger than expected: $PACKAGE_SIZE"
+            echo "💡 Expected size: ~465kB. Current size may include unnecessary files."
+          else
+            echo "✅ Package size is reasonable: $PACKAGE_SIZE"
+          fi
+
+          # Clean up test package
+          rm $PACKAGE_FILE
+
+      - name: Build verification
+        run: |
+          echo "🔧 Running clean build..."
+
+          # This runs prepublishOnly automatically, but let's be explicit
+          npm run prepublishOnly
+
+          # Verify dist directory exists and has content
+          if [ -d "dist" ] && [ "$(ls -A dist)" ]; then
+            echo "✅ Build successful - dist directory populated"
+            echo "📁 Dist contents:"
+            ls -la dist/
+          else
+            echo "❌ Build failed - dist directory missing or empty"
+            exit 1
+          fi
+
+          # Verify CLI entry point exists
+          if [ -f "dist/cli.js" ]; then
+            echo "✅ CLI entry point exists: dist/cli.js"
+          else
+            echo "❌ CLI entry point missing: dist/cli.js"
+            exit 1
+          fi
+
+      - name: Prisma validation
+        run: |
+          echo "🔍 Validating Prisma schema..."
+          npx prisma validate
+          echo "✅ Prisma schema validation passed"
+
+          # Verify generated folder is excluded
+          if [ -d "generated" ]; then
+            echo "⚠️ Generated folder exists - verifying it's excluded from package"
+            if grep -q '"generated/\*\*/\*"' package.json; then
+              echo "❌ Generated folder not properly excluded in package.json files array"
+              exit 1
+            fi
+          fi
+
+      # ===================================================================
+      # 🚀 PUBLISHING PROCESS
+      # ===================================================================
+
+      - name: Publish to NPM (dry run for PRs)
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "🧪 NPM Publish Dry Run (PR)"
+          npm publish --dry-run
+          echo "✅ Dry run successful - package would publish correctly"
+
+      - name: Publish to NPM
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "🚀 Publishing to NPM..."
+          npm publish --provenance
+
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "✅ Successfully published ${{ env.PACKAGE_NAME }}@$NEW_VERSION"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # ===================================================================
+      # 📊 POST-PUBLISH VERIFICATION
+      # ===================================================================
+
+      - name: Post-publish verification
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "🔍 Verifying NPM publication..."
+
+          # Wait a moment for NPM to update
+          sleep 10
+
+          # Check if the new version is available
+          PUBLISHED_VERSION=$(npm view ${{ env.PACKAGE_NAME }} version)
+          LOCAL_VERSION=$(node -p "require('./package.json').version")
+
+          echo "📦 Published version: $PUBLISHED_VERSION"
+          echo "📦 Local version: $LOCAL_VERSION"
+
+          if [ "$PUBLISHED_VERSION" = "$LOCAL_VERSION" ]; then
+            echo "✅ Publication verified successfully"
+          else
+            echo "❌ Publication verification failed"
+            echo "Expected: $LOCAL_VERSION, Got: $PUBLISHED_VERSION"
+            exit 1
+          fi
+
+      - name: Test published package
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "🧪 Testing published package..."
+
+          # Create a temporary directory for testing
+          mkdir -p /tmp/npm-test
+          cd /tmp/npm-test
+
+          # Test package installation and basic functionality
+          echo "📦 Testing package installation..."
+          npx ${{ env.PACKAGE_NAME }}@latest --version
+
+          echo "✅ Published package test successful"
+
+      - name: Generate package health report
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "📊 Generating package health report..."
+
+          # Get package info
+          NPM_INFO=$(npm view ${{ env.PACKAGE_NAME }} --json)
+          VERSION=$(echo $NPM_INFO | jq -r '.version')
+          SIZE=$(echo $NPM_INFO | jq -r '.dist.unpackedSize // "unknown"')
+          TARBALL_SIZE=$(echo $NPM_INFO | jq -r '.dist.fileCount // "unknown"')
+
+          echo "## 📦 NPM Package Health Report" >> $GITHUB_STEP_SUMMARY
+          echo "- **Package:** \`${{ env.PACKAGE_NAME }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version:** \`$VERSION\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Unpacked Size:** $SIZE bytes" >> $GITHUB_STEP_SUMMARY
+          echo "- **Registry:** NPM" >> $GITHUB_STEP_SUMMARY
+          echo "- **Provenance:** ✅ Enabled" >> $GITHUB_STEP_SUMMARY
+          echo "- **Database Template:** ✅ Pre-seeded (~589kB)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Runtime:** Prisma generation + database copying" >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment PR with package details
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const output = `## 📦 NPM Package Build Results
+
+            The NPM package has been built and validated successfully for this PR!
+
+            **Package Details:**
+            - **Name:** \`${{ env.PACKAGE_NAME }}\`
+            - **Current NPM Version:** \`${{ steps.current_version.outputs.npm_version }}\`
+            - **Local Version:** \`${{ steps.current_version.outputs.local_version }}\`
+            - **Size:** Optimized (~465kB, 99.5% reduction from 86MB)
+            - **Database:** Pre-seeded workflow.db included
+
+            **Validation Results:**
+            - ✅ Database template verified (~589kB)
+            - ✅ Package size within limits
+            - ✅ Build artifacts generated
+            - ✅ Prisma schema valid
+            - ✅ Dry run publish successful
+
+            **Test Installation (after merge):**
+            \`\`\`bash
+            # Global installation
+            npm install -g ${{ env.PACKAGE_NAME }}@latest
+
+            # Or run directly
+            npx ${{ env.PACKAGE_NAME }}@latest --version
+
+            # MCP Server usage
+            npx ${{ env.PACKAGE_NAME }}@latest
+            \`\`\`
+
+            **Claude Desktop MCP Configuration:**
+            \`\`\`json
+            {
+              "mcpServers": {
+                "anubis": {
+                  "command": "npx",
+                  "args": ["${{ env.PACKAGE_NAME }}@latest"]
+                }
+              }
+            }
+            \`\`\``;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
+
+      - name: Create GitHub release (if tag)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            ## 🚀 Release Notes
+
+            ### 📦 NPM Package
+            - **Package:** `${{ env.PACKAGE_NAME }}`
+            - **Size:** ~465kB (optimized)
+            - **Database:** Pre-seeded workflow.db
+            - **Runtime:** Prisma generation + database copying
+
+            ### 🔧 Installation
+            ```bash
+            npm install -g ${{ env.PACKAGE_NAME }}@latest
+            # or
+            npx ${{ env.PACKAGE_NAME }}@latest
+            ```
+
+            ### 🐳 Docker
+            ```bash
+            docker pull hiveacademy/anubis:latest
+            ```
+
+            See CHANGELOG.md for detailed changes.
+          draft: false
+          prerelease: false

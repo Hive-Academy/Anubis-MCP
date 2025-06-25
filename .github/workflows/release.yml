@@ -1,0 +1,190 @@
+name: Coordinated Release
+
+on:
+  release:
+    types: [published]
+  push:
+    tags: ['v*']
+  # Manual trigger for coordinated releases
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - both
+          - npm-only
+          - docker-only
+
+env:
+  PACKAGE_NAME: '@hive-academy/anubis'
+  DOCKER_IMAGE: 'hiveacademy/anubis'
+
+jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      should_release_npm: ${{ steps.release_strategy.outputs.should_release_npm }}
+      should_release_docker: ${{ steps.release_strategy.outputs.should_release_docker }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Get version information
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # For manual triggers, we'll bump the version
+            CURRENT_VERSION=$(node -p "require('./package.json').version")
+            echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          elif [[ $GITHUB_REF == refs/tags/v* ]]; then
+            # For tag pushes, extract version from tag
+            VERSION=${GITHUB_REF#refs/tags/v}
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          else
+            # For releases, get version from package.json
+            VERSION=$(node -p "require('./package.json').version")
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Determine release strategy
+        id: release_strategy
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # Manual trigger - use input
+            RELEASE_TYPE="${{ inputs.release_type }}"
+          else
+            # Automatic trigger - release both
+            RELEASE_TYPE="both"
+          fi
+
+          case $RELEASE_TYPE in
+            "both")
+              echo "should_release_npm=true" >> $GITHUB_OUTPUT
+              echo "should_release_docker=true" >> $GITHUB_OUTPUT
+              ;;
+            "npm-only")
+              echo "should_release_npm=true" >> $GITHUB_OUTPUT
+              echo "should_release_docker=false" >> $GITHUB_OUTPUT
+              ;;
+            "docker-only")
+              echo "should_release_npm=false" >> $GITHUB_OUTPUT
+              echo "should_release_docker=true" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+          echo "🎯 Release Strategy: $RELEASE_TYPE"
+          echo "📦 NPM Release: $([ "$RELEASE_TYPE" = "both" ] || [ "$RELEASE_TYPE" = "npm-only" ] && echo "✅" || echo "❌")"
+          echo "🐳 Docker Release: $([ "$RELEASE_TYPE" = "both" ] || [ "$RELEASE_TYPE" = "docker-only" ] && echo "✅" || echo "❌")"
+
+  release-npm:
+    needs: prepare-release
+    if: needs.prepare-release.outputs.should_release_npm == 'true'
+    uses: ./.github/workflows/npm-publish.yml
+    secrets: inherit
+    with:
+      version_type: ${{ inputs.version_type || 'patch' }}
+
+  release-docker:
+    needs: prepare-release
+    if: needs.prepare-release.outputs.should_release_docker == 'true'
+    uses: ./.github/workflows/docker-publish.yml
+    secrets: inherit
+
+  release-summary:
+    needs: [prepare-release, release-npm, release-docker]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate release summary
+        run: |
+          echo "## 🚀 Coordinated Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version:** \`${{ needs.prepare-release.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "### 📦 NPM Release" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.prepare-release.outputs.should_release_npm }}" = "true" ]; then
+            if [ "${{ needs.release-npm.result }}" = "success" ]; then
+              echo "- Status: ✅ **Success**" >> $GITHUB_STEP_SUMMARY
+              echo "- Package: \`${{ env.PACKAGE_NAME }}@${{ needs.prepare-release.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+              echo "- Registry: [NPM](https://www.npmjs.com/package/${{ env.PACKAGE_NAME }})" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "- Status: ❌ **Failed**" >> $GITHUB_STEP_SUMMARY
+              echo "- Result: ${{ needs.release-npm.result }}" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "- Status: ⏭️ **Skipped**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🐳 Docker Release" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.prepare-release.outputs.should_release_docker }}" = "true" ]; then
+            if [ "${{ needs.release-docker.result }}" = "success" ]; then
+              echo "- Status: ✅ **Success**" >> $GITHUB_STEP_SUMMARY
+              echo "- Image: \`${{ env.DOCKER_IMAGE }}:${{ needs.prepare-release.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+              echo "- Registry: [Docker Hub](https://hub.docker.com/r/${{ env.DOCKER_IMAGE }})" >> $GITHUB_STEP_SUMMARY
+              echo "- Platforms: linux/amd64, linux/arm64" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "- Status: ❌ **Failed**" >> $GITHUB_STEP_SUMMARY
+              echo "- Result: ${{ needs.release-docker.result }}" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "- Status: ⏭️ **Skipped**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 Quick Start" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "# NPM Installation" >> $GITHUB_STEP_SUMMARY
+          echo "npx ${{ env.PACKAGE_NAME }}@latest" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "# Docker Installation" >> $GITHUB_STEP_SUMMARY
+          echo "docker run --rm -i -v mcp-data:/app/data ${{ env.DOCKER_IMAGE }}:latest" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check release health
+        run: |
+          NPM_SUCCESS="${{ needs.release-npm.result }}"
+          DOCKER_SUCCESS="${{ needs.release-docker.result }}"
+          NPM_ENABLED="${{ needs.prepare-release.outputs.should_release_npm }}"
+          DOCKER_ENABLED="${{ needs.prepare-release.outputs.should_release_docker }}"
+
+          FAILED_RELEASES=""
+
+          if [ "$NPM_ENABLED" = "true" ] && [ "$NPM_SUCCESS" != "success" ]; then
+            FAILED_RELEASES="$FAILED_RELEASES NPM"
+          fi
+
+          if [ "$DOCKER_ENABLED" = "true" ] && [ "$DOCKER_SUCCESS" != "success" ]; then
+            FAILED_RELEASES="$FAILED_RELEASES Docker"
+          fi
+
+          if [ -n "$FAILED_RELEASES" ]; then
+            echo "❌ Release failed for:$FAILED_RELEASES"
+            echo "::error::Coordinated release had failures in:$FAILED_RELEASES"
+            exit 1
+          else
+            echo "✅ All enabled releases completed successfully"
+          fi

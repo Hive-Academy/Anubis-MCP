@@ -183,7 +183,13 @@ export class CoreServiceOrchestrator {
    */
   getSupportedServices(): Record<string, string[]> {
     return {
-      TaskOperations: ['create', 'update', 'get', 'list'],
+      TaskOperations: [
+        'create',
+        'create_with_subtasks',
+        'update',
+        'get',
+        'list',
+      ],
       PlanningOperations: [
         'create_plan',
         'update_plan',
