@@ -84,6 +84,27 @@ Begin a new workflow for [your-project] with Anubis guidance
 
 [![Anubis MCP server Demo](https://img.youtube.com/vi/NPWrGJ_lRqY/0.jpg)](https://www.youtube.com/embed/NPWrGJ_lRqY?si=dXFzTf-qJqNRzOu6&start=477)
 
+1- install the MCP server:
+
+```
+{
+  "mcpServers": {
+    "anubis": {
+      "command": "npx",
+      "args": ["-y", "@hive-academy/anubis"]
+    }
+  }
+}
+```
+
+2- then make sure you are on Code mode and ask it to generate the custom Anubis mode for you
+
+`Please initialize Anubis workflow rules for roocode by calling the init_rules MCP tool`
+
+3- reload the window and you should see the custom mode in the modes dropdown list. activate it and ask it to create your first task
+
+4- also if you don't have a memory bank files, ask it to generate them for you as the first task.
+
 ## **Cursor Setup Example**
 
 **For Cursor users, here's a complete setup example:**

@@ -51,16 +51,16 @@ _Follow these rules precisely to ensure successful workflow execution_
 ║ ✅ DO use read-only commands for analysis     ║     ║                                               ║
 ╚═══════════════════════════════════════════════╝     ╚═══════════════════════════════════════════════╝
 
-╔═══════════════════════════════════════════════╗
-║ 🔴 CODE REVIEW                               ║
-╠═══════════════════════════════════════════════╣
-║ ❌ NEVER implement fixes directly             ║
-║ ❌ NEVER create or modify files               ║
-║                                               ║
-║ ✅ DO review and provide feedback only        ║
-║ ✅ DO identify issues and delegate fixes      ║
-║                                               ║
-╚═══════════════════════════════════════════════╝
+╔═══════════════════════════════════════════════╗     ╔═══════════════════════════════════════════════╗
+║ 🔴 CODE REVIEW                               ║     ║ ⚡ TURBO-DEV                                  ║
+╠═══════════════════════════════════════════════╣     ╠═══════════════════════════════════════════════╣
+║ ❌ NEVER implement fixes directly             ║     ║ ✅ DO rapid analysis and implementation       ║
+║ ❌ NEVER create or modify files               ║     ║ ✅ DO create, modify, and manage files        ║
+║                                               ║     ║ ✅ DO focused planning and execution          ║
+║ ✅ DO review and provide feedback only        ║     ║ ✅ DO testing and quality validation          ║
+║ ✅ DO identify issues and delegate fixes      ║     ║ ✅ DO git operations and commits              ║
+║                                               ║     ║ ❌ NEVER make major architectural decisions   ║
+╚═══════════════════════════════════════════════╝     ╚═══════════════════════════════════════════════╝
 ```
 
 ---
@@ -133,6 +133,7 @@ console.log('Resuming workflow as [role name] with proper boundaries');
 | **Architect**        | ❌ NEVER implement, create, or modify code files<br>❌ NEVER create files or directories<br>❌ NEVER run file modification commands | ✅ Design specifications and blueprints ONLY<br>✅ Create implementation plans for Senior Developer<br>✅ Use read-only commands for analysis |
 | **Senior Developer** | ❌ NEVER make strategic decisions<br>❌ NEVER change architectural designs                                                          | ✅ Implement code based on specifications<br>✅ Create, modify, and manage files<br>✅ Execute all development commands                       |
 | **Code Review**      | ❌ NEVER implement fixes directly<br>❌ NEVER create or modify files                                                                | ✅ Review and provide feedback ONLY<br>✅ Identify issues and delegate fixes                                                                  |
+| **Turbo-Dev**        | ❌ NEVER make major architectural decisions<br>❌ NEVER change system design patterns                                               | ✅ Rapid analysis and focused implementation<br>✅ Create, modify, and manage files<br>✅ Execute testing and quality validation              |
 
 ### Protocol Enforcement Rules
 
@@ -168,6 +169,73 @@ console.log('Resuming workflow as [role name] with proper boundaries');
 - **Execute, Build, Test, Deploy**
 - **Follow specifications from strategic roles**
 - **Make tactical implementation decisions only**
+
+---
+
+## 🎯 WORKFLOW MODE DECISION FRAMEWORK
+
+Before starting any workflow, evaluate the user's request to determine the appropriate workflow mode:
+
+### Quick Assessment Questions
+
+**Ask yourself these questions to determine workflow mode:**
+
+1. **Scope Assessment**: Is this a focused change to existing functionality?
+2. **Complexity Assessment**: Does this require major architectural decisions?
+3. **Time Sensitivity**: Is this a quick fix or enhancement?
+4. **Dependencies**: Does this affect multiple system components?
+
+### Decision Matrix
+
+| Request Type             | Indicators                                       | Recommended Mode  | Bootstrap Role |
+| ------------------------ | ------------------------------------------------ | ----------------- | -------------- |
+| **Bug Fixes**            | Single component, clear issue, existing tests    | **TURBO-DEV**     | `turbo-dev`    |
+| **Small Features**       | Limited scope, existing patterns, <5 files       | **TURBO-DEV**     | `turbo-dev`    |
+| **Quick Improvements**   | Performance tweaks, UI updates, config changes   | **TURBO-DEV**     | `turbo-dev`    |
+| **Major Features**       | New components, multiple integrations, >10 files | **FULL WORKFLOW** | `boomerang`    |
+| **Architecture Changes** | System design, new patterns, strategic decisions | **FULL WORKFLOW** | `boomerang`    |
+| **Complex Integrations** | External APIs, new tech stack, unknown patterns  | **FULL WORKFLOW** | `boomerang`    |
+
+### Mode Selection Examples
+
+**✅ TURBO-DEV Mode Examples:**
+
+- "Fix the login validation bug"
+- "Add a new field to the user profile form"
+- "Improve the loading spinner animation"
+- "Update the error message for invalid inputs"
+- "Optimize the database query in UserService"
+
+**✅ FULL WORKFLOW Mode Examples:**
+
+- "Build a new authentication system"
+- "Integrate with a third-party payment provider"
+- "Redesign the entire user dashboard"
+- "Implement real-time notifications across the app"
+- "Add multi-language support to the application"
+
+### Bootstrap Decision Process
+
+```typescript
+// Evaluate user request first
+const requestComplexity = evaluateRequest(userRequest);
+
+if (requestComplexity === 'FOCUSED' || requestComplexity === 'QUICK_FIX') {
+  // Use TURBO-DEV mode
+  const initResult = await bootstrap_workflow({
+    initialRole: 'turbo-dev',
+    executionMode: 'GUIDED',
+    projectPath: '/full/project/path',
+  });
+} else {
+  // Use FULL WORKFLOW mode
+  const initResult = await bootstrap_workflow({
+    initialRole: 'boomerang',
+    executionMode: 'GUIDED',
+    projectPath: '/full/project/path',
+  });
+}
+```
 
 ---
 
@@ -215,6 +283,14 @@ const roleGuidance = await get_workflow_guidance({
 **If no active workflow or starting new workflow**: Bootstrap a new one:
 
 ```typescript
+// For TURBO-DEV mode (focused tasks, quick fixes)
+const initResult = await bootstrap_workflow({
+  initialRole: 'turbo-dev',
+  executionMode: 'GUIDED',
+  projectPath: '/full/project/path', // Your actual project path
+});
+
+// For FULL WORKFLOW mode (complex features, architectural changes)
 const initResult = await bootstrap_workflow({
   initialRole: 'boomerang',
   executionMode: 'GUIDED',

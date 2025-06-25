@@ -1,0 +1,302 @@
+{
+  "workflowSteps": [
+    {
+      "name": "turbo_setup_and_analysis",
+      "description": "Rapid setup with git integration and comprehensive codebase analysis",
+      "sequenceNumber": 1,
+      "isRequired": true,
+      "stepType": "ACTION",
+      "approach": "Streamlined setup combining git operations with deep codebase analysis",
+      "approachGuidance": {
+        "stepByStep": [
+          "Check git repository status with 'git status --porcelain'",
+          "Handle any uncommitted changes appropriately",
+          "Create feature branch with descriptive name following format: 'turbo/[task-description]'",
+          "Verify branch creation succeeded",
+          "Enhanced Memory Bank Analysis (if memory-bank folder exists):",
+          "1. memory-bank/ProjectOverview.md: Extract business context, features, stakeholder requirements",
+          "2. memory-bank/TechnicalArchitecture.md: Extract architecture patterns, component structure, technology stack",
+          "3. memory-bank/DeveloperGuide.md: Extract implementation standards, coding patterns, quality guidelines",
+          "Analyze project structure and identify tech stack",
+          "Test current functionality to understand existing behavior",
+          "Extract clear requirements from user request",
+          "Create task with executionId, codebase analysis, and memory bank insights",
+          "Update task status to 'in-progress'"
+        ]
+      },
+      "qualityChecklist": [
+        "Git repository exists and is functional",
+        "Working directory status checked and handled appropriately",
+        "Feature branch created with proper 'turbo/' naming convention",
+        "Branch checkout successful and verified",
+        "Memory bank analysis completed (if available) with key insights extracted",
+        "Project structure and tech stack documented",
+        "Current functionality tested and behavior understood",
+        "Requirements extracted and clearly defined from user request",
+        "Task created with executionId linked to workflow",
+        "Task includes comprehensive codebase analysis and memory bank context",
+        "Task status updated to 'in-progress'"
+      ],
+      "conditions": [
+        {
+          "name": "git_repository_exists",
+          "conditionType": "DIRECTORY_EXISTS",
+          "logic": {
+            "check": "directory_exists",
+            "parameters": {
+              "directories": [
+                ".git"
+              ]
+            }
+          },
+          "isRequired": true
+        }
+      ],
+      "actions": [
+        {
+          "name": "create_task",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "TaskOperations",
+            "operation": "create",
+            "requiredParameters": [
+              "executionId",
+              "taskData",
+              "description",
+              "codebaseAnalysis"
+            ]
+          },
+          "sequenceOrder": 1
+        },
+        {
+          "name": "update_task_status",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "TaskOperations",
+            "operation": "update",
+            "requiredParameters": [
+              "taskId",
+              "taskData"
+            ]
+          },
+          "sequenceOrder": 2
+        }
+      ]
+    },
+    {
+      "name": "focused_implementation_planning",
+      "description": "Create focused implementation plan and subtasks for targeted execution",
+      "sequenceNumber": 2,
+      "isRequired": true,
+      "stepType": "ACTION",
+      "approach": "Rapid planning focused on immediate implementation needs",
+      "approachGuidance": {
+        "stepByStep": [
+          "Analyze task context and requirements from previous step",
+          "Create focused implementation plan targeting specific changes needed",
+          "Break down implementation into focused subtasks (3-7 subtasks maximum)",
+          "Ensure subtasks are implementation-focused, not documentation-heavy",
+          "Validate plan aligns with existing architecture patterns",
+          "Create subtasks immediately while context is fresh"
+        ]
+      },
+      "qualityChecklist": [
+        "Task context and requirements fully understood",
+        "Implementation plan created with clear, focused approach",
+        "Subtasks created (3-7 maximum) focusing on actual implementation work",
+        "No unnecessary documentation subtasks created",
+        "Plan aligns with existing architecture and patterns",
+        "Subtasks are specific, actionable, and testable"
+      ],
+      "conditions": [
+        {
+          "name": "setup_analysis_completed",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "check": "step_completed",
+            "parameters": {
+              "stepName": "turbo_setup_and_analysis"
+            }
+          },
+          "isRequired": true
+        }
+      ],
+      "actions": [
+        {
+          "name": "get_task_context",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "TaskOperations",
+            "operation": "get"
+          },
+          "sequenceOrder": 1
+        },
+        {
+          "name": "create_implementation_plan",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "PlanningOperations",
+            "operation": "create"
+          },
+          "sequenceOrder": 2
+        },
+        {
+          "name": "create_subtasks",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "PlanningOperations",
+            "operation": "create_subtasks"
+          },
+          "sequenceOrder": 3
+        }
+      ]
+    },
+    {
+      "name": "turbo_implementation_execution",
+      "description": "Execute all subtasks with testing and validation in rapid succession",
+      "sequenceNumber": 3,
+      "isRequired": true,
+      "stepType": "ACTION",
+      "approach": "Rapid iterative implementation with immediate testing and validation",
+      "approachGuidance": {
+        "stepByStep": [
+          "Get implementation plan and subtasks context",
+          "Execute subtask implementation loop:",
+          "1. Get next subtask using SubtaskOperations.get_next_subtask",
+          "2. Update subtask status to 'in-progress'",
+          "3. Implement following established patterns and code quality standards",
+          "4. Test implementation immediately (unit tests, integration tests, manual validation)",
+          "5. Commit changes with descriptive subtask-specific message",
+          "6. Update subtask to 'completed' with implementation evidence",
+          "7. Repeat until no more subtasks available",
+          "Validate complete implementation against original requirements"
+        ]
+      },
+      "qualityChecklist": [
+        "Implementation plan and subtasks context retrieved",
+        "All available subtasks processed and completed",
+        "Each subtask implemented following established patterns and standards",
+        "Comprehensive testing performed for each implementation (unit, integration, manual)",
+        "Individual commits made after each subtask completion with clear messages",
+        "All subtasks updated to 'completed' status with detailed evidence",
+        "Complete implementation validated against original task requirements",
+        "No regressions introduced to existing functionality"
+      ],
+      "conditions": [
+        {
+          "name": "planning_completed",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "check": "step_completed",
+            "parameters": {
+              "stepName": "focused_implementation_planning"
+            }
+          },
+          "isRequired": true
+        }
+      ],
+      "actions": [
+        {
+          "name": "get_implementation_plan",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "PlanningOperations",
+            "operation": "get_plan"
+          },
+          "sequenceOrder": 1
+        },
+        {
+          "name": "get_next_subtask",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "SubtaskOperations",
+            "operation": "get_next_subtask"
+          },
+          "sequenceOrder": 2
+        },
+        {
+          "name": "update_subtask_in_progress",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "SubtaskOperations",
+            "operation": "update_subtask"
+          },
+          "sequenceOrder": 3
+        }
+      ]
+    },
+    {
+      "name": "turbo_quality_validation_and_completion",
+      "description": "Comprehensive quality validation and complete task and workflow execution",
+      "sequenceNumber": 4,
+      "isRequired": true,
+      "stepType": "ACTION",
+      "approach": "Complete both task and workflow execution with final validation and status",
+      "approachGuidance": {
+        "stepByStep": [
+          "Run complete test suite to ensure no regressions",
+          "Validate all acceptance criteria are met from original task",
+          "Verify code follows established patterns and SOLID principles",
+          "Check error handling and edge cases are properly covered",
+          "Validate git history is clean with appropriate commit messages",
+          "Update task status to 'completed' with comprehensive evidence",
+          "Execute workflow completion with final status and deliverables",
+          "Document completion evidence and quality metrics",
+          "Ensure proper workflow closure and state cleanup"
+        ]
+      },
+      "qualityChecklist": [
+        "Complete test suite runs successfully with no failures",
+        "All original acceptance criteria validated and confirmed met",
+        "Code follows established patterns, SOLID principles, and quality standards",
+        "Error handling properly implemented for edge cases",
+        "Git history is clean with descriptive, appropriate commit messages",
+        "Task updated to 'completed' status with comprehensive implementation evidence",
+        "Workflow execution completed with final status and deliverables documented",
+        "Completion evidence and quality metrics documented",
+        "Workflow closure and state cleanup verified"
+      ],
+      "conditions": [
+        {
+          "name": "implementation_completed",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "check": "step_completed",
+            "parameters": {
+              "stepName": "turbo_implementation_execution"
+            }
+          },
+          "isRequired": true
+        }
+      ],
+      "actions": [
+        {
+          "name": "update_task_completed",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "TaskOperations",
+            "operation": "update",
+            "requiredParameters": [
+              "taskId",
+              "taskData"
+            ]
+          },
+          "sequenceOrder": 1
+        },
+        {
+          "name": "complete_workflow_execution",
+          "actionType": "MCP_CALL",
+          "actionData": {
+            "serviceName": "WorkflowOperations",
+            "operation": "complete_execution",
+            "requiredParameters": [
+              "executionId",
+              "completionData"
+            ]
+          },
+          "sequenceOrder": 2
+        }
+      ]
+    }
+  ]
+}
