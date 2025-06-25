@@ -1,4 +1,4 @@
-# Multi-stage build for optimized Docker Hub deployment with BUILD-TIME MIGRATION DEPLOYMENT
+# Multi-stage build for optimized Docker Hub deployment
 FROM node:22-alpine AS builder
 
 # Add metadata labels for Docker Hub
@@ -24,8 +24,7 @@ COPY . .
 RUN npx prisma generate
 RUN npm run build
 
-# STRATEGIC: Compile seed script for production use (ts-node not available in production)
-# Create a Docker-specific version of the seed script with correct import paths
+# Compile seed script for production use (ts-node not available in production)
 RUN echo "🔧 Creating Docker-compatible seed script..." && \
     sed 's|from '\''../generated/prisma'\''|from '\''/app/generated/prisma'\''|g' scripts/prisma-seed.ts > scripts/prisma-seed-docker.ts && \
     echo "🔧 Compiling seed script..." && \
@@ -37,45 +36,7 @@ RUN echo "🔧 Creating Docker-compatible seed script..." && \
 RUN mkdir -p temp/reports temp/rendered-reports templates/reports
 
 # ================================================================================================
-# BUILD-TIME MIGRATION AND SEEDING DEPLOYMENT STAGE - Strategic UX Enhancement
-# Deploy migrations and seed data during image build for instant container startup
-# ================================================================================================
-FROM builder AS migration-deployer
-
-# Create build-time database directory
-RUN mkdir -p ./build-time-db
-
-# Ensure migrations directory exists and is properly copied
-# This is critical for prisma migrate deploy to work
-RUN ls -la ./prisma/ || echo "Prisma directory contents:"
-RUN if [ ! -d "./prisma/migrations" ]; then echo "❌ Migrations directory not found!"; exit 1; fi
-
-# Set build-time database configuration for migration deployment
-ENV DATABASE_URL="file:./build-time-db/workflow.db"
-ENV NODE_ENV="production"
-
-# STRATEGIC BUILD-TIME MIGRATION AND SEEDING DEPLOYMENT
-# Deploy all migrations and seed essential workflow data during build
-RUN echo "🔧 DEPLOYING MIGRATIONS AND SEEDING DATA AT BUILD-TIME for instant startup UX..." && \
-    echo "🔍 Debugging migration deployment..." && \
-    ls -la ./prisma/ && \
-    ls -la ./prisma/migrations/ && \
-    echo "📋 Checking database URL: $DATABASE_URL" && \
-    echo "🏗️ Creating database and running migrations..." && \
-    npx prisma db push --schema=./prisma/schema.prisma --accept-data-loss && \
-    echo "✅ BUILD-TIME DATABASE CREATION SUCCESSFUL" && \
-    echo "🔄 Regenerating Prisma client for build-time database..." && \
-    npx prisma generate && \
-    echo "✅ Prisma client regenerated" && \
-    echo "🌱 BUILD-TIME DATABASE SEEDING..." && \
-    node dist/scripts/prisma-seed.js && \
-    echo "✅ BUILD-TIME DATABASE SEEDING SUCCESSFUL" && \
-    ls -la ./build-time-db/ && \
-    npx prisma db pull --schema=./prisma/schema.prisma --print && \
-    echo "📊 Database creation and seeding verification complete"
-
-# ================================================================================================
-# Production stage with PRE-DEPLOYED migrations for INSTANT STARTUP
+# Production stage - Runtime database initialization
 # ================================================================================================
 FROM node:22-alpine AS production
 
@@ -109,24 +70,12 @@ RUN npm ci --only=production --ignore-scripts && npm cache clean --force
 RUN chown -R nestjs:nodejs /app/node_modules
 
 # Copy built application and generated Prisma client from builder stage
-# NOTE: Unlike npm package, Docker includes full generated client for immediate runtime availability
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nestjs:nodejs /app/prisma/schema.prisma ./prisma/schema.prisma
-COPY --from=builder --chown=nestjs:nodejs /app/prisma/onboarding-models.prisma ./prisma/onboarding-models.prisma
-COPY --from=builder --chown=nestjs:nodejs /app/prisma/rule-models.prisma ./prisma/rule-models.prisma
-COPY --from=builder --chown=nestjs:nodejs /app/prisma/task-models.prisma ./prisma/task-models.prisma
-COPY --from=builder --chown=nestjs:nodejs /app/prisma/workflow-enums.prisma ./prisma/workflow-enums.prisma
-# STRATEGIC: Migrations folder REQUIRED for verification commands (migrate status, etc.)
-# Even with build-time deployment, runtime verification compares deployed vs migration files
-COPY --from=builder --chown=nestjs:nodejs /app/prisma/migrations ./prisma/migrations
+COPY --from=builder --chown=nestjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nestjs:nodejs /app/generated ./generated
 
 # Copy essential workflow rules data for seeding
 COPY --from=builder --chown=nestjs:nodejs /app/enhanced-workflow-rules ./enhanced-workflow-rules
-
-# STRATEGIC ENHANCEMENT: Copy pre-deployed migration validation data from migration-deployer stage
-# This enables instant startup verification without migration deployment delay
-COPY --from=migration-deployer --chown=nestjs:nodejs /app/build-time-db ./build-time-db
 
 # Copy report directories from builder stage
 COPY --from=builder --chown=nestjs:nodejs /app/temp ./temp
@@ -146,25 +95,20 @@ RUN mkdir -p /app/data/anubis-reports/temp \
 RUN mkdir -p /app/reports/rendered \
     && chown -R nestjs:nodejs /app/reports
 
-# Ensure temp and templates directories exist with proper permissions (for other functionality)
+# Ensure temp and templates directories exist with proper permissions
 RUN chown -R nestjs:nodejs /app/temp /app/templates
 
-# Create startup script to initialize database if needed
+# Create startup script for runtime database initialization
 RUN echo '#!/bin/bash' > /app/init-db.sh && \
     echo 'set -e' >> /app/init-db.sh && \
     echo 'echo "🔍 Checking database initialization..."' >> /app/init-db.sh && \
     echo 'if [ ! -f "/app/data/workflow.db" ] || [ ! -s "/app/data/workflow.db" ]; then' >> /app/init-db.sh && \
-    echo '  echo "📋 Database not found or empty, initializing from build-time template..."' >> /app/init-db.sh && \
-    echo '  if [ -f "/app/build-time-db/workflow.db" ]; then' >> /app/init-db.sh && \
-    echo '    cp /app/build-time-db/workflow.db /app/data/workflow.db' >> /app/init-db.sh && \
-    echo '    echo "✅ Database initialized from build-time template"' >> /app/init-db.sh && \
-    echo '  else' >> /app/init-db.sh && \
-    echo '    echo "⚠️  Build-time database not found, running migrations..."' >> /app/init-db.sh && \
-    echo '    npx prisma migrate deploy' >> /app/init-db.sh && \
-    echo '    echo "🌱 Running database seeding..."' >> /app/init-db.sh && \
-    echo '    node dist/scripts/prisma-seed.js' >> /app/init-db.sh && \
-    echo '    echo "✅ Database migrations and seeding completed"' >> /app/init-db.sh && \
-    echo '  fi' >> /app/init-db.sh && \
+    echo '  echo "📋 Database not found or empty, deploying migrations..."' >> /app/init-db.sh && \
+    echo '  npx prisma migrate deploy --schema=./prisma/schema.prisma' >> /app/init-db.sh && \
+    echo '  echo "✅ Migrations deployed successfully"' >> /app/init-db.sh && \
+    echo '  echo "🌱 Running database seeding..."' >> /app/init-db.sh && \
+    echo '  node dist/scripts/prisma-seed.js' >> /app/init-db.sh && \
+    echo '  echo "✅ Database initialization completed"' >> /app/init-db.sh && \
     echo 'else' >> /app/init-db.sh && \
     echo '  echo "✅ Database already exists and populated"' >> /app/init-db.sh && \
     echo 'fi' >> /app/init-db.sh && \
@@ -173,7 +117,7 @@ RUN echo '#!/bin/bash' > /app/init-db.sh && \
     chmod +x /app/init-db.sh && \
     chown nestjs:nodejs /app/init-db.sh
 
-# Set default environment variables with unified database configuration
+# Set default environment variables
 ENV RUNNING_IN_DOCKER="true"
 ENV MCP_SERVER_NAME="Anubis"
 ENV MCP_SERVER_VERSION="1.2.1"
@@ -181,11 +125,6 @@ ENV MCP_TRANSPORT_TYPE="STDIO"
 ENV NODE_ENV="production"
 ENV PORT="3000"
 ENV DATABASE_URL="file:/app/data/workflow.db"
-
-# STRATEGIC UX ENHANCEMENT: Mark image as having pre-deployed migrations
-ENV MIGRATIONS_PRE_DEPLOYED="true"
-ENV BUILD_TIME_MIGRATION_DEPLOYED="true"
-ENV BUILD_TIME_SEEDING_DEPLOYED="true"
 
 # Switch to non-root user
 USER nestjs
@@ -197,6 +136,6 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD if [ "$MCP_TRANSPORT_TYPE" = "STDIO" ]; then exit 0; else curl -f http://localhost:$PORT/health || exit 1; fi
 
-# STRATEGIC ENHANCEMENT: Use initialization script to ensure database is properly set up
+# Use initialization script to ensure database is properly set up at runtime
 ENTRYPOINT ["/app/init-db.sh"]
 CMD ["node", "dist/main.js"]

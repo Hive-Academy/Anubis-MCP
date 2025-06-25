@@ -63,7 +63,14 @@
     "lint": "eslint \"{src,apps,libs}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
-    "db:reset": "ts-node scripts/complete-database-reset.ts"
+    "db:reset": "ts-node scripts/complete-database-reset.ts",
+    "version:check": "node scripts/version-manager.js --check-only",
+    "version:resolve": "node scripts/version-manager.js",
+    "version:patch": "node scripts/version-manager.js --type patch",
+    "version:minor": "node scripts/version-manager.js --type minor",
+    "version:major": "node scripts/version-manager.js --type major",
+    "version:dry-run": "node scripts/version-manager.js --dry-run",
+    "publish:safe": "npm run version:resolve && npm run build && npm test && npm publish"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.4",

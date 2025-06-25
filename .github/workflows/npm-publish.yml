@@ -25,6 +25,10 @@ on:
         required: false
         default: false
         type: boolean
+      force_version:
+        description: 'Force specific version (optional)'
+        required: false
+        type: string
   # Make this workflow reusable
   workflow_call:
     inputs:
@@ -38,6 +42,10 @@ on:
         required: false
         default: false
         type: boolean
+      force_version:
+        description: 'Force specific version (optional)'
+        required: false
+        type: string
 
 env:
   NPM_REGISTRY: https://registry.npmjs.org/
@@ -73,27 +81,121 @@ jobs:
         run: npm test
 
       # ===================================================================
-      # 📋 PRE-PUBLISHING CHECKLIST AUTOMATION
+      # 🤖 INTELLIGENT VERSION MANAGEMENT
       # ===================================================================
 
-      - name: Check current NPM version
-        id: current_version
+      - name: Intelligent version resolution
+        id: version_resolution
         run: |
+          echo "🤖 Starting intelligent version resolution..."
+
+          # Get current versions
           CURRENT_NPM_VERSION=$(npm view ${{ env.PACKAGE_NAME }} version 2>/dev/null || echo "0.0.0")
           CURRENT_LOCAL_VERSION=$(node -p "require('./package.json').version")
-          echo "npm_version=$CURRENT_NPM_VERSION" >> $GITHUB_OUTPUT
-          echo "local_version=$CURRENT_LOCAL_VERSION" >> $GITHUB_OUTPUT
+
           echo "📦 Current NPM version: $CURRENT_NPM_VERSION"
           echo "📦 Current local version: $CURRENT_LOCAL_VERSION"
 
-      - name: Version bump (if workflow_dispatch)
-        if: github.event_name == 'workflow_dispatch'
+          # Store original versions
+          echo "npm_version=$CURRENT_NPM_VERSION" >> $GITHUB_OUTPUT
+          echo "local_version=$CURRENT_LOCAL_VERSION" >> $GITHUB_OUTPUT
+
+          # Determine target version
+          TARGET_VERSION="$CURRENT_LOCAL_VERSION"
+          VERSION_STRATEGY="use-local"
+
+          # Handle forced version
+          if [ -n "${{ inputs.force_version }}" ]; then
+            TARGET_VERSION="${{ inputs.force_version }}"
+            VERSION_STRATEGY="forced"
+            echo "🎯 Using forced version: $TARGET_VERSION"
+
+          # Handle workflow dispatch (manual bump)
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.version_type }}" ]; then
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
+            
+            # Bump version
+            npm version ${{ inputs.version_type }} --no-git-tag-version
+            TARGET_VERSION=$(node -p "require('./package.json').version")
+            VERSION_STRATEGY="manual-bump"
+            echo "🔄 Version bumped (${{ inputs.version_type }}): $TARGET_VERSION"
+          fi
+
+          # Check for version conflicts
+          echo "🔍 Checking version conflicts..."
+          if npm view ${{ env.PACKAGE_NAME }}@$TARGET_VERSION version >/dev/null 2>&1; then
+            echo "⚠️ Version conflict detected: $TARGET_VERSION already exists on NPM"
+            
+            # Auto-resolve conflict by finding next available version
+            echo "🤖 Auto-resolving version conflict..."
+            
+            # Parse version components
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$TARGET_VERSION"
+            
+            # Try incrementing patch version until we find an available one
+            ATTEMPT_COUNT=0
+            MAX_ATTEMPTS=50
+            
+            while [ $ATTEMPT_COUNT -lt $MAX_ATTEMPTS ]; do
+              NEW_PATCH=$((PATCH + ATTEMPT_COUNT + 1))
+              CANDIDATE_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+              
+              echo "🔍 Testing version: $CANDIDATE_VERSION"
+              
+              if ! npm view ${{ env.PACKAGE_NAME }}@$CANDIDATE_VERSION version >/dev/null 2>&1; then
+                TARGET_VERSION="$CANDIDATE_VERSION"
+                VERSION_STRATEGY="auto-resolved"
+                echo "✅ Found available version: $TARGET_VERSION"
+                break
+              fi
+              
+              ATTEMPT_COUNT=$((ATTEMPT_COUNT + 1))
+            done
+            
+            if [ $ATTEMPT_COUNT -eq $MAX_ATTEMPTS ]; then
+              echo "❌ Could not find available version after $MAX_ATTEMPTS attempts"
+              echo "💡 Consider using a manual version bump or different strategy"
+              exit 1
+            fi
+            
+            # Update package.json with resolved version
+            npm version $TARGET_VERSION --no-git-tag-version
+            echo "📝 Updated package.json to version: $TARGET_VERSION"
+            
+          else
+            echo "✅ No version conflict - proceeding with: $TARGET_VERSION"
+          fi
+
+          # Store final version info
+          echo "target_version=$TARGET_VERSION" >> $GITHUB_OUTPUT
+          echo "version_strategy=$VERSION_STRATEGY" >> $GITHUB_OUTPUT
+          echo "conflict_resolved=$([[ $VERSION_STRATEGY == "auto-resolved" ]] && echo "true" || echo "false")" >> $GITHUB_OUTPUT
+
+          echo "🎯 Final target version: $TARGET_VERSION"
+          echo "📋 Version strategy: $VERSION_STRATEGY"
+
+      - name: Commit version changes (if needed)
+        if: steps.version_resolution.outputs.conflict_resolved == 'true' || github.event_name == 'workflow_dispatch'
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          npm version ${{ inputs.version_type }} --no-git-tag-version
-          NEW_VERSION=$(node -p "require('./package.json').version")
-          echo "🔄 Version bumped to: $NEW_VERSION"
+
+          if [ -n "$(git diff --name-only)" ]; then
+            git add package.json package-lock.json
+            git commit -m "🤖 Auto-resolve version conflict: ${{ steps.version_resolution.outputs.target_version }}
+            
+            - Strategy: ${{ steps.version_resolution.outputs.version_strategy }}
+            - Previous NPM: ${{ steps.version_resolution.outputs.npm_version }}
+            - Previous Local: ${{ steps.version_resolution.outputs.local_version }}
+            - Resolved: ${{ steps.version_resolution.outputs.target_version }}"
+            
+            echo "📝 Committed version resolution changes"
+          fi
+
+      # ===================================================================
+      # 📋 PRE-PUBLISHING CHECKLIST AUTOMATION
+      # ===================================================================
 
       - name: Database template verification
         run: |
@@ -214,10 +316,17 @@ jobs:
         if: github.event_name != 'pull_request'
         run: |
           echo "🚀 Publishing to NPM..."
-          npm publish --provenance
+          TARGET_VERSION="${{ steps.version_resolution.outputs.target_version }}"
 
-          NEW_VERSION=$(node -p "require('./package.json').version")
-          echo "✅ Successfully published ${{ env.PACKAGE_NAME }}@$NEW_VERSION"
+          # Final conflict check before publish (double safety)
+          if npm view ${{ env.PACKAGE_NAME }}@$TARGET_VERSION version >/dev/null 2>&1; then
+            echo "❌ CRITICAL: Version $TARGET_VERSION still conflicts!"
+            echo "This should not happen after version resolution."
+            exit 1
+          fi
+
+          npm publish --provenance
+          echo "✅ Successfully published ${{ env.PACKAGE_NAME }}@$TARGET_VERSION"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -234,17 +343,17 @@ jobs:
           sleep 10
 
           # Check if the new version is available
+          TARGET_VERSION="${{ steps.version_resolution.outputs.target_version }}"
           PUBLISHED_VERSION=$(npm view ${{ env.PACKAGE_NAME }} version)
-          LOCAL_VERSION=$(node -p "require('./package.json').version")
 
           echo "📦 Published version: $PUBLISHED_VERSION"
-          echo "📦 Local version: $LOCAL_VERSION"
+          echo "📦 Target version: $TARGET_VERSION"
 
-          if [ "$PUBLISHED_VERSION" = "$LOCAL_VERSION" ]; then
+          if [ "$PUBLISHED_VERSION" = "$TARGET_VERSION" ]; then
             echo "✅ Publication verified successfully"
           else
             echo "❌ Publication verification failed"
-            echo "Expected: $LOCAL_VERSION, Got: $PUBLISHED_VERSION"
+            echo "Expected: $TARGET_VERSION, Got: $PUBLISHED_VERSION"
             exit 1
           fi
 
@@ -259,7 +368,8 @@ jobs:
 
           # Test package installation and basic functionality
           echo "📦 Testing package installation..."
-          npx ${{ env.PACKAGE_NAME }}@latest --version
+          TARGET_VERSION="${{ steps.version_resolution.outputs.target_version }}"
+          npx ${{ env.PACKAGE_NAME }}@$TARGET_VERSION --version
 
           echo "✅ Published package test successful"
 
@@ -277,6 +387,10 @@ jobs:
           echo "## 📦 NPM Package Health Report" >> $GITHUB_STEP_SUMMARY
           echo "- **Package:** \`${{ env.PACKAGE_NAME }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- **Version:** \`$VERSION\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version Strategy:** ${{ steps.version_resolution.outputs.version_strategy }}" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.version_resolution.outputs.conflict_resolved }}" = "true" ]; then
+            echo "- **Conflict Resolution:** ✅ Auto-resolved from \`${{ steps.version_resolution.outputs.local_version }}\` to \`$VERSION\`" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "- **Unpacked Size:** $SIZE bytes" >> $GITHUB_STEP_SUMMARY
           echo "- **Registry:** NPM" >> $GITHUB_STEP_SUMMARY
           echo "- **Provenance:** ✅ Enabled" >> $GITHUB_STEP_SUMMARY
@@ -294,8 +408,10 @@ jobs:
 
             **Package Details:**
             - **Name:** \`${{ env.PACKAGE_NAME }}\`
-            - **Current NPM Version:** \`${{ steps.current_version.outputs.npm_version }}\`
-            - **Local Version:** \`${{ steps.current_version.outputs.local_version }}\`
+            - **Current NPM Version:** \`${{ steps.version_resolution.outputs.npm_version }}\`
+            - **Local Version:** \`${{ steps.version_resolution.outputs.local_version }}\`
+            - **Target Version:** \`${{ steps.version_resolution.outputs.target_version }}\`
+            - **Version Strategy:** ${{ steps.version_resolution.outputs.version_strategy }}
             - **Size:** Optimized (~465kB, 99.5% reduction from 86MB)
             - **Database:** Pre-seeded workflow.db included
 
@@ -305,17 +421,18 @@ jobs:
             - ✅ Build artifacts generated
             - ✅ Prisma schema valid
             - ✅ Dry run publish successful
+            ${steps.version_resolution.outputs.conflict_resolved === 'true' ? '- ✅ Version conflict auto-resolved' : ''}
 
             **Test Installation (after merge):**
             \`\`\`bash
             # Global installation
-            npm install -g ${{ env.PACKAGE_NAME }}@latest
+            npm install -g ${{ env.PACKAGE_NAME }}@${{ steps.version_resolution.outputs.target_version }}
 
             # Or run directly
-            npx ${{ env.PACKAGE_NAME }}@latest --version
+            npx ${{ env.PACKAGE_NAME }}@${{ steps.version_resolution.outputs.target_version }}
 
             # MCP Server usage
-            npx ${{ env.PACKAGE_NAME }}@latest
+            npx ${{ env.PACKAGE_NAME }}@${{ steps.version_resolution.outputs.target_version }}
             \`\`\`
 
             **Claude Desktop MCP Configuration:**
@@ -324,7 +441,7 @@ jobs:
               "mcpServers": {
                 "anubis": {
                   "command": "npx",
-                  "args": ["${{ env.PACKAGE_NAME }}@latest"]
+                  "args": ["${{ env.PACKAGE_NAME }}@${{ steps.version_resolution.outputs.target_version }}"]
                 }
               }
             }
@@ -336,6 +453,13 @@ jobs:
               repo: context.repo.repo,
               body: output
             });
+
+      - name: Push version changes to repository
+        if: steps.version_resolution.outputs.conflict_resolved == 'true' || github.event_name == 'workflow_dispatch'
+        run: |
+          # Push the version changes back to the repository
+          git push origin HEAD:${{ github.ref_name }}
+          echo "📤 Pushed version changes to repository"
 
       - name: Create GitHub release (if tag)
         if: startsWith(github.ref, 'refs/tags/v')
@@ -350,15 +474,17 @@ jobs:
 
             ### 📦 NPM Package
             - **Package:** `${{ env.PACKAGE_NAME }}`
+            - **Version:** `${{ steps.version_resolution.outputs.target_version }}`
+            - **Version Strategy:** ${{ steps.version_resolution.outputs.version_strategy }}
             - **Size:** ~465kB (optimized)
             - **Database:** Pre-seeded workflow.db
             - **Runtime:** Prisma generation + database copying
 
             ### 🔧 Installation
             ```bash
-            npm install -g ${{ env.PACKAGE_NAME }}@latest
+            npm install -g ${{ env.PACKAGE_NAME }}@${{ steps.version_resolution.outputs.target_version }}
             # or
-            npx ${{ env.PACKAGE_NAME }}@latest
+            npx ${{ env.PACKAGE_NAME }}@${{ steps.version_resolution.outputs.target_version }}
             ```
 
             ### 🐳 Docker
