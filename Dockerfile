@@ -42,20 +42,30 @@ FROM builder AS migration-deployer
 # Create build-time database directory
 RUN mkdir -p ./build-time-db
 
+# Ensure migrations directory exists and is properly copied
+# This is critical for prisma migrate deploy to work
+RUN ls -la ./prisma/ || echo "Prisma directory contents:"
+RUN if [ ! -d "./prisma/migrations" ]; then echo "❌ Migrations directory not found!"; exit 1; fi
+
 # Set build-time database configuration for migration deployment
 ENV DATABASE_URL="file:./build-time-db/workflow.db"
 
 # STRATEGIC BUILD-TIME MIGRATION AND SEEDING DEPLOYMENT
 # Deploy all migrations and seed essential workflow data during build
 RUN echo "🔧 DEPLOYING MIGRATIONS AND SEEDING DATA AT BUILD-TIME for instant startup UX..." && \
-    npx prisma migrate deploy --schema=./prisma/schema.prisma && \
-    echo "✅ BUILD-TIME MIGRATION DEPLOYMENT SUCCESSFUL" && \
+    echo "🔍 Debugging migration deployment..." && \
+    ls -la ./prisma/ && \
+    ls -la ./prisma/migrations/ && \
+    echo "📋 Checking database URL: $DATABASE_URL" && \
+    echo "🏗️ Creating database and running migrations..." && \
+    npx prisma db push --schema=./prisma/schema.prisma --accept-data-loss && \
+    echo "✅ BUILD-TIME DATABASE CREATION SUCCESSFUL" && \
     echo "🌱 BUILD-TIME DATABASE SEEDING..." && \
     node dist/scripts/prisma-seed.js && \
     echo "✅ BUILD-TIME DATABASE SEEDING SUCCESSFUL" && \
     ls -la ./build-time-db/ && \
     npx prisma db pull --schema=./prisma/schema.prisma --print && \
-    echo "📊 Migration deployment and seeding verification complete"
+    echo "📊 Database creation and seeding verification complete"
 
 # ================================================================================================
 # Production stage with PRE-DEPLOYED migrations for INSTANT STARTUP

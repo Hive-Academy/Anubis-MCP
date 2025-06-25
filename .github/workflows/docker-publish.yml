@@ -13,6 +13,7 @@ env:
   REGISTRY: docker.io
   IMAGE_NAME: anubis
   DOCKER_HUB_USERNAME: hiveacademy
+  DATABASE_URL: 'file:./prisma/data/workflow.db'
 
 jobs:
   build-and-push:
@@ -43,6 +44,7 @@ jobs:
             echo "✅ Pre-seeded database found: $(ls -lh prisma/data/workflow.db)"
           else
             echo "⚠️ Pre-seeded database not found, will be created during Docker build"
+            echo "🔧 DATABASE_URL configured as: $DATABASE_URL"
           fi
 
       - name: Set up Docker Buildx
