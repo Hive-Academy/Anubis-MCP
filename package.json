@@ -49,7 +49,11 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
-    "prepublishOnly": "npm run build",
+    "build:prod": "cross-env NODE_ENV=production nest build",
+    "build:cli": "nest build --entryFile cli",
+    "build:all": "npm run build && npm run build:cli",
+    "build:all:prod": "npm run build:prod && cross-env NODE_ENV=production nest build --entryFile cli",
+    "prepublishOnly": "npm run build:prod",
     "postinstall": "prisma generate",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -103,6 +107,7 @@
     "@types/node": "^22.10.7",
     "@types/supertest": "^6.0.2",
     "@types/uuid": "^10.0.0",
+    "compression-webpack-plugin": "^11.1.0",
     "cross-env": "^7.0.3",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
@@ -113,12 +118,14 @@
     "rimraf": "^6.0.1",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
+    "terser-webpack-plugin": "^5.3.14",
     "ts-jest": "^29.2.5",
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.20.0"
+    "typescript-eslint": "^8.20.0",
+    "webpack": "^5.99.9"
   },
   "jest": {
     "moduleFileExtensions": [

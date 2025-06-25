@@ -4,7 +4,7 @@ FROM node:22-alpine AS builder
 # Add metadata labels for Docker Hub
 LABEL org.opencontainers.image.title="Anubis"
 LABEL org.opencontainers.image.description="🏺 𓂀𓁢𓋹𝔸ℕ𝕌𝔹𝕀𝕊𓋹𓁢𓂀 - Intelligent Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development"
-LABEL org.opencontainers.image.version="1.2.3"
+LABEL org.opencontainers.image.version="1.2.4"
 LABEL org.opencontainers.image.authors="Hive Academy <abdallah@nghive.tech>"
 LABEL org.opencontainers.image.source="https://github.com/Hive-Academy/Anubis-MCP"
 LABEL org.opencontainers.image.documentation="https://github.com/Hive-Academy/Anubis-MCP/blob/main/README.md"
@@ -43,7 +43,7 @@ FROM node:22-alpine AS production
 # Add same metadata to final image
 LABEL org.opencontainers.image.title="Anubis"
 LABEL org.opencontainers.image.description="🏺 Anubis - Intelligent Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development"
-LABEL org.opencontainers.image.version="1.2.3"
+LABEL org.opencontainers.image.version="1.2.4"
 LABEL org.opencontainers.image.authors="Hive Academy <abdallah@nghive.tech>"
 LABEL org.opencontainers.image.source="https://github.com/Hive-Academy/Anubis-MCP"
 LABEL org.opencontainers.image.documentation="https://github.com/Hive-Academy/Anubis-MCP/blob/main/README.md"
@@ -124,7 +124,7 @@ RUN echo '#!/bin/bash' > /app/init-db.sh && \
 # Set default environment variables
 ENV RUNNING_IN_DOCKER="true"
 ENV MCP_SERVER_NAME="Anubis"
-ENV MCP_SERVER_VERSION="1.2.3"
+ENV MCP_SERVER_VERSION="1.2.4"
 ENV MCP_TRANSPORT_TYPE="STDIO"
 ENV NODE_ENV="production"
 ENV PORT="3000"
