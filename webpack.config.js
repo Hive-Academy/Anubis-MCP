@@ -1,6 +1,24 @@
 const CompressionPlugin = require('compression-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
+// Custom plugin to add shebang to CLI file
+class ShebangPlugin {
+  apply(compiler) {
+    compiler.hooks.emit.tapAsync('ShebangPlugin', (compilation, callback) => {
+      const cliAsset = compilation.assets['cli.js'];
+      if (cliAsset) {
+        const source = cliAsset.source();
+        const sourceWithShebang = `#!/usr/bin/env node\n${source}`;
+        compilation.assets['cli.js'] = {
+          source: () => sourceWithShebang,
+          size: () => sourceWithShebang.length,
+        };
+      }
+      callback();
+    });
+  }
+}
+
 module.exports = (options, webpack) => {
   const isProduction = process.env.NODE_ENV === 'production';
 
@@ -50,6 +68,8 @@ module.exports = (options, webpack) => {
     },
     plugins: [
       ...options.plugins,
+      // Add shebang to CLI file
+      new ShebangPlugin(),
       // Only add compression in production
       ...(isProduction
         ? [
