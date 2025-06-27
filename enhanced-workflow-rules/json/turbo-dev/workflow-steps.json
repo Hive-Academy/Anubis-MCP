@@ -9,25 +9,12 @@
       "approach": "Smart context aggregation with intelligent research decision integration",
       "approachGuidance": {
         "stepByStep": [
-          "Phase 1: Git and Context Intelligence",
-          "1. Check git repository status with 'git status --porcelain'",
-          "2. Handle uncommitted changes and create feature branch: 'turbo/[task-description]'",
-          "3. Check for existing workflow context from active executions",
-          "4. If memory-bank exists, extract key insights from ProjectOverview.md, TechnicalArchitecture.md, DeveloperGuide.md",
-          "5. Analyze project structure and tech stack (only if not available in context)",
-          "6. Extract clear requirements from user request",
-          "7. Evaluate task complexity against known capabilities and patterns:",
-          "   • Known technologies/patterns → Direct implementation",
-          "   • Unknown patterns/integration challenges → Research needed",
-          "   • New external APIs/libraries → Research needed",
-          "   • Complex architectural decisions → Research needed",
-          "8. IF research needed: Execute integrated research process:",
-          "   • Identify critical research questions (technical unknowns, integration challenges)",
-          "   • Conduct focused research using web_search and documentation analysis",
-          "   • Extract actionable implementation recommendations",
-          "   • Create research findings using ResearchOperations.create_research",
-          "   • Use get_operation_schema('ResearchOperations', 'create_research') for correct parameters",
-          "9. ELSE: Proceed with existing knowledge and patterns"
+          "1. Check git repository status with 'git status --porcelain' and handle uncommitted changes by creating feature branch: 'turbo/[task-description]'",
+          "2. Check for existing workflow context from active executions and extract key insights from memory-bank (ProjectOverview.md, TechnicalArchitecture.md, DeveloperGuide.md) if available",
+          "3. Analyze project structure and tech stack (only if not available in context) and extract clear requirements from user request",
+          "4. Evaluate task complexity: Known technologies/patterns → Direct implementation | Unknown patterns/integration challenges → Research needed | New external APIs/libraries → Research needed | Complex architectural decisions → Research needed",
+          "5. IF research needed: Execute integrated research process: Identify critical research questions, Conduct focused research, Extract actionable implementation recommendations, Create research findings using ResearchOperations.create_research with get_operation_schema('ResearchOperations', 'create_research')",
+          "6. ELSE: Proceed with existing knowledge and patterns"
         ]
       },
       "qualityChecklist": [
@@ -48,9 +35,7 @@
           "logic": {
             "check": "directory_exists",
             "parameters": {
-              "directories": [
-                ".git"
-              ]
+              "directories": [".git"]
             }
           },
           "isRequired": true
@@ -67,31 +52,10 @@
       "approach": "Create comprehensive task with research-informed subtasks for immediate execution",
       "approachGuidance": {
         "stepByStep": [
-          "1. Create task with enhanced subtasks using TaskOperations.create_with_subtasks:",
-          "   • Use get_operation_schema('TaskOperations', 'create_with_subtasks') to get correct parameters",
-          "   • Include executionId, taskData, description, codebaseAnalysis, and subtasks",
-          "",
-          "2. Break down implementation into focused subtasks (3-7 maximum)",
-          "",
-          "3. For each subtask, include comprehensive implementation details:",
-          "   • Implementation Strategy: Detailed approach leveraging research findings",
-          "   • Research-Informed Decisions: Technical decisions based on research (if conducted)",
-          "   • Specific Implementation Path: Exact files to modify with code examples",
-          "   • Architecture Integration: How subtask aligns with existing patterns",
-          "   • Quality Framework: Testing requirements, validation steps, quality gates",
-          "   • Performance & Security: Targets and considerations from research",
-          "   • Dependencies & Integration: Points and external dependencies identified",
-          "",
-          "4. Apply Subtask Enhancement Principles:",
-          "   • Incorporate research recommendations directly into implementation approach",
-          "   • Specify exact code patterns and architectural decisions",
-          "   • Include validation criteria that leverage research insights",
-          "   • Ensure subtasks are implementation-ready without additional research",
-          "   • Organize in logical execution batches with clear dependencies",
-          "",
-          "5. Update task status to 'in-progress' using TaskOperations.update:",
-          "   • Use get_operation_schema('TaskOperations', 'update') for correct parameters",
-          "   • Include taskId and taskData with status: 'in-progress'"
+          "1. Create task with enhanced subtasks using TaskOperations.create_with_subtasks: Use get_operation_schema('TaskOperations', 'create_with_subtasks') to get correct parameters. Include executionId, taskData, description, codebaseAnalysis, and subtasks. Break down implementation into focused subtasks (3-7 maximum).",
+          "2. For each subtask, include comprehensive implementation details: Implementation Strategy (detailed approach leveraging research findings), Research-Informed Decisions (technical decisions based on research if conducted), Specific Implementation Path (exact files to modify with code examples), Architecture Integration (how subtask aligns with existing patterns), Quality Framework (testing requirements, validation steps, quality gates), Performance & Security (targets and considerations from research), Dependencies & Integration (points and external dependencies identified).",
+          "3. Apply Subtask Enhancement Principles: Incorporate research recommendations directly into implementation approach, specify exact code patterns and architectural decisions, include validation criteria that leverage research insights, ensure subtasks are implementation-ready without additional research, organize in logical execution batches with clear dependencies.",
+          "4. Update task status to 'in-progress' using TaskOperations.update: Use get_operation_schema('TaskOperations', 'update') for correct parameters, include taskId and taskData with status: 'in-progress'."
         ]
       },
       "qualityChecklist": [
@@ -131,37 +95,10 @@
       "approach": "Streamlined execution loop with comprehensive testing and immediate completion",
       "approachGuidance": {
         "stepByStep": [
-          "Phase 1: Context Preparation",
-          "1. Get task context with all subtasks using TaskOperations.get:",
-          "   • Use get_operation_schema('TaskOperations', 'get') for correct parameters",
-          "   • Include taskId and includeSubtasks=true",
-          "2. Validate research-enhanced implementation approach is clear",
-          "",
-          "Phase 2: Rapid Implementation Loop",
-          "Execute for each subtask until completion:",
-          "3. Get next subtask using SubtaskOperations.get_next_subtask:",
-          "   • Use get_operation_schema('SubtaskOperations', 'get_next_subtask') for parameters",
-          "4. Update subtask status to 'in-progress' using SubtaskOperations.update_subtask:",
-          "   • Use get_operation_schema('SubtaskOperations', 'update_subtask') for parameters",
-          "5. Implement using research-informed approach and established patterns",
-          "6. Execute immediate validation (unit tests, integration tests, manual verification)",
-          "7. Commit changes with descriptive, research-context-aware message",
-          "8. Update subtask to 'completed' with comprehensive evidence:",
-          "   • Use get_operation_schema('SubtaskOperations', 'update_subtask') for parameters",
-          "9. Continue until all subtasks completed",
-          "",
-          "Phase 3: Integrated Completion",
-          "10. Run complete test suite for regression validation",
-          "11. Validate all acceptance criteria met against original requirements",
-          "12. Verify code follows SOLID principles and research recommendations",
-          "13. Validate git history is clean and descriptive",
-          "14. Update task to 'completed' using TaskOperations.update:",
-          "    • Use get_operation_schema('TaskOperations', 'update') for parameters",
-          "    • Include comprehensive implementation evidence",
-          "15. Execute workflow completion using WorkflowOperations.complete_execution:",
-          "    • Use get_operation_schema('WorkflowOperations', 'complete_execution') for parameters",
-          "    • Include executionId and completionData with research integration success",
-          "16. Document research integration success and quality metrics"
+          "1. Phase 1 - Context Preparation: Get task context with all subtasks using TaskOperations.get with get_operation_schema('TaskOperations', 'get') including taskId and includeSubtasks=true. Validate research-enhanced implementation approach is clear.",
+          "2. Phase 2 - Rapid Implementation Loop: For each subtask: Get next subtask using SubtaskOperations.get_next_subtask, Update status to 'in-progress' using SubtaskOperations.update_subtask, Implement using research-informed approach, Execute immediate validation (unit/integration/manual tests), Commit changes with research-context-aware messages, Update subtask to 'completed' with comprehensive evidence.",
+          "3. Phase 3 - Integrated Completion: Run complete test suite for regression validation, Validate all acceptance criteria against original requirements, Verify code follows SOLID principles and research recommendations, Ensure clean and descriptive git history, Update task to 'completed' with comprehensive evidence using TaskOperations.update.",
+          "4. Finalize Workflow: Execute workflow completion using WorkflowOperations.complete_execution with get_operation_schema('WorkflowOperations', 'complete_execution'), Include executionId and completionData with research integration success, Document research integration success and quality metrics."
         ]
       },
       "qualityChecklist": [
