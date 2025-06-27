@@ -5,9 +5,7 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "watchAssets": true,
-    "assets": [
-      "task-workflow/domains/init-rules/templates"
-    ],
+    "assets": [],
     "webpack": true,
     "webpackConfigPath": "webpack.config.js"
   }

@@ -1,5 +1,6 @@
 const CompressionPlugin = require('compression-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 // Custom plugin to add shebang to CLI file
 class ShebangPlugin {
@@ -68,6 +69,18 @@ module.exports = (options, webpack) => {
     },
     plugins: [
       ...options.plugins,
+      // Copy templates to dist/templates (flattened)
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            from: 'src/task-workflow/domains/init-rules/templates',
+            to: 'templates',
+            globOptions: {
+              ignore: ['**/.DS_Store'],
+            },
+          },
+        ],
+      }),
       // Add shebang to CLI file
       new ShebangPlugin(),
       // Only add compression in production
