@@ -371,19 +371,38 @@ export class PlanningOperationsService {
       throw new Error('Batch ID and subtasks are required');
     }
 
-    // Get the implementation plan
-    const plan = await this.prisma.implementationPlan.findFirst({
-      where: { taskId },
-    });
+    // 🎯 ENHANCED: Make implementation plan optional for turbo-dev workflow
+    // Try to get the implementation plan, but don't fail if it doesn't exist
+    let planId: number | null = null;
 
-    if (!plan) {
-      throw new Error(`Implementation plan not found for task ${taskId}`);
+    try {
+      const plan = await this.prisma.implementationPlan.findFirst({
+        where: { taskId },
+      });
+
+      if (plan) {
+        planId = plan.id;
+      }
+    } catch (_error) {
+      // Implementation plan doesn't exist - this is fine for turbo-dev workflow
+      console.log(
+        `No implementation plan found for task ${taskId}, creating subtasks without plan`,
+      );
     }
 
-    // Create subtasks in batch
+    // Verify the task exists
+    const task = await this.prisma.task.findUnique({
+      where: { id: taskId },
+    });
+
+    if (!task) {
+      throw new Error(`Task with ID ${taskId} not found`);
+    }
+
+    // Create subtasks with optional planId
     const subtasksData = batchData.subtasks.map((subtask) => ({
       taskId,
-      planId: plan.id,
+      ...(planId && { planId }), // Only include planId if it exists
       name: subtask.name,
       description: subtask.description,
       sequenceNumber: subtask.sequenceNumber,
