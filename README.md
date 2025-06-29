@@ -34,13 +34,18 @@
   "mcpServers": {
     "anubis": {
       "command": "npx",
-      "args": ["-y", "@hive-academy/anubis"]
+      "args": ["-y", "@hive-academy/anubis"],
+      "env": {
+        "PROJECT_ROOT": "C:\\path\\to\\projects"
+      }
     }
   }
 }
 ```
 
-### **Option 2: Docker**
+### **Option 2: Docker (MCP Configuration)**
+
+**For Unix/Linux/macOS (mcp.json):**
 
 ```json
 {
@@ -49,10 +54,34 @@
       "command": "docker",
       "args": [
         "run",
+        "--rm",
         "-i",
         "-v",
+        "${PWD}:/app/workspace",
+        "-v",
         "anubis-data:/app/data",
+        "hiveacademy/anubis"
+      ]
+    }
+  }
+}
+```
+
+**For Windows (mcp.json):**
+
+```json
+{
+  "mcpServers": {
+    "anubis": {
+      "command": "docker",
+      "args": [
+        "run",
         "--rm",
+        "-i",
+        "-v",
+        "C:\\path\\to\\your\\project:/app/workspace",
+        "-v",
+        "C:\\path\\to\\your\\project\\data:/app/data",
         "hiveacademy/anubis"
       ]
     }
@@ -62,7 +91,7 @@
 
 ---
 
-## ** INITIALIZE CUSTOM-MODES ( AGENT RULES) **
+## **INITIALIZE CUSTOM-MODES ( AGENT RULES)**
 
 > Once you get the mcp server running you need to initialize the rules (custom-modes) for the agent you are using
 
@@ -91,7 +120,10 @@ Begin a new workflow for [your-project] with Anubis guidance
   "mcpServers": {
     "anubis": {
       "command": "npx",
-      "args": ["-y", "@hive-academy/anubis"]
+      "args": ["-y", "@hive-academy/anubis"],
+      "env": {
+        "PROJECT_ROOT": "C:\\path\\to\\projects"
+      }
     }
   }
 }
@@ -116,7 +148,10 @@ Begin a new workflow for [your-project] with Anubis guidance
    ```
    "anubis": {
      "command": "npx",
-     "args": ["-y", "@hive-academy/anubis"]
+     "args": ["-y", "@hive-academy/anubis"],
+      "env": {
+        "PROJECT_ROOT": "C:\\path\\to\\projects"
+      }
    }
    ```
 2. **Initialize Cursor Rules**

@@ -12,6 +12,7 @@ const BootstrapWorkflowInputSchema = z.object({
       'architect',
       'senior-developer',
       'code-review',
+      'turbo-dev',
     ])
     .default('boomerang')
     .describe('Initial role to start the workflow with'),
@@ -30,7 +31,7 @@ export class WorkflowBootstrapMcpService {
 
   @Tool({
     name: 'bootstrap_workflow',
-    description: `Initializes a new workflow execution with boomerang role, starting from git setup through task creation and delegation.`,
+    description: `Initializes a new workflow execution with boomerang role for multi-rule workflow or with turbo-dev role for single-rule workflow, starting from git setup through task creation and delegation.`,
     parameters:
       BootstrapWorkflowInputSchema as ZodSchema<BootstrapWorkflowInputType>,
   })

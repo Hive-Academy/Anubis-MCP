@@ -107,7 +107,7 @@ on:
 
 1. **Version Assessment**: Compares local vs NPM versions
 2. **Conflict Detection**: Checks if target version exists on NPM
-3. **Auto-Resolution**: Finds next available version (1.2.1 → 1.2.2, 1.2.3, etc.)
+3. **Auto-Resolution**: Finds next available version (1.2.1 → 1.2.2, 1.2.4, etc.)
 4. **Package Update**: Updates `package.json` automatically
 5. **Git Commit**: Commits version changes with detailed message
 6. **Safe Publishing**: Publishes with final conflict check
@@ -168,7 +168,7 @@ if (versionExists) {
 ### Example Resolution Flow
 
 ```
-Target: 1.2.1 (exists) → Testing: 1.2.2 (exists) → Testing: 1.2.3 (available) ✅
+Target: 1.2.1 (exists) → Testing: 1.2.2 (exists) → Testing: 1.2.4 (available) ✅
 ```
 
 ## 📊 Reporting and Monitoring

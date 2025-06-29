@@ -14,12 +14,9 @@ yarn-error.log*
 # prisma/migrations/*/*.sql - INCLUDED for deployment
 /logs
 /.env.docker.example
-prisma/anubis.db
 /anubis-mcp-reports
 /working-demo
-data
 /workflow-reports
-
 # Keep the pre-seeded database template
 # /prisma/data/workflow.db - INCLUDED for NPM package
 /.vscode

@@ -22,9 +22,7 @@ function setupPrebuiltDatabase(dbConfig: any): void {
     return; // Database already exists, no need to copy
   }
   // Correctly locate the template DB within the package installation directory
-  const packageRoot = path.resolve(
-    path.dirname(require.resolve('@hive-academy/anubis/package.json')),
-  );
+  const packageRoot = path.resolve(__dirname, '..');
   const templateDbPath = path.join(
     packageRoot,
     'prisma',
