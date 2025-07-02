@@ -161,6 +161,57 @@ export const TechnologyStackSchema = z.object({
     .describe('Development tools and utilities'),
 });
 
+// Research Findings Structure
+export const ResearchFindingsSchema = z.object({
+  researchQuestions: z
+    .array(
+      z.object({
+        question: z.string().describe('Research question addressed'),
+        priority: z
+          .enum(['low', 'medium', 'high', 'critical'])
+          .describe('Question priority'),
+        methodology: z.string().describe('Research methodology used'),
+        findings: z.string().describe('Key findings and insights'),
+        recommendations: z
+          .array(z.string())
+          .describe('Actionable recommendations'),
+        sources: z
+          .array(z.string())
+          .optional()
+          .describe('Research sources used'),
+        riskAssessment: z
+          .string()
+          .optional()
+          .describe('Risk assessment and mitigation'),
+      }),
+    )
+    .optional()
+    .describe('Research questions and findings'),
+  technicalInsights: z
+    .array(z.string())
+    .optional()
+    .describe('Technical insights discovered'),
+  implementationImplications: z
+    .array(z.string())
+    .optional()
+    .describe('Implementation implications from research'),
+  alternativeApproaches: z
+    .array(
+      z.object({
+        approach: z.string().describe('Alternative approach identified'),
+        pros: z.array(z.string()).describe('Advantages'),
+        cons: z.array(z.string()).describe('Disadvantages'),
+        feasibility: z
+          .enum(['low', 'medium', 'high'])
+          .describe('Feasibility assessment'),
+      }),
+    )
+    .optional()
+    .describe('Alternative implementation approaches'),
+  researchedBy: z.string().optional().describe('Who conducted the research'),
+  researchDate: z.string().optional().describe('When research was conducted'),
+});
+
 // ===================================================================
 // 🎯 NEW: ENHANCED SUBTASK SCHEMA FOR DIRECT EXECUTION
 // ===================================================================
@@ -347,6 +398,9 @@ export const TaskOperationsSchema = z
       })
       .optional(),
 
+    // For research findings - INTEGRATED WITH TASK CREATION
+    researchFindings: ResearchFindingsSchema.optional(),
+
     // NEW: Direct subtask creation - eliminates implementation plan
     subtasks: z
       .array(SubtaskDataSchema)
@@ -442,6 +496,7 @@ export type ImplementationContext = z.infer<typeof ImplementationContextSchema>;
 export type IntegrationPoints = z.infer<typeof IntegrationPointsSchema>;
 export type QualityAssessment = z.infer<typeof QualityAssessmentSchema>;
 export type TechnologyStack = z.infer<typeof TechnologyStackSchema>;
+export type ResearchFindings = z.infer<typeof ResearchFindingsSchema>;
 
 // Export new subtask schema
 export type SubtaskData = z.infer<typeof SubtaskDataSchema>;

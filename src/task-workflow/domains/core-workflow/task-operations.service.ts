@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import {
   CodebaseAnalysis,
   Prisma,
+  Subtask,
   Task,
   TaskDescription,
-  Subtask,
 } from 'generated/prisma';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { TaskOperationsInput } from './schemas/task-operations.schema';
@@ -158,7 +158,13 @@ export class TaskOperationsService {
   private async createTask(
     input: TaskOperationsInput,
   ): Promise<TaskWithRelations> {
-    const { taskData, description, codebaseAnalysis, executionId } = input;
+    const {
+      taskData,
+      description,
+      codebaseAnalysis,
+      researchFindings,
+      executionId,
+    } = input;
 
     if (!taskData?.name) {
       throw new Error('Task name is required for creation');
@@ -228,11 +234,42 @@ export class TaskOperationsService {
         });
       }
 
+      // Create research reports if provided
+      const researchReports: Prisma.ResearchReportGetPayload<
+        Record<string, never>
+      >[] = [];
+      if (researchFindings?.researchQuestions) {
+        for (const question of researchFindings.researchQuestions) {
+          const report = await tx.researchReport.create({
+            data: {
+              task: { connect: { id: taskId } },
+              title: question.question || 'Research Finding',
+              summary: question.findings || '',
+              findings: JSON.stringify({
+                methodology: question.methodology,
+                findings: question.findings,
+                riskAssessment: question.riskAssessment,
+                technicalInsights: researchFindings.technicalInsights,
+                implementationImplications:
+                  researchFindings.implementationImplications,
+                alternativeApproaches: researchFindings.alternativeApproaches,
+              }),
+              recommendations: Array.isArray(question.recommendations)
+                ? question.recommendations.join('\n')
+                : question.recommendations || '',
+              references: question.sources || [],
+            } satisfies Prisma.ResearchReportCreateInput,
+          });
+          researchReports.push(report);
+        }
+      }
+
       // Return as TaskWithRelations for consistent interface
       return {
         ...task,
         taskDescription,
         codebaseAnalysis: analysis,
+        researchReports,
       } as TaskWithRelations;
     });
 
@@ -245,8 +282,14 @@ export class TaskOperationsService {
   private async createTaskWithSubtasks(
     input: TaskOperationsInput,
   ): Promise<TaskWithSubtasks> {
-    const { taskData, description, codebaseAnalysis, executionId, subtasks } =
-      input;
+    const {
+      taskData,
+      description,
+      codebaseAnalysis,
+      researchFindings,
+      executionId,
+      subtasks,
+    } = input;
 
     if (!taskData?.name) {
       throw new Error('Task name is required for creation');
@@ -322,6 +365,36 @@ export class TaskOperationsService {
         });
       }
 
+      // Create research reports if provided
+      const researchReports: Prisma.ResearchReportGetPayload<
+        Record<string, never>
+      >[] = [];
+      if (researchFindings?.researchQuestions) {
+        for (const question of researchFindings.researchQuestions) {
+          const report = await tx.researchReport.create({
+            data: {
+              task: { connect: { id: taskId } },
+              title: question.question || 'Research Finding',
+              summary: question.findings || '',
+              findings: JSON.stringify({
+                methodology: question.methodology,
+                findings: question.findings,
+                riskAssessment: question.riskAssessment,
+                technicalInsights: researchFindings.technicalInsights,
+                implementationImplications:
+                  researchFindings.implementationImplications,
+                alternativeApproaches: researchFindings.alternativeApproaches,
+              }),
+              recommendations: Array.isArray(question.recommendations)
+                ? question.recommendations.join('\n')
+                : question.recommendations || '',
+              references: question.sources || [],
+            } satisfies Prisma.ResearchReportCreateInput,
+          });
+          researchReports.push(report);
+        }
+      }
+
       // Create subtasks directly without implementation plan - PURE DIRECT LINKING
       const createdSubtasks: Subtask[] = [];
       for (const subtaskData of subtasks) {
@@ -382,6 +455,7 @@ export class TaskOperationsService {
         ...task,
         taskDescription,
         codebaseAnalysis: analysis,
+        researchReports,
         subtasks: createdSubtasks,
         subtaskSummary,
       } as TaskWithSubtasks;

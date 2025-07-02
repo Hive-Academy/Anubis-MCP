@@ -1,81 +1,49 @@
 {
   "roleTransitions": [
     {
-      "fromRoleId": "boomerang",
-      "toRoleId": "researcher",
-      "transitionName": "boomerang_to_researcher",
-      "description": "Transition when research is needed for informed decisions",
-      "conditions": {
-        "knowledgeGapsIdentified": true,
-        "researchRequired": true,
-        "technicalUncertainty": true
-      },
-      "requirements": [
-        "Task context complete",
-        "Research questions formulated", 
-        "Current state verified",
-        "Strategic decision made"
-      ],
-      "validationCriteria": [
-        "All boomerang workflow steps completed",
-        "Knowledge gaps clearly identified",
-        "Research scope defined",
-        "Context completeness verified"
-      ],
-      "handoffGuidance": {
-        "contextToPreserve": [
-          "task_context",
-          "codebase_analysis", 
-          "strategic_decisions",
-          "knowledge_gaps",
-          "research_questions"
-        ],
-        "handoffMessage": "Research required for informed strategic decisions. Context and evidence provided for targeted investigation.",
-        "expectedDeliverables": [
-          "research_findings",
-          "technical_recommendations",
-          "risk_assessment", 
-          "implementation_guidance"
-        ]
-      },
-      "isActive": true
-    },
-    {
       "fromRoleId": "boomerang", 
       "toRoleId": "architect",
-      "transitionName": "boomerang_to_architect",
-      "description": "Direct transition when architectural planning is needed",
+      "transitionName": "boomerang_to_architect_enhanced",
+      "description": "Enhanced transition with comprehensive analysis and research integration",
       "conditions": {
         "requirementsClear": true,
         "architecturalDecisionsRequired": true,
-        "implementationPlanRequired": true
+        "implementationPlanRequired": true,
+        "researchCompleted": true
       },
       "requirements": [
-        "Task context complete",
-        "Current state verified", 
-        "Complexity assessed",
-        "Strategic direction set"
+        "Task context complete with comprehensive analysis",
+        "Current state verified through functional testing", 
+        "Research questions identified and prioritized",
+        "Critical research conducted when needed",
+        "Strategic direction set with evidence-based decisions"
       ],
       "validationCriteria": [
-        "All boomerang workflow steps completed",
+        "All enhanced boomerang workflow steps completed",
+        "Comprehensive project context documented",
+        "Research findings integrated (if applicable)",
         "Architectural requirements identified",
-        "Implementation scope defined",
-        "Quality standards established"
+        "Implementation scope defined with technical considerations",
+        "Quality standards established with risk assessment"
       ],
       "handoffGuidance": {
         "contextToPreserve": [
           "task_context",
-          "codebase_analysis",
+          "comprehensive_codebase_analysis",
           "strategic_decisions", 
+          "research_findings",
+          "technical_recommendations",
           "architectural_requirements",
-          "quality_standards"
+          "quality_standards",
+          "risk_assessment"
         ],
-        "handoffMessage": "Architectural design required for implementation. Full context and evidence provided for comprehensive planning.",
+        "handoffMessage": "Comprehensive architectural design required. Enhanced context with integrated research findings and evidence-based analysis provided for informed planning.",
         "expectedDeliverables": [
           "implementation_plan",
           "architectural_decisions",
           "technical_specifications",
-          "quality_constraints"
+          "quality_constraints",
+          "risk_mitigation_strategies"
         ]
       },
       "isActive": true
