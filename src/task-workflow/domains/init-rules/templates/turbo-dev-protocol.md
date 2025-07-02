@@ -94,53 +94,140 @@ console.log('Resuming workflow as [role name] with proper boundaries');
 
 ---
 
-## 🚨 CRITICAL: STRICT ROLE ADHERENCE PROTOCOL
+# 🔄 **SUBTASK EXECUTION PROTOCOL - CRITICAL WORKFLOW RULES**
 
-### Protocol Enforcement Rules
+## 📋 **MANDATORY EXECUTION PATTERN**
 
-**🔒 BEFORE EVERY ACTION, ASK YOURSELF:**
+### **The ONLY Correct Subtask Loop:**
 
-1. **"Does this action align with my role's ALLOWED capabilities?"**
-2. **"Am I about to violate my role's FORBIDDEN actions?"**
-3. **"Should I delegate this to the appropriate role instead?"**
+```
+REPEAT UNTIL NO MORE SUBTASKS:
+1. Get next subtask using SubtaskOperations.get_next_subtask
+2. IF no subtask found → PROCEED to step completion validation
+3. IF subtask found → Update to 'in-progress'
+4. Implement subtask following embedded guidance
+5. Test implementation thoroughly
+6. Commit changes with descriptive message
+7. Update subtask to 'completed' with comprehensive evidence
+8. IMMEDIATELY RETURN TO STEP 1 (do NOT report step completion yet)
+```
 
-**🛑 IMMEDIATE VIOLATION DETECTION:**
+## 🚨 **CRITICAL VIOLATIONS TO NEVER COMMIT**
 
-- If you catch yourself about to create/modify files and you're NOT Senior Developer → STOP and delegate
-- If you catch yourself implementing instead of planning → STOP and create specifications
-- If you catch yourself making strategic decisions as Senior Developer → STOP and escalate
+### **❌ NEVER DO THIS:**
 
-**📋 ROLE VIOLATION RECOVERY:**
+- Complete one subtask → Immediately report step completion
+- Assume one subtask = complete step
+- Report completion without checking for more subtasks
+- Skip the iterative loop pattern
 
-1. **STOP** the violating action immediately
-2. **ACKNOWLEDGE** the role boundary violation
-3. **DOCUMENT** what needs to be done by whom
+### **✅ ALWAYS DO THIS:**
+
+- Complete subtask → Check for next subtask → Repeat until none found
+- Only report step completion when ALL subtasks are done
+- Validate quality checklist items before reporting completion
+
+## 🎯 **STEP COMPLETION VALIDATION GATES**
+
+### **Before calling `report_step_completion`, VERIFY:**
+
+1. **No More Subtasks**: `get_next_subtask` returns no available subtasks
+2. **Quality Checklist**: ALL items in `qualityChecklist` are verified and passed
+3. **Batch Completion**: If working with batches, ensure batch completion status
+4. **Evidence Collection**: Comprehensive evidence gathered for all completed work
+
+## 📊 **QUALITY CHECKLIST ENFORCEMENT**
+
+### **For Subtask Implementation Steps, ALL Must Pass:**
+
+- [ ] All available subtasks retrieved and completed
+- [ ] Each subtask implemented following embedded strategic guidance
+- [ ] Comprehensive testing performed for each subtask
+- [ ] Individual commits made after each subtask completion
+- [ ] All subtasks updated to 'completed' status with evidence
+
+## 🔍 **DETECTION PATTERNS**
+
+### **Red Flags That Indicate Protocol Violation:**
+
+- Calling `report_step_completion` after completing only 1 subtask
+- Not calling `get_next_subtask` after completing a subtask
+- Quality checklist shows "All subtasks completed" but only 1 was done
+- Batch completion info shows "not ready for completion" but reporting anyway
+
+## 🛠 **IMPLEMENTATION CHECKLIST**
+
+### **After Each Subtask Completion:**
+
+```typescript
+// ✅ CORRECT: Always check for more work
+const nextSubtask = await execute_mcp_operation({
+  serviceName: 'SubtaskOperations',
+  operation: 'get_next_subtask',
+  parameters: { taskId: taskId },
+});
+
+if (nextSubtask.data.nextSubtask) {
+  // Continue with next subtask - DO NOT report completion
+  // Update to in-progress and implement
+} else {
+  // No more subtasks - NOW validate quality checklist
+  // ONLY if all quality items pass → report_step_completion
+}
+```
+
+## 📝 **MENTAL MODEL CORRECTION**
+
+### **OLD (WRONG) Mental Model:**
+
+```
+Get subtask → Complete subtask → Report step completion ❌
+```
+
+### **NEW (CORRECT) Mental Model:**
+
+```
+WHILE (subtasks exist) {
+  Get subtask → Complete subtask → Check for more
+}
+ONLY THEN → Validate quality → Report step completion ✅
+```
+
+## 🎯 **ACCOUNTABILITY MEASURES**
+
+### **Before Every `report_step_completion` Call:**
+
+1. **Ask yourself**: "Have I checked for more subtasks?"
+2. **Verify**: "Do I have evidence that ALL subtasks are complete?"
+3. **Confirm**: "Does my quality checklist show 100% completion?"
+4. **Double-check**: "Am I reporting completion prematurely?"
+
+## 🔄 **RECOVERY PROTOCOL**
+
+### **If You Catch Yourself Violating This:**
+
+1. **STOP** immediately
+2. **ACKNOWLEDGE** the violation explicitly
+3. **RETURN** to the correct loop pattern
+4. **CONTINUE** with remaining subtasks
+5. **DO NOT** report completion until truly done
+
+---
+
+## 🎯 **SUMMARY RULE**
+
+**ONE SUBTASK ≠ STEP COMPLETION**
+
+**The step is only complete when ALL subtasks in the batch/step are completed AND all quality checklist items pass.**
+
+**Always follow the iterative loop pattern. Never shortcut to step completion after just one subtask.**
 
 ---
 
 ## 🎯 WORKFLOW MODE DECISION FRAMEWORK
 
-Before starting any workflow, evaluate the user's request to determine the appropriate workflow mode:
-
-### Quick Assessment Questions
-
-**Ask yourself these questions to determine workflow mode:**
-
-1. **Scope Assessment**: Is this a focused change to existing functionality?
-2. **Complexity Assessment**: Does this require major architectural decisions?
-3. **Time Sensitivity**: Is this a quick fix or enhancement?
-4. **Dependencies**: Does this affect multiple system components?
-
-### Decision Matrix
-
-| Request Type             | Indicators                                       | Recommended Mode | Bootstrap Role |
-| ------------------------ | ------------------------------------------------ | ---------------- | -------------- |
-| **Bug Fixes**            | Single component, clear issue, existing tests    | **TURBO-DEV**    | `turbo-dev`    |
-| **Small Features**       | Limited scope, existing patterns, <5 files       | **TURBO-DEV**    | `turbo-dev`    |
-| **Quick Improvements**   | Performance tweaks, UI updates, config changes   | **TURBO-DEV**    | `turbo-dev`    |
-| **Major Features**       | New components, multiple integrations, >10 files | **TURBO-DEV**    | `turbo-dev`    |
-| **Architecture Changes** | System design, new patterns, strategic decisions | **TURBO-DEV**    | `turbo-dev`    |
-| **Complex Integrations** | External APIs, new tech stack, unknown patterns  | **TURBO-DEV**    | `turbo-dev`    |
+Before starting any workflow, evaluate the user's request to start the workflow:
+|
 
 ### Bootstrap Decision Process
 
