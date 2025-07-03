@@ -73,7 +73,7 @@ module.exports = (options, webpack) => {
       new CopyWebpackPlugin({
         patterns: [
           {
-            from: 'src/task-workflow/domains/init-rules/templates',
+            from: 'src/domains/init-rules/templates',
             to: 'templates',
             globOptions: {
               ignore: ['**/.DS_Store'],
