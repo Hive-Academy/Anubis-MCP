@@ -314,8 +314,8 @@ export class TaskOperationsService {
           priority: taskData.priority || 'Medium',
           dependencies: taskData.dependencies || [],
           gitBranch: taskData.gitBranch,
-          owner: 'turbo-dev', // Default owner for direct creation
-          currentMode: 'turbo-dev',
+          owner: 'boomerang', // Default owner for direct creation
+          currentMode: 'boomerang',
         } satisfies Prisma.TaskCreateInput,
       });
 

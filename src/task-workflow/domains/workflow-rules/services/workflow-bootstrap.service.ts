@@ -4,12 +4,7 @@ import { PrismaService } from '../../../../prisma/prisma.service';
 // Simplified bootstrap input - just execution setup
 export interface BootstrapWorkflowInput {
   // Workflow execution setup only
-  initialRole:
-    | 'boomerang'
-    | 'architect'
-    | 'senior-developer'
-    | 'code-review'
-    | 'turbo-dev';
+  initialRole: 'boomerang' | 'architect' | 'senior-developer' | 'code-review';
   executionMode?: 'GUIDED' | 'AUTOMATED' | 'HYBRID';
   projectPath?: string;
 }
