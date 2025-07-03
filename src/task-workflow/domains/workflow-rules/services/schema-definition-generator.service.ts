@@ -4,7 +4,6 @@ import { ZodSchema } from 'zod';
 
 // Import ALL schemas dynamically
 import { IndividualSubtaskOperationsSchema } from '../../core-workflow/schemas/individual-subtask-operations.schema';
-import { PlanningOperationsSchema } from '../../core-workflow/schemas/planning-operations.schema';
 import { ResearchOperationsSchema } from '../../core-workflow/schemas/research-operations.schema';
 import { ReviewOperationsSchema } from '../../core-workflow/schemas/review-operations.schema';
 import { TaskOperationsSchema } from '../../core-workflow/schemas/task-operations.schema';
@@ -34,7 +33,6 @@ export class SchemaDefinitionGeneratorService {
   // 🎯 DYNAMIC: Schema registry - automatically includes all imported schemas
   private readonly schemaRegistry: Record<string, ZodSchema> = {
     TaskOperations: TaskOperationsSchema,
-    PlanningOperations: PlanningOperationsSchema,
     WorkflowOperations: WorkflowOperationsSchema,
     ResearchOperations: ResearchOperationsSchema,
     ReviewOperations: ReviewOperationsSchema,

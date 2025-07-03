@@ -116,47 +116,6 @@ export class TaskQualityAnalyzerService {
   }
 
   /**
-   * Analyze implementation plan quality
-   */
-  analyzePlanQuality(data: TaskDetailData): {
-    planCompleteness: number;
-    technicalDecisionQuality: number;
-    architecturalConsistency: number;
-    riskAssessment: number;
-    planMaturity: 'draft' | 'review' | 'approved' | 'implemented';
-    gaps: string[];
-  } {
-    const plans = data.implementationPlans || [];
-
-    if (plans.length === 0) {
-      return {
-        planCompleteness: 0,
-        technicalDecisionQuality: 0,
-        architecturalConsistency: 0,
-        riskAssessment: 0,
-        planMaturity: 'draft',
-        gaps: ['No implementation plans defined'],
-      };
-    }
-
-    const planCompleteness = this.assessPlanCompleteness(plans);
-    const technicalDecisionQuality = this.assessTechnicalDecisions(plans);
-    const architecturalConsistency = this.assessArchitecturalConsistency(data);
-    const riskAssessment = this.assessRiskCoverage(plans);
-    const planMaturity = this.determinePlanMaturity(data);
-    const gaps = this.identifyPlanGaps(plans);
-
-    return {
-      planCompleteness,
-      technicalDecisionQuality,
-      architecturalConsistency,
-      riskAssessment,
-      planMaturity,
-      gaps,
-    };
-  }
-
-  /**
    * Analyze workflow efficiency and quality
    */
   analyzeWorkflowQuality(data: TaskDetailData): {
@@ -286,14 +245,6 @@ export class TaskQualityAnalyzerService {
         score += 15;
       }
     }
-
-    // Implementation plans documentation
-    const plans = data.implementationPlans || [];
-    if (plans.length > 0) {
-      score += 10;
-      if (plans.some((p) => p.overview && p.approach)) score += 10;
-    }
-
     return Math.max(0, Math.min(100, score));
   }
 
@@ -390,25 +341,14 @@ export class TaskQualityAnalyzerService {
     scores: number[],
   ): string[] {
     const recommendations: string[] = [];
-    const [
-      codebase,
-      implementation,
-      documentation,
-      testing,
-      security,
-      performance,
-    ] = scores;
+    const [codebase, documentation, testing, security, performance] = scores;
 
     if (codebase < 70) {
       recommendations.push(
         'Improve codebase analysis documentation and architecture findings',
       );
     }
-    if (implementation < 70) {
-      recommendations.push(
-        'Enhance implementation planning and subtask organization',
-      );
-    }
+
     if (documentation < 70) {
       recommendations.push(
         'Complete task description and acceptance criteria documentation',
@@ -445,94 +385,9 @@ export class TaskQualityAnalyzerService {
     ) {
       gaps.push('No acceptance criteria defined');
     }
-
-    if (!data.implementationPlans || data.implementationPlans.length === 0) {
-      gaps.push('No implementation plans available');
-    }
-
     if (!data.codebaseAnalysis) {
       gaps.push('No codebase analysis performed');
     }
-
-    return gaps;
-  }
-
-  // Additional helper methods for plan quality analysis
-  private assessPlanCompleteness(
-    plans: TaskDetailData['implementationPlans'],
-  ): number {
-    if (!plans || plans.length === 0) return 0;
-
-    let score = 0;
-    plans.forEach((plan) => {
-      if (plan.overview) score += 20;
-      if (plan.approach) score += 20;
-      if (plan.technicalDecisions) score += 20;
-      if (plan.filesToModify && plan.filesToModify.length > 0) score += 20;
-      if (plan.createdBy) score += 20;
-    });
-
-    return Math.min(100, score / plans.length);
-  }
-
-  private assessTechnicalDecisions(
-    plans: TaskDetailData['implementationPlans'],
-  ): number {
-    if (!plans || plans.length === 0) return 0;
-
-    const hasDecisions = plans.some(
-      (plan) =>
-        plan.technicalDecisions &&
-        Object.keys(plan.technicalDecisions).length > 0,
-    );
-
-    return hasDecisions ? 80 : 30;
-  }
-
-  private assessArchitecturalConsistency(data: TaskDetailData): number {
-    // Basic assessment based on presence of architectural analysis
-    return data.codebaseAnalysis?.architectureFindings ? 75 : 40;
-  }
-
-  private assessRiskCoverage(
-    plans: TaskDetailData['implementationPlans'],
-  ): number {
-    // Basic risk assessment - could be enhanced with specific risk analysis
-    return plans && plans.length > 0 ? 60 : 20;
-  }
-
-  private determinePlanMaturity(
-    data: TaskDetailData,
-  ): 'draft' | 'review' | 'approved' | 'implemented' {
-    const subtasks = data.subtasks || [];
-    const completedSubtasks = subtasks.filter(
-      (s) => s.status === 'completed',
-    ).length;
-
-    if (completedSubtasks === subtasks.length && subtasks.length > 0)
-      return 'implemented';
-    if (completedSubtasks > 0) return 'approved';
-    if (data.implementationPlans && data.implementationPlans.length > 0)
-      return 'review';
-    return 'draft';
-  }
-
-  private identifyPlanGaps(
-    plans: TaskDetailData['implementationPlans'],
-  ): string[] {
-    const gaps: string[] = [];
-
-    if (!plans || plans.length === 0) {
-      gaps.push('No implementation plans defined');
-      return gaps;
-    }
-
-    plans.forEach((plan, index) => {
-      if (!plan.overview) gaps.push(`Plan ${index + 1}: Missing overview`);
-      if (!plan.approach) gaps.push(`Plan ${index + 1}: Missing approach`);
-      if (!plan.technicalDecisions)
-        gaps.push(`Plan ${index + 1}: Missing technical decisions`);
-    });
 
     return gaps;
   }
@@ -565,8 +420,7 @@ export class TaskQualityAnalyzerService {
   private isValidRoleTransition(from: string, to: string): boolean {
     // Define valid role transition patterns
     const validPatterns = [
-      ['boomerang', 'researcher'],
-      ['researcher', 'architect'],
+      ['boomerang', 'architect'],
       ['architect', 'senior-developer'],
       ['senior-developer', 'code-review'],
       ['code-review', 'boomerang'],
@@ -582,8 +436,7 @@ export class TaskQualityAnalyzerService {
     let score = 50;
 
     if (data.description?.description) score += 15;
-    if (data.implementationPlans && data.implementationPlans.length > 0)
-      score += 15;
+
     if (data.codebaseAnalysis) score += 20;
 
     return Math.min(100, score);
@@ -609,23 +462,20 @@ export class TaskQualityAnalyzerService {
   private assessWorkflowMaturity(
     data: TaskDetailData,
   ): 'ad-hoc' | 'defined' | 'managed' | 'optimized' {
-    const hasPlans =
-      data.implementationPlans && data.implementationPlans.length > 0;
     const hasAnalysis = !!data.codebaseAnalysis;
     const hasStructuredSubtasks = data.subtasks && data.subtasks.length > 0;
     const hasDelegations =
       data.delegationHistory && data.delegationHistory.length > 0;
 
     const maturityScore = [
-      hasPlans,
       hasAnalysis,
       hasStructuredSubtasks,
       hasDelegations,
     ].filter(Boolean).length;
 
-    if (maturityScore >= 4) return 'optimized';
-    if (maturityScore >= 3) return 'managed';
-    if (maturityScore >= 2) return 'defined';
+    if (maturityScore >= 3) return 'optimized';
+    if (maturityScore >= 2) return 'managed';
+    if (maturityScore >= 1) return 'defined';
     return 'ad-hoc';
   }
 
@@ -660,10 +510,6 @@ export class TaskQualityAnalyzerService {
 
   private suggestWorkflowImprovements(data: TaskDetailData): string[] {
     const improvements: string[] = [];
-
-    if (!data.implementationPlans || data.implementationPlans.length === 0) {
-      improvements.push('Add detailed implementation plans before development');
-    }
 
     if (!data.codebaseAnalysis) {
       improvements.push('Perform comprehensive codebase analysis');

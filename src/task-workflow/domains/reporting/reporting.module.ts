@@ -27,9 +27,6 @@ import { TaskDetailService } from './task-management/task-detail/task-detail.ser
 import { TaskProgressAnalyzerService } from './task-management/task-detail/task-progress-analyzer.service';
 import { TaskQualityAnalyzerService } from './task-management/task-detail/task-quality-analyzer.service';
 
-import { ImplementationPlanModule } from './task-management/implementation-plan/implementation-plan.module';
-import { ImplementationPlanViewModule } from './task-management/implementation-plan/view/implementation-plan-view.module';
-
 // Workflow Analytics Domain
 import { WorkflowAnalyticsCalculatorService } from './workflow-analytics/workflow-analytics/workflow-analytics-calculator.service';
 import { WorkflowAnalyticsService } from './workflow-analytics/workflow-analytics/workflow-analytics.service';
@@ -49,13 +46,7 @@ import { RolePerformanceGeneratorService } from './workflow-analytics/role-perfo
 import { WorkflowAnalyticsGeneratorService } from './workflow-analytics/workflow-analytics/workflow-analytics-generator.service';
 
 @Module({
-  imports: [
-    PrismaModule,
-    InteractiveDashboardModule,
-    TaskDetailViewModule,
-    ImplementationPlanModule,
-    ImplementationPlanViewModule,
-  ],
+  imports: [PrismaModule, InteractiveDashboardModule, TaskDetailViewModule],
   providers: [
     // === SHARED SERVICES ===
     ReportDataService,
@@ -71,7 +62,6 @@ import { WorkflowAnalyticsGeneratorService } from './workflow-analytics/workflow
     TaskDetailBuilderService,
     TaskProgressAnalyzerService,
     TaskQualityAnalyzerService,
-    // Implementation Plan services provided by ImplementationPlanModule
 
     // === WORKFLOW ANALYTICS DOMAIN ===
     WorkflowAnalyticsService,
@@ -105,7 +95,7 @@ import { WorkflowAnalyticsGeneratorService } from './workflow-analytics/workflow
 
     // Domain services for direct access
     TaskDetailService,
-    // ImplementationPlanService available through ImplementationPlanModule
+
     WorkflowAnalyticsService,
     DelegationFlowService,
     RolePerformanceService,

@@ -18,7 +18,6 @@ import {
   TimeframeAggregation,
   TransformOptions,
   WorkflowTransitionWithRelations,
-  ImplementationPlanWithRelations,
   SubtaskWithRelations,
 } from './types';
 import { ReportMetadata } from './types/report-data.types';
@@ -41,9 +40,6 @@ export interface IReportDataService {
   ): Promise<WorkflowTransitionWithRelations[]>;
 
   // Implementation data
-  getImplementationPlans(
-    taskId: number,
-  ): Promise<ImplementationPlanWithRelations[]>;
   getSubtasks(taskId: number): Promise<SubtaskWithRelations[]>;
 
   // Aggregated statistics

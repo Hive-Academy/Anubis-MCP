@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { IndividualSubtaskOperationsService } from '../../core-workflow/individual-subtask-operations.service';
-import { PlanningOperationsService } from '../../core-workflow/planning-operations.service';
 import { ResearchOperationsService } from '../../core-workflow/research-operations.service';
 import { ReviewOperationsService } from '../../core-workflow/review-operations.service';
 import { TaskOperationsService } from '../../core-workflow/task-operations.service';
@@ -42,7 +41,6 @@ export interface McpBatchExecutionResult {
 // Service type union for proper typing
 type CoreService =
   | TaskOperationsService
-  | PlanningOperationsService
   | WorkflowOperationsService
   | ReviewOperationsService
   | ResearchOperationsService
@@ -82,7 +80,6 @@ export class CoreServiceOrchestrator {
 
   constructor(
     private readonly taskOperations: TaskOperationsService,
-    private readonly planningOperations: PlanningOperationsService,
     private readonly workflowOperations: WorkflowOperationsService,
     private readonly reviewOperations: ReviewOperationsService,
     private readonly researchOperations: ResearchOperationsService,
@@ -91,7 +88,6 @@ export class CoreServiceOrchestrator {
     // Initialize service map after constructor injection
     this.serviceMap = new Map<string, CoreService>([
       ['TaskOperations', this.taskOperations],
-      ['PlanningOperations', this.planningOperations],
       ['WorkflowOperations', this.workflowOperations],
       ['ReviewOperations', this.reviewOperations],
       ['ResearchOperations', this.researchOperations],
@@ -190,12 +186,6 @@ export class CoreServiceOrchestrator {
         'get',
         'list',
       ],
-      PlanningOperations: [
-        'create_plan',
-        'update_plan',
-        'get_plan',
-        'create_subtasks',
-      ],
       WorkflowOperations: ['delegate', 'complete', 'escalate'],
       ReviewOperations: [
         'create_review',
@@ -254,12 +244,6 @@ export class CoreServiceOrchestrator {
     switch (serviceName) {
       case 'TaskOperations':
         return this.taskOperations.executeTaskOperation({
-          operation,
-          ...parameters,
-        } as any);
-
-      case 'PlanningOperations':
-        return this.planningOperations.executePlanningOperation({
           operation,
           ...parameters,
         } as any);

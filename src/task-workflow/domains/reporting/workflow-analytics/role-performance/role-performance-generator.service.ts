@@ -463,7 +463,6 @@ export class RolePerformanceGeneratorService {
   private getRoleGradient(role: string): string {
     const gradients: Record<string, string> = {
       boomerang: 'from-blue-500 to-blue-600',
-      researcher: 'from-green-500 to-green-600',
       architect: 'from-purple-500 to-purple-600',
       'senior-developer': 'from-orange-500 to-orange-600',
       'code-review': 'from-red-500 to-red-600',
@@ -474,7 +473,6 @@ export class RolePerformanceGeneratorService {
   private getRoleIcon(role: string): string {
     const icons: Record<string, string> = {
       boomerang: 'sync-alt',
-      researcher: 'search',
       architect: 'drafting-compass',
       'senior-developer': 'code',
       'code-review': 'check-circle',

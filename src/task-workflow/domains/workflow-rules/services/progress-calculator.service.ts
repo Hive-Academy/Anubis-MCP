@@ -256,8 +256,7 @@ export class ProgressCalculatorService {
     // Simple milestone mapping
     const milestones: Record<string, string> = {
       boomerang: 'Task Analysis Complete',
-      researcher: 'Research Findings Ready',
-      architect: 'Implementation Plan Ready',
+      architect: 'Subtasks Ready',
       'senior-developer': 'Implementation Complete',
       'code-review': 'Quality Review Complete',
     };

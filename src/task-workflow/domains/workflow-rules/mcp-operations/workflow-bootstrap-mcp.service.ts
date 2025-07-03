@@ -8,7 +8,6 @@ const BootstrapWorkflowInputSchema = z.object({
   initialRole: z
     .enum([
       'boomerang',
-      'researcher',
       'architect',
       'senior-developer',
       'code-review',

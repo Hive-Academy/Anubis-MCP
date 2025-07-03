@@ -19,7 +19,6 @@ const ExecuteMcpOperationInputSchema = z.object({
   serviceName: z
     .enum([
       'TaskOperations',
-      'PlanningOperations',
       'WorkflowOperations',
       'ReviewOperations',
       'ResearchOperations',
@@ -41,7 +40,6 @@ const GetOperationSchemaInputSchema = z.object({
   serviceName: z
     .enum([
       'TaskOperations',
-      'PlanningOperations',
       'WorkflowOperations',
       'ReviewOperations',
       'ResearchOperations',
@@ -118,7 +116,7 @@ export class McpOperationExecutionMcpService extends BaseMcpService {
 
   @Tool({
     name: 'execute_mcp_operation',
-    description: `Core workflow operations service for executing database and business logic operations through MCP services like TaskOperations, PlanningOperations, WorkflowOperations, etc. Uses consistent parameters and follows strict naming conventions.`,
+    description: `Core workflow operations service for executing database and business logic operations through MCP services like TaskOperations, WorkflowOperations, etc. Uses consistent parameters and follows strict naming conventions.`,
     parameters:
       ExecuteMcpOperationInputSchema as ZodSchema<ExecuteMcpOperationInput>,
   })

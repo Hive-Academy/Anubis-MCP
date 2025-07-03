@@ -9,13 +9,7 @@ import { WorkflowGuidanceService } from '../services/workflow-guidance.service';
 const GetWorkflowGuidanceInputSchema = z
   .object({
     roleName: z
-      .enum([
-        'boomerang',
-        'researcher',
-        'architect',
-        'senior-developer',
-        'code-review',
-      ])
+      .enum(['boomerang', 'architect', 'senior-developer', 'code-review'])
       .describe('Current role name for workflow guidance'),
     taskId: z
       .number()

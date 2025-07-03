@@ -74,7 +74,6 @@ interface RoleTransition {
 
 const ROLES = [
   'boomerang',
-  'researcher',
   'architect',
   'senior-developer',
   'code-review',

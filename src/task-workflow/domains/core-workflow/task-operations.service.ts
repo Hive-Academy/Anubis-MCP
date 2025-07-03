@@ -32,9 +32,6 @@ export interface TaskOperationResult {
 export interface TaskWithRelations extends Task {
   taskDescription?: TaskDescription | null;
   codebaseAnalysis?: CodebaseAnalysis | null;
-  implementationPlans?: Prisma.ImplementationPlanGetPayload<
-    Record<string, never>
-  >[];
   subtasks?: Prisma.SubtaskGetPayload<Record<string, never>>[];
   delegationRecords?: Prisma.DelegationRecordGetPayload<
     Record<string, never>
@@ -395,7 +392,6 @@ export class TaskOperationsService {
         }
       }
 
-      // Create subtasks directly without implementation plan - PURE DIRECT LINKING
       const createdSubtasks: Subtask[] = [];
       for (const subtaskData of subtasks) {
         const subtask = await tx.subtask.create({

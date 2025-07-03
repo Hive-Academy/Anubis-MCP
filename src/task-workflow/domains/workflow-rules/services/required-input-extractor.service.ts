@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ZodSchema } from 'zod';
 import { IndividualSubtaskOperationsSchema } from '../../core-workflow/schemas/individual-subtask-operations.schema';
-import { PlanningOperationsSchema } from '../../core-workflow/schemas/planning-operations.schema';
 import { ResearchOperationsSchema } from '../../core-workflow/schemas/research-operations.schema';
 import { ReviewOperationsSchema } from '../../core-workflow/schemas/review-operations.schema';
 import { TaskOperationsSchema } from '../../core-workflow/schemas/task-operations.schema';
@@ -13,7 +12,6 @@ export class RequiredInputExtractorService {
   // Schema registry - maps service names to their Zod schemas
   private readonly serviceSchemas: Record<string, ZodSchema> = {
     TaskOperations: TaskOperationsSchema,
-    PlanningOperations: PlanningOperationsSchema,
     WorkflowOperations: WorkflowOperationsSchema,
     ResearchOperations: ResearchOperationsSchema,
     ReviewOperations: ReviewOperationsSchema,

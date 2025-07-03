@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InteractiveDashboardGeneratorService } from '../dashboard/interactive-dashboard/interactive-dashboard-generator.service';
 import { SimpleReportGeneratorService } from '../dashboard/simple-report/simple-report-generator.service';
-import { ImplementationPlanGeneratorService } from '../task-management/implementation-plan/view/implementation-plan-generator.service';
+
 import { TaskDetailGeneratorService } from '../task-management/task-detail/view/task-detail-generator.service';
 import { DelegationFlowGeneratorService } from '../workflow-analytics/delegation-flow/delegation-flow-generator.service';
 import { RolePerformanceGeneratorService } from '../workflow-analytics/role-performance/role-performance-generator.service';
@@ -10,7 +10,6 @@ import { DelegationFlowData } from './types/report-data.types';
 import { WorkflowAnalyticsGeneratorService } from '../workflow-analytics/workflow-analytics/workflow-analytics-generator.service';
 import { WorkflowAnalyticsData } from '../workflow-analytics/workflow-analytics/workflow-analytics.service';
 import {
-  ImplementationPlanReportData,
   InteractiveDashboardData,
   RolePerformanceData,
   SimpleReportData,
@@ -30,7 +29,7 @@ export class HtmlGeneratorFactoryService {
     private readonly interactiveDashboardGenerator: InteractiveDashboardGeneratorService,
     private readonly simpleReportGenerator: SimpleReportGeneratorService,
     private readonly taskDetailGenerator: TaskDetailGeneratorService,
-    private readonly implementationPlanGenerator: ImplementationPlanGeneratorService,
+
     private readonly workflowAnalyticsGenerator: WorkflowAnalyticsGeneratorService,
     private readonly delegationFlowGenerator: DelegationFlowGeneratorService,
     private readonly rolePerformanceGenerator: RolePerformanceGeneratorService,
@@ -45,7 +44,6 @@ export class HtmlGeneratorFactoryService {
       | InteractiveDashboardData
       | SimpleReportData
       | TaskDetailData
-      | ImplementationPlanReportData
       | DelegationFlowData
       | RolePerformanceData
       | WorkflowAnalyticsData,
@@ -66,11 +64,6 @@ export class HtmlGeneratorFactoryService {
       case 'task-detail':
         return this.taskDetailGenerator.generateTaskDetail(
           data as TaskDetailData,
-        );
-
-      case 'implementation-plan':
-        return this.implementationPlanGenerator.generateImplementationPlan(
-          data as ImplementationPlanReportData,
         );
 
       case 'delegation-flow':
@@ -104,7 +97,7 @@ export class HtmlGeneratorFactoryService {
       'summary',
       'simple-report',
       'task-detail',
-      'implementation-plan',
+
       'delegation-flow',
       'role-performance',
       'workflow-analytics',
@@ -121,7 +114,7 @@ export class HtmlGeneratorFactoryService {
       'summary',
       'simple-report',
       'task-detail',
-      'implementation-plan',
+
       'delegation-flow',
       'role-performance',
       'workflow-analytics',

@@ -71,8 +71,7 @@ export class RoleTransitionService {
     commonTransitionBonus: 20,
     randomVariance: 30,
     commonTransitions: [
-      'boomerang_to_researcher',
-      'researcher_to_architect',
+      'boomerang_to_architect',
       'architect_to_senior_developer',
       'senior_developer_to_code_review',
       'code_review_to_boomerang',

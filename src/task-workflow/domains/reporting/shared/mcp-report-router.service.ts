@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InteractiveDashboardService } from '../dashboard/interactive-dashboard/interactive-dashboard.service';
-import { ImplementationPlanService } from '../task-management/implementation-plan/implementation-plan.service';
+
 import { TaskDetailService } from '../task-management/task-detail/task-detail.service';
 import { DelegationFlowService } from '../workflow-analytics/delegation-flow/delegation-flow.service';
 import { RolePerformanceService } from '../workflow-analytics/role-performance/role-performance.service';
@@ -17,7 +17,7 @@ export class McpReportRouterService {
   constructor(
     private readonly taskDetailService: TaskDetailService,
     private readonly delegationFlowService: DelegationFlowService,
-    private readonly implementationPlanService: ImplementationPlanService,
+
     private readonly workflowAnalyticsService: WorkflowAnalyticsService,
     private readonly rolePerformanceService: RolePerformanceService,
     private readonly interactiveDashboardService: InteractiveDashboardService,
@@ -45,9 +45,6 @@ export class McpReportRouterService {
 
       case 'delegation-flow':
         return this.handleDelegationFlowRequest(request, filters);
-
-      case 'implementation-plan':
-        return this.handleImplementationPlanRequest(request, filters);
 
       case 'workflow-analytics':
         return this.handleWorkflowAnalyticsRequest(request, filters);
@@ -96,30 +93,6 @@ export class McpReportRouterService {
     } else {
       return this.delegationFlowService.generateHtmlReport(
         parseInt(request.filters.taskId),
-      );
-    }
-  }
-
-  /**
-   * Handle implementation plan report request
-   */
-  private async handleImplementationPlanRequest(
-    request: McpReportRequest,
-    _filters: any,
-  ): Promise<any> {
-    if (!request.filters?.taskId) {
-      throw new Error('Task ID is required for implementation plan reports');
-    }
-
-    if (request.outputFormat === 'json') {
-      // For now, implementation plan service only has HTML output
-      // TODO: Add JSON output method later
-      return this.implementationPlanService.generateImplementationPlanReport(
-        request.filters.taskId,
-      );
-    } else {
-      return this.implementationPlanService.generateImplementationPlanReport(
-        request.filters.taskId,
       );
     }
   }

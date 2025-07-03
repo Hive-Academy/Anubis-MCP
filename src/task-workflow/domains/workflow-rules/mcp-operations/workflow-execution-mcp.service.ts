@@ -145,13 +145,7 @@ const WorkflowExecutionSchema = z
 
     // Role and execution settings
     roleName: z
-      .enum([
-        'boomerang',
-        'researcher',
-        'architect',
-        'senior-developer',
-        'code-review',
-      ])
+      .enum(['boomerang', 'architect', 'senior-developer', 'code-review'])
       .optional()
       .describe('Role name for execution'),
 

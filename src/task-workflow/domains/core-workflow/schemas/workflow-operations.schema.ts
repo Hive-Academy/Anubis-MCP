@@ -24,19 +24,12 @@ export const WorkflowOperationsSchema = z.object({
   taskId: z.number(),
   fromRole: z.enum([
     'boomerang',
-    'researcher',
     'architect',
     'senior-developer',
     'code-review',
   ]),
   toRole: z
-    .enum([
-      'boomerang',
-      'researcher',
-      'architect',
-      'senior-developer',
-      'code-review',
-    ])
+    .enum(['boomerang', 'architect', 'senior-developer', 'code-review'])
     .optional(),
 
   message: z.string().optional(),

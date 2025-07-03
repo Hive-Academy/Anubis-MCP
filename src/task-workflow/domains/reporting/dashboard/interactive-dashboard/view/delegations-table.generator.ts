@@ -415,7 +415,6 @@ export class DelegationsTableGenerator {
   private getRoleColor(role: string) {
     const colors: Record<string, { bg: string; text: string }> = {
       boomerang: { bg: 'bg-purple-100', text: 'text-purple-600' },
-      researcher: { bg: 'bg-blue-100', text: 'text-blue-600' },
       architect: { bg: 'bg-green-100', text: 'text-green-600' },
       'senior-developer': { bg: 'bg-indigo-100', text: 'text-indigo-600' },
       'code-review': { bg: 'bg-orange-100', text: 'text-orange-600' },
@@ -431,7 +430,6 @@ export class DelegationsTableGenerator {
   private getRoleDescription(role: string): string {
     const descriptions: Record<string, string> = {
       boomerang: 'Task Coordinator',
-      researcher: 'Research Analyst',
       architect: 'Solution Designer',
       'senior-developer': 'Lead Developer',
       'code-review': 'Code Reviewer',

@@ -52,7 +52,6 @@ export interface TaskWithRelations {
   completionDate?: Date | null;
   delegationRecords?: DelegationRecordWithRelations[];
   workflowTransitions?: WorkflowTransitionWithRelations[];
-  implementationPlans?: ImplementationPlanWithRelations[];
   subtasks?: SubtaskWithRelations[];
   codebaseAnalysis?: CodebaseAnalysisData;
   taskDescription?: TaskDescriptionData;
@@ -96,33 +95,9 @@ export interface WorkflowTransitionWithRelations {
   };
 }
 
-export interface ImplementationPlanWithRelations {
-  id: number;
-  taskId: number;
-  overview: string;
-  approach: string;
-  technicalDecisions: Record<string, unknown>;
-  filesToModify: string[];
-  strategicGuidance?: Record<string, unknown> | null;
-  strategicContext?: Record<string, unknown> | null;
-  verificationEvidence?: Record<string, unknown> | null;
-  architecturalRationale?: string | null;
-  redelegationContext?: Record<string, unknown> | null;
-  issueAnalysis?: Record<string, unknown> | null;
-  solutionStrategy?: Record<string, unknown> | null;
-  qualityGates?: Record<string, unknown> | null;
-  patternCompliance?: Record<string, unknown> | null;
-  antiPatternPrevention?: Record<string, unknown> | null;
-  createdAt: Date;
-  updatedAt: Date;
-  createdBy: string;
-  subtasks?: SubtaskWithRelations[];
-}
-
 export interface SubtaskWithRelations {
   id: number;
   taskId: number;
-  planId: number;
   name: string;
   description: string;
   sequenceNumber: number;
@@ -137,10 +112,6 @@ export interface SubtaskWithRelations {
   qualityConstraints?: Record<string, unknown> | null;
   successCriteria?: Record<string, unknown> | null;
   architecturalRationale?: string | null;
-  plan?: {
-    id: number;
-    overview: string;
-  };
 }
 
 export interface CodebaseAnalysisData {
@@ -330,7 +301,6 @@ export interface DelegationFlowTemplateData {
 export interface TaskDetailTemplateData {
   task: FormattedTaskData;
   description: TaskDescriptionData;
-  implementationPlans: ImplementationPlanWithRelations[];
   delegationHistory: FormattedDelegationData[];
   workflowProgress: {
     completionPercentage: number;

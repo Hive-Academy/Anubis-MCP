@@ -5,7 +5,6 @@ import {
   TaskWithRelations,
   DelegationRecordWithRelations,
   WorkflowTransitionWithRelations,
-  ImplementationPlanWithRelations,
   SubtaskWithRelations,
   ReportFilters,
 } from './types';
@@ -37,13 +36,8 @@ export class ReportDataService implements IReportDataService {
         workflowTransitions: {
           orderBy: { transitionTimestamp: 'asc' },
         },
-        implementationPlans: {
-          include: {
-            subtasks: {
-              orderBy: { sequenceNumber: 'asc' },
-            },
-          },
-          orderBy: { createdAt: 'asc' },
+        subtasks: {
+          orderBy: { sequenceNumber: 'asc' },
         },
         codebaseAnalysis: true,
         taskDescription: true,
@@ -72,13 +66,8 @@ export class ReportDataService implements IReportDataService {
         workflowTransitions: {
           orderBy: { transitionTimestamp: 'asc' },
         },
-        implementationPlans: {
-          include: {
-            subtasks: {
-              orderBy: { sequenceNumber: 'asc' },
-            },
-          },
-          orderBy: { createdAt: 'asc' },
+        subtasks: {
+          orderBy: { sequenceNumber: 'asc' },
         },
         codebaseAnalysis: true,
         taskDescription: true,
@@ -124,41 +113,15 @@ export class ReportDataService implements IReportDataService {
     })) as WorkflowTransitionWithRelations[];
   }
 
-  /**
-   * Get implementation plans with relations
-   */
-  async getImplementationPlans(
-    taskId: number,
-  ): Promise<ImplementationPlanWithRelations[]> {
-    return (await this.prisma.implementationPlan.findMany({
-      where: { taskId },
-      include: {
-        subtasks: {
-          orderBy: { sequenceNumber: 'asc' },
-        },
-      },
-      orderBy: { createdAt: 'asc' },
-    })) as ImplementationPlanWithRelations[];
-  }
+
 
   /**
    * Get subtasks for a specific task
    */
   async getSubtasks(taskId: number): Promise<SubtaskWithRelations[]> {
-    // First get implementation plan IDs for this task
-    const implementationPlans = await this.prisma.implementationPlan.findMany({
-      where: { taskId },
-      select: { id: true },
-    });
-
-    const planIds = implementationPlans.map((plan) => plan?.id);
-
     return (await this.prisma.subtask.findMany({
       where: {
-        planId: { in: planIds },
-      },
-      include: {
-        implementationPlan: { select: { id: true, overview: true } },
+        taskId: taskId,
       },
       orderBy: { sequenceNumber: 'asc' },
     })) as SubtaskWithRelations[];

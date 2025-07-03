@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
   DelegationRecordWithRelations,
-  ImplementationPlanWithRelations,
   SubtaskWithRelations,
   TaskWithRelations,
 } from '../../shared/types';
@@ -22,7 +21,6 @@ export class TaskDetailBuilderService {
    */
   buildTaskDetailData(
     task: TaskWithRelations,
-    implementationPlans: ImplementationPlanWithRelations[],
     subtasks: SubtaskWithRelations[],
     delegations: DelegationRecordWithRelations[],
   ): TaskDetailData {
@@ -31,7 +29,6 @@ export class TaskDetailBuilderService {
       description: task.taskDescription
         ? this.buildDescription(task.taskDescription)
         : undefined,
-      implementationPlans: this.buildImplementationPlans(implementationPlans),
       subtasks: this.buildSubtasks(subtasks),
       codebaseAnalysis: task.codebaseAnalysis
         ? this.buildCodebaseAnalysis(task.codebaseAnalysis)
@@ -75,26 +72,6 @@ export class TaskDetailBuilderService {
         ? (description.acceptanceCriteria as string[])
         : [],
     };
-  }
-
-  /**
-   * Build implementation plans section from database plans
-   */
-  private buildImplementationPlans(
-    plans: ImplementationPlanWithRelations[],
-  ): TaskDetailData['implementationPlans'] {
-    return plans.map((plan) => ({
-      id: plan.id,
-      overview: plan.overview,
-      approach: plan.approach,
-      technicalDecisions:
-        typeof plan.technicalDecisions === 'string'
-          ? { notes: plan.technicalDecisions }
-          : plan.technicalDecisions || {},
-      filesToModify: plan.filesToModify || [],
-      createdBy: plan.createdBy,
-      createdAt: plan.createdAt.toISOString(),
-    }));
   }
 
   /**

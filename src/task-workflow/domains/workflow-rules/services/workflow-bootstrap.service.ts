@@ -6,7 +6,6 @@ export interface BootstrapWorkflowInput {
   // Workflow execution setup only
   initialRole:
     | 'boomerang'
-    | 'researcher'
     | 'architect'
     | 'senior-developer'
     | 'code-review'

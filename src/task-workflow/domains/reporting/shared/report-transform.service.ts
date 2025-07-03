@@ -49,11 +49,7 @@ export class ReportTransformService implements IReportTransformService {
       ...(options.includeMetadata && {
         delegationCount: task.delegationRecords?.length || 0,
         transitionCount: task.workflowTransitions?.length || 0,
-        subtaskCount:
-          task.implementationPlans?.reduce(
-            (sum, plan) => sum + (plan.subtasks?.length || 0),
-            0,
-          ) || 0,
+        subtaskCount: task.subtasks?.length || 0,
       }),
     };
   }

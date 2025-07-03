@@ -7,7 +7,7 @@ import { TaskDetailData } from '../../../shared/types/report-data.types';
  * Focused service for generating modern, polished main content sections of task detail reports.
  * Enhanced to match the visual quality of the interactive dashboard with better visual hierarchy,
  * enhanced card design, progress visualization, and improved data presentation.
- * Handles description, implementation plans, subtasks, and delegation history.
+ * Handles description, subtasks, and delegation history.
  */
 @Injectable()
 export class TaskDetailContentViewService {
@@ -94,124 +94,6 @@ export class TaskDetailContentViewService {
             `
                 : ''
             }
-        </div>
-    </div>`;
-  }
-
-  /**
-   * Generate enhanced implementation plans section with modern design
-   */
-  generateImplementationPlans(
-    plans: TaskDetailData['implementationPlans'],
-  ): string {
-    if (!plans || plans.length === 0) return '';
-
-    return `
-    <div class="bg-white rounded-xl card-shadow card-hover p-6 mb-8">
-        <div class="flex items-center mb-6">
-            <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
-                <i class="fas fa-project-diagram text-indigo-600"></i>
-            </div>
-            <h2 class="text-xl font-semibold text-gray-900">Implementation Plans</h2>
-            <span class="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                ${plans.length} plan${plans.length !== 1 ? 's' : ''}
-            </span>
-        </div>
-        <div class="space-y-6">
-            ${plans
-              .map(
-                (plan, index) => `
-            <div class="border border-gray-200 rounded-xl p-6 hover:border-indigo-300 transition-colors">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-                        <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center mr-3">
-                            <span class="text-white text-sm font-bold">${index + 1}</span>
-                        </div>
-                        Plan #${plan.id}
-                    </h3>
-                    <div class="flex items-center text-xs text-gray-500">
-                        <i class="fas fa-user mr-1"></i>
-                        ${this.escapeHtml(plan.createdBy)}
-                        <span class="mx-2">•</span>
-                        <i class="fas fa-calendar mr-1"></i>
-                        ${this.formatDate(plan.createdAt)}
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    ${
-                      plan.overview
-                        ? `
-                    <div class="bg-blue-50 rounded-lg p-4">
-                        <h4 class="text-sm font-semibold text-blue-700 mb-2 flex items-center">
-                            <i class="fas fa-eye mr-2 text-blue-500"></i>
-                            Overview
-                        </h4>
-                        <p class="text-sm text-gray-900">${this.escapeHtml(plan.overview)}</p>
-                    </div>
-                    `
-                        : ''
-                    }
-                    
-                    ${
-                      plan.approach
-                        ? `
-                    <div class="bg-green-50 rounded-lg p-4">
-                        <h4 class="text-sm font-semibold text-green-700 mb-2 flex items-center">
-                            <i class="fas fa-route mr-2 text-green-500"></i>
-                            Approach
-                        </h4>
-                        <p class="text-sm text-gray-900">${this.escapeHtml(plan.approach)}</p>
-                    </div>
-                    `
-                        : ''
-                    }
-                </div>
-                
-                ${
-                  plan.technicalDecisions
-                    ? `
-                <div class="mt-4 bg-gray-50 rounded-lg p-4">
-                    <h4 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
-                        <i class="fas fa-code mr-2 text-gray-500"></i>
-                        Technical Decisions
-                    </h4>
-                    <div class="bg-white rounded-lg p-3 border border-gray-200">
-                        <pre class="text-xs text-gray-900 whitespace-pre-wrap overflow-x-auto">${JSON.stringify(plan.technicalDecisions, null, 2)}</pre>
-                    </div>
-                </div>
-                `
-                    : ''
-                }
-                
-                ${
-                  plan.filesToModify && plan.filesToModify.length > 0
-                    ? `
-                <div class="mt-4 bg-orange-50 rounded-lg p-4">
-                    <h4 class="text-sm font-semibold text-orange-700 mb-3 flex items-center">
-                        <i class="fas fa-file-code mr-2 text-orange-500"></i>
-                        Files to Modify (${plan.filesToModify.length})
-                    </h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        ${plan.filesToModify
-                          .map(
-                            (file) => `
-                        <div class="bg-white rounded-lg p-2 border border-orange-200 text-xs font-mono text-gray-700 flex items-center">
-                            <i class="fas fa-file mr-2 text-orange-400"></i>
-                            ${this.escapeHtml(file)}
-                        </div>
-                        `,
-                          )
-                          .join('')}
-                    </div>
-                </div>
-                `
-                    : ''
-                }
-            </div>
-            `,
-              )
-              .join('')}
         </div>
     </div>`;
   }

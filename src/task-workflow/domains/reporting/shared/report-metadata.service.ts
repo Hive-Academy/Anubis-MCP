@@ -65,7 +65,7 @@ export class ReportMetadataService implements IReportMetadataService {
       'workflow-analytics': '2.0.0',
       'role-performance': '1.8.0',
       'task-detail': '1.5.0',
-      'implementation-plan': '1.7.0',
+
       'interactive-dashboard': '3.0.0',
       'simple-report': '1.2.0',
     };
@@ -88,7 +88,7 @@ export class ReportMetadataService implements IReportMetadataService {
       'workflow-analytics': { medium: 100, high: 500 },
       'role-performance': { medium: 20, high: 100 },
       'task-detail': { medium: 10, high: 50 },
-      'implementation-plan': { medium: 30, high: 150 },
+
       'interactive-dashboard': { medium: 200, high: 1000 },
       'simple-report': { medium: 50, high: 200 },
     };
@@ -112,7 +112,6 @@ export class ReportMetadataService implements IReportMetadataService {
       'workflow-analytics': 5,
       'role-performance': 3,
       'task-detail': 1,
-      'implementation-plan': 3,
       'interactive-dashboard': 10,
       'simple-report': 1,
     };

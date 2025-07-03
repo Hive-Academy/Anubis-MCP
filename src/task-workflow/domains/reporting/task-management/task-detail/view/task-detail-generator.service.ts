@@ -34,7 +34,7 @@ export class TaskDetailGeneratorService {
         ${this.headerViewService.generateTaskOverview(data.task)}
         ${data.description ? this.contentViewService.generateDescription(data.description) : ''}
         ${data.codebaseAnalysis ? this.analysisViewService.generateCodebaseAnalysis(data.codebaseAnalysis) : ''}
-        ${data.implementationPlans ? this.contentViewService.generateImplementationPlans(data.implementationPlans) : ''}
+
         ${data.subtasks ? this.contentViewService.generateSubtasks(data.subtasks) : ''}
         ${this.analysisViewService.generateQualityMetrics(data.subtasks || [], data.delegationHistory || [])}
         ${data.delegationHistory ? this.contentViewService.generateDelegationHistory(data.delegationHistory) : ''}

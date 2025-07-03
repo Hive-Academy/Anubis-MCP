@@ -23,9 +23,6 @@ export class TaskDetailService {
     const delegations = await this.dataService.getDelegationRecords({
       taskId: parseInt(taskId),
     });
-    const implementationPlans = await this.dataService.getImplementationPlans(
-      parseInt(taskId),
-    );
     const subtasks = await this.dataService.getSubtasks(parseInt(taskId));
 
     // Transform database data to type-safe TaskDetailData structure
@@ -56,18 +53,7 @@ export class TaskDetailService {
               : [],
           }
         : undefined,
-      implementationPlans: implementationPlans.map((plan) => ({
-        id: plan.id,
-        overview: plan.overview,
-        approach: plan.approach,
-        technicalDecisions:
-          typeof plan.technicalDecisions === 'string'
-            ? { notes: plan.technicalDecisions }
-            : plan.technicalDecisions || {},
-        filesToModify: plan.filesToModify || [],
-        createdBy: plan.createdBy,
-        createdAt: plan.createdAt.toISOString(),
-      })),
+
       subtasks: subtasks.map((subtask) => ({
         id: subtask.id,
         name: subtask.name,

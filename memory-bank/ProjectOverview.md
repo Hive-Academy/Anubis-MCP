@@ -42,7 +42,7 @@ The Anubis is a sophisticated NestJS-based system that transforms how AI agents 
 ### **Workflow Intelligence Engine**
 
 - **Database-Driven Rules**: Dynamic workflow guidance stored in Prisma-managed database
-- **Role-Based Orchestration**: Specialized roles (Boomerang, Researcher, Architect, Senior Developer, Code Review) with defined responsibilities
+- **Role-Based Orchestration**: Specialized roles (Boomerang, Architect, Senior Developer, Code Review) with defined responsibilities
 - **Quality Gate Integration**: Automated validation criteria and success metrics embedded in workflow steps
 - **Evidence Collection**: Comprehensive tracking of implementation decisions, code changes, and completion criteria
 

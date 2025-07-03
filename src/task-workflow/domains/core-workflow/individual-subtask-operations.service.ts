@@ -182,16 +182,6 @@ export class IndividualSubtaskOperationsService {
         'Subtask data is required for individual subtask creation',
       );
     }
-
-    // Get the implementation plan
-    const plan = await this.prisma.implementationPlan.findFirst({
-      where: { taskId },
-    });
-
-    if (!plan) {
-      throw new Error(`Implementation plan not found for task ${taskId}`);
-    }
-
     // Validate dependencies if provided
     if (subtaskData.dependencies && subtaskData.dependencies.length > 0) {
       await this.validateSubtaskDependencies(taskId, subtaskData.dependencies);
@@ -201,7 +191,6 @@ export class IndividualSubtaskOperationsService {
     const subtask = await this.prisma.subtask.create({
       data: {
         task: { connect: { id: taskId } },
-        implementationPlan: { connect: { id: plan.id } },
         name: subtaskData.name,
         description: subtaskData.description,
         sequenceNumber: subtaskData.sequenceNumber,

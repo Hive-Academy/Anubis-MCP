@@ -15,13 +15,7 @@ import { getErrorMessage } from '../utils/type-safety.utils';
 
 const GetRoleTransitionsInputSchema = z.object({
   fromRoleName: z
-    .enum([
-      'boomerang',
-      'researcher',
-      'architect',
-      'senior-developer',
-      'code-review',
-    ])
+    .enum(['boomerang', 'architect', 'senior-developer', 'code-review'])
     .describe('Current role name'),
   taskId: z.number().describe('Task ID for transition context'),
   roleId: z.string().describe('Role ID for transition context'),

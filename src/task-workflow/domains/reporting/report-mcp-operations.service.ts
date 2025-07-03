@@ -12,7 +12,6 @@ const GenerateReportInputSchema = z.object({
     'summary',
     'task-detail',
     'delegation-flow',
-    'implementation-plan',
     'workflow-analytics',
     'role-performance',
   ]).describe(`Type of report to generate. Available report types:
@@ -23,9 +22,8 @@ const GenerateReportInputSchema = z.object({
 • summary - Clean summary view with key metrics and task list
 
 **SPECIALIZED REPORTS:**
-• task-detail - Comprehensive individual task report with codebase analysis, implementation plans, and subtasks
+• task-detail - Comprehensive individual task report with codebase analysis and subtasks
 • delegation-flow - Workflow transitions and delegation patterns for a specific task
-• implementation-plan - Detailed implementation plans with subtask breakdowns and progress tracking
 • workflow-analytics - Cross-task analytics and insights with role performance metrics
 • role-performance - Individual role performance analysis with efficiency metrics
 
@@ -34,7 +32,6 @@ const GenerateReportInputSchema = z.object({
 - Sprint retrospective: "workflow-analytics"
 - Individual task analysis: "task-detail" with taskId
 - Workflow optimization: "delegation-flow" with taskId
-- Implementation tracking: "implementation-plan" with taskId
 - Role assessment: "role-performance" with owner filter
 - Team analytics: "workflow-analytics" with date filters`),
 
