@@ -412,6 +412,10 @@ export const TaskOperationsSchema = z
     priority: z.string().optional(),
     includeDescription: z.boolean().optional(),
     includeAnalysis: z.boolean().optional(),
+    includeResearch: z
+      .boolean()
+      .optional()
+      .describe('Include research findings in response'),
     includeSubtasks: z
       .boolean()
       .optional()

@@ -1,9 +1,10 @@
 import { z } from 'zod';
 
-// Individual Subtask Operations Schema - Focused on individual subtask CRUD operations
+// Individual Subtask Operations Schema - Enhanced with bulk creation
 export const IndividualSubtaskOperationsSchema = z.object({
   operation: z.enum([
     'create_subtask',
+    'create_subtasks_batch', // NEW: Bulk creation operation
     'update_subtask',
     'get_subtask',
     'get_next_subtask',
@@ -40,6 +41,61 @@ export const IndividualSubtaskOperationsSchema = z.object({
     })
     .optional(),
 
+  // NEW: Bulk subtask data for create_subtasks_batch operation
+  subtasksBatchData: z
+    .object({
+      batches: z.array(
+        z.object({
+          batchId: z.string(), // REQUIRED - unique batch identifier
+          batchTitle: z.string(), // REQUIRED - descriptive batch title
+          batchDescription: z.string().optional(), // Optional batch description
+          subtasks: z.array(
+            z.object({
+              name: z.string(), // REQUIRED - subtask name
+              description: z.string(), // REQUIRED - detailed description
+              sequenceNumber: z.number(), // REQUIRED - order within batch
+              acceptanceCriteria: z.array(z.string()).optional(),
+              strategicGuidance: z
+                .object({
+                  architecturalPattern: z.string().optional(),
+                  implementationApproach: z.string().optional(),
+                  qualityRequirements: z.string().optional(),
+                  performanceConsiderations: z.string().optional(),
+                })
+                .optional(),
+              technicalSpecifications: z
+                .object({
+                  frameworks: z.array(z.string()).optional(),
+                  patterns: z.array(z.string()).optional(),
+                  testingRequirements: z.string().optional(),
+                })
+                .optional(),
+              estimatedDuration: z.string().optional(),
+              dependencies: z.array(z.string()).optional(), // Dependencies within this batch or across batches
+            }),
+          ),
+        }),
+      ),
+      // Global dependency configuration across batches
+      batchDependencies: z
+        .array(
+          z.object({
+            batchId: z.string(), // Dependent batch
+            dependsOnBatches: z.array(z.string()), // Required predecessor batches
+          }),
+        )
+        .optional(),
+      // Validation and optimization settings
+      validationOptions: z
+        .object({
+          validateDependencies: z.boolean().default(true),
+          optimizeSequencing: z.boolean().default(true),
+          allowParallelExecution: z.boolean().default(true),
+        })
+        .optional(),
+    })
+    .optional(),
+
   // Update data for update_subtask operation
   updateData: z
     .object({
@@ -54,7 +110,7 @@ export const IndividualSubtaskOperationsSchema = z.object({
         .optional(),
       completionEvidence: z
         .object({
-          acceptanceCriteriaVerification: z.record(z.string()).optional(), // Evidence per criteria
+          acceptanceCriteriaVerification: z.record(z.string()).optional(),
           implementationSummary: z.string().optional(),
           filesModified: z.array(z.string()).optional(),
           testingResults: z
@@ -74,14 +130,14 @@ export const IndividualSubtaskOperationsSchema = z.object({
           strategicGuidanceFollowed: z.string().optional(),
           duration: z.string().optional(),
         })
-        .optional(), // Evidence collection per subtask
+        .optional(),
     })
     .optional(),
 
   // For individual subtask operations
-  subtaskId: z.number().optional(), // For get_subtask and update_subtask
-  includeEvidence: z.boolean().optional(), // For get_subtask
-  currentSubtaskId: z.number().optional(), // For get_next_subtask
+  subtaskId: z.number().optional(),
+  includeEvidence: z.boolean().optional(),
+  currentSubtaskId: z.number().optional(),
   status: z
     .enum([
       'not-started',
@@ -90,9 +146,36 @@ export const IndividualSubtaskOperationsSchema = z.object({
       'needs-review',
       'needs-changes',
     ])
-    .optional(), // For filtering
+    .optional(),
 });
 
 export type IndividualSubtaskOperationsInput = z.infer<
   typeof IndividualSubtaskOperationsSchema
 >;
+
+// NEW: Type definitions for bulk creation results
+export interface BulkSubtaskCreationResult {
+  subtasks: Array<{
+    id: number;
+    name: string;
+    batchId: string;
+    sequenceNumber: number;
+    status: string;
+  }>;
+  batches: Array<{
+    batchId: string;
+    batchTitle: string;
+    subtaskCount: number;
+  }>;
+  dependencyGraph: Array<{
+    subtaskId: number;
+    dependsOn: number[];
+  }>;
+  message: string;
+  validationResults: {
+    totalSubtasks: number;
+    totalBatches: number;
+    dependenciesResolved: number;
+    optimizationApplied: boolean;
+  };
+}

@@ -8,6 +8,29 @@ _Follow these rules precisely to ensure successful workflow execution_
 
 ---
 
+## Quick Reference Card
+
+### Role Boundaries
+
+- **Boomerang**: Task coordination, workflow management, role transitions, Information gathering, analysis, documentation
+- **Architect**: System design, technical planning, architecture decisions
+- **Senior Developer**: Implementation, coding, technical execution
+- **Code Review**: Quality assurance, testing, validation
+
+### Core Workflow
+
+1. **Startup** → Initialize workflow state
+2. **Execute** → Interpret guidance → Take action → Validate → Report
+3. **Transition** → Switch roles when needed
+4. **Complete** → Finalize and document
+
+### MCP Operations
+
+- **REQUIRED**: Schema compliance, parameter validation
+- **Common**: `get_current_task`, `update_task_status`, `create_subtask`
+
+---
+
 ## 📊 WORKFLOW STATE TRACKER - MAINTAIN THIS MENTALLY
 
 ```
@@ -24,44 +47,9 @@ _Follow these rules precisely to ensure successful workflow execution_
 
 ---
 
-## 🔒 ROLE BOUNDARY CARDS - CONSULT BEFORE EVERY ACTION
+## Role Boundaries & Responsibilities
 
-```
-╔═══════════════════════════════════════════════╗     ╔═══════════════════════════════════════════════╗
-║ 🟠 BOOMERANG                                  ║     ║ 🟡 RESEARCHER                                 ║
-╠═══════════════════════════════════════════════╣     ╠═══════════════════════════════════════════════╣
-║ ❌ NEVER implement/modify code                ║     ║ ❌ NEVER implement/modify code                ║
-║ ❌ NEVER create files or directories          ║     ║ ❌ NEVER create files or directories          ║
-║ ❌ NEVER run file modification commands       ║     ║ ❌ NEVER make system modifications            ║
-║                                               ║     ║                                               ║
-║ ✅ DO strategic analysis only                 ║     ║ ✅ DO research and documentation only         ║
-║ ✅ DO delegate implementation                 ║     ║ ✅ DO provide findings and recommendations    ║
-║ ✅ DO create specifications                   ║     ║ ✅ DO use read-only commands for analysis     ║
-╚═══════════════════════════════════════════════╝     ╚═══════════════════════════════════════════════╝
-
-╔═══════════════════════════════════════════════╗     ╔═══════════════════════════════════════════════╗
-║ 🔵 ARCHITECT                                  ║     ║ 🟢 SENIOR DEVELOPER                           ║
-╠═══════════════════════════════════════════════╣     ╠═══════════════════════════════════════════════╣
-║ ❌ NEVER implement/modify code                ║     ║ ❌ NEVER make strategic decisions             ║
-║ ❌ NEVER create files or directories          ║     ║ ❌ NEVER change architectural designs         ║
-║ ❌ NEVER run file modification commands       ║     ║                                               ║
-║                                               ║     ║ ✅ DO implement code based on specifications  ║
-║ ✅ DO design specifications/blueprints only   ║     ║ ✅ DO create, modify, and manage files        ║
-║ ✅ DO create implementation plans             ║     ║ ✅ DO execute all development commands        ║
-║ ✅ DO use read-only commands for analysis     ║     ║                                               ║
-╚═══════════════════════════════════════════════╝     ╚═══════════════════════════════════════════════╝
-
-╔═══════════════════════════════════════════════╗
-║ 🔴 CODE REVIEW                               ║
-╠═══════════════════════════════════════════════╣
-║ ❌ NEVER implement fixes directly             ║
-║ ❌ NEVER create or modify files               ║
-║                                               ║
-║ ✅ DO review and provide feedback only        ║
-║ ✅ DO identify issues and delegate fixes      ║
-║                                               ║
-╚═══════════════════════════════════════════════╝
-```
+_Note: Detailed role boundaries are provided in the Quick Reference Card above. Each role has specific responsibilities and must not exceed their defined boundaries._
 
 ---
 
@@ -129,7 +117,6 @@ console.log('Resuming workflow as [role name] with proper boundaries');
 | Role                 | FORBIDDEN ACTIONS                                                                                                                   | REQUIRED ACTIONS                                                                                                                              |
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Boomerang**        | ❌ NEVER implement, create, or modify code files<br>❌ NEVER create files or directories<br>❌ NEVER run modification commands      | ✅ Strategic analysis and delegation ONLY<br>✅ Create specifications for Senior Developer<br>✅ Use read-only commands for analysis          |
-| **Researcher**       | ❌ NEVER implement code or create files<br>❌ NEVER make system modifications                                                       | ✅ Research and documentation ONLY<br>✅ Provide findings and recommendations                                                                 |
 | **Architect**        | ❌ NEVER implement, create, or modify code files<br>❌ NEVER create files or directories<br>❌ NEVER run file modification commands | ✅ Design specifications and blueprints ONLY<br>✅ Create implementation plans for Senior Developer<br>✅ Use read-only commands for analysis |
 | **Senior Developer** | ❌ NEVER make strategic decisions<br>❌ NEVER change architectural designs                                                          | ✅ Implement code based on specifications<br>✅ Create, modify, and manage files<br>✅ Execute all development commands                       |
 | **Code Review**      | ❌ NEVER implement fixes directly<br>❌ NEVER create or modify files                                                                | ✅ Review and provide feedback ONLY<br>✅ Identify issues and delegate fixes                                                                  |
@@ -174,6 +161,23 @@ console.log('Resuming workflow as [role name] with proper boundaries');
 ## Workflow Execution Phases
 
 ### Phase 1: Startup & Initialization
+
+1. **State Initialization**
+
+   - Set `workflow_phase = "startup"`
+   - Initialize `current_role = "Boomerang"`
+   - Clear previous context state
+
+2. **Task Context Setup**
+
+   - Retrieve or create task information
+   - Establish task requirements and constraints
+   - Set initial workflow parameters
+
+3. **Role Assignment**
+   - Determine initial role based on task type
+   - Transition to appropriate role if not Boomerang
+   - Update `current_role` and `workflow_phase = "execution"`
 
 **ALWAYS** begin by checking for active executions before starting new work:
 
@@ -338,165 +342,94 @@ await workflow_execution_operations({
 
 ## Understanding MCP Operations
 
-### Critical: Schema Compliance
+### Schema Compliance Requirements
 
-The `mcpOperations` section in step guidance provides exact schemas for any MCP operations needed. **You must follow these schemas precisely**.
+- **Parameter Types**: Ensure all parameters match expected types
+- **Required Fields**: Include all required parameters
+- **Optional Fields**: Use optional parameters appropriately
+- **Validation**: Validate parameters before MCP calls
 
-### When guidance provides an mcpOperation schema:
-
-1. **Use the exact service name** specified in the schema
-2. **Use the exact operation name** specified in the schema
-3. **Include all required parameters** with correct names and types
-4. **Include the executionId** when specified as required (this links operations to your workflow)
-
-### Schema Example Interpretation
-
-If guidance provides:
-
-```json
-{
-  "serviceName": "TaskOperations",
-  "operation": "create",
-  "parameters": {
-    "executionId": "required",
-    "taskData": { "title": "string", "status": "string" },
-    "description": { "objective": "string" }
-  }
-}
-```
-
-You must execute the `execute_mcp_operation` MCP tool with exactly these parameters:
+### Example MCP Operation
 
 ```typescript
-await execute_mcp_operation({
-  serviceName: 'TaskOperations',
-  operation: 'create',
+// Correct MCP Usage
+const result = await mcp.call({
+  tool: 'update_task_status',
   parameters: {
-    executionId: executionId, // MANDATORY
-    taskData: {
-      title: 'Clear, descriptive title',
-      status: 'pending',
-    },
-    description: {
-      objective: 'What needs to be accomplished',
-    },
+    task_id: 'string', // Required
+    status: 'in_progress', // Required enum
+    notes: 'Optional update notes', // Optional
   },
 });
 ```
-
----
 
 ## Common MCP Operations Reference
 
-### Task Operations
+### Task and Subtask Management
 
-```typescript
-// Create task
-await execute_mcp_operation({
-  serviceName: 'TaskOperations',
-  operation: 'create',
-  parameters: {
-    executionId: 'your-execution-id',
-    taskData: {
-      title: 'Clear task title',
-      status: 'pending',
-      priority: 'medium',
-    },
-    description: {
-      objective: 'Primary goal',
-      requirements: ['req1', 'req2'],
-      acceptanceCriteria: ['crit1', 'crit2'],
-    },
-  },
-});
-
-// Update task status
-await execute_mcp_operation({
-  serviceName: 'TaskOperations',
-  operation: 'update',
-  parameters: {
-    taskId: 123,
-    taskData: {
-      status: 'in-progress',
-    },
-  },
-});
-```
-
-### Subtask Management
-
-```typescript
-// Get next subtask
-await execute_mcp_operation({
-  serviceName: 'SubtaskOperations',
-  operation: 'get_next_subtask',
-  parameters: {
-    taskId: 'your-task-id',
-    executionId: 'your-execution-id',
-  },
-});
-```
+- `get_current_task()` - Retrieve active task information
+- `update_task_status(task_id, status, notes?)` - Update task progress
+- `create_subtask(parent_id, title, description)` - Create new subtask
+- `get_task_history(task_id)` - Retrieve task execution history
+- `mark_task_complete(task_id, summary)` - Mark task as completed
 
 ---
 
 ## Troubleshooting Guide
 
-| Issue                             | Diagnostic                                           | Solution                                                      |
-| --------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------- |
-| "No step guidance available"      | Verify function parameter names and values           | Use proper `get_step_guidance({})` format                     |
-| "Command execution failed"        | Check your local tool syntax                         | Retry 3 times, report detailed error in executionData         |
-| "Quality check validation failed" | Review qualityChecklist items from guidance          | Fix issues, re-validate, only proceed when all pass           |
-| "ExecutionId parameter missing"   | Check parameter structure                            | Always include executionId in parameters                      |
-| "Schema parameter mismatch"       | Compare parameters against mcpOperations guidance    | Use exact structure from guidance mcpOperations section       |
-| "Direct tool call failed"         | Check transitionId and parameters from step guidance | Use exact parameters provided in workflow step instructions   |
-| "Role violation detected"         | Review role boundary cards                           | Stop immediately, acknowledge violation, and restore workflow |
-| "Workflow state lost"             | Check your mental workflow state tracker             | Re-query active executions and restore execution context      |
+### Common Issues and Solutions
 
----
+**Issue**: Role confusion or boundary violations
+**Solution**:
+
+1. Check current role assignment
+2. Review role boundaries section
+3. Transition to appropriate role if needed
+
+**Issue**: MCP operation failures
+**Solution**:
+
+1. Validate parameter types and requirements
+2. Check schema compliance
+3. Retry with corrected parameters
+
+**Issue**: Context or state loss
+**Solution**:
+
+1. Request state restoration from workflow system
+2. Reinitialize workflow if necessary
+3. Resume from last known good state
+
+**Issue**: Quality validation failures
+**Solution**:
+
+1. Review quality checklist
+2. Address specific quality issues
+3. Re-validate before proceeding
 
 ## Response Templates
 
-### Validation Report
+### Validation Report Template
 
 ```
-Quality Validation Complete
-
-All Checks Passed:
-• [checklist item 1] - Evidence: [specific evidence from validation]
-• [checklist item 2] - Evidence: [specific evidence from validation]
-• [checklist item 3] - Evidence: [specific evidence from validation]
-
-Reporting completion to MCP server...
+## Quality Validation Report
+- **Step**: [Current step name]
+- **Role**: [Current role]
+- **Status**: [PASS/FAIL]
+- **Issues**: [List any issues found]
+- **Actions Required**: [Required corrections]
+- **Next Step**: [Recommended next action]
 ```
 
-### Role Transition Response
+### Role Transition Template
 
 ```
-Role Transition Execution
-
-1. Executing transition as instructed by step guidance:
-
-const transitionResult = await execute_transition({
-  transitionId: "[transition-id-from-guidance]",
-  taskId: "[task-id]",
-  roleId: "[current-role-id]"
-});
-
-Transition successful. Activating new role identity...
-
-const newRoleContext = await get_workflow_guidance({
-  roleName: "[new-role-name]",
-  taskId: "[task-id]",
-  roleId: "[new-role-id]"
-});
-
-New Role Identity Activated:
-• Role: [new role name and purpose]
-• Core Responsibilities: [key duties]
-• Granted Capabilities: [special powers]
-• Quality Standards: [standards to uphold]
-
-I am now fully embodying the [new role name] role and will proceed according to its behavioral framework and capabilities.
+## Role Transition Request
+- **From Role**: [Current role]
+- **To Role**: [Target role]
+- **Reason**: [Why transition is needed]
+- **Context**: [Current state and progress]
+- **Handoff Notes**: [Important information for new role]
 ```
 
 ---

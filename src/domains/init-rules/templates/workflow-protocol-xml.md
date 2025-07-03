@@ -4,7 +4,41 @@
 
 **Transform chaotic development into organized, quality-driven workflows**
 
-_Follow these rules precisely to ensure successful workflow execution_
+---
+
+## 🚀 QUICK REFERENCE CARD
+
+### Role Boundaries
+
+- **🟠 BOOMERANG**: Strategic analysis only, delegate implementation
+- **🟡 RESEARCHER**: Research & documentation, read-only commands
+- **🔵 ARCHITECT**: Design specifications, no code implementation
+- **🟢 SENIOR DEVELOPER**: Implement code, create/modify files
+- **🔴 CODE REVIEW**: Review & feedback only, delegate fixes
+
+### Core Workflow
+
+1. Check active executions → Bootstrap if needed
+2. Get step guidance → Parse 7 sections
+3. Execute locally → Validate quality → Report completion
+4. Transition roles when guided → Complete workflow
+
+### Essential XML Operations
+
+```xml
+<!-- Check for active workflows -->
+<use_mcp_tool><server_name>anubis</server_name><tool_name>workflow_execution_operations</tool_name>
+<arguments>{"operation": "get_active_executions"}</arguments></use_mcp_tool>
+
+<!-- Get step guidance -->
+<use_mcp_tool><server_name>anubis</server_name><tool_name>get_step_guidance</tool_name>
+<arguments>{"executionId": "[id]", "roleId": "[role-id]"}</arguments></use_mcp_tool>
+
+<!-- Report completion -->
+<use_mcp_tool><server_name>anubis</server_name><tool_name>report_step_completion</tool_name>
+<arguments>{"executionId": "[id]", "stepId": "[step-id]", "result": "success", "executionData": {...}}
+</arguments></use_mcp_tool>
+```
 
 ---
 
@@ -24,44 +58,9 @@ _Follow these rules precisely to ensure successful workflow execution_
 
 ---
 
-## 🔒 ROLE BOUNDARY CARDS - CONSULT BEFORE EVERY ACTION
+## 🔒 ROLE BOUNDARY CARDS
 
-```
-╔═══════════════════════════════════════════════╗     ╔═══════════════════════════════════════════════╗
-║ 🟠 BOOMERANG                                  ║     ║ 🟡 RESEARCHER                                 ║
-╠═══════════════════════════════════════════════╣     ╠═══════════════════════════════════════════════╣
-║ ❌ NEVER implement/modify code                ║     ║ ❌ NEVER implement/modify code                ║
-║ ❌ NEVER create files or directories          ║     ║ ❌ NEVER create files or directories          ║
-║ ❌ NEVER run file modification commands       ║     ║ ❌ NEVER make system modifications            ║
-║                                               ║     ║                                               ║
-║ ✅ DO strategic analysis only                 ║     ║ ✅ DO research and documentation only         ║
-║ ✅ DO delegate implementation                 ║     ║ ✅ DO provide findings and recommendations    ║
-║ ✅ DO create specifications                   ║     ║ ✅ DO use read-only commands for analysis     ║
-╚═══════════════════════════════════════════════╝     ╚═══════════════════════════════════════════════╝
-
-╔═══════════════════════════════════════════════╗     ╔═══════════════════════════════════════════════╗
-║ 🔵 ARCHITECT                                  ║     ║ 🟢 SENIOR DEVELOPER                           ║
-╠═══════════════════════════════════════════════╣     ╠═══════════════════════════════════════════════╣
-║ ❌ NEVER implement/modify code                ║     ║ ❌ NEVER make strategic decisions             ║
-║ ❌ NEVER create files or directories          ║     ║ ❌ NEVER change architectural designs         ║
-║ ❌ NEVER run file modification commands       ║     ║                                               ║
-║                                               ║     ║ ✅ DO implement code based on specifications  ║
-║ ✅ DO design specifications/blueprints only   ║     ║ ✅ DO create, modify, and manage files        ║
-║ ✅ DO create implementation plans             ║     ║ ✅ DO execute all development commands        ║
-║ ✅ DO use read-only commands for analysis     ║     ║                                               ║
-╚═══════════════════════════════════════════════╝     ╚═══════════════════════════════════════════════╝
-
-╔═══════════════════════════════════════════════╗
-║ 🔴 CODE REVIEW                               ║
-╠═══════════════════════════════════════════════╣
-║ ❌ NEVER implement fixes directly             ║
-║ ❌ NEVER create or modify files               ║
-║                                               ║
-║ ✅ DO review and provide feedback only        ║
-║ ✅ DO identify issues and delegate fixes      ║
-║                                               ║
-╚═══════════════════════════════════════════════╝
-```
+**Detailed role boundaries are provided in the Quick Reference Card above. Consult before every action.**
 
 ---
 
@@ -348,7 +347,7 @@ When all steps are completed in the final role:
   "parameters": {
     "executionId": "your-execution-id",
     "taskData": {
-      "title": "Clear task title",
+      "name": "Clear task name",
       "status": "pending",
       "priority": "medium"
     },
@@ -405,13 +404,15 @@ When all steps are completed in the final role:
 
 ## XML Troubleshooting Guide
 
-| Issue                             | XML Diagnostic                                         | Solution                                                    |
-| --------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------- |
-| "No step guidance available"      | Verify XML syntax and parameter values                 | Use proper `<use_mcp_tool>` format with `get_step_guidance` |
-| "Command execution failed"        | Check your local tool XML syntax                       | Retry 3 times, report detailed error in executionData       |
-| "Quality check validation failed" | Review specific checklist items from guidance response | Fix issues, re-validate, only proceed when all pass         |
-| "ExecutionId parameter missing"   | Check XML parameter structure                          | Always include executionId in arguments JSON                |
-| "Schema parameter mismatch"       | Compare XML against mcpOperations guidance             | Use exact structure from guidance mcpOperations section     |
+**Common Issues:**
+
+- **Invalid XML**: Ensure proper `<use_mcp_tool>` structure with required tags
+- **Missing Arguments**: Check guidance for exact parameter names
+- **Wrong Server**: Always use `anubis` as server_name
+- **Invalid Tool**: Use exact tool names from guidance responses
+- **Malformed JSON**: Validate structure, escape quotes, no trailing commas
+- **Role Violations**: Review boundaries and stay within designated role
+- **Missing Context**: Save executionId, roleId, taskId from responses
 
 ---
 
@@ -420,12 +421,6 @@ When all steps are completed in the final role:
 ### Validation Report
 
 ```
-Quality Validation Complete
-
-All Checks Passed:
-• [checklist item 1] - Evidence: [specific evidence from validation]
-• [checklist item 2] - Evidence: [specific evidence from validation]
-• [checklist item 3] - Evidence: [specific evidence from validation]
 
 Reporting completion to MCP server...
 

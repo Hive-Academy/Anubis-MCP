@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, Subtask } from 'generated/prisma';
 import { PrismaService } from '../../prisma/prisma.service';
-import { IndividualSubtaskOperationsInput } from './schemas/individual-subtask-operations.schema';
+import {
+  IndividualSubtaskOperationsInput,
+  BulkSubtaskCreationResult,
+} from './schemas/individual-subtask-operations.schema';
 
 // Type-safe interfaces for subtask operations
 export interface SubtaskOperationResult {
@@ -11,7 +14,8 @@ export interface SubtaskOperationResult {
     | SubtaskWithDependencies
     | NextSubtaskResult
     | SubtaskCreationResult
-    | SubtaskUpdateResult;
+    | SubtaskUpdateResult
+    | BulkSubtaskCreationResult;
   error?: {
     message: string;
     code: string;
@@ -126,11 +130,15 @@ export class IndividualSubtaskOperationsService {
         | SubtaskWithDependencies
         | NextSubtaskResult
         | SubtaskCreationResult
-        | SubtaskUpdateResult;
+        | SubtaskUpdateResult
+        | BulkSubtaskCreationResult;
 
       switch (input.operation) {
         case 'create_subtask':
           result = await this.createSubtask(input);
+          break;
+        case 'create_subtasks_batch':
+          result = await this.createSubtasksBatch(input);
           break;
         case 'update_subtask':
           result = await this.updateSubtask(input);
@@ -231,6 +239,259 @@ export class IndividualSubtaskOperationsService {
       subtask,
       message: `Individual subtask '${subtaskData.name}' created successfully with ${subtaskData.dependencies?.length || 0} dependencies`,
     };
+  }
+
+  /**
+   * Create multiple subtasks in batches with advanced dependency management
+   * NEW: Bulk subtask creation with optimization and validation
+   */
+  private async createSubtasksBatch(
+    input: IndividualSubtaskOperationsInput,
+  ): Promise<BulkSubtaskCreationResult> {
+    const { taskId, subtasksBatchData } = input;
+
+    if (!subtasksBatchData) {
+      throw new Error('Subtasks batch data is required for bulk creation');
+    }
+
+    const { batches, batchDependencies, validationOptions } = subtasksBatchData;
+    const createdSubtasks: Array<{
+      id: number;
+      name: string;
+      batchId: string;
+      sequenceNumber: number;
+      status: string;
+    }> = [];
+    const batchSummary: Array<{
+      batchId: string;
+      batchTitle: string;
+      subtaskCount: number;
+    }> = [];
+    const dependencyGraph: Array<{
+      subtaskId: number;
+      dependsOn: number[];
+    }> = [];
+
+    // Validation settings with defaults
+    const validation = {
+      validateDependencies: validationOptions?.validateDependencies ?? true,
+      optimizeSequencing: validationOptions?.optimizeSequencing ?? true,
+      allowParallelExecution: validationOptions?.allowParallelExecution ?? true,
+    };
+
+    // Step 1: Validate batch dependencies if enabled
+    if (validation.validateDependencies && batchDependencies) {
+      this.validateBatchDependencies(batches, batchDependencies);
+    }
+
+    // Step 2: Optimize batch sequencing if enabled
+    let optimizedBatches = batches;
+    if (validation.optimizeSequencing) {
+      optimizedBatches = this.optimizeBatchSequencing(
+        batches,
+        batchDependencies,
+      );
+    }
+
+    // Step 3: Create subtasks in transaction for data consistency
+    const _result = await this.prisma.$transaction(async (tx) => {
+      const subtaskIdMap = new Map<string, number>(); // Map subtask names to IDs
+
+      // Create all subtasks first
+      for (const batch of optimizedBatches) {
+        for (const subtaskData of batch.subtasks) {
+          const subtask = await tx.subtask.create({
+            data: {
+              task: { connect: { id: taskId } },
+              name: subtaskData.name,
+              description: subtaskData.description,
+              sequenceNumber: subtaskData.sequenceNumber,
+              status: 'not-started',
+              batchId: batch.batchId,
+              batchTitle: batch.batchTitle,
+              estimatedDuration: subtaskData.estimatedDuration,
+              acceptanceCriteria: subtaskData.acceptanceCriteria || [],
+              technicalSpecifications:
+                subtaskData.technicalSpecifications || {},
+              dependencies: subtaskData.dependencies || [],
+              strategicGuidance: subtaskData.strategicGuidance || {},
+            } satisfies Prisma.SubtaskCreateInput,
+          });
+
+          subtaskIdMap.set(subtaskData.name, subtask.id);
+          createdSubtasks.push({
+            id: subtask.id,
+            name: subtask.name,
+            batchId: subtask.batchId!,
+            sequenceNumber: subtask.sequenceNumber,
+            status: subtask.status,
+          });
+        }
+
+        batchSummary.push({
+          batchId: batch.batchId,
+          batchTitle: batch.batchTitle,
+          subtaskCount: batch.subtasks.length,
+        });
+      }
+
+      // Step 4: Create dependency relationships
+      for (const batch of optimizedBatches) {
+        for (const subtaskData of batch.subtasks) {
+          if (subtaskData.dependencies && subtaskData.dependencies.length > 0) {
+            const subtaskId = subtaskIdMap.get(subtaskData.name)!;
+            const dependsOn: number[] = [];
+
+            for (const depName of subtaskData.dependencies) {
+              const depId = subtaskIdMap.get(depName);
+              if (depId) {
+                await tx.subtaskDependency.create({
+                  data: {
+                    dependentSubtaskId: subtaskId,
+                    requiredSubtaskId: depId,
+                  },
+                });
+                dependsOn.push(depId);
+              }
+            }
+
+            if (dependsOn.length > 0) {
+              dependencyGraph.push({
+                subtaskId,
+                dependsOn,
+              });
+            }
+          }
+        }
+      }
+
+      return { subtaskIdMap };
+    });
+
+    // Step 5: Generate validation results
+    const validationResults = {
+      totalSubtasks: createdSubtasks.length,
+      totalBatches: batchSummary.length,
+      dependenciesResolved: dependencyGraph.reduce(
+        (sum, dep) => sum + dep.dependsOn.length,
+        0,
+      ),
+      optimizationApplied: validation.optimizeSequencing,
+    };
+
+    return {
+      subtasks: createdSubtasks,
+      batches: batchSummary,
+      dependencyGraph,
+      message: `Successfully created ${validationResults.totalSubtasks} subtasks across ${validationResults.totalBatches} batches with ${validationResults.dependenciesResolved} dependencies`,
+      validationResults,
+    };
+  }
+
+  /**
+   * Validate batch dependencies to ensure no circular references
+   */
+  private validateBatchDependencies(
+    batches: Array<{
+      batchId: string;
+      subtasks: Array<{ name: string; dependencies?: string[] }>;
+    }>,
+    batchDependencies?: Array<{ batchId: string; dependsOnBatches: string[] }>,
+  ): void {
+    if (!batchDependencies) return;
+
+    // Create a map of all subtask names to their batch IDs
+    const subtaskToBatch = new Map<string, string>();
+    for (const batch of batches) {
+      for (const subtask of batch.subtasks) {
+        subtaskToBatch.set(subtask.name, batch.batchId);
+      }
+    }
+
+    // Validate that dependencies don't create circular references
+    const visited = new Set<string>();
+    const recursionStack = new Set<string>();
+
+    const hasCycle = (batchId: string): boolean => {
+      if (recursionStack.has(batchId)) return true;
+      if (visited.has(batchId)) return false;
+
+      visited.add(batchId);
+      recursionStack.add(batchId);
+
+      const batchDep = batchDependencies.find((dep) => dep.batchId === batchId);
+      if (batchDep) {
+        for (const depBatch of batchDep.dependsOnBatches) {
+          if (hasCycle(depBatch)) return true;
+        }
+      }
+
+      recursionStack.delete(batchId);
+      return false;
+    };
+
+    for (const batch of batches) {
+      if (hasCycle(batch.batchId)) {
+        throw new Error(
+          `Circular dependency detected in batch dependencies involving batch: ${batch.batchId}`,
+        );
+      }
+    }
+  }
+
+  /**
+   * Optimize batch sequencing based on dependencies
+   */
+  private optimizeBatchSequencing(
+    batches: Array<any>,
+    batchDependencies?: Array<{ batchId: string; dependsOnBatches: string[] }>,
+  ): Array<any> {
+    if (!batchDependencies || batchDependencies.length === 0) {
+      return batches; // No optimization needed
+    }
+
+    // Topological sort of batches based on dependencies
+    const batchMap = new Map(batches.map((batch) => [batch.batchId, batch]));
+    const inDegree = new Map<string, number>();
+    const adjList = new Map<string, string[]>();
+
+    // Initialize
+    for (const batch of batches) {
+      inDegree.set(batch.batchId, 0);
+      adjList.set(batch.batchId, []);
+    }
+
+    // Build dependency graph
+    for (const dep of batchDependencies) {
+      for (const requiredBatch of dep.dependsOnBatches) {
+        adjList.get(requiredBatch)?.push(dep.batchId);
+        inDegree.set(dep.batchId, (inDegree.get(dep.batchId) || 0) + 1);
+      }
+    }
+
+    // Topological sort
+    const queue: string[] = [];
+    const result: Array<any> = [];
+
+    for (const [batchId, degree] of inDegree) {
+      if (degree === 0) {
+        queue.push(batchId);
+      }
+    }
+
+    while (queue.length > 0) {
+      const currentBatch = queue.shift()!;
+      result.push(batchMap.get(currentBatch));
+
+      for (const neighbor of adjList.get(currentBatch) || []) {
+        inDegree.set(neighbor, inDegree.get(neighbor)! - 1);
+        if (inDegree.get(neighbor) === 0) {
+          queue.push(neighbor);
+        }
+      }
+    }
+
+    return result;
   }
 
   /**

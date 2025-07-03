@@ -586,6 +586,7 @@ export class TaskOperationsService {
       slug,
       includeDescription,
       includeAnalysis,
+      includeResearch,
       includeSubtasks,
     } = input;
 
@@ -599,6 +600,12 @@ export class TaskOperationsService {
     }
     if (includeAnalysis) {
       include.codebaseAnalysis = true;
+    }
+    if (includeResearch) {
+      include.researchReports = {
+        orderBy: { createdAt: 'desc' },
+        take: 1, // Get the most recent research report
+      };
     }
     if (includeSubtasks) {
       include.subtasks = {
@@ -631,8 +638,14 @@ export class TaskOperationsService {
   }
 
   private async listTasks(input: TaskOperationsInput): Promise<TaskListResult> {
-    const { status, priority, slug, includeDescription, includeAnalysis } =
-      input;
+    const {
+      status,
+      priority,
+      slug,
+      includeDescription,
+      includeAnalysis,
+      includeResearch,
+    } = input;
 
     const where: Prisma.TaskWhereInput = {};
     if (status) where.status = status;
@@ -649,6 +662,12 @@ export class TaskOperationsService {
     if (includeAnalysis) {
       include.codebaseAnalysis = true;
     }
+    if (includeResearch) {
+      include.researchReports = {
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+      };
+    }
 
     const tasks = await this.prisma.task.findMany({
       where,
@@ -659,7 +678,11 @@ export class TaskOperationsService {
     return {
       tasks: tasks as TaskWithRelations[],
       count: tasks.length,
-      filters: { status, priority, slug },
+      filters: {
+        status,
+        priority,
+        slug,
+      },
     };
   }
 
