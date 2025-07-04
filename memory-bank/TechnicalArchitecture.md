@@ -207,14 +207,13 @@ src/task-workflow/
 - **Purpose**: Internal business logic services
 - **Responsibilities**:
   - Task lifecycle management
-  - Implementation planning and subtask operations
+  - Enhanced subtask operations with direct implementation context
   - Role-based delegation and workflow operations
   - Code review and research operations
 - **Access**: Internal only, not exposed directly to MCP clients
 - **Key Services**:
-  - `TaskOperationsService` - Task CRUD operations
-  - `PlanningOperationsService` - Implementation planning
-  - `IndividualSubtaskOperationsService` - Subtask management
+  - `TaskOperationsService` - Task CRUD operations with enhanced subtask creation
+  - `IndividualSubtaskOperationsService` - Subtask management with implementation context
   - `WorkflowOperationsService` - Delegation and workflow control
 
 #### **Reporting Domain (Analytics)**
@@ -321,7 +320,7 @@ model Task {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  plans       ImplementationPlan[]
+  subtasks    Subtask[]           // Direct task-subtask relationship
   delegations DelegationRecord[]
   reviews     CodeReview[]
   research    ResearchReport[]
@@ -329,39 +328,45 @@ model Task {
   executions  WorkflowExecution[]
 }
 
-model ImplementationPlan {
-  id          Int      @id @default(autoincrement())
-  taskId      Int
-  title       String
-  description String
-  approach    Json
-  subtasks    Subtask[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  task        Task     @relation(fields: [taskId], references: [id])
-}
-
 model Subtask {
   id                    Int      @id @default(autoincrement())
   taskId                Int      // Direct reference to task
-  planId                Int
+  planId                Int?     // Legacy field - kept for migration compatibility
   name                  String
   description           String
   status                String   // not-started, in-progress, completed, failed
   sequenceNumber        Int
   batchId               String?  // Batch grouping identifier
   batchTitle            String?  // Human-readable batch name
+  
+  // Enhanced implementation context stored directly in subtasks
+  implementationOverview String?
+  implementationApproach String?
+  technicalDecisions    Json?
+  filesToModify         String[]
+  codeExamples          Json?
   strategicGuidance     Json?
+  architecturalContext  String?
+  architecturalRationale Json?
   qualityConstraints    Json?
-  successCriteria       String[]
-  architecturalRationale String?
+  qualityGates          Json?
+  acceptanceCriteria    String[]
+  successCriteria       Json?
+  testingRequirements   Json?
+  technicalSpecifications Json?
+  performanceTargets     Json?
+  securityConsiderations Json?
+  errorHandlingStrategy  String?
+  dependencies          String[]
+  integrationPoints      Json?
+  externalDependencies  Json?
   completionEvidence    Json?
+  validationSteps       Json?
   actualDuration        String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
-  plan                  ImplementationPlan @relation(fields: [planId], references: [id])
+  task                  Task     @relation(fields: [taskId], references: [id])
 }
 ```
 
@@ -537,8 +542,7 @@ The reporting system uses feature-based organization with embedded workflow inte
     /workflow-analytics/             # Cross-workflow analytics
 
   /task-management/                  # Task reporting domain
-    /task-detail/                    # Individual task reports
-    /implementation-plan/            # Implementation tracking
+    /task-detail/                    # Individual task reports with enhanced subtask context
 
   /dashboard/                        # Dashboard domain
     /interactive-dashboard/          # Main dashboard

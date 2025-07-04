@@ -1,29 +1,34 @@
 {
   "workflowSteps": [
     {
-      "name": "git_setup and Memory_bank Analysis",
-      "description": "Set up git branch for task work",
+      "name": "git_setup_and_memory_analysis",
+      "description": "Set up git branch and analyze memory bank for project context",
       "sequenceNumber": 1,
       "isRequired": true,
       "stepType": "ACTION",
-      "approach": "Verify git status and create feature branch",
+      "approach": "Verify git status, ask user about branch preference, and extract comprehensive project context",
       "approachGuidance": {
         "stepByStep": [
           "Check git repository status with 'git status --porcelain'",
           "Handle any uncommitted changes appropriately",
-          "Create feature branch with descriptive name",
-          "Verify branch creation succeeded",
+          "ASK USER: 'Do you want to continue on the current branch or create a new feature branch? If new, what should it be named?'",
+          "Based on user response, either stay on current branch or create new feature branch",
+          "Verify branch setup succeeded",
           "Check if memory-bank folder exists, if it exists, do Enhanced Memory Bank Analysis:",
           "1. memory-bank/ProjectOverview.md: Extract business context, features, stakeholder requirements, value propositions",
           "2. memory-bank/TechnicalArchitecture.md: Extract architecture patterns, component structure, technology stack, performance requirements",
-          "3. memory-bank/DeveloperGuide.md: Extract implementation standards, coding patterns, quality guidelines, testing approaches"
+          "3. memory-bank/DeveloperGuide.md: Extract implementation standards, coding patterns, quality guidelines, testing approaches",
+          "Document extracted context for comprehensive project understanding",
+          "SELF-AWARENESS CHECK: Verify and summarize all extracted information before proceeding"
         ]
       },
       "qualityChecklist": [
         "Git repository exists and functional",
         "Working directory status checked and handled",
-        "Feature branch created with proper naming",
-        "Branch checkout successful"
+        "User consulted about branch preference and decision implemented",
+        "Branch setup completed successfully",
+        "Memory bank analysis completed with documented context",
+        "Self-awareness check completed with verified information summary"
       ],
       "conditions": [
         {
@@ -41,99 +46,42 @@
       "actions": []
     },
     {
-      "name": "create_task_with_analysis",
-      "description": "Analyze codebase and create task",
+      "name": "user_validation_and_task_understanding",
+      "description": "Validate task understanding with user and get agreement before creation",
       "sequenceNumber": 2,
       "isRequired": true,
       "stepType": "ACTION",
-      "approach": "Analyze project systematically then create task with findings",
+      "approach": "Engage user to clarify requirements, validate understanding, and get explicit agreement",
       "approachGuidance": {
         "stepByStep": [
-          "Combined with the memory bank files analysis, Analyze project structure and identify tech stack",
-          "Extract clear requirements from user request",
-          "Create task with executionId and codebase analysis",
-          "Update task status to 'in-progress'"
+          "SELF-AWARENESS CHECK: Review all information gathered from previous step",
+          "Present initial understanding of the task to the user",
+          "ASK USER: 'Based on your request, I understand you want to [summarize understanding]. Is this correct?'",
+          "ASK USER: 'What are the specific requirements and acceptance criteria for this task?'",
+          "ASK USER: 'Are there any constraints, dependencies, or special considerations I should know about?'",
+          "ASK USER: 'What priority level should this task have? (Low/Medium/High/Critical)'",
+          "Document all user responses and clarifications",
+          "Summarize final understanding and ASK USER: 'Do you agree with this task definition? Should I proceed with creation?'",
+          "Only proceed if user explicitly agrees"
         ]
       },
       "qualityChecklist": [
-        "Project structure and tech stack documented",
-        "Current functionality tested and verified",
-        "Requirements extracted and clearly defined",
-        "Task created with executionId linked to workflow",
-        "Task status updated to 'in-progress'"
+        "Self-awareness check completed with previous step information",
+        "Initial understanding presented to user clearly",
+        "User provided specific requirements and acceptance criteria",
+        "Constraints, dependencies, and considerations documented",
+        "Priority level confirmed with user",
+        "Final task definition summarized and validated",
+        "User explicitly agreed to proceed with task creation"
       ],
       "conditions": [
         {
           "name": "git_setup_completed",
-          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "conditionType": "STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "git_setup"
-            }
-          },
-          "isRequired": true
-        }
-      ],
-      "actions": [
-        {
-          "name": "create_task",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "TaskOperations",
-            "operation": "create",
-            "requiredParameters": [
-              "executionId",
-              "taskData",
-              "description",
-              "codebaseAnalysis"
-            ]
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "update_task_status",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "TaskOperations",
-            "operation": "update",
-            "requiredParameters": ["taskId", "taskData"]
-          },
-          "sequenceOrder": 2
-        }
-      ]
-    },
-    {
-      "name": "research_decision",
-      "description": "Decide if research is needed based on task complexity",
-      "sequenceNumber": 3,
-      "isRequired": true,
-      "stepType": "DECISION",
-      "approach": "Test current system, evaluate task complexity, decide research necessity",
-      "approachGuidance": {
-        "stepByStep": [
-          "Review task requirements and current system capabilities",
-          "Test existing functionality to confirm what works",
-          "Evaluate if technologies/patterns are familiar or unknown",
-          "Apply decision criteria: research needed vs direct implementation",
-          "Document decision with clear reasoning"
-        ]
-      },
-      "qualityChecklist": [
-        "Current system capabilities tested and confirmed",
-        "Task complexity evaluated against known capabilities",
-        "Decision made: research needed or direct to architect",
-        "Decision reasoning documented clearly",
-        "Next role determined (researcher or architect)"
-      ],
-      "conditions": [
-        {
-          "name": "task_creation_completed",
-          "conditionType": "PREVIOUS_STEP_COMPLETED",
-          "logic": {
-            "check": "step_completed",
-            "parameters": {
-              "stepName": "create_task_with_analysis"
+              "stepName": "git_setup_and_memory_analysis"
             }
           },
           "isRequired": true
@@ -142,37 +90,125 @@
       "actions": []
     },
     {
-      "name": "role_transition",
-      "description": "Transition to next role based on research decision",
-      "sequenceNumber": 4,
+      "name": "comprehensive_evaluation_research_and_task_creation",
+      "description": "Comprehensive evaluation, targeted research, and task creation with integrated findings",
+      "sequenceNumber": 3,
       "isRequired": true,
       "stepType": "ACTION",
-      "approach": "Get correct transition ID, then execute transition to researcher or architect",
+      "approach": "Systematic evaluation of requirements, targeted research when needed, and comprehensive task creation with integrated findings",
       "approachGuidance": {
         "stepByStep": [
-          "Determine target role based on research decision (researcher or architect)",
-          "Execute get_role_transitions with fromRoleName: 'boomerang', taskId, and roleId",
-          "Extract correct transitionId from response based on target role",
-          "Execute execute_transition with obtained transitionId and handoff message",
-          "Verify transition success and delegation record creation"
+          "SELF-AWARENESS CHECK: Review user-validated task definition from previous step",
+          "Conduct comprehensive codebase analysis using search_codebase tool",
+          "Identify architecture patterns, technology stack, and implementation context",
+          "Analyze existing code quality, patterns, and potential integration points",
+          "Test existing functionality to confirm what works",
+          "Identify technical unknowns requiring investigation",
+          "Extract implementation options needing comparison",
+          "Document integration challenges requiring research",
+          "Classify questions by priority: Critical, Important, Nice-to-have",
+          "Determine if critical research questions exist that block architectural decisions",
+          "IF critical research questions identified:",
+          "  - Use web_search if available to find authoritative documentation",
+          "  - Check official GitHub repositories and documentation",
+          "  - Analyze NPM or relevant package registries",
+          "  - Look for recent blog posts and technical articles",
+          "  - Review community discussions and best practices",
+          "  - Validate findings through multiple sources",
+          "  - Document evidence with links and citations",
+          "  - Organize findings by research question priority",
+          "  - Provide clear recommendations for implementation",
+          "  - Include risk assessment and mitigation strategies",
+          "  - Synthesize information into clear, actionable insights",
+          "Document all findings in structured format for task creation",
+          "Prepare comprehensive context for task creation including analysis and research"
         ]
       },
       "qualityChecklist": [
-        "Target role determined based on research decision",
-        "get_role_transitions executed with correct parameters",
-        "Correct transitionId obtained from response (not placeholder)",
-        "execute_transition executed with proper transitionId",
-        "Handoff message includes task context and analysis",
-        "Transition success verified and delegation confirmed"
+        "Self-awareness check completed with user-validated information",
+        "Comprehensive codebase analysis completed",
+        "Architecture patterns and technology stack identified",
+        "Code quality and integration points documented",
+        "Current system capabilities tested and confirmed",
+        "Technical unknowns identified and documented",
+        "Implementation options extracted",
+        "Integration challenges documented",
+        "Questions classified by priority",
+        "Critical blocking questions clearly identified",
+        "Research conducted for critical questions (if applicable)",
+        "Multiple authoritative sources consulted (if research conducted)",
+        "Technical claims supported by documentation (if research conducted)",
+        "All findings properly cited and linked (if research conducted)",
+        "Task creation ready with comprehensive analysis and research data",
+        "Analysis and research findings structured and accessible for task creation"
       ],
       "conditions": [
         {
-          "name": "research_decision_completed",
-          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "name": "user_validation_completed",
+          "conditionType": "STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "research_decision"
+              "stepName": "user_validation_and_task_understanding"
+            }
+          },
+          "isRequired": true
+        }
+      ],
+      "actions": [
+        {
+          "serviceName": "TaskOperations",
+          "operation": "create",
+          "parameters": {
+            "executionId": "{{executionId}}",
+            "taskData": "{{userValidatedTaskData}}",
+            "description": "{{userProvidedRequirements}}",
+            "codebaseAnalysis": "{{comprehensiveFindings}}",
+            "researchFindings": "{{researchFindings}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "strategic_decision_and_architect_transition",
+      "description": "Strategic analysis and transition to architect role with comprehensive context",
+      "sequenceNumber": 4,
+      "isRequired": true,
+      "stepType": "TRANSITION",
+      "approach": "Synthesize all analysis and research findings, then transition to architect role with comprehensive handoff",
+      "approachGuidance": {
+        "stepByStep": [
+          "SELF-AWARENESS CHECK: Review all analysis and research findings from previous steps",
+          "Synthesize project context, task analysis, and research findings",
+          "Prepare comprehensive handoff package including:",
+          "- Complete project understanding and constraints",
+          "- Task requirements and acceptance criteria",
+          "- Research findings and recommendations (if conducted)",
+          "- Technical considerations and integration points",
+          "- Risk assessment and mitigation strategies",
+          "Use WorkflowOperations service to execute transition to architect role",
+          "Confirm successful handoff with complete context",
+          "SELF-AWARENESS CHECK: Verify all context and findings are properly transferred"
+        ]
+      },
+      "qualityChecklist": [
+        "All analysis phases completed and synthesized",
+        "Comprehensive handoff package prepared",
+        "Project context fully documented",
+        "Task requirements clearly defined",
+        "Research findings integrated (if applicable)",
+        "Technical considerations documented",
+        "Risk assessment completed",
+        "Transition to architect role executed successfully"
+      ],
+      "conditions": [
+        {
+          "name": "evaluation_research_task_creation_completed",
+          "conditionType": "STEP_COMPLETED",
+          "logic": {
+            "check": "step_completed",
+            "parameters": {
+              "stepName": "comprehensive_evaluation_research_and_task_creation"
             }
           },
           "isRequired": true

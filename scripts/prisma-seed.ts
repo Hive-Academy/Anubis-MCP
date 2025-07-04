@@ -74,12 +74,10 @@ interface RoleTransition {
 
 const ROLES = [
   'boomerang',
-  'researcher',
   'architect',
   'senior-developer',
   'code-review',
   'integration-engineer',
-  'turbo-dev',
 ];
 
 // Determine the correct path for JSON files based on environment

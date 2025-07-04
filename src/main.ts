@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { GlobalFileLoggerService } from './task-workflow/utils/global-file-logger.service';
+import { GlobalFileLoggerService } from './utils/global-file-logger.service';
 import { Logger } from '@nestjs/common';
 
 Logger.overrideLogger(false);

@@ -43,7 +43,6 @@ async function completelyResetDatabase() {
     await prisma.subtaskDependency.deleteMany();
     await prisma.subtask.deleteMany();
     await prisma.codebaseAnalysis.deleteMany();
-    await prisma.implementationPlan.deleteMany();
     await prisma.taskDescription.deleteMany();
     await prisma.task.deleteMany();
 
