@@ -1,66 +1,56 @@
 {
   "workflowSteps": [
     {
-      "name": "create_implementation_plan",
-      "description": "Create implementation plan and subtasks in one integrated step",
+      "name": "strategic_subtask_design",
+      "description": "Design strategic subtasks with intelligent context management and bulk creation",
       "sequenceNumber": 1,
       "isRequired": true,
       "stepType": "ACTION",
-      "approach": "Iterative planning with immediate subtask creation to preserve context",
+      "approach": "Intelligent context retrieval with strategic subtask design and bulk creation",
       "approachGuidance": {
         "stepByStep": [
-          "Check if task context is already available in current execution history",
-          "If context is available, analyze and validate its completeness",
-          "Only if context is missing or incomplete, execute TaskOperations.get",
-          "Create or update plan based on actual task requirements",
-          "Create subtasks immediately while context is fresh",
-          "Focus on implementation work, exclude documentation tasks"
+          "Check message history for task context and requirements first",
+          "Only if context is missing or incomplete, execute TaskOperations.get with comprehensive data retrieval (includeDescription=true, includeAnalysis=true, includeResearch=true, includeSubtasks=true) to access boomerang's codebase analysis, task description, and research findings",
+          "Leverage boomerang's comprehensive analysis: architecture patterns, technology stack, code quality assessment, integration points, and research recommendations for informed strategic decisions",
+          "Analyze task requirements and identify strategic implementation approach",
+          "Design subtask batches with clear dependencies and sequencing",
+          "Create subtasks using bulk creation for efficient management",
+          "Focus on implementation work, exclude documentation tasks",
+          "Validate subtask design against architectural principles"
         ]
       },
       "qualityChecklist": [
-        "Task context and requirements understood",
-        "Implementation plan created based on actual needs",
-        "Subtasks created focusing on real implementation work",
+        "Task context gathered intelligently (message history first, then server calls)",
+        "Strategic subtask design completed with clear batch organization",
+        "Subtasks created using bulk creation with proper dependencies",
         "No documentation subtasks created",
-        "Plan and subtasks validated against task goals"
+        "Subtask design validated against architectural principles",
+        "Dependencies optimized for parallel execution where possible"
       ],
       "conditions": [],
       "actions": [
         {
-          "name": "get_task_context",
-          "actionType": "MCP_CALL",
+          "name": "intelligent_context_gathering",
+          "actionType": "CONDITIONAL_MCP_CALL",
           "actionData": {
             "serviceName": "TaskOperations",
-            "operation": "get"
+            "operation": "get",
+            "includeDescription": true,
+            "includeAnalysis": true,
+            "includeResearch": true,
+            "includeSubtasks": true,
+            "condition": "context_missing_from_message_history"
           },
           "sequenceOrder": 1
         },
         {
-          "name": "check_existing_plan",
+          "name": "create_strategic_subtasks",
           "actionType": "MCP_CALL",
           "actionData": {
-            "serviceName": "PlanningOperations",
-            "operation": "get_plan"
+            "serviceName": "SubtaskOperations",
+            "operation": "create_subtasks_batch"
           },
           "sequenceOrder": 2
-        },
-        {
-          "name": "create_or_update_plan",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "PlanningOperations",
-            "operation": "{{create_or_update_based_on_existing}}"
-          },
-          "sequenceOrder": 3
-        },
-        {
-          "name": "create_subtasks",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "PlanningOperations",
-            "operation": "create_subtasks"
-          },
-          "sequenceOrder": 4
         }
       ]
     },
@@ -87,12 +77,12 @@
       ],
       "conditions": [
         {
-          "name": "planning_completed",
+          "name": "subtask_design_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "create_implementation_plan"
+              "stepName": "strategic_subtask_design"
             }
           },
           "isRequired": true

@@ -4,30 +4,30 @@
 
 // Core role definitions - simplified and focused
 model WorkflowRole {
-  id          String   @id @default(cuid())
-  name        String   @unique // 'boomerang', 'researcher', 'architect', 'senior-developer', 'code-review', 'integration-engineer'
-  description String   // Role description and purpose
-  priority    Int      @default(0) // For role hierarchy and delegation order
-  isActive    Boolean  @default(true)
-  
+  id          String  @id @default(cuid())
+  name        String  @unique // 'boomerang',  'architect', 'senior-developer', 'code-review', 'integration-engineer'
+  description String // Role description and purpose
+  priority    Int     @default(0) // For role hierarchy and delegation order
+  isActive    Boolean @default(true)
+
   // Enhanced role capabilities from JSON files
-  capabilities        Json?    // Structured capabilities object (e.g., strategicArchitectureAnalysis: true)
-  coreResponsibilities Json?   // Array of core responsibilities
-  keyCapabilities     Json?    // Array of key capabilities
-  
+  capabilities         Json? // Structured capabilities object (e.g., strategicArchitectureAnalysis: true)
+  coreResponsibilities Json? // Array of core responsibilities
+  keyCapabilities      Json? // Array of key capabilities
+
   // Relationships
-  steps       WorkflowStep[]
-  fromTransitions RoleTransition[] @relation("FromRole")
-  toTransitions   RoleTransition[] @relation("ToRole")
-  stepProgress WorkflowStepProgress[]
+  steps            WorkflowStep[]
+  fromTransitions  RoleTransition[]       @relation("FromRole")
+  toTransitions    RoleTransition[]       @relation("ToRole")
+  stepProgress     WorkflowStepProgress[]
   activeExecutions WorkflowExecution[]
-  
+
   // Project-specific profiles
   behavioralProfiles ProjectBehavioralProfile[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([name])
   @@index([priority])
   @@map("workflow_roles")
@@ -35,29 +35,29 @@ model WorkflowRole {
 
 // Simplified workflow steps with structured guidance
 model WorkflowStep {
-  id              String   @id @default(cuid())
-  roleId          String
-  name            String   // Concise names: 'git_setup', 'task_creation', 'implementation'
-  description     String   // Brief step description
-  sequenceNumber  Int      // Order within role workflow
-  isRequired      Boolean  @default(true)
-  stepType        StepType // ACTION, ANALYSIS
-  approach        String   @default("Execute step according to guidance") // One-line approach summary
-  
+  id             String   @id @default(cuid())
+  roleId         String
+  name           String // Concise names: 'git_setup', 'task_creation', 'implementation'
+  description    String // Brief step description
+  sequenceNumber Int // Order within role workflow
+  isRequired     Boolean  @default(true)
+  stepType       StepType // ACTION, ANALYSIS
+  approach       String   @default("Execute step according to guidance") // One-line approach summary
+
   // Structured guidance (replaces complex JSON fields)
-  stepGuidance    StepGuidance?
-  qualityChecks   QualityCheck[]
-  mcpActions      McpAction[]
+  stepGuidance     StepGuidance?
+  qualityChecks    QualityCheck[]
+  mcpActions       McpAction[]
   stepDependencies StepDependency[]
-  
+
   // Relationships
-  role            WorkflowRole @relation(fields: [roleId], references: [id])
-  stepProgress    WorkflowStepProgress[]
+  role             WorkflowRole           @relation(fields: [roleId], references: [id])
+  stepProgress     WorkflowStepProgress[]
   activeExecutions WorkflowExecution[]
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([roleId, sequenceNumber])
   @@index([stepType])
   @@map("workflow_steps")
@@ -65,81 +65,81 @@ model WorkflowStep {
 
 // Structured step guidance (replaces approachGuidance JSON)
 model StepGuidance {
-  id           String        @id @default(cuid())
-  stepByStep   Json          // Array of 3-5 focused guidance steps (stored as JSON array)
-  
-  stepId       String        @unique
-  step         WorkflowStep  @relation(fields: [stepId], references: [id], onDelete: Cascade)
-  
+  id         String @id @default(cuid())
+  stepByStep Json // Array of 3-5 focused guidance steps (stored as JSON array)
+
+  stepId String       @unique
+  step   WorkflowStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
   @@map("step_guidance")
 }
 
 // Quality validation criteria (replaces qualityChecklist JSON)
 model QualityCheck {
-  id           String        @id @default(cuid())
-  criterion    String        // Individual quality validation criterion
-  sequenceOrder Int          // Order of validation
-  
-  stepId       String
-  step         WorkflowStep  @relation(fields: [stepId], references: [id], onDelete: Cascade)
-  
+  id            String @id @default(cuid())
+  criterion     String // Individual quality validation criterion
+  sequenceOrder Int // Order of validation
+
+  stepId String
+  step   WorkflowStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
   @@index([stepId, sequenceOrder])
   @@map("quality_checks")
 }
 
 // MCP-focused actions (replaces complex StepAction model)
 model McpAction {
-  id              String        @id @default(cuid())
-  name            String        // Action name
-  serviceName     String        // MCP service name (e.g., 'TaskOperations')
-  operation       String        // MCP operation (e.g., 'create', 'update')
-  parameters      Json?         // MCP parameters (minimal JSON usage)
-  sequenceOrder   Int           // Execution order within step
-  
-  stepId          String
-  step            WorkflowStep  @relation(fields: [stepId], references: [id], onDelete: Cascade)
-  
+  id            String @id @default(cuid())
+  name          String // Action name
+  serviceName   String // MCP service name (e.g., 'TaskOperations')
+  operation     String // MCP operation (e.g., 'create', 'update')
+  parameters    Json? // MCP parameters (minimal JSON usage)
+  sequenceOrder Int // Execution order within step
+
+  stepId String
+  step   WorkflowStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
   @@index([stepId, sequenceOrder])
   @@map("mcp_actions")
 }
 
 // Simple step dependencies (replaces complex StepCondition model)
 model StepDependency {
-  id              String        @id @default(cuid())
-  dependsOnStep   String        // Name of step this depends on
-  isRequired      Boolean       @default(true)
-  
-  stepId          String
-  step            WorkflowStep  @relation(fields: [stepId], references: [id], onDelete: Cascade)
-  
+  id            String  @id @default(cuid())
+  dependsOnStep String // Name of step this depends on
+  isRequired    Boolean @default(true)
+
+  stepId String
+  step   WorkflowStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+
   @@index([stepId])
   @@map("step_dependencies")
 }
 
 // Streamlined role transitions with structured data
 model RoleTransition {
-  id              String   @id @default(cuid())
-  fromRoleId      String
-  toRoleId        String
-  transitionName  String   @unique // 'boomerang_to_researcher', 'researcher_to_architect'
-  description     String   @default("Role transition") // Brief transition description
-  handoffMessage  String   @default("Transitioning to next role") // Concise handoff message template
-  isActive        Boolean  @default(true)
-  
+  id             String  @id @default(cuid())
+  fromRoleId     String
+  toRoleId       String
+  transitionName String  @unique // 'boomerang_to_researcher', 'researcher_to_architect'
+  description    String  @default("Role transition") // Brief transition description
+  handoffMessage String  @default("Transitioning to next role") // Concise handoff message template
+  isActive       Boolean @default(true)
+
   // Structured transition data (replaces complex JSON fields)
-  conditions      TransitionCondition[]
-  requirements    TransitionRequirement[]
+  conditions         TransitionCondition[]
+  requirements       TransitionRequirement[]
   validationCriteria TransitionValidation[]
-  contextElements TransitionContext[]
-  deliverables    TransitionDeliverable[]
-  
+  contextElements    TransitionContext[]
+  deliverables       TransitionDeliverable[]
+
   // Relationships
-  fromRole        WorkflowRole @relation("FromRole", fields: [fromRoleId], references: [id])
-  toRole          WorkflowRole @relation("ToRole", fields: [toRoleId], references: [id])
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  fromRole WorkflowRole @relation("FromRole", fields: [fromRoleId], references: [id])
+  toRole   WorkflowRole @relation("ToRole", fields: [toRoleId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([fromRoleId])
   @@index([toRoleId])
   @@map("role_transitions")
@@ -147,94 +147,94 @@ model RoleTransition {
 
 // Transition condition flags (replaces conditions JSON)
 model TransitionCondition {
-  id           String        @id @default(cuid())
-  name         String        // Condition name (e.g., "researchRequired", "implementationComplete")
-  value        Boolean       // Condition value
-  
+  id    String  @id @default(cuid())
+  name  String // Condition name (e.g., "researchRequired", "implementationComplete")
+  value Boolean // Condition value
+
   transitionId String
   transition   RoleTransition @relation(fields: [transitionId], references: [id], onDelete: Cascade)
-  
+
   @@map("transition_conditions")
 }
 
 // Transition requirements (replaces requirements JSON)
 model TransitionRequirement {
-  id           String        @id @default(cuid())
-  requirement  String        // Prerequisite description
-  
+  id          String @id @default(cuid())
+  requirement String // Prerequisite description
+
   transitionId String
   transition   RoleTransition @relation(fields: [transitionId], references: [id], onDelete: Cascade)
-  
+
   @@map("transition_requirements")
 }
 
 // Transition validation criteria (replaces validationRules JSON)
 model TransitionValidation {
-  id           String        @id @default(cuid())
-  criterion    String        // Validation requirement
-  
+  id        String @id @default(cuid())
+  criterion String // Validation requirement
+
   transitionId String
   transition   RoleTransition @relation(fields: [transitionId], references: [id], onDelete: Cascade)
-  
+
   @@map("transition_validations")
 }
 
 // Context elements to preserve (replaces contextPreservation JSON)
 model TransitionContext {
-  id           String        @id @default(cuid())
-  contextKey   String        // Context element to preserve (e.g., "researchFindings", "architecturalDecisions")
-  
+  id         String @id @default(cuid())
+  contextKey String // Context element to preserve (e.g., "researchFindings", "architecturalDecisions")
+
   transitionId String
   transition   RoleTransition @relation(fields: [transitionId], references: [id], onDelete: Cascade)
-  
+
   @@map("transition_contexts")
 }
 
 // Expected deliverables (replaces handoffGuidance.expectedDeliverables)
 model TransitionDeliverable {
-  id           String        @id @default(cuid())
-  deliverable  String        // Expected output from target role
-  
+  id          String @id @default(cuid())
+  deliverable String // Expected output from target role
+
   transitionId String
   transition   RoleTransition @relation(fields: [transitionId], references: [id], onDelete: Cascade)
-  
+
   @@map("transition_deliverables")
 }
 
 // Progress tracking - keep existing structure (already well-designed)
 model WorkflowStepProgress {
-  id              String   @id @default(cuid())
-  executionId     String   // Link to workflow execution
-  taskId          String?  // Optional - task may not exist yet (bootstrap)
-  roleId          String   // Which role is executing this step
-  stepId          String   // Which step is being executed
-  
+  id          String  @id @default(cuid())
+  executionId String // Link to workflow execution
+  taskId      String? // Optional - task may not exist yet (bootstrap)
+  roleId      String // Which role is executing this step
+  stepId      String // Which step is being executed
+
   // Progress tracking
-  status          StepProgressStatus // 'not_started', 'in_progress', 'completed', 'skipped', 'failed'
-  startedAt       DateTime?
-  completedAt     DateTime?
-  failedAt        DateTime?
-  duration        Int?     // Duration in milliseconds
-  
+  status      StepProgressStatus // 'not_started', 'in_progress', 'completed', 'skipped', 'failed'
+  startedAt   DateTime?
+  completedAt DateTime?
+  failedAt    DateTime?
+  duration    Int? // Duration in milliseconds
+
   // Step execution data
-  executionData   Json?    // Data collected during step execution
-  validationResults Json?  // Results of step validation
-  errorDetails    Json?    // Error information if step failed
-  result          StepExecutionResult? // SUCCESS/FAILURE result
-  
+  executionData     Json? // Data collected during step execution
+  validationResults Json? // Results of step validation
+  errorDetails      Json? // Error information if step failed
+  result            StepExecutionResult? // SUCCESS/FAILURE result
+
   // Reporting integration
-  reportGenerated Boolean  @default(false) // Was a report generated for this step?
-  reportId        String?  // ID of generated report
-  reportData      Json?    // Report metadata and content
-  
+  reportGenerated Boolean @default(false) // Was a report generated for this step?
+  reportId        String? // ID of generated report
+  reportData      Json? // Report metadata and content
+
   // Relationships
-  execution       WorkflowExecution @relation(fields: [executionId], references: [id])
-  role            WorkflowRole @relation(fields: [roleId], references: [id])
-  step            WorkflowStep @relation(fields: [stepId], references: [id])
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  execution WorkflowExecution @relation(fields: [executionId], references: [id])
+  role      WorkflowRole      @relation(fields: [roleId], references: [id])
+  step      WorkflowStep      @relation(fields: [stepId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([executionId])
   @@index([taskId])
   @@index([roleId])
@@ -246,41 +246,41 @@ model WorkflowStepProgress {
 
 // Workflow execution tracking - keep existing structure (already well-designed)
 model WorkflowExecution {
-  id              String   @id @default(cuid())
-  taskId          Int?     // Optional - Link to current task (created later in workflow)
-  currentRoleId   String   // Active role
-  currentStepId   String?  // Current step being executed
-  executionState  Json     // Current workflow state
-  startedAt       DateTime @default(now())
-  completedAt     DateTime?
-  
+  id             String    @id @default(cuid())
+  taskId         Int? // Optional - Link to current task (created later in workflow)
+  currentRoleId  String // Active role
+  currentStepId  String? // Current step being executed
+  executionState Json // Current workflow state
+  startedAt      DateTime  @default(now())
+  completedAt    DateTime?
+
   // Automatic task management
-  autoCreatedTask Boolean  @default(false)
-  taskCreationData Json?   // Data used to create task
-  
+  autoCreatedTask  Boolean @default(false)
+  taskCreationData Json? // Data used to create task
+
   // Progress tracking
-  stepsCompleted  Int      @default(0)
-  totalSteps      Int?
+  stepsCompleted     Int   @default(0)
+  totalSteps         Int?
   progressPercentage Float @default(0)
-  
+
   // Execution metadata
-  executionMode   WorkflowExecutionMode @default(GUIDED) // GUIDED, AUTOMATED, HYBRID
-  executionContext Json?   // Additional context for execution
-  
+  executionMode    WorkflowExecutionMode @default(GUIDED) // GUIDED, AUTOMATED, HYBRID
+  executionContext Json? // Additional context for execution
+
   // Error handling and recovery
-  lastError       Json?    // Last error encountered
-  recoveryAttempts Int     @default(0)
-  maxRecoveryAttempts Int  @default(3)
-  
+  lastError           Json? // Last error encountered
+  recoveryAttempts    Int   @default(0)
+  maxRecoveryAttempts Int   @default(3)
+
   // Relationships
-  task            Task? @relation(fields: [taskId], references: [id]) // Optional task relation
-  currentRole     WorkflowRole @relation(fields: [currentRoleId], references: [id])
-  currentStep     WorkflowStep? @relation(fields: [currentStepId], references: [id])
-  stepProgress    WorkflowStepProgress[]
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  task         Task?                  @relation(fields: [taskId], references: [id]) // Optional task relation
+  currentRole  WorkflowRole           @relation(fields: [currentRoleId], references: [id])
+  currentStep  WorkflowStep?          @relation(fields: [currentStepId], references: [id])
+  stepProgress WorkflowStepProgress[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([taskId])
   @@index([currentRoleId])
   @@index([currentStepId])

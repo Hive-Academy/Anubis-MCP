@@ -8,9 +8,9 @@
         "-i",
         "--network=host",
         "-v",
-        "D:/projects/cursor-workflow/data:/app/data",
+        "D:/projects/anubis/data:/app/data",
         "-v",
-        "D:/projects/cursor-workflow/workflow-reports:/app/data/anubis-mcp-reports",
+        "D:/projects/anubis/workflow-reports:/app/data/anubis-mcp-reports",
         "hiveacademy/anubis"
       ]
     },
@@ -21,13 +21,13 @@
         "@hive-academy/anubis@latest"
       ],
       "env": {
-        "PROJECT_ROOT": "D:/projects/cursor-workflow"
+        "PROJECT_ROOT": "D:/projects/anubis"
       }
     },
     "anubis": {
       "command": "node",
       "args": [
-        "D:/projects/cursor-workflow/dist/main.js"
+        "D:/projects/anubis/dist/main.js"
       ]
     }
   }
@@ -42,9 +42,9 @@
         "-i",
         "--network=host",
         "-v",
-        "D:/projects/cursor-workflow/data:/app/data",
+        "D:/projects/anubis/data:/app/data",
         "-v",
-        "D:/projects/cursor-workflow/workflow-reports:/app/data/anubis-mcp-reports",
+        "D:/projects/anubis/workflow-reports:/app/data/anubis-mcp-reports",
         "hiveacademy/anubis"
       ]
     }

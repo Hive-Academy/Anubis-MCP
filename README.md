@@ -194,7 +194,7 @@ Begin a new workflow for [your-project] with Anubis guidance
 "Create a user authentication system" →
    Requirements Analysis (Researcher Role)
    System Architecture (Architect Role)
-   Implementation Plan (Senior Dev Role)
+   Enhanced Implementation with Subtasks (Senior Dev Role)
    Quality Validation (Code Review Role)
    Progress Report (Auto-generated)
 ```
@@ -219,7 +219,7 @@ Begin a new workflow for [your-project] with Anubis guidance
   "context": {
     "decisions": ["JWT for auth", "PostgreSQL for storage"],
     "rationale": "Scalability and security requirements",
-    "nextSteps": ["Implementation by Senior Dev role"]
+    "nextSteps": ["Enhanced Implementation with Subtasks by Senior Dev role"]
   }
 }
 // → Switch roles without losing any context!

@@ -18,7 +18,6 @@ model Task {
 
   // Relationships
   taskDescription       TaskDescription?
-  implementationPlans   ImplementationPlan[] // Keep for backward compatibility during transition
   subtasks              Subtask[]
   delegationRecords     DelegationRecord[]
   researchReports       ResearchReport[]
@@ -52,41 +51,12 @@ model TaskDescription {
   // @@map("task_descriptions")
 }
 
-model ImplementationPlan {
-  id                    Int      @id @default(autoincrement())
-  taskId                Int
-  overview              String
-  approach              String
-  technicalDecisions    Json
-  filesToModify         Json     // JSON array of file paths
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  createdBy             String   @default("architect")
 
-  // Enhanced strategic fields for comprehensive planning
-  strategicGuidance     Json?    // Strategic guidance and architectural context
-  strategicContext      Json?    // Context for strategic decisions
-  verificationEvidence  Json?    // Evidence for verification and validation
-  architecturalRationale Json?   // Rationale for architectural decisions
-  redelegationContext   Json?    // Context for redelegation scenarios
-  issueAnalysis         Json?    // Analysis of issues and challenges
-  solutionStrategy      Json?    // Strategy for solution implementation
-  qualityGates          Json?    // Quality gates and checkpoints
-  patternCompliance     Json?    // Pattern compliance requirements
-  antiPatternPrevention Json?    // Anti-pattern prevention measures
-
-  task                  Task     @relation(fields: [taskId], references: [id])
-  subtasks              Subtask[]
-
-  @@index([taskId])
-  @@index([createdBy])
-  // @@map("implementation_plans")
-}
 
 model Subtask {
   id                    Int      @id @default(autoincrement())
   taskId                Int
-  planId                Int?     // Made optional - subtasks can be directly linked to tasks
+  planId                Int?     // Legacy field - kept for migration compatibility
   name                  String
   description           String
   sequenceNumber        Int
@@ -137,7 +107,7 @@ model Subtask {
   actualDuration            String?   // Actual time taken for completion
 
   task                  Task     @relation(fields: [taskId], references: [id])
-  implementationPlan    ImplementationPlan? @relation(fields: [planId], references: [id]) // Made optional
+  // implementationPlan relationship removed - planId kept as legacy field
   dependencies_from     SubtaskDependency[] @relation("DependentSubtask")
   dependencies_to       SubtaskDependency[] @relation("RequiredSubtask")
   comments              Comment[]
