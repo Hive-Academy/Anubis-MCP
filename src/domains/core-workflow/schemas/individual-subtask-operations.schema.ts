@@ -126,7 +126,8 @@ export type IndividualSubtaskOperationsInput = z.infer<
 >;
 
 // Export schema for MCP tool usage
-export const IndividualSubtaskOperationsInputSchema = IndividualSubtaskOperationsSchema;
+export const IndividualSubtaskOperationsInputSchema =
+  IndividualSubtaskOperationsSchema;
 
 // NEW: Type definitions for bulk creation results
 export interface BulkSubtaskCreationResult {

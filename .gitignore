@@ -20,3 +20,5 @@ yarn-error.log*
 
 /.vscode
 /.vscode/mcp.json
+/build-anubis
+/.anubis

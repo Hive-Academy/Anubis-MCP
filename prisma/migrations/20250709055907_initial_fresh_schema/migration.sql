@@ -194,6 +194,9 @@ CREATE TABLE "workflow_roles" (
     "description" TEXT NOT NULL,
     "priority" INTEGER NOT NULL DEFAULT 0,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "capabilities" JSONB,
+    "coreResponsibilities" JSONB,
+    "keyCapabilities" JSONB,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
 );
@@ -231,18 +234,6 @@ CREATE TABLE "quality_checks" (
 );
 
 -- CreateTable
-CREATE TABLE "mcp_actions" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "name" TEXT NOT NULL,
-    "serviceName" TEXT NOT NULL,
-    "operation" TEXT NOT NULL,
-    "parameters" JSONB,
-    "sequenceOrder" INTEGER NOT NULL,
-    "stepId" TEXT NOT NULL,
-    CONSTRAINT "mcp_actions_stepId_fkey" FOREIGN KEY ("stepId") REFERENCES "workflow_steps" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- CreateTable
 CREATE TABLE "step_dependencies" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "dependsOnStep" TEXT NOT NULL,
@@ -260,51 +251,15 @@ CREATE TABLE "role_transitions" (
     "description" TEXT NOT NULL DEFAULT 'Role transition',
     "handoffMessage" TEXT NOT NULL DEFAULT 'Transitioning to next role',
     "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "conditions" JSONB,
+    "requirements" JSONB,
+    "validationCriteria" JSONB,
+    "contextElements" JSONB,
+    "deliverables" JSONB,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
     CONSTRAINT "role_transitions_fromRoleId_fkey" FOREIGN KEY ("fromRoleId") REFERENCES "workflow_roles" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "role_transitions_toRoleId_fkey" FOREIGN KEY ("toRoleId") REFERENCES "workflow_roles" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "transition_conditions" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "name" TEXT NOT NULL,
-    "value" BOOLEAN NOT NULL,
-    "transitionId" TEXT NOT NULL,
-    CONSTRAINT "transition_conditions_transitionId_fkey" FOREIGN KEY ("transitionId") REFERENCES "role_transitions" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "transition_requirements" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "requirement" TEXT NOT NULL,
-    "transitionId" TEXT NOT NULL,
-    CONSTRAINT "transition_requirements_transitionId_fkey" FOREIGN KEY ("transitionId") REFERENCES "role_transitions" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "transition_validations" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "criterion" TEXT NOT NULL,
-    "transitionId" TEXT NOT NULL,
-    CONSTRAINT "transition_validations_transitionId_fkey" FOREIGN KEY ("transitionId") REFERENCES "role_transitions" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "transition_contexts" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "contextKey" TEXT NOT NULL,
-    "transitionId" TEXT NOT NULL,
-    CONSTRAINT "transition_contexts_transitionId_fkey" FOREIGN KEY ("transitionId") REFERENCES "role_transitions" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "transition_deliverables" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "deliverable" TEXT NOT NULL,
-    "transitionId" TEXT NOT NULL,
-    CONSTRAINT "transition_deliverables_transitionId_fkey" FOREIGN KEY ("transitionId") REFERENCES "role_transitions" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -360,7 +315,7 @@ CREATE TABLE "workflow_executions" (
 );
 
 -- CreateTable
-CREATE TABLE "Task" (
+CREATE TABLE "task" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "name" TEXT NOT NULL,
     "slug" TEXT,
@@ -377,7 +332,7 @@ CREATE TABLE "Task" (
 );
 
 -- CreateTable
-CREATE TABLE "TaskDescription" (
+CREATE TABLE "task_description" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "taskId" INTEGER NOT NULL,
     "description" TEXT NOT NULL,
@@ -390,61 +345,26 @@ CREATE TABLE "TaskDescription" (
 );
 
 -- CreateTable
-CREATE TABLE "ImplementationPlan" (
+CREATE TABLE "subtask" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "taskId" INTEGER NOT NULL,
-    "overview" TEXT NOT NULL,
-    "approach" TEXT NOT NULL,
-    "technicalDecisions" JSONB NOT NULL,
-    "filesToModify" JSONB NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    "createdBy" TEXT NOT NULL DEFAULT 'architect',
-    "strategicGuidance" JSONB,
-    "strategicContext" JSONB,
-    "verificationEvidence" JSONB,
-    "architecturalRationale" JSONB,
-    "redelegationContext" JSONB,
-    "issueAnalysis" JSONB,
-    "solutionStrategy" JSONB,
-    "qualityGates" JSONB,
-    "patternCompliance" JSONB,
-    "antiPatternPrevention" JSONB,
-    CONSTRAINT "ImplementationPlan_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "Subtask" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "taskId" INTEGER NOT NULL,
-    "planId" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "sequenceNumber" INTEGER NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'not-started',
-    "assignedTo" TEXT,
-    "estimatedDuration" TEXT,
-    "startedAt" DATETIME,
-    "completedAt" DATETIME,
     "batchId" TEXT,
     "batchTitle" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    "strategicGuidance" JSONB,
-    "qualityConstraints" JSONB,
-    "successCriteria" JSONB,
-    "architecturalRationale" JSONB,
+    "implementationApproach" TEXT,
     "acceptanceCriteria" JSONB,
-    "technicalSpecifications" JSONB,
     "dependencies" JSONB,
     "completionEvidence" JSONB,
-    "actualDuration" TEXT,
-    CONSTRAINT "Subtask_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "Subtask_planId_fkey" FOREIGN KEY ("planId") REFERENCES "ImplementationPlan" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "Subtask_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
-CREATE TABLE "SubtaskDependency" (
+CREATE TABLE "subtask_dependency" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "dependentSubtaskId" INTEGER NOT NULL,
     "requiredSubtaskId" INTEGER NOT NULL,
@@ -454,7 +374,7 @@ CREATE TABLE "SubtaskDependency" (
 );
 
 -- CreateTable
-CREATE TABLE "DelegationRecord" (
+CREATE TABLE "delegation_record" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "taskId" INTEGER NOT NULL,
     "fromMode" TEXT NOT NULL,
@@ -465,7 +385,7 @@ CREATE TABLE "DelegationRecord" (
 );
 
 -- CreateTable
-CREATE TABLE "ResearchReport" (
+CREATE TABLE "research_report" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "taskId" INTEGER NOT NULL,
     "title" TEXT NOT NULL,
@@ -479,7 +399,7 @@ CREATE TABLE "ResearchReport" (
 );
 
 -- CreateTable
-CREATE TABLE "CodeReview" (
+CREATE TABLE "code_review" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "taskId" INTEGER NOT NULL,
     "status" TEXT NOT NULL,
@@ -495,7 +415,7 @@ CREATE TABLE "CodeReview" (
 );
 
 -- CreateTable
-CREATE TABLE "CompletionReport" (
+CREATE TABLE "completion_report" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "taskId" INTEGER NOT NULL,
     "summary" TEXT NOT NULL,
@@ -508,20 +428,7 @@ CREATE TABLE "CompletionReport" (
 );
 
 -- CreateTable
-CREATE TABLE "Comment" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "taskId" INTEGER NOT NULL,
-    "subtaskId" INTEGER,
-    "mode" TEXT NOT NULL,
-    "content" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "Comment_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "Comment_subtaskId_fkey" FOREIGN KEY ("subtaskId") REFERENCES "Subtask" ("id") ON DELETE SET NULL ON UPDATE CASCADE
-);
-
--- CreateTable
-CREATE TABLE "WorkflowTransition" (
+CREATE TABLE "workflow_transition" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "taskId" INTEGER NOT NULL,
     "fromMode" TEXT NOT NULL,
@@ -533,13 +440,12 @@ CREATE TABLE "WorkflowTransition" (
 );
 
 -- CreateTable
-CREATE TABLE "CodebaseAnalysis" (
+CREATE TABLE "codebase_analysis" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "taskId" INTEGER NOT NULL,
     "architectureFindings" JSONB NOT NULL,
     "problemsIdentified" JSONB NOT NULL,
     "implementationContext" JSONB NOT NULL,
-    "integrationPoints" JSONB NOT NULL,
     "qualityAssessment" JSONB NOT NULL,
     "filesCovered" JSONB NOT NULL,
     "technologyStack" JSONB NOT NULL,
@@ -650,9 +556,6 @@ CREATE UNIQUE INDEX "step_guidance_stepId_key" ON "step_guidance"("stepId");
 CREATE INDEX "quality_checks_stepId_sequenceOrder_idx" ON "quality_checks"("stepId", "sequenceOrder");
 
 -- CreateIndex
-CREATE INDEX "mcp_actions_stepId_sequenceOrder_idx" ON "mcp_actions"("stepId", "sequenceOrder");
-
--- CreateIndex
 CREATE INDEX "step_dependencies_stepId_idx" ON "step_dependencies"("stepId");
 
 -- CreateIndex
@@ -695,70 +598,61 @@ CREATE INDEX "workflow_executions_currentStepId_idx" ON "workflow_executions"("c
 CREATE INDEX "workflow_executions_progressPercentage_idx" ON "workflow_executions"("progressPercentage");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Task_slug_key" ON "Task"("slug");
+CREATE UNIQUE INDEX "Task_slug_key" ON "task"("slug");
 
 -- CreateIndex
-CREATE INDEX "Task_status_idx" ON "Task"("status");
+CREATE INDEX "Task_status_idx" ON "task"("status");
 
 -- CreateIndex
-CREATE INDEX "Task_owner_idx" ON "Task"("owner");
+CREATE INDEX "Task_owner_idx" ON "task"("owner");
 
 -- CreateIndex
-CREATE INDEX "Task_currentMode_idx" ON "Task"("currentMode");
+CREATE INDEX "Task_currentMode_idx" ON "task"("currentMode");
 
 -- CreateIndex
-CREATE INDEX "Task_priority_idx" ON "Task"("priority");
+CREATE INDEX "Task_priority_idx" ON "task"("priority");
 
 -- CreateIndex
-CREATE INDEX "Task_slug_idx" ON "Task"("slug");
+CREATE INDEX "Task_slug_idx" ON "task"("slug");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "TaskDescription_taskId_key" ON "TaskDescription"("taskId");
+CREATE UNIQUE INDEX "TaskDescription_taskId_key" ON "task_description"("taskId");
 
 -- CreateIndex
-CREATE INDEX "ImplementationPlan_taskId_idx" ON "ImplementationPlan"("taskId");
+CREATE INDEX "Subtask_taskId_idx" ON "subtask"("taskId");
 
 -- CreateIndex
-CREATE INDEX "ImplementationPlan_createdBy_idx" ON "ImplementationPlan"("createdBy");
+CREATE INDEX "Subtask_status_idx" ON "subtask"("status");
 
 -- CreateIndex
-CREATE INDEX "Subtask_taskId_idx" ON "Subtask"("taskId");
+CREATE INDEX "Subtask_batchId_idx" ON "subtask"("batchId");
 
 -- CreateIndex
-CREATE INDEX "Subtask_planId_idx" ON "Subtask"("planId");
+CREATE INDEX "Subtask_sequenceNumber_idx" ON "subtask"("sequenceNumber");
 
 -- CreateIndex
-CREATE INDEX "Subtask_status_idx" ON "Subtask"("status");
+CREATE INDEX "SubtaskDependency_dependentSubtaskId_idx" ON "subtask_dependency"("dependentSubtaskId");
 
 -- CreateIndex
-CREATE INDEX "Subtask_batchId_idx" ON "Subtask"("batchId");
+CREATE INDEX "SubtaskDependency_requiredSubtaskId_idx" ON "subtask_dependency"("requiredSubtaskId");
 
 -- CreateIndex
-CREATE INDEX "Subtask_sequenceNumber_idx" ON "Subtask"("sequenceNumber");
+CREATE UNIQUE INDEX "SubtaskDependency_dependentSubtaskId_requiredSubtaskId_key" ON "subtask_dependency"("dependentSubtaskId", "requiredSubtaskId");
 
 -- CreateIndex
-CREATE INDEX "SubtaskDependency_dependentSubtaskId_idx" ON "SubtaskDependency"("dependentSubtaskId");
+CREATE INDEX "DelegationRecord_taskId_idx" ON "delegation_record"("taskId");
 
 -- CreateIndex
-CREATE INDEX "SubtaskDependency_requiredSubtaskId_idx" ON "SubtaskDependency"("requiredSubtaskId");
+CREATE INDEX "DelegationRecord_fromMode_idx" ON "delegation_record"("fromMode");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "SubtaskDependency_dependentSubtaskId_requiredSubtaskId_key" ON "SubtaskDependency"("dependentSubtaskId", "requiredSubtaskId");
+CREATE INDEX "DelegationRecord_toMode_idx" ON "delegation_record"("toMode");
 
 -- CreateIndex
-CREATE INDEX "DelegationRecord_taskId_idx" ON "DelegationRecord"("taskId");
+CREATE UNIQUE INDEX "CodebaseAnalysis_taskId_key" ON "codebase_analysis"("taskId");
 
 -- CreateIndex
-CREATE INDEX "DelegationRecord_fromMode_idx" ON "DelegationRecord"("fromMode");
+CREATE INDEX "CodebaseAnalysis_taskId_idx" ON "codebase_analysis"("taskId");
 
 -- CreateIndex
-CREATE INDEX "DelegationRecord_toMode_idx" ON "DelegationRecord"("toMode");
-
--- CreateIndex
-CREATE UNIQUE INDEX "CodebaseAnalysis_taskId_key" ON "CodebaseAnalysis"("taskId");
-
--- CreateIndex
-CREATE INDEX "CodebaseAnalysis_taskId_idx" ON "CodebaseAnalysis"("taskId");
-
--- CreateIndex
-CREATE INDEX "CodebaseAnalysis_analyzedBy_idx" ON "CodebaseAnalysis"("analyzedBy");
+CREATE INDEX "CodebaseAnalysis_analyzedBy_idx" ON "codebase_analysis"("analyzedBy");

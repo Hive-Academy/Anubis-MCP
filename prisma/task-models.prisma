@@ -27,13 +27,13 @@ model Task {
   workflowTransitions WorkflowTransition[]
   codebaseAnalysis    CodebaseAnalysis?
   workflowExecutions  WorkflowExecution[]
-  // @@map("tasks")
 
   @@index([status])
   @@index([owner])
   @@index([currentMode])
   @@index([priority])
   @@index([slug])
+  @@map("tasks")
 }
 
 model TaskDescription {
@@ -48,7 +48,7 @@ model TaskDescription {
 
   task Task @relation(fields: [taskId], references: [id])
 
-  // @@map("task_descriptions")
+  @@map("task_descriptions")
 }
 
 model Subtask {
@@ -80,12 +80,12 @@ model Subtask {
   task              Task                @relation(fields: [taskId], references: [id])
   dependencies_from SubtaskDependency[] @relation("DependentSubtask")
   dependencies_to   SubtaskDependency[] @relation("RequiredSubtask")
-  // @@map("subtasks")
 
   @@index([taskId])
   @@index([status])
   @@index([batchId])
   @@index([sequenceNumber])
+  @@map("subtasks")
 }
 
 model SubtaskDependency {
@@ -96,11 +96,11 @@ model SubtaskDependency {
 
   dependentSubtask Subtask @relation("DependentSubtask", fields: [dependentSubtaskId], references: [id])
   requiredSubtask  Subtask @relation("RequiredSubtask", fields: [requiredSubtaskId], references: [id])
-  // @@map("subtask_dependencies")
 
   @@unique([dependentSubtaskId, requiredSubtaskId])
   @@index([dependentSubtaskId])
   @@index([requiredSubtaskId])
+  @@map("subtask_dependencies")
 }
 
 model DelegationRecord {
@@ -112,11 +112,11 @@ model DelegationRecord {
   message             String?
 
   task Task @relation(fields: [taskId], references: [id])
-  // @@map("delegation_records")
 
   @@index([taskId])
   @@index([fromMode])
   @@index([toMode])
+  @@map("delegation_records")
 }
 
 model ResearchReport {
@@ -132,7 +132,7 @@ model ResearchReport {
 
   task Task @relation(fields: [taskId], references: [id])
 
-  // @@map("research_reports")
+  @@map("research_reports")
 }
 
 model CodeReview {
@@ -150,7 +150,7 @@ model CodeReview {
 
   task Task @relation(fields: [taskId], references: [id])
 
-  // @@map("code_reviews")
+  @@map("code_reviews")
 }
 
 model CompletionReport {
@@ -165,7 +165,7 @@ model CompletionReport {
 
   task Task @relation(fields: [taskId], references: [id])
 
-  // @@map("completion_reports")
+  @@map("completion_reports")
 }
 
 model WorkflowTransition {
@@ -179,7 +179,7 @@ model WorkflowTransition {
 
   task Task @relation(fields: [taskId], references: [id])
 
-  // @@map("workflow_transitions")
+  @@map("workflow_transitions")
 }
 
 // CodebaseAnalysis model for storing structured codebase analysis results
@@ -205,8 +205,8 @@ model CodebaseAnalysis {
   analysisVersion String   @default("1.0") // For tracking analysis evolution
 
   task Task @relation(fields: [taskId], references: [id])
-  // @@map("codebase_analysis")
 
   @@index([taskId])
   @@index([analyzedBy])
+  @@map("codebase_analysis")
 }
