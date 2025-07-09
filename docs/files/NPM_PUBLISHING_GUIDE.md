@@ -6,7 +6,7 @@ This guide documents the optimized NPM publishing process for the Anubis MCP Ser
 
 The Anubis package uses a **pre-built approach** that:
 
-- ✅ **Bundles a pre-seeded database** (`prisma/data/workflow.db`, ~589 kB)
+- ✅ **Bundles a pre-seeded database** (`prisma/.anubis/workflow.db`, ~589 kB)
 - ✅ **Excludes generated Prisma files** (saves 99.5% space)
 - ✅ **Uses runtime Prisma generation** for NPM packages
 - ✅ **Copies database to user's project directory** (not NPM cache)
@@ -27,7 +27,7 @@ npm view @hive-academy/anubis version
 
 ```bash
 # Ensure pre-seeded database exists
-ls -la prisma/data/workflow.db
+ls -la prisma/.anubis/workflow.db
 # Should be ~589.8kB
 
 # If missing, regenerate:
@@ -148,7 +148,7 @@ When users run `npx @hive-academy/anubis`:
 
 ### Issue: Database Not Found
 
-**Cause**: Missing `prisma/data/workflow.db`
+**Cause**: Missing `prisma/.anubis/workflow.db`
 **Solution**:
 
 ```bash
@@ -211,7 +211,7 @@ npx @hive-academy/anubis@latest
 # Verify database creation in test directory
 cd /tmp/test-project
 npx @hive-academy/anubis@latest
-ls -la data/workflow.db  # Should exist
+ls -la .anubis/workflow.db  # Should exist
 ```
 
 ### Package Health Check

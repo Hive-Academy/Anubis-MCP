@@ -4,7 +4,7 @@ FROM node:22-alpine AS builder
 # Add metadata labels for Docker Hub
 LABEL org.opencontainers.image.title="Anubis"
 LABEL org.opencontainers.image.description="🏺 𓂀𓁢𓋹𝔸ℕ𝕌𝔹𝕀𝕊𓋹𓁢𓂀 - Intelligent Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development"
-LABEL org.opencontainers.image.version="1.2.8"
+LABEL org.opencontainers.image.version="1.2.11"
 LABEL org.opencontainers.image.authors="Hive Academy <abdallah@nghive.tech>"
 LABEL org.opencontainers.image.source="https://github.com/Hive-Academy/Anubis-MCP"
 LABEL org.opencontainers.image.documentation="https://github.com/Hive-Academy/Anubis-MCP/blob/main/README.md"
@@ -43,7 +43,7 @@ FROM node:22-alpine AS production
 # Add same metadata to final image
 LABEL org.opencontainers.image.title="Anubis"
 LABEL org.opencontainers.image.description="🏺 Anubis - Intelligent Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development"
-LABEL org.opencontainers.image.version="1.2.8"
+LABEL org.opencontainers.image.version="1.2.11"
 LABEL org.opencontainers.image.authors="Hive Academy <abdallah@nghive.tech>"
 LABEL org.opencontainers.image.source="https://github.com/Hive-Academy/Anubis-MCP"
 LABEL org.opencontainers.image.documentation="https://github.com/Hive-Academy/Anubis-MCP/blob/main/README.md"
@@ -88,8 +88,8 @@ COPY --chown=nestjs:nodejs README.md ./
 RUN mkdir -p /app/data && chown -R nestjs:nodejs /app/data
 
 # Create the actual report directory structure where reports are generated
-RUN mkdir -p /app/data/anubis-reports/temp \
-    && chown -R nestjs:nodejs /app/data/anubis-reports
+RUN mkdir -p /app/anubis-reports/temp \
+    && chown -R nestjs:nodejs /app/anubis-reports
 
 # Create the reports directory that ReportRenderingService expects
 RUN mkdir -p /app/reports/rendered \
@@ -106,7 +106,7 @@ RUN chown -R nestjs:nodejs /app/temp /app/templates
 RUN echo '#!/bin/bash' > /app/init-db.sh && \
     echo 'set -e' >> /app/init-db.sh && \
     echo 'echo "🔍 Checking database initialization..."' >> /app/init-db.sh && \
-    echo 'if [ ! -f "/app/data/workflow.db" ] || [ ! -s "/app/data/workflow.db" ]; then' >> /app/init-db.sh && \
+    echo 'if [ ! -f "/app/.anubis/workflow.db" ] || [ ! -s "/app/.anubis/workflow.db" ]; then' >> /app/init-db.sh && \
     echo '  echo "📋 Database not found or empty, deploying migrations..."' >> /app/init-db.sh && \
     echo '  npx prisma migrate deploy --schema=./prisma/schema.prisma' >> /app/init-db.sh && \
     echo '  echo "✅ Migrations deployed successfully"' >> /app/init-db.sh && \
@@ -124,11 +124,11 @@ RUN echo '#!/bin/bash' > /app/init-db.sh && \
 # Set default environment variables
 ENV RUNNING_IN_DOCKER="true"
 ENV MCP_SERVER_NAME="Anubis"
-ENV MCP_SERVER_VERSION="1.2.8"
+ENV MCP_SERVER_VERSION="1.2.11"
 ENV MCP_TRANSPORT_TYPE="STDIO"
 ENV NODE_ENV="production"
 ENV PORT="3000"
-ENV DATABASE_URL="file:/app/data/workflow.db"
+ENV DATABASE_URL="file:/app/.anubis/workflow.db"
 
 # Switch to non-root user
 USER nestjs

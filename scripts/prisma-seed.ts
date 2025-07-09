@@ -74,12 +74,10 @@ interface RoleTransition {
 
 const ROLES = [
   'boomerang',
-  'researcher',
   'architect',
   'senior-developer',
   'code-review',
   'integration-engineer',
-  'turbo-dev',
 ];
 
 // Determine the correct path for JSON files based on environment
@@ -139,13 +137,7 @@ async function resetDatabase() {
     await prisma.workflowExecution.deleteMany();
 
     // Delete structured workflow data
-    await prisma.transitionDeliverable.deleteMany();
-    await prisma.transitionContext.deleteMany();
-    await prisma.transitionValidation.deleteMany();
-    await prisma.transitionRequirement.deleteMany();
-    await prisma.transitionCondition.deleteMany();
     await prisma.stepDependency.deleteMany();
-    await prisma.mcpAction.deleteMany();
     await prisma.qualityCheck.deleteMany();
     await prisma.stepGuidance.deleteMany();
 
@@ -275,27 +267,6 @@ async function seedWorkflowSteps(jsonBasePath: string) {
           }
         }
 
-        // Create MCP actions
-        if (step.actions && step.actions.length > 0) {
-          for (const action of step.actions) {
-            if (action.actionType === 'MCP_CALL') {
-              await prisma.mcpAction.create({
-                data: {
-                  stepId: createdStep.id,
-                  name: action.name,
-                  serviceName: action.actionData.serviceName,
-                  operation: action.actionData.operation,
-                  parameters: {
-                    requiredParameters:
-                      action.actionData.requiredParameters || [],
-                  },
-                  sequenceOrder: action.sequenceOrder || 1,
-                },
-              });
-            }
-          }
-        }
-
         // Create step dependencies
         if (step.conditions && step.conditions.length > 0) {
           for (const condition of step.conditions) {
@@ -373,71 +344,37 @@ async function seedRoleTransitions(jsonBasePath: string) {
           },
         });
 
-        // Create transition conditions
-        if (transition.conditions) {
-          for (const [name, value] of Object.entries(transition.conditions)) {
-            await prisma.transitionCondition.create({
-              data: {
-                transitionId: createdTransition.id,
-                name: name,
-                value: Boolean(value),
-              },
-            });
-          }
-        }
+        // Prepare JSON data for transition fields
+        const conditionsArray = transition.conditions
+          ? Object.entries(transition.conditions).map(([name, value]) => ({
+              name,
+              value: Boolean(value),
+            }))
+          : undefined;
 
-        // Create transition requirements
-        if (transition.requirements) {
-          for (const [requirement] of Object.entries(transition.requirements)) {
-            await prisma.transitionRequirement.create({
-              data: {
-                transitionId: createdTransition.id,
-                requirement: requirement,
-              },
-            });
-          }
-        }
+        const requirementsArray = transition.requirements
+          ? transition.requirements
+          : undefined;
 
-        // Create validation criteria
-        if (transition.validationRules) {
-          for (const [criterion] of Object.entries(
-            transition.validationRules,
-          )) {
-            await prisma.transitionValidation.create({
-              data: {
-                transitionId: createdTransition.id,
-                criterion: criterion,
-              },
-            });
-          }
-        }
+        const contextArray = transition.handoffGuidance?.contextToPreserve
+          ? transition.handoffGuidance.contextToPreserve
+          : undefined;
 
-        // Create context elements
-        if (transition.contextPreservation) {
-          for (const [contextKey] of Object.entries(
-            transition.contextPreservation,
-          )) {
-            await prisma.transitionContext.create({
-              data: {
-                transitionId: createdTransition.id,
-                contextKey: contextKey,
-              },
-            });
-          }
-        }
+        const deliverablesArray = transition.handoffGuidance
+          ?.expectedDeliverables
+          ? transition.handoffGuidance.expectedDeliverables
+          : undefined;
 
-        // Create deliverables
-        if (transition.handoffGuidance?.expectedDeliverables) {
-          for (const deliverable of transition.handoffGuidance
-            .expectedDeliverables) {
-            await prisma.transitionDeliverable.create({
-              data: {
-                transitionId: createdTransition.id,
-                deliverable: deliverable,
-              },
-            });
-          }
-        }
+        // Update the transition with JSON data
+        await prisma.roleTransition.update({
+          where: { id: createdTransition.id },
+          data: {
+            conditions: conditionsArray || undefined,
+            requirements: requirementsArray || undefined,
+            contextElements: contextArray || undefined,
+            deliverables: deliverablesArray || undefined,
+          },
+        });
 
         console.log(`✅ Created transition: ${transition.transitionName}`);
       } catch (error) {
@@ -459,7 +396,6 @@ async function validateSeeding() {
   const transitionCount = await prisma.roleTransition.count();
   const guidanceCount = await prisma.stepGuidance.count();
   const qualityCheckCount = await prisma.qualityCheck.count();
-  const mcpActionCount = await prisma.mcpAction.count();
   const dependencyCount = await prisma.stepDependency.count();
 
   console.log(`📊 Seeding Summary:`);
@@ -468,7 +404,6 @@ async function validateSeeding() {
   console.log(`   - Role Transitions: ${transitionCount}`);
   console.log(`   - Step Guidance: ${guidanceCount}`);
   console.log(`   - Quality Checks: ${qualityCheckCount}`);
-  console.log(`   - MCP Actions: ${mcpActionCount}`);
   console.log(`   - Step Dependencies: ${dependencyCount}`);
 
   if (roleCount === 0 || stepCount === 0) {

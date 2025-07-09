@@ -1,9 +1,0 @@
-export { HtmlHeadGenerator } from './html-head.generator';
-export { HeaderGenerator } from './header.generator';
-export { MetricsCardsGenerator } from './metrics-cards.generator';
-export { ChartsGenerator } from './charts.generator';
-export { TasksListGenerator } from './tasks-list.generator';
-export { DelegationsTableGenerator } from './delegations-table.generator';
-export { QuickActionsGenerator } from './quick-actions.generator';
-export { FooterGenerator } from './footer.generator';
-export { ScriptsGenerator } from './scripts.generator';

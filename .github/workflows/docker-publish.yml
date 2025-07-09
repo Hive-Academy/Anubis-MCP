@@ -34,7 +34,7 @@ env:
   REGISTRY: docker.io
   IMAGE_NAME: hiveacademy/anubis
   PACKAGE_NAME: '@hive-academy/anubis'
-  DATABASE_URL: 'file:./prisma/data/workflow.db'
+  DATABASE_URL: 'file:./prisma/.anubis/workflow.db'
 
 jobs:
   build-and-publish:
@@ -165,12 +165,12 @@ jobs:
       - name: Database template verification
         run: |
           echo "🔍 Verifying pre-seeded database template..."
-          if [ -f "prisma/data/workflow.db" ]; then
-            DB_SIZE=$(ls -lh prisma/data/workflow.db | awk '{print $5}')
+          if [ -f "prisma/.anubis/workflow.db" ]; then
+            DB_SIZE=$(ls -lh prisma/.anubis/workflow.db | awk '{print $5}')
             echo "✅ Pre-seeded database found: $DB_SIZE"
             
             # Verify it's approximately the expected size (~589kB)
-            DB_SIZE_BYTES=$(stat -c%s prisma/data/workflow.db)
+            DB_SIZE_BYTES=$(stat -c%s prisma/.anubis/workflow.db)
             if [ $DB_SIZE_BYTES -gt 500000 ] && [ $DB_SIZE_BYTES -lt 700000 ]; then
               echo "✅ Database size is within expected range (500kB-700kB)"
             else
@@ -188,7 +188,7 @@ jobs:
             npx prisma db push --accept-data-loss
             npm run db:seed
             
-            if [ -f "prisma/data/workflow.db" ]; then
+            if [ -f "prisma/.anubis/workflow.db" ]; then
               echo "✅ Database template regenerated successfully"
             else
               echo "❌ Failed to generate database template"
