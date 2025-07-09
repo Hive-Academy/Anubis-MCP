@@ -37,65 +37,37 @@ export class WorkflowBootstrapMcpService extends BaseMcpService {
       const result = await this.bootstrapService.bootstrapWorkflow(input);
 
       if (!result.success) {
-        return {
-          content: [
-            {
-              type: 'text' as const,
-              text: this.buildErrorResponse(result.message, '', 'ERROR'),
-            },
-          ],
-        };
+        return this.buildErrorResponse(result.message, '', 'ERROR');
       }
 
       // Return streamlined response with essential data only
       // Remove duplication of currentRole and currentStep (they're in resources)
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: this.buildResponse({
-              success: true,
-              message: result.message,
-              executionId: result.resources.executionId,
-              taskId: result.resources.taskId,
-              currentRole: {
-                id: result.currentRole.id,
-                name: result.currentRole.name,
-                description: result.currentRole.description,
-                capabilities: result.currentRole.capabilities,
-                coreResponsibilities: result.currentRole.coreResponsibilities,
-                keyCapabilities: result.currentRole.keyCapabilities,
-              },
-              currentStep: {
-                id: result.currentStep.id,
-                name: result.currentStep.name,
-                description: result.currentStep.description,
-              },
-              timestamp: new Date().toISOString(),
-            }),
-          },
-        ],
-      };
+      return this.buildResponse({
+        success: true,
+        message: result.message,
+        executionId: result.resources.executionId,
+        taskId: result.resources.taskId,
+        currentRole: {
+          id: result.currentRole.id,
+          name: result.currentRole.name,
+          description: result.currentRole.description,
+          capabilities: result.currentRole.capabilities,
+          coreResponsibilities: result.currentRole.coreResponsibilities,
+          keyCapabilities: result.currentRole.keyCapabilities,
+        },
+        currentStep: {
+          id: result.currentStep.id,
+          name: result.currentStep.name,
+          description: result.currentStep.description,
+        },
+        timestamp: new Date().toISOString(),
+      });
     } catch (error: any) {
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: JSON.stringify(
-              {
-                success: false,
-                error: {
-                  message: error.message,
-                  code: 'BOOTSTRAP_ERROR',
-                },
-                timestamp: new Date().toISOString(),
-              },
-              null,
-              2,
-            ),
-          },
-        ],
-      };
+      return this.buildErrorResponse(
+        error.message,
+        'Bootstrap workflow failed',
+        'BOOTSTRAP_ERROR',
+      );
     }
   }
 }

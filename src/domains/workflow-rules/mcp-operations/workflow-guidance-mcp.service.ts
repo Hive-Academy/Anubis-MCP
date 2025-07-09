@@ -141,44 +141,18 @@ export class WorkflowGuidanceMcpService extends BaseMcpService {
         : null;
 
       // Return minimal essential-only response with execution context
-      return {
-        content: [
-          {
-            type: 'text',
-            text: this.buildResponse({
-              success: true,
-              currentRole: roleGuidance.currentRole,
-              projectContext: roleGuidance.projectContext,
-              executionContext: executionContext,
-            }),
-          },
-        ],
-      };
+      return this.buildResponse({
+        success: true,
+        currentRole: roleGuidance.currentRole,
+        projectContext: roleGuidance.projectContext,
+        executionContext: executionContext,
+      });
     } catch (error: any) {
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: JSON.stringify(
-              {
-                success: false,
-                error: {
-                  message: error.message,
-                  code: 'WORKFLOW_GUIDANCE_ERROR',
-                  debugInfo: {
-                    taskId: input.taskId,
-                    roleId: input.roleId,
-                    roleName: input.roleName,
-                    timestamp: new Date().toISOString(),
-                  },
-                },
-              },
-              null,
-              2,
-            ),
-          },
-        ],
-      };
+      return this.buildErrorResponse(
+        'Failed to get workflow guidance',
+        error.message,
+        'GUIDANCE_ERROR',
+      );
     }
   }
 

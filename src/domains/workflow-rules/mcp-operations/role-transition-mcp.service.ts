@@ -143,7 +143,6 @@ export class RoleTransitionMcpService extends BaseMcpService {
         status: validation.valid ? 'passed' : 'failed',
         issues: validation.errors || [],
         warnings: validation.warnings || [],
-        // ❌ REMOVED: nextAction (hardcoded flow control)
       });
     } catch (error) {
       return this.buildErrorResponse(
