@@ -21,22 +21,8 @@ export const IndividualSubtaskOperationsSchema = z.object({
       batchTitle: z.string().optional(), // Optional - batch title
       sequenceNumber: z.number(), // REQUIRED - order within batch
       acceptanceCriteria: z.array(z.string()).optional(), // Array of specific testable requirements
-      strategicGuidance: z
-        .object({
-          architecturalPattern: z.string().optional(),
-          implementationApproach: z.string().optional(),
-          qualityRequirements: z.string().optional(),
-          performanceConsiderations: z.string().optional(),
-        })
-        .optional(), // Detailed guidance object
-      technicalSpecifications: z
-        .object({
-          frameworks: z.array(z.string()).optional(),
-          patterns: z.array(z.string()).optional(),
-          testingRequirements: z.string().optional(),
-        })
-        .optional(), // Technical specs object
-      estimatedDuration: z.string().optional(), // Time estimate
+      implementationApproach: z.string().optional(), // Detailed approach and technical specifications
+      // Dependencies
       dependencies: z.array(z.string()).optional(), // Array of prerequisite subtask names
     })
     .optional(),
@@ -55,22 +41,8 @@ export const IndividualSubtaskOperationsSchema = z.object({
               description: z.string(), // REQUIRED - detailed description
               sequenceNumber: z.number(), // REQUIRED - order within batch
               acceptanceCriteria: z.array(z.string()).optional(),
-              strategicGuidance: z
-                .object({
-                  architecturalPattern: z.string().optional(),
-                  implementationApproach: z.string().optional(),
-                  qualityRequirements: z.string().optional(),
-                  performanceConsiderations: z.string().optional(),
-                })
-                .optional(),
-              technicalSpecifications: z
-                .object({
-                  frameworks: z.array(z.string()).optional(),
-                  patterns: z.array(z.string()).optional(),
-                  testingRequirements: z.string().optional(),
-                })
-                .optional(),
-              estimatedDuration: z.string().optional(),
+              implementationApproach: z.string().optional(), // Detailed approach and technical specifications
+              // Dependencies
               dependencies: z.array(z.string()).optional(), // Dependencies within this batch or across batches
             }),
           ),
@@ -127,7 +99,7 @@ export const IndividualSubtaskOperationsSchema = z.object({
               security: z.string().optional(),
             })
             .optional(),
-          strategicGuidanceFollowed: z.string().optional(),
+
           duration: z.string().optional(),
         })
         .optional(),

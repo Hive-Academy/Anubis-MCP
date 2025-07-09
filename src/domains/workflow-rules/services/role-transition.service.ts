@@ -138,9 +138,6 @@ export class RoleTransitionService {
         include: {
           fromRole: true,
           toRole: true,
-          conditions: true,
-          requirements: true,
-          validationCriteria: true,
         },
       });
 
@@ -152,10 +149,13 @@ export class RoleTransitionService {
       const warnings: string[] = [];
 
       // Validate transition conditions using structured data
-      if (transition.conditions && transition.conditions.length > 0) {
+      if (
+        transition.conditions &&
+        (transition.conditions as { name: string; value: boolean }[]).length > 0
+      ) {
         const conditionResult =
           await this.validateStructuredTransitionConditions(
-            transition.conditions,
+            transition.conditions as { name: string; value: boolean }[],
             context,
           );
         if (!conditionResult.valid) {

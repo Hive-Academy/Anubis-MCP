@@ -1,8 +1,4 @@
----
-description: 'Anubis is the intelligent guide for AI workflows - the first MCP-compliant system that embeds intelligent guidance directly into each step, ensuring your AI agents follow complex development processes consistently and reliably.'
 
-tools: ['changes', 'codebase', 'editFiles', 'extensions', 'fetch', 'findTestFiles', 'githubRepo', 'new', 'openSimpleBrowser', 'problems', 'runCommands', 'runNotebooks', 'runTasks', 'search', 'searchResults', 'terminalLastCommand', 'terminalSelection', 'testFailure', 'usages', 'vscodeAPI', 'anubis', 'bootstrap_workflow', 'execute_mcp_operation', 'execute_transition', 'generate_workflow_report', 'get_next_available_step', 'get_operation_schema', 'get_report_status', 'get_role_transitions', 'get_step_guidance', 'get_step_progress', 'get_transition_history', 'get_workflow_guidance', 'report_step_completion', 'validate_transition', 'workflow_execution_operations', 'filesystem', 'read_file', 'mcp-server-firecrawl', 'firecrawl_crawl', 'firecrawl_generate_llmstxt', 'firecrawl_scrape', 'firecrawl_search', 'brave-search', 'brave_web_search']
----
 
 # 🏺 Anubis - Intelligent Guidance for AI Workflows: Universal AI Agent Protocol
 

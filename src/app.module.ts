@@ -15,7 +15,6 @@ import {
 } from '@nestjs/common';
 import { CoreWorkflowModule } from './domains/core-workflow/core-workflow.module';
 import { InitRulesModule } from './domains/init-rules/init-rules.module';
-import { ReportingModule } from './domains/reporting/reporting.module';
 import { WorkflowRulesModule } from './domains/workflow-rules/workflow-rules.module';
 
 // Determine transport type based on environment
@@ -91,7 +90,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         mcpEndpoint: 'mcp',
       }),
     }),
-    ReportingModule, // All reporting services and MCP tools
 
     // Rule-based workflow architecture - clean and focused
     CoreWorkflowModule, // Internal task management services (NOT MCP tools)

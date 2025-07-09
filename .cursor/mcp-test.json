@@ -28,7 +28,10 @@
       "command": "node",
       "args": [
         "D:/projects/anubis/dist/main.js"
-      ]
+      ],
+       "env": {
+        "PROJECT_ROOT": "D:/projects/anubis"
+      }
     }
   }
 },

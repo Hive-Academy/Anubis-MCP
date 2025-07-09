@@ -16,20 +16,10 @@ export interface StepWithExecutionData {
   name: string;
   description: string;
   stepType: string;
-  mcpActions: McpActionData[];
   stepDependencies: StepDependencyData[];
   stepProgress: WorkflowStepProgress[];
   stepGuidance: StepGuidanceData | null;
   qualityChecks: QualityCheckData[];
-}
-
-export interface McpActionData {
-  id: string;
-  name: string;
-  serviceName: string;
-  operation: string;
-  parameters: unknown;
-  sequenceOrder: number;
 }
 
 export interface StepDependencyData {
@@ -52,8 +42,7 @@ export interface QualityCheckData {
 export interface WorkflowStepProgress {
   id: string;
   status: string;
-  startedAt?: Date | null;
-  completedAt?: Date | null;
+
   failedAt?: Date | null;
   duration?: number | null;
   executionData?: unknown;
@@ -545,20 +534,6 @@ export class StepQueryService {
   }
 
   /**
-   * Check if step exists and has MCP actions
-   */
-  async validateStepForMcpExecution(stepId: string): Promise<boolean> {
-    const step = await this.prisma.workflowStep.findUnique({
-      where: { id: stepId },
-      include: {
-        mcpActions: true,
-      },
-    });
-
-    return step !== null && step.mcpActions.length > 0;
-  }
-
-  /**
    * Get step execution history
    */
   async getStepExecutionHistory(
@@ -566,7 +541,7 @@ export class StepQueryService {
   ): Promise<WorkflowStepProgress[]> {
     const results = await this.prisma.workflowStepProgress.findMany({
       where: { stepId },
-      orderBy: { startedAt: 'desc' },
+      orderBy: { createdAt: 'desc' },
     });
 
     return results as WorkflowStepProgress[];
@@ -576,13 +551,10 @@ export class StepQueryService {
   // 🔧 PRIVATE IMPLEMENTATION METHODS - STREAMLINED SCHEMA
   // ===================================================================
 
-  async getStepWithMcpActions(stepId: string) {
+  async getStepWithDetails(stepId: string) {
     const result = await this.prisma.workflowStep.findUnique({
       where: { id: stepId },
       include: {
-        mcpActions: {
-          orderBy: { sequenceOrder: 'asc' },
-        },
         stepGuidance: true,
         qualityChecks: {
           orderBy: { sequenceOrder: 'asc' },

@@ -1,63 +1,79 @@
 {
   "workflowSteps": [
     {
-      "name": "strategic_subtask_design",
-      "description": "Design strategic subtasks with intelligent context management and bulk creation",
+      "name": "context_gathering_and_analysis",
+      "description": "Gather and analyze all relevant task context, including description, codebase analysis, and research findings.",
       "sequenceNumber": 1,
       "isRequired": true,
       "stepType": "ACTION",
-      "approach": "Intelligent context retrieval with strategic subtask design and bulk creation",
+      "approach": "Intelligently retrieve comprehensive task information to build a foundation for strategic planning.",
       "approachGuidance": {
         "stepByStep": [
-          "Check message history for task context and requirements first",
-          "Only if context is missing or incomplete, execute TaskOperations.get with comprehensive data retrieval (includeDescription=true, includeAnalysis=true, includeResearch=true, includeSubtasks=true) to access boomerang's codebase analysis, task description, and research findings",
-          "Leverage boomerang's comprehensive analysis: architecture patterns, technology stack, code quality assessment, integration points, and research recommendations for informed strategic decisions",
-          "Analyze task requirements and identify strategic implementation approach",
-          "Design subtask batches with clear dependencies and sequencing",
-          "Create subtasks using bulk creation for efficient management",
-          "Focus on implementation work, exclude documentation tasks",
-          "Validate subtask design against architectural principles"
+          "Review message history to identify existing context and requirements provided by the boomerang role.",
+          "If context is insufficient, execute the 'TaskOperations.get' MCP operation to fetch the full task details.",
+          "Ensure the MCP call includes parameters to retrieve the description, codebase analysis, research findings, and any existing subtasks.",
+          "When making the MCP call, use serviceName: 'TaskOperations', operation: 'get', with includeDescription: true, includeAnalysis: true, includeResearch: true.",
+          "Only execute the MCP call conditionally if context is missing from message history.",
+          "Synthesize all gathered information to form a complete understanding of the task's objectives, constraints, and technical landscape."
         ]
       },
       "qualityChecklist": [
-        "Task context gathered intelligently (message history first, then server calls)",
-        "Strategic subtask design completed with clear batch organization",
-        "Subtasks created using bulk creation with proper dependencies",
-        "No documentation subtasks created",
-        "Subtask design validated against architectural principles",
-        "Dependencies optimized for parallel execution where possible"
+        "Message history reviewed for initial context.",
+        "Task description, business requirements, and acceptance criteria are fully understood.",
+        "Codebase analysis from the boomerang role has been reviewed and comprehended.",
+        "Research findings and recommendations have been analyzed.",
+        "A comprehensive understanding of the task is achieved before proceeding to planning."
       ],
-      "conditions": [],
-      "actions": [
+      "conditions": []
+    },
+    {
+      "name": "strategic_subtask_creation",
+      "description": "CRITICAL: Create highly-detailed, actionable subtasks ONE-BY-ONE. This is the most critical step to bridge analysis and implementation.",
+      "sequenceNumber": 2,
+      "isRequired": true,
+      "stepType": "ACTION",
+      "approach": "Meticulous, iterative creation of individual subtasks, embedding all necessary context, code examples, and strategic guidance into each one.",
+      "approachGuidance": {
+        "stepByStep": [
+          "⚠️ CRITICAL PROTOCOL: You are the bridge between the Boomerang's analysis and the Senior Developer's implementation. Your subtasks MUST be so clear that a developer can execute them without ambiguity.",
+          "Based on your high-level plan, begin creating subtasks ONE AT A TIME.",
+          "For each subtask:",
+          "1. Use the 'SubtaskOperations.create' or 'SubtaskOperations.update' operation.",
+          "2. Embed the 'WHY': The description must link back to the business/technical requirements.",
+          "3. Provide the 'HOW': Use 'technicalSpecifications' to provide EXACT commands, file paths, and function names.",
+          "4. SHOW, DON'T JUST TELL: If a file is being created or changed, provide the complete, final code content within the 'strategicGuidance.implementationApproach' field. This is not optional.",
+          "5. Define Verifiable Outcomes: Acceptance criteria must be binary (pass/fail) and testable.",
+          "6. Repeat this process for every single action required. Do not use batch creation. The goal is extreme clarity, not speed.",
+          "Execute MCP calls using serviceName: 'SubtaskOperations' with operation: 'create_or_update' for each individual subtask.",
+          "Review all created subtasks to ensure there are no gaps in the implementation plan."
+        ]
+      },
+      "qualityChecklist": [
+        "Each subtask was created or updated individually, not in a batch.",
+        "Each subtask contains specific, actionable instructions (exact commands, file paths).",
+        "CRITICAL: Code snippets or full file content are provided for every necessary change.",
+        "Acceptance criteria for each subtask are clear, concise, and verifiable.",
+        "The complete set of subtasks comprehensively covers all requirements from the analysis phase.",
+        "FINAL CHECK: Could a developer work for a full day based ONLY on the detail in your subtasks? If not, add more detail."
+      ],
+      "conditions": [
         {
-          "name": "intelligent_context_gathering",
-          "actionType": "CONDITIONAL_MCP_CALL",
-          "actionData": {
-            "serviceName": "TaskOperations",
-            "operation": "get",
-            "includeDescription": true,
-            "includeAnalysis": true,
-            "includeResearch": true,
-            "includeSubtasks": true,
-            "condition": "context_missing_from_message_history"
+          "name": "context_gathering_completed",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "check": "step_completed",
+            "parameters": {
+              "stepName": "context_gathering_and_analysis"
+            }
           },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "create_strategic_subtasks",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "SubtaskOperations",
-            "operation": "create_subtasks_batch"
-          },
-          "sequenceOrder": 2
+          "isRequired": true
         }
       ]
     },
     {
       "name": "role_transition",
       "description": "Transition to senior developer with strategic context",
-      "sequenceNumber": 2,
+      "sequenceNumber": 3,
       "isRequired": true,
       "stepType": "ACTION",
       "approach": "Execute transition to senior developer with comprehensive implementation guidance",
@@ -77,18 +93,17 @@
       ],
       "conditions": [
         {
-          "name": "subtask_design_completed",
+          "name": "subtask_creation_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "strategic_subtask_design"
+              "stepName": "strategic_subtask_creation"
             }
           },
           "isRequired": true
         }
-      ],
-      "actions": []
+      ]
     }
   ]
 }

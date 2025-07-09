@@ -80,7 +80,6 @@ export interface SubtaskUpdateResult {
       totalSubtasks: number;
       completedSubtasks: number;
       automaticCompletion: boolean;
-      completedAt: string;
     };
   } | null;
 }
@@ -96,7 +95,6 @@ interface BatchCompletionResult {
     totalSubtasks: number;
     completedSubtasks: number;
     automaticCompletion: boolean;
-    completedAt: string;
   };
   message: string;
 }
@@ -205,15 +203,11 @@ export class IndividualSubtaskOperationsService {
         status: 'not-started',
         batchId: subtaskData.batchId,
         batchTitle: subtaskData.batchTitle || 'Untitled Batch',
-        estimatedDuration: subtaskData.estimatedDuration,
 
-        // Enhanced evidence collection fields
+        // Core fields
         acceptanceCriteria: subtaskData.acceptanceCriteria || [],
-        technicalSpecifications: subtaskData.technicalSpecifications || {},
         dependencies: subtaskData.dependencies || [],
-
-        // Strategic guidance
-        strategicGuidance: subtaskData.strategicGuidance || {},
+        implementationApproach: subtaskData.implementationApproach,
       } satisfies Prisma.SubtaskCreateInput,
       include: {
         dependencies_from: {
@@ -309,12 +303,9 @@ export class IndividualSubtaskOperationsService {
               status: 'not-started',
               batchId: batch.batchId,
               batchTitle: batch.batchTitle,
-              estimatedDuration: subtaskData.estimatedDuration,
               acceptanceCriteria: subtaskData.acceptanceCriteria || [],
-              technicalSpecifications:
-                subtaskData.technicalSpecifications || {},
               dependencies: subtaskData.dependencies || [],
-              strategicGuidance: subtaskData.strategicGuidance || {},
+              implementationApproach: subtaskData.implementationApproach,
             } satisfies Prisma.SubtaskCreateInput,
           });
 
@@ -559,12 +550,7 @@ export class IndividualSubtaskOperationsService {
     if (updateData.status) {
       updateFields.status = updateData.status;
 
-      if (updateData.status === 'completed') {
-        updateFields.completedAt = new Date();
-        updateFields.actualDuration = updateData.completionEvidence?.duration;
-      } else if (updateData.status === 'in-progress') {
-        updateFields.startedAt = new Date();
-      }
+      // Status updated without timestamp tracking
     }
 
     if (updateData.completionEvidence) {
@@ -920,7 +906,6 @@ export class IndividualSubtaskOperationsService {
           totalSubtasks: subtasks.length,
           completedSubtasks: subtasks.length,
           automaticCompletion: true,
-          completedAt: new Date().toISOString(),
         },
         message: `Batch ${batchId} automatically completed - all ${subtasks.length} subtasks finished`,
       };

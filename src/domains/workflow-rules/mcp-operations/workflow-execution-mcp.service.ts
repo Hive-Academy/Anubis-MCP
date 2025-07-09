@@ -6,6 +6,7 @@ import {
   WorkflowExecutionInput,
   WorkflowExecutionOperationsService,
 } from '../services/workflow-execution-operations.service';
+import { BaseMcpService, McpResponse } from '../utils/mcp-response.utils';
 
 // ===================================================================
 // 🎯 STRUCTURED SCHEMAS: Proper structure definitions instead of z.any()
@@ -219,10 +220,12 @@ type WorkflowExecutionInputSchema = z.infer<typeof WorkflowExecutionSchema>;
  * Follows Single Responsibility Principle - only handles MCP communication.
  */
 @Injectable()
-export class WorkflowExecutionMcpService {
+export class WorkflowExecutionMcpService extends BaseMcpService {
   constructor(
     private readonly executionOps: WorkflowExecutionOperationsService,
-  ) {}
+  ) {
+    super();
+  }
 
   @Tool({
     name: 'workflow_execution_operations',
@@ -230,7 +233,7 @@ export class WorkflowExecutionMcpService {
     parameters: WorkflowExecutionSchema,
   })
   async executeWorkflowOperation(input: WorkflowExecutionInputSchema): Promise<{
-    content: Array<{ type: 'text'; text: string }>;
+    content: Array<{ type: 'text'; text: McpResponse }>;
   }> {
     try {
       const workflowInput: WorkflowExecutionInput = {
@@ -301,15 +304,11 @@ export class WorkflowExecutionMcpService {
         content: [
           {
             type: 'text' as const,
-            text: JSON.stringify(
-              {
-                success: true,
-                data: result,
-                timestamp: new Date().toISOString(),
-              },
-              null,
-              2,
-            ),
+            text: this.buildResponse({
+              success: true,
+              data: result,
+              timestamp: new Date().toISOString(),
+            }),
           },
         ],
       };
@@ -321,17 +320,10 @@ export class WorkflowExecutionMcpService {
         content: [
           {
             type: 'text' as const,
-            text: JSON.stringify(
-              {
-                success: false,
-                error: {
-                  message: errorMessage,
-                  code: 'WORKFLOW_EXECUTION_FAILED',
-                },
-                timestamp: new Date().toISOString(),
-              },
-              null,
-              2,
+            text: this.buildErrorResponse(
+              errorMessage,
+              '',
+              'WORKFLOW_EXECUTION_FAILED',
             ),
           },
         ],

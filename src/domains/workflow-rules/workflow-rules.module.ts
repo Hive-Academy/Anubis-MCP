@@ -11,8 +11,6 @@ import { WorkflowBootstrapMcpService } from './mcp-operations/workflow-bootstrap
 
 // Services
 import { WorkflowGuidanceService } from './services/workflow-guidance.service';
-import { RequiredInputExtractorService } from './services/required-input-extractor.service';
-import { SchemaDefinitionGeneratorService } from './services/schema-definition-generator.service';
 import { ProgressCalculatorService } from './services/progress-calculator.service';
 import { StepExecutionService } from './services/step-execution.service';
 import { StepGuidanceService } from './services/step-guidance.service';
@@ -26,8 +24,6 @@ import { WorkflowBootstrapService } from './services/workflow-bootstrap.service'
 import { CoreServiceOrchestrator } from './services/core-service-orchestrator.service';
 
 import { ExecutionAnalyticsService } from './services/execution-analytics.service';
-import { McpOperationExecutionMcpService } from './mcp-operations/mcp-operation-execution-mcp.service';
-// Utils - Legacy services removed
 
 @Module({
   imports: [CoreWorkflowModule],
@@ -43,8 +39,6 @@ import { McpOperationExecutionMcpService } from './mcp-operations/mcp-operation-
 
     // Core Services
     WorkflowGuidanceService,
-    RequiredInputExtractorService,
-    SchemaDefinitionGeneratorService,
     ProgressCalculatorService,
     StepExecutionService,
     StepGuidanceService,
@@ -57,7 +51,6 @@ import { McpOperationExecutionMcpService } from './mcp-operations/mcp-operation-
     WorkflowBootstrapService,
     CoreServiceOrchestrator,
     ExecutionAnalyticsService,
-    McpOperationExecutionMcpService,
   ],
   exports: [
     // MCP Operations
@@ -66,11 +59,9 @@ import { McpOperationExecutionMcpService } from './mcp-operations/mcp-operation-
     RoleTransitionMcpService,
     WorkflowExecutionMcpService,
     WorkflowBootstrapMcpService,
-    McpOperationExecutionMcpService,
 
     // Core Services
     WorkflowGuidanceService,
-    SchemaDefinitionGeneratorService,
     StepExecutionService,
     StepGuidanceService,
     StepProgressTrackerService,

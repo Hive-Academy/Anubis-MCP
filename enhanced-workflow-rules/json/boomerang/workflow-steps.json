@@ -2,113 +2,102 @@
   "workflowSteps": [
     {
       "name": "git_setup_and_memory_analysis",
-      "description": "Set up git branch and analyze memory bank for project context",
+      "description": "Set up git branch and extract project context",
       "sequenceNumber": 1,
       "isRequired": true,
       "stepType": "ACTION",
-      "approach": "Verify git status, ask user about branch preference, and extract comprehensive project context",
+      "approach": "Quick git setup and memory bank extraction - NO TASK CREATION",
       "approachGuidance": {
         "stepByStep": [
-          "Check git repository status with 'git status --porcelain'",
-          "Handle any uncommitted changes appropriately",
-          "ASK USER: 'Do you want to continue on the current branch or create a new feature branch? If new, what should it be named?'",
-          "Based on user response, either stay on current branch or create new feature branch",
-          "Verify branch setup succeeded",
-          "Check if memory-bank folder exists, if it exists, do Enhanced Memory Bank Analysis:",
-          "1. memory-bank/ProjectOverview.md: Extract business context, features, stakeholder requirements, value propositions",
-          "2. memory-bank/TechnicalArchitecture.md: Extract architecture patterns, component structure, technology stack, performance requirements",
-          "3. memory-bank/DeveloperGuide.md: Extract implementation standards, coding patterns, quality guidelines, testing approaches",
-          "Document extracted context for comprehensive project understanding",
-          "SELF-AWARENESS CHECK: Verify and summarize all extracted information before proceeding"
+          "⚠️ CRITICAL: DO NOT CREATE ANY TASKS IN THIS STEP",
+          "Check git status: 'git status --porcelain'",
+          "ASK USER: 'Continue on current branch or create new branch? If new, what name?'",
+          "Execute user's branch decision",
+          "IF memory-bank folder exists: Read ProjectOverview.md, TechnicalArchitecture.md, DeveloperGuide.md",
+          "Document key context points (3-5 bullet points maximum)",
+          "COMPLETE STEP - NO FURTHER ANALYSIS NEEDED"
         ]
       },
       "qualityChecklist": [
-        "Git repository exists and functional",
-        "Working directory status checked and handled",
-        "User consulted about branch preference and decision implemented",
-        "Branch setup completed successfully",
-        "Memory bank analysis completed with documented context",
-        "Self-awareness check completed with verified information summary"
-      ],
-      "conditions": [
-        {
-          "name": "git_repository_exists",
-          "conditionType": "DIRECTORY_EXISTS",
-          "logic": {
-            "check": "directory_exists",
-            "parameters": {
-              "directories": [".git"]
-            }
-          },
-          "isRequired": true
-        }
-      ],
-      "actions": []
+        "Git status checked and branch decision implemented",
+        "Memory bank context extracted and documented",
+        "NO TASK CREATED (reserved for Step 2 only)",
+        "Step completed without deviation into analysis loops"
+      ]
     },
     {
-      "name": "user_validation_and_task_understanding",
-      "description": "Validate task understanding with user and get agreement before creation",
+      "name": "codebase_analysis",
+      "description": "perform a high-level codebase analysis.",
       "sequenceNumber": 2,
       "isRequired": true,
       "stepType": "ACTION",
-      "approach": "Engage user to clarify requirements, validate understanding, and get explicit agreement",
+     "approach": "Perform a high-level codebase analysis based on the already-validated task context.",
       "approachGuidance": {
         "stepByStep": [
-          "SELF-AWARENESS CHECK: Review all information gathered from previous step",
-          "Present initial understanding of the task to the user",
-          "ASK USER: 'Based on your request, I understand you want to [summarize understanding]. Is this correct?'",
-          "ASK USER: 'What are the specific requirements and acceptance criteria for this task?'",
-          "ASK USER: 'Are there any constraints, dependencies, or special considerations I should know about?'",
-          "ASK USER: 'What priority level should this task have? (Low/Medium/High/Critical)'",
-          "Document all user responses and clarifications",
-          "Summarize final understanding and ASK USER: 'Do you agree with this task definition? Should I proceed with creation?'",
-          "Only proceed if user explicitly agrees"
+          "🚨 QUICK CODEBASE ANALYSIS ",
+          "- Use semantic_search for architecture patterns",
+          "- Identify main technology stack",
+          "- Note integration points and constraints",
+          "- Document in 5-10 bullet points maximum"
         ]
       },
       "qualityChecklist": [
-        "Self-awareness check completed with previous step information",
-        "Initial understanding presented to user clearly",
-        "User provided specific requirements and acceptance criteria",
-        "Constraints, dependencies, and considerations documented",
-        "Priority level confirmed with user",
-        "Final task definition summarized and validated",
-        "User explicitly agreed to proceed with task creation"
+        "Quick codebase analysis completed",
+        "Step completed without creating a task"
+      ]
+    },
+    {
+      "name": "task_creation_with_gathered_context",
+      "description": "⚠️ MANDATORY: Create a new task using the validated requirements and analysis findings.",
+      "sequenceNumber": 3,
+      "isRequired": true,
+      "stepType": "ACTION",
+      "approach": "Use the context from the previous step to create a well-defined task linked to the current workflow execution.",
+      "approachGuidance": {
+        "stepByStep": [
+          "🚨 MANDATORY TASK CREATION",
+          "- MUST use TaskOperations.create operation",
+          "- MUST include executionId parameter: '{{ executionIdValue }}'",
+          "- Include codebaseAnalysis object with findings from the previous step",
+          "- Include description object with user requirements from the previous step",
+          "- Execute MCP call with serviceName: 'TaskOperations', operation: 'create'",
+          "- Ensure required parameters include executionId, taskData, codebaseAnalysis, and description",
+          "- Verify task creation succeeded with executionId linkage",
+          "COMPLETE STEP - NO FURTHER ANALYSIS"
+        ]
+      },
+      "qualityChecklist": [
+        "Context from previous step (validation and analysis) is used.",
+        "🚨 TASK CREATED with TaskOperations.create operation",
+        "🚨 EXECUTION ID LINKAGE VERIFIED (executionId: '{{ executionIdValue }}')",
+        "Task creation success confirmed"
       ],
       "conditions": [
         {
-          "name": "git_setup_completed",
-          "conditionType": "STEP_COMPLETED",
+          "name": "validation_and_analysis_completed",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "git_setup_and_memory_analysis"
+              "stepName": "user_validation_and_codebase_analysis"
             }
           },
           "isRequired": true
         }
-      ],
-      "actions": []
+      ]
     },
     {
-      "name": "comprehensive_evaluation_research_and_task_creation",
-      "description": "Comprehensive evaluation, targeted research, and task creation with integrated findings",
-      "sequenceNumber": 3,
+      "name": "research_evaluation_and_persistence",
+      "description": "Evaluate if research needed and persist findings",
+      "sequenceNumber": 4,
       "isRequired": true,
       "stepType": "ACTION",
-      "approach": "Systematic evaluation of requirements, targeted research when needed, and comprehensive task creation with integrated findings",
+      "approach": "Quick research assessment and database persistence",
       "approachGuidance": {
         "stepByStep": [
-          "SELF-AWARENESS CHECK: Review user-validated task definition from previous step",
-          "Conduct comprehensive codebase analysis using search_codebase tool",
-          "Identify architecture patterns, technology stack, and implementation context",
-          "Analyze existing code quality, patterns, and potential integration points",
-          "Test existing functionality to confirm what works",
-          "Identify technical unknowns requiring investigation",
-          "Extract implementation options needing comparison",
-          "Document integration challenges requiring research",
-          "Classify questions by priority: Critical, Important, Nice-to-have",
-          "Determine if critical research questions exist that block architectural decisions",
-          "IF critical research questions identified:",
+          "Review task requirements for critical unknowns",
+          "IF critical research gaps exist: Conduct focused research (30 min max)",
+          "IF no critical gaps: Document 'No critical research required'",
           "  - Use web_search if available to find authoritative documentation",
           "  - Check official GitHub repositories and documentation",
           "  - Analyze NPM or relevant package registries",
@@ -121,100 +110,36 @@
           "  - Include risk assessment and mitigation strategies",
           "  - Synthesize information into clear, actionable insights",
           "Document all findings in structured format for task creation",
-          "Prepare comprehensive context for task creation including analysis and research"
+          "Use ResearchOperations.create_research to persist findings",
+          "Execute MCP call with serviceName: 'ResearchOperations', operation: 'create_research'",
+          "Ensure taskId parameter links to task created in Step 3",
+          "COMPLETE STEP - Move to transition"
         ]
       },
       "qualityChecklist": [
-        "Self-awareness check completed with user-validated information",
-        "Comprehensive codebase analysis completed",
-        "Architecture patterns and technology stack identified",
-        "Code quality and integration points documented",
-        "Current system capabilities tested and confirmed",
-        "Technical unknowns identified and documented",
-        "Implementation options extracted",
-        "Integration challenges documented",
-        "Questions classified by priority",
-        "Critical blocking questions clearly identified",
-        "Research conducted for critical questions (if applicable)",
-        "Multiple authoritative sources consulted (if research conducted)",
-        "Technical claims supported by documentation (if research conducted)",
-        "All findings properly cited and linked (if research conducted)",
-        "Task creation ready with comprehensive analysis and research data",
-        "Analysis and research findings structured and accessible for task creation"
-      ],
-      "conditions": [
-        {
-          "name": "user_validation_completed",
-          "conditionType": "STEP_COMPLETED",
-          "logic": {
-            "check": "step_completed",
-            "parameters": {
-              "stepName": "user_validation_and_task_understanding"
-            }
-          },
-          "isRequired": true
-        }
-      ],
-      "actions": [
-        {
-          "serviceName": "TaskOperations",
-          "operation": "create",
-          "parameters": {
-            "executionId": "{{executionId}}",
-            "taskData": "{{userValidatedTaskData}}",
-            "description": "{{userProvidedRequirements}}",
-            "codebaseAnalysis": "{{comprehensiveFindings}}",
-            "researchFindings": "{{researchFindings}}"
-          }
-        }
+        "Research requirements evaluated",
+        "Findings persisted via ResearchOperations.create_research",
+        "No analysis loops or excessive investigation"
       ]
     },
     {
       "name": "strategic_decision_and_architect_transition",
-      "description": "Strategic analysis and transition to architect role with comprehensive context",
-      "sequenceNumber": 4,
+      "description": "Transition to architect role",
+      "sequenceNumber": 5,
       "isRequired": true,
       "stepType": "TRANSITION",
-      "approach": "Synthesize all analysis and research findings, then transition to architect role with comprehensive handoff",
+      "approach": "Execute role transition with context handoff",
       "approachGuidance": {
         "stepByStep": [
-          "SELF-AWARENESS CHECK: Review all analysis and research findings from previous steps",
-          "Synthesize project context, task analysis, and research findings",
-          "Prepare comprehensive handoff package including:",
-          "- Complete project understanding and constraints",
-          "- Task requirements and acceptance criteria",
-          "- Research findings and recommendations (if conducted)",
-          "- Technical considerations and integration points",
-          "- Risk assessment and mitigation strategies",
-          "Use WorkflowOperations service to execute transition to architect role",
-          "Confirm successful handoff with complete context",
-          "SELF-AWARENESS CHECK: Verify all context and findings are properly transferred"
+          "Prepare context summary (5 bullet points max)",
+          "Execute transition to architect role",
+          "Verify transition succeeded"
         ]
       },
       "qualityChecklist": [
-        "All analysis phases completed and synthesized",
-        "Comprehensive handoff package prepared",
-        "Project context fully documented",
-        "Task requirements clearly defined",
-        "Research findings integrated (if applicable)",
-        "Technical considerations documented",
-        "Risk assessment completed",
-        "Transition to architect role executed successfully"
-      ],
-      "conditions": [
-        {
-          "name": "evaluation_research_task_creation_completed",
-          "conditionType": "STEP_COMPLETED",
-          "logic": {
-            "check": "step_completed",
-            "parameters": {
-              "stepName": "comprehensive_evaluation_research_and_task_creation"
-            }
-          },
-          "isRequired": true
-        }
-      ],
-      "actions": []
+        "Context summarized efficiently",
+        "Role transition executed successfully"
+      ]
     }
   ]
 }

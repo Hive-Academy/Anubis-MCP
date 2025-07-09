@@ -36,8 +36,6 @@ export interface StepProgressRecord {
 export interface McpExecutionData {
   executionType: 'MCP_ONLY';
   phase: 'GUIDANCE_PREPARED' | 'EXECUTING' | 'COMPLETED' | 'FAILED';
-  mcpActionsCompleted?: number;
-  mcpActionsTotal?: number;
   lastMcpResult?: McpExecutionResult;
   mcpResults?: McpExecutionResult[];
   totalDuration?: number;
@@ -131,8 +129,6 @@ export class StepProgressTrackerService {
           executionData: {
             executionType: 'MCP_ONLY',
             phase: 'GUIDANCE_PREPARED',
-            mcpActionsTotal: 0,
-            mcpActionsCompleted: 0,
           },
         },
       });
@@ -179,8 +175,6 @@ export class StepProgressTrackerService {
             JSON.stringify({
               ...currentData,
               phase: 'EXECUTING',
-              mcpActionsCompleted: update.completedActions,
-              mcpActionsTotal: update.totalActions,
               lastMcpResult: update.lastResult,
             }),
           ),
@@ -432,8 +426,6 @@ export class StepProgressTrackerService {
 
       const executionData = {
         phase: 'completion',
-        mcpActionsCompleted: completionData.mcpResults?.length || 0,
-        mcpActionsTotal: completionData.mcpResults?.length || 0,
         lastMcpResult: completionData.mcpResults?.[0] || null,
         executionType: 'MCP_ONLY' as const,
         mcpResults: completionData.mcpResults || [],

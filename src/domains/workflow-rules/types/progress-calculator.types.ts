@@ -16,8 +16,7 @@ export interface ExecutionHistory {
   executionTime: number;
   status: string;
   completionEvidence?: string;
-  startedAt?: Date;
-  completedAt?: Date;
+
   executionData?: Record<string, unknown>;
 }
 
@@ -25,7 +24,7 @@ export interface RoleStepData {
   id: string;
   name: string;
   sequenceOrder: number;
-  estimatedDuration?: string;
+
   actions?: unknown[];
 }
 
@@ -50,13 +49,12 @@ export interface StepExecutionData {
   id: string;
   stepId: string;
   status: string;
-  startedAt?: Date;
-  completedAt?: Date;
+
   executionData?: Record<string, unknown>;
   step: {
     id: string;
     name: string;
-    estimatedDuration?: string;
+
     actions?: unknown[];
   };
   execution: {

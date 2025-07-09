@@ -4,8 +4,7 @@ import {
   extractStreamlinedGuidance,
   StepNotFoundError,
 } from '../utils/step-service-shared.utils';
-import { RequiredInputExtractorService } from './required-input-extractor.service';
-import { McpActionData, StepQueryService } from './step-query.service';
+import { StepQueryService } from './step-query.service';
 import { WorkflowExecutionService } from './workflow-execution.service';
 
 export interface StepGuidanceContext {
@@ -18,7 +17,6 @@ export interface StepGuidanceContext {
 
 export interface StepGuidanceResult {
   step: any;
-  mcpActions: any[];
   qualityChecklist: any;
   stepByStep: any;
   approach: any;
@@ -51,7 +49,6 @@ export class StepConfigNotFoundError extends Error {
 export class StepGuidanceService {
   constructor(
     private readonly stepQueryService: StepQueryService,
-    private readonly requiredInputService: RequiredInputExtractorService,
     private readonly workflowExecutionService: WorkflowExecutionService,
   ) {}
 
@@ -82,7 +79,7 @@ export class StepGuidanceService {
     }
 
     // Get step with MCP actions
-    const step = await this.stepQueryService.getStepWithMcpActions(stepId);
+    const step = await this.stepQueryService.getStepWithDetails(stepId);
 
     if (!step) {
       throw new StepNotFoundError(
@@ -116,23 +113,11 @@ export class StepGuidanceService {
       }
     }
 
-    // Extract MCP actions with dynamic parameter information
-    const mcpActions = step.mcpActions.map((action: McpActionData) => {
-      return {
-        ...action,
-        schema: this.requiredInputService.extractFromServiceSchema(
-          action.serviceName,
-          action.operation,
-        ),
-      };
-    });
-
     // Get guidance from database step data
     const enhancedGuidance = extractStreamlinedGuidance(step);
 
     return {
       step: StepDataUtils.extractStepInfo(step),
-      mcpActions,
       qualityChecklist: enhancedGuidance.qualityChecklist,
       stepByStep: enhancedGuidance.stepByStep,
       approach: step.approach,

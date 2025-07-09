@@ -41,7 +41,6 @@ export interface TaskWithRelations extends Task {
   completionReports?: Prisma.CompletionReportGetPayload<
     Record<string, never>
   >[];
-  comments?: Prisma.CommentGetPayload<Record<string, never>>[];
   workflowTransitions?: Prisma.WorkflowTransitionGetPayload<
     Record<string, never>
   >[];
@@ -108,9 +107,6 @@ export class TaskOperationsService {
       switch (input.operation) {
         case 'create':
           result = await this.createTask(input);
-          break;
-        case 'create_with_subtasks':
-          result = await this.createTaskWithSubtasks(input);
           break;
         case 'update':
           result = await this.updateTask(input);
@@ -222,7 +218,6 @@ export class TaskOperationsService {
             architectureFindings: codebaseAnalysis.architectureFindings || {},
             problemsIdentified: codebaseAnalysis.problemsIdentified || {},
             implementationContext: codebaseAnalysis.implementationContext || {},
-            integrationPoints: codebaseAnalysis.integrationPoints || {},
             qualityAssessment: codebaseAnalysis.qualityAssessment || {},
             filesCovered: codebaseAnalysis.filesCovered || [],
             technologyStack: codebaseAnalysis.technologyStack || {},
@@ -268,193 +263,6 @@ export class TaskOperationsService {
         codebaseAnalysis: analysis,
         researchReports,
       } as TaskWithRelations;
-    });
-
-    return result;
-  }
-
-  /**
-   * NEW: Create task with subtasks directly - eliminates implementation plan
-   */
-  private async createTaskWithSubtasks(
-    input: TaskOperationsInput,
-  ): Promise<TaskWithSubtasks> {
-    const {
-      taskData,
-      description,
-      codebaseAnalysis,
-      researchFindings,
-      executionId,
-      subtasks,
-    } = input;
-
-    if (!taskData?.name) {
-      throw new Error('Task name is required for creation');
-    }
-
-    if (!subtasks || subtasks.length === 0) {
-      throw new Error(
-        'Subtasks are required for create_with_subtasks operation',
-      );
-    }
-
-    // Create task with subtasks in transaction
-    const result = await this.prisma.$transaction(async (tx) => {
-      // Generate unique slug from task name
-      const slug = await this.ensureUniqueSlug(
-        this.generateSlugFromName(taskData.name!),
-      );
-
-      // Create the task with proper Prisma types
-      const task = await tx.task.create({
-        data: {
-          name: taskData.name!,
-          slug,
-          status: taskData.status || 'not-started',
-          priority: taskData.priority || 'Medium',
-          dependencies: taskData.dependencies || [],
-          gitBranch: taskData.gitBranch,
-          owner: 'boomerang', // Default owner for direct creation
-          currentMode: 'boomerang',
-        } satisfies Prisma.TaskCreateInput,
-      });
-
-      // Use the auto-generated taskId for related records
-      const taskId = task.id;
-
-      // CRITICAL: Link task to workflow execution if executionId provided
-      if (executionId) {
-        await tx.workflowExecution.update({
-          where: { id: executionId },
-          data: { taskId: taskId },
-        });
-      }
-
-      // Create task description if provided
-      let taskDescription: TaskDescription | null = null;
-      if (description) {
-        taskDescription = await tx.taskDescription.create({
-          data: {
-            task: { connect: { id: taskId } },
-            description: description.description || '',
-            businessRequirements: description.businessRequirements || '',
-            technicalRequirements: description.technicalRequirements || '',
-            acceptanceCriteria: description.acceptanceCriteria || [],
-          } satisfies Prisma.TaskDescriptionCreateInput,
-        });
-      }
-
-      // Create codebase analysis if provided
-      let analysis: CodebaseAnalysis | null = null;
-      if (codebaseAnalysis) {
-        analysis = await tx.codebaseAnalysis.create({
-          data: {
-            task: { connect: { id: taskId } },
-            architectureFindings: codebaseAnalysis.architectureFindings || {},
-            problemsIdentified: codebaseAnalysis.problemsIdentified || {},
-            implementationContext: codebaseAnalysis.implementationContext || {},
-            integrationPoints: codebaseAnalysis.integrationPoints || {},
-            qualityAssessment: codebaseAnalysis.qualityAssessment || {},
-            filesCovered: codebaseAnalysis.filesCovered || [],
-            technologyStack: codebaseAnalysis.technologyStack || {},
-            analyzedBy: codebaseAnalysis.analyzedBy || 'system',
-          } satisfies Prisma.CodebaseAnalysisCreateInput,
-        });
-      }
-
-      // Create research reports if provided
-      const researchReports: Prisma.ResearchReportGetPayload<
-        Record<string, never>
-      >[] = [];
-      if (researchFindings?.researchQuestions) {
-        for (const question of researchFindings.researchQuestions) {
-          const report = await tx.researchReport.create({
-            data: {
-              task: { connect: { id: taskId } },
-              title: question.question || 'Research Finding',
-              summary: question.findings || '',
-              findings: JSON.stringify({
-                methodology: question.methodology,
-                findings: question.findings,
-                riskAssessment: question.riskAssessment,
-                technicalInsights: researchFindings.technicalInsights,
-                implementationImplications:
-                  researchFindings.implementationImplications,
-                alternativeApproaches: researchFindings.alternativeApproaches,
-              }),
-              recommendations: Array.isArray(question.recommendations)
-                ? question.recommendations.join('\n')
-                : question.recommendations || '',
-              references: question.sources || [],
-            } satisfies Prisma.ResearchReportCreateInput,
-          });
-          researchReports.push(report);
-        }
-      }
-
-      const createdSubtasks: Subtask[] = [];
-      for (const subtaskData of subtasks) {
-        const subtask = await tx.subtask.create({
-          data: {
-            task: { connect: { id: taskId } },
-            // No planId - direct task-subtask relationship
-            name: subtaskData.name,
-            description: subtaskData.description,
-            sequenceNumber: subtaskData.sequenceNumber,
-            status: subtaskData.status || 'not-started',
-            batchId: subtaskData.batchId || 'default-batch',
-            batchTitle: subtaskData.batchTitle || 'Implementation Tasks',
-            estimatedDuration: subtaskData.estimatedDuration,
-
-            // Enhanced implementation details
-            implementationOverview: subtaskData.implementationOverview,
-            implementationApproach: subtaskData.implementationApproach,
-            technicalDecisions: subtaskData.technicalDecisions || {},
-            filesToModify: subtaskData.filesToModify || [],
-            codeExamples: subtaskData.codeExamples || {},
-
-            // Strategic context
-            strategicGuidance: subtaskData.strategicGuidance || {},
-            architecturalContext: subtaskData.architecturalContext,
-            architecturalRationale: subtaskData.architecturalRationale || {},
-
-            // Quality and constraints
-            qualityConstraints: subtaskData.qualityConstraints || {},
-            qualityGates: subtaskData.qualityGates || {},
-            acceptanceCriteria: subtaskData.acceptanceCriteria || [],
-            successCriteria: subtaskData.successCriteria || {},
-            testingRequirements: subtaskData.testingRequirements || {},
-
-            // Implementation specifications
-            technicalSpecifications: subtaskData.technicalSpecifications || {},
-            performanceTargets: subtaskData.performanceTargets || {},
-            securityConsiderations: subtaskData.securityConsiderations || {},
-            errorHandlingStrategy: subtaskData.errorHandlingStrategy,
-
-            // Dependencies and integration
-            dependencies: subtaskData.dependencies || [],
-            integrationPoints: subtaskData.integrationPoints || {},
-            externalDependencies: subtaskData.externalDependencies || {},
-
-            // Evidence and validation
-            validationSteps: subtaskData.validationSteps || {},
-          } satisfies Prisma.SubtaskCreateInput,
-        });
-        createdSubtasks.push(subtask);
-      }
-
-      // Generate subtask summary
-      const subtaskSummary = this.generateSubtaskSummary(createdSubtasks);
-
-      // Return as TaskWithSubtasks for consistent interface
-      return {
-        ...task,
-        taskDescription,
-        codebaseAnalysis: analysis,
-        researchReports,
-        subtasks: createdSubtasks,
-        subtaskSummary,
-      } as TaskWithSubtasks;
     });
 
     return result;
@@ -531,8 +339,7 @@ export class TaskOperationsService {
         if (codebaseAnalysis.implementationContext)
           analysisData.implementationContext =
             codebaseAnalysis.implementationContext;
-        if (codebaseAnalysis.integrationPoints)
-          analysisData.integrationPoints = codebaseAnalysis.integrationPoints;
+
         if (codebaseAnalysis.qualityAssessment)
           analysisData.qualityAssessment = codebaseAnalysis.qualityAssessment;
         if (codebaseAnalysis.filesCovered)
@@ -550,7 +357,7 @@ export class TaskOperationsService {
             architectureFindings: codebaseAnalysis.architectureFindings || {},
             problemsIdentified: codebaseAnalysis.problemsIdentified || {},
             implementationContext: codebaseAnalysis.implementationContext || {},
-            integrationPoints: codebaseAnalysis.integrationPoints || {},
+
             qualityAssessment: codebaseAnalysis.qualityAssessment || {},
             filesCovered: codebaseAnalysis.filesCovered || [],
             technologyStack: codebaseAnalysis.technologyStack || {},

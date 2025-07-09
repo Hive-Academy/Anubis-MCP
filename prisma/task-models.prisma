@@ -2,38 +2,38 @@
 // Core models for task lifecycle management
 
 model Task {
-  id                    Int       @id @default(autoincrement())
-  name                  String
-  slug                  String?   @unique // Human-readable slug for task identification
-  status                String    @default("not-started")
-  completionDate        DateTime?
-  owner                 String    @default("boomerang")
-  currentMode           String    @default("boomerang")
-  priority              String    @default("Medium")
-  dependencies          Json      @default("[]")
-  redelegationCount     Int       @default(0)
-  gitBranch             String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  id                Int       @id @default(autoincrement())
+  name              String
+  slug              String?   @unique // Human-readable slug for task identification
+  status            String    @default("not-started")
+  completionDate    DateTime?
+  owner             String    @default("boomerang")
+  currentMode       String    @default("boomerang")
+  priority          String    @default("Medium")
+  dependencies      Json      @default("[]")
+  redelegationCount Int       @default(0)
+  gitBranch         String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   // Relationships
-  taskDescription       TaskDescription?
-  subtasks              Subtask[]
-  delegationRecords     DelegationRecord[]
-  researchReports       ResearchReport[]
-  codeReviews           CodeReview[]
-  completionReports     CompletionReport[]
-  comments              Comment[]
-  workflowTransitions   WorkflowTransition[]
-  codebaseAnalysis      CodebaseAnalysis?
-  workflowExecutions    WorkflowExecution[]
+  taskDescription   TaskDescription?
+  subtasks          Subtask[]
+  delegationRecords DelegationRecord[]
+  researchReports   ResearchReport[]
+  codeReviews       CodeReview[]
+  completionReports CompletionReport[]
+
+  workflowTransitions WorkflowTransition[]
+  codebaseAnalysis    CodebaseAnalysis?
+  workflowExecutions  WorkflowExecution[]
+  // @@map("tasks")
 
   @@index([status])
   @@index([owner])
   @@index([currentMode])
   @@index([priority])
   @@index([slug])
-  // @@map("tasks")
 }
 
 model TaskDescription {
@@ -42,189 +42,142 @@ model TaskDescription {
   description           String
   businessRequirements  String
   technicalRequirements String
-  acceptanceCriteria    Json     // JSON array of acceptance criteria
+  acceptanceCriteria    Json // JSON array of acceptance criteria
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
-  task                  Task     @relation(fields: [taskId], references: [id])
+  task Task @relation(fields: [taskId], references: [id])
 
   // @@map("task_descriptions")
 }
 
-
-
 model Subtask {
-  id                    Int      @id @default(autoincrement())
-  taskId                Int
-  planId                Int?     // Legacy field - kept for migration compatibility
-  name                  String
-  description           String
-  sequenceNumber        Int
-  status                String   @default("not-started")
-  assignedTo            String?
-  estimatedDuration     String?
-  startedAt             DateTime?
-  completedAt           DateTime?
-  batchId               String?  // For grouping related subtasks
-  batchTitle            String?  // Human-readable batch title
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  id             Int      @id @default(autoincrement())
+  taskId         Int
+  name           String
+  description    String
+  sequenceNumber Int
+  status         String   @default("not-started")
+  batchId        String? // For grouping related subtasks
+  batchTitle     String? // Human-readable batch title
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  // ENHANCED: Detailed implementation context for direct execution
-  // Implementation Details
-  implementationOverview    String?   // Overview of what this subtask accomplishes
-  implementationApproach    String?   // Detailed approach for implementing this specific subtask
-  technicalDecisions        Json?     // Technical decisions specific to this subtask
-  filesToModify             Json?     // Specific files this subtask will modify
-  codeExamples              Json?     // Code examples and patterns to follow
-  
-  // Strategic Context
-  strategicGuidance         Json?     // Strategic guidance for this specific subtask
-  architecturalContext      String?   // How this subtask fits into overall architecture
-  architecturalRationale    Json?     // Architectural rationale for this subtask
-  
-  // Quality and Constraints
-  qualityConstraints        Json?     // Quality constraints and requirements
-  qualityGates              Json?     // Quality gates specific to this subtask
-  acceptanceCriteria        Json?     // Acceptance criteria for this subtask
-  successCriteria           Json?     // Success criteria for completion validation
-  testingRequirements       Json?     // Specific testing requirements for this subtask
-  
-  // Implementation Specifications
-  technicalSpecifications   Json?     // Technical specifications and requirements
-  performanceTargets        Json?     // Performance targets for this subtask
-  securityConsiderations    Json?     // Security considerations for this subtask
-  errorHandlingStrategy     String?   // Error handling approach for this subtask
-  
-  // Dependencies and Integration
-  dependencies              Json?     // Dependencies on other subtasks or external factors
-  integrationPoints         Json?     // Integration points with other components
-  externalDependencies      Json?     // External system dependencies
-  
-  // Evidence and Validation
-  completionEvidence        Json?     // Evidence of completion for quality validation
-  validationSteps           Json?     // Steps to validate completion
-  actualDuration            String?   // Actual time taken for completion
+  // CORE ESSENTIALS: Only the most critical fields for workflow execution
 
-  task                  Task     @relation(fields: [taskId], references: [id])
-  // implementationPlan relationship removed - planId kept as legacy field
-  dependencies_from     SubtaskDependency[] @relation("DependentSubtask")
-  dependencies_to       SubtaskDependency[] @relation("RequiredSubtask")
-  comments              Comment[]
+  // Implementation guidance - consolidated into single field
+  implementationApproach String? // Detailed approach and technical specifications
+
+  // Quality validation
+  acceptanceCriteria Json? // Acceptance criteria for validation
+
+  // Dependencies (used by dependency system)
+  dependencies Json? // Dependencies on other subtasks
+
+  // Completion tracking
+  completionEvidence Json? // Evidence of completion for quality validation
+
+  task              Task                @relation(fields: [taskId], references: [id])
+  dependencies_from SubtaskDependency[] @relation("DependentSubtask")
+  dependencies_to   SubtaskDependency[] @relation("RequiredSubtask")
+  // @@map("subtasks")
 
   @@index([taskId])
-  @@index([planId])
   @@index([status])
   @@index([batchId])
   @@index([sequenceNumber])
-  // @@map("subtasks")
 }
 
 model SubtaskDependency {
-  id                    Int     @id @default(autoincrement())
-  dependentSubtaskId    Int     // The subtask that depends on another
-  requiredSubtaskId     Int     // The subtask that must be completed first
-  dependencyType        String  @default("sequential") // sequential, parallel, conditional
+  id                 Int    @id @default(autoincrement())
+  dependentSubtaskId Int // The subtask that depends on another
+  requiredSubtaskId  Int // The subtask that must be completed first
+  dependencyType     String @default("sequential") // sequential, parallel, conditional
 
-  dependentSubtask      Subtask @relation("DependentSubtask", fields: [dependentSubtaskId], references: [id])
-  requiredSubtask       Subtask @relation("RequiredSubtask", fields: [requiredSubtaskId], references: [id])
+  dependentSubtask Subtask @relation("DependentSubtask", fields: [dependentSubtaskId], references: [id])
+  requiredSubtask  Subtask @relation("RequiredSubtask", fields: [requiredSubtaskId], references: [id])
+  // @@map("subtask_dependencies")
 
   @@unique([dependentSubtaskId, requiredSubtaskId])
   @@index([dependentSubtaskId])
   @@index([requiredSubtaskId])
-  // @@map("subtask_dependencies")
 }
 
 model DelegationRecord {
-  id                    Int      @id @default(autoincrement())
-  taskId                Int
-  fromMode              String
-  toMode                String
-  delegationTimestamp   DateTime @default(now())
-  message               String?
+  id                  Int      @id @default(autoincrement())
+  taskId              Int
+  fromMode            String
+  toMode              String
+  delegationTimestamp DateTime @default(now())
+  message             String?
 
-  task                  Task     @relation(fields: [taskId], references: [id])
+  task Task @relation(fields: [taskId], references: [id])
+  // @@map("delegation_records")
 
   @@index([taskId])
   @@index([fromMode])
   @@index([toMode])
-  // @@map("delegation_records")
 }
 
 model ResearchReport {
-  id            Int      @id @default(autoincrement())
-  taskId        Int
-  title         String
-  summary       String
-  findings      String
+  id              Int      @id @default(autoincrement())
+  taskId          Int
+  title           String
+  summary         String
+  findings        String
   recommendations String
-  references    Json     // JSON array of references
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  references      Json // JSON array of references
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  task          Task     @relation(fields: [taskId], references: [id])
+  task Task @relation(fields: [taskId], references: [id])
 
   // @@map("research_reports")
 }
 
 model CodeReview {
-  id                                Int       @id @default(autoincrement())
-  taskId                            Int
-  status                            String    // APPROVED, APPROVED_WITH_RESERVATIONS, NEEDS_CHANGES
-  summary                           String
-  strengths                         String
-  issues                            String
-  acceptanceCriteriaVerification    Json
-  manualTestingResults              String
-  requiredChanges                   String?
-  createdAt                         DateTime  @default(now())
-  updatedAt                         DateTime  @updatedAt
+  id                             Int      @id @default(autoincrement())
+  taskId                         Int
+  status                         String // APPROVED, APPROVED_WITH_RESERVATIONS, NEEDS_CHANGES
+  summary                        String
+  strengths                      String
+  issues                         String
+  acceptanceCriteriaVerification Json
+  manualTestingResults           String
+  requiredChanges                String?
+  createdAt                      DateTime @default(now())
+  updatedAt                      DateTime @updatedAt
 
-  task                              Task      @relation(fields: [taskId], references: [id])
+  task Task @relation(fields: [taskId], references: [id])
 
   // @@map("code_reviews")
 }
 
 model CompletionReport {
-  id                                Int       @id @default(autoincrement())
-  taskId                            Int
-  summary                           String
-  filesModified                     Json      // JSON array of files modified
-  delegationSummary                 String
-  acceptanceCriteriaVerification    Json
-  createdAt                         DateTime  @default(now())
-  updatedAt                         DateTime  @updatedAt
+  id                             Int      @id @default(autoincrement())
+  taskId                         Int
+  summary                        String
+  filesModified                  Json // JSON array of files modified
+  delegationSummary              String
+  acceptanceCriteriaVerification Json
+  createdAt                      DateTime @default(now())
+  updatedAt                      DateTime @updatedAt
 
-  task                              Task      @relation(fields: [taskId], references: [id])
+  task Task @relation(fields: [taskId], references: [id])
 
   // @@map("completion_reports")
 }
 
-model Comment {
-  id          Int       @id @default(autoincrement())
-  taskId      Int
-  subtaskId   Int?
-  mode        String
-  content     String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  task        Task      @relation(fields: [taskId], references: [id])
-  subtask     Subtask?  @relation(fields: [subtaskId], references: [id])
-
-  // @@map("comments")
-}
-
 model WorkflowTransition {
-  id                  Int       @id @default(autoincrement())
+  id                  Int      @id @default(autoincrement())
   taskId              Int
   fromMode            String
   toMode              String
-  transitionTimestamp DateTime  @default(now())
+  transitionTimestamp DateTime @default(now())
   reason              String?
-  updatedAt           DateTime  @updatedAt
+  updatedAt           DateTime @updatedAt
 
-  task                Task      @relation(fields: [taskId], references: [id])
+  task Task @relation(fields: [taskId], references: [id])
 
   // @@map("workflow_transitions")
 }
@@ -232,29 +185,28 @@ model WorkflowTransition {
 // CodebaseAnalysis model for storing structured codebase analysis results
 // Critical for maintaining consistency across roles and preventing re-analysis
 model CodebaseAnalysis {
-  id                    Int       @id @default(autoincrement())
-  taskId                Int       @unique
-  
+  id     Int @id @default(autoincrement())
+  taskId Int @unique
+
   // Analysis Content - JSON fields for structured data
-  architectureFindings  Json      // Current patterns, tech stack, file structure, dependencies
-  problemsIdentified    Json      // Issues found, root causes, impact assessment, technical debt
-  implementationContext Json      // Existing patterns, coding standards, quality guidelines
-  integrationPoints     Json      // API boundaries, service interfaces, external dependencies
-  qualityAssessment     Json      // Code quality metrics, testing coverage, documentation state
-  
+  architectureFindings  Json // Current patterns, tech stack, file structure, dependencies
+  problemsIdentified    Json // Issues found, root causes, impact assessment, technical debt
+  implementationContext Json // Existing patterns, coding standards, quality guidelines
+  qualityAssessment     Json // Code quality metrics, testing coverage, documentation state
+
   // Additional Context
-  filesCovered          Json      // Array of files analyzed with their roles and importance
-  technologyStack       Json      // Detailed tech stack with versions and usage patterns
-  
+  filesCovered    Json // Array of files analyzed with their roles and importance
+  technologyStack Json // Detailed tech stack with versions and usage patterns
+
   // Metadata
-  analyzedAt            DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-  analyzedBy            String    // Role that performed the analysis (boomerang, architect, etc.)
-  analysisVersion       String    @default("1.0") // For tracking analysis evolution
-  
-  task                  Task      @relation(fields: [taskId], references: [id])
+  analyzedAt      DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  analyzedBy      String // Role that performed the analysis (boomerang, architect, etc.)
+  analysisVersion String   @default("1.0") // For tracking analysis evolution
+
+  task Task @relation(fields: [taskId], references: [id])
+  // @@map("codebase_analysis")
 
   @@index([taskId])
   @@index([analyzedBy])
-  // @@map("codebase_analysis")
 }

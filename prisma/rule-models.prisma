@@ -47,7 +47,6 @@ model WorkflowStep {
   // Structured guidance (replaces complex JSON fields)
   stepGuidance     StepGuidance?
   qualityChecks    QualityCheck[]
-  mcpActions       McpAction[]
   stepDependencies StepDependency[]
 
   // Relationships
@@ -87,22 +86,6 @@ model QualityCheck {
   @@map("quality_checks")
 }
 
-// MCP-focused actions (replaces complex StepAction model)
-model McpAction {
-  id            String @id @default(cuid())
-  name          String // Action name
-  serviceName   String // MCP service name (e.g., 'TaskOperations')
-  operation     String // MCP operation (e.g., 'create', 'update')
-  parameters    Json? // MCP parameters (minimal JSON usage)
-  sequenceOrder Int // Execution order within step
-
-  stepId String
-  step   WorkflowStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
-
-  @@index([stepId, sequenceOrder])
-  @@map("mcp_actions")
-}
-
 // Simple step dependencies (replaces complex StepCondition model)
 model StepDependency {
   id            String  @id @default(cuid())
@@ -126,12 +109,12 @@ model RoleTransition {
   handoffMessage String  @default("Transitioning to next role") // Concise handoff message template
   isActive       Boolean @default(true)
 
-  // Structured transition data (replaces complex JSON fields)
-  conditions         TransitionCondition[]
-  requirements       TransitionRequirement[]
-  validationCriteria TransitionValidation[]
-  contextElements    TransitionContext[]
-  deliverables       TransitionDeliverable[]
+  // Structured transition data as JSON fields
+  conditions         Json? // Array of condition objects with name and value
+  requirements       Json? // Array of requirement strings
+  validationCriteria Json? // Array of validation criterion strings
+  contextElements    Json? // Array of context key strings
+  deliverables       Json? // Array of deliverable strings
 
   // Relationships
   fromRole WorkflowRole @relation("FromRole", fields: [fromRoleId], references: [id])
@@ -143,62 +126,6 @@ model RoleTransition {
   @@index([fromRoleId])
   @@index([toRoleId])
   @@map("role_transitions")
-}
-
-// Transition condition flags (replaces conditions JSON)
-model TransitionCondition {
-  id    String  @id @default(cuid())
-  name  String // Condition name (e.g., "researchRequired", "implementationComplete")
-  value Boolean // Condition value
-
-  transitionId String
-  transition   RoleTransition @relation(fields: [transitionId], references: [id], onDelete: Cascade)
-
-  @@map("transition_conditions")
-}
-
-// Transition requirements (replaces requirements JSON)
-model TransitionRequirement {
-  id          String @id @default(cuid())
-  requirement String // Prerequisite description
-
-  transitionId String
-  transition   RoleTransition @relation(fields: [transitionId], references: [id], onDelete: Cascade)
-
-  @@map("transition_requirements")
-}
-
-// Transition validation criteria (replaces validationRules JSON)
-model TransitionValidation {
-  id        String @id @default(cuid())
-  criterion String // Validation requirement
-
-  transitionId String
-  transition   RoleTransition @relation(fields: [transitionId], references: [id], onDelete: Cascade)
-
-  @@map("transition_validations")
-}
-
-// Context elements to preserve (replaces contextPreservation JSON)
-model TransitionContext {
-  id         String @id @default(cuid())
-  contextKey String // Context element to preserve (e.g., "researchFindings", "architecturalDecisions")
-
-  transitionId String
-  transition   RoleTransition @relation(fields: [transitionId], references: [id], onDelete: Cascade)
-
-  @@map("transition_contexts")
-}
-
-// Expected deliverables (replaces handoffGuidance.expectedDeliverables)
-model TransitionDeliverable {
-  id          String @id @default(cuid())
-  deliverable String // Expected output from target role
-
-  transitionId String
-  transition   RoleTransition @relation(fields: [transitionId], references: [id], onDelete: Cascade)
-
-  @@map("transition_deliverables")
 }
 
 // Progress tracking - keep existing structure (already well-designed)

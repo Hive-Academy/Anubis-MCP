@@ -129,7 +129,7 @@ export class StepExecutionMcpService extends BaseMcpService {
           );
 
         if (!executionResult.execution) {
-          return this.buildMinimalResponse({
+          return this.buildResponse({
             error: 'No active execution found',
             guidance: 'Please ensure workflow is properly initialized',
           });
@@ -152,7 +152,7 @@ export class StepExecutionMcpService extends BaseMcpService {
         }
 
         if (!currentRoleId) {
-          return this.buildMinimalResponse({
+          return this.buildResponse({
             error: 'Missing execution context',
             details: {
               hasRoleId: Boolean(currentRoleId),
@@ -174,7 +174,7 @@ export class StepExecutionMcpService extends BaseMcpService {
       });
 
       // Return clean guidance without artificial fields
-      return this.buildMinimalResponse(guidance);
+      return this.buildResponse(guidance);
     } catch (error) {
       return this.buildErrorResponse(
         'Failed to get step guidance',
@@ -230,7 +230,7 @@ export class StepExecutionMcpService extends BaseMcpService {
           input.executionData,
         );
 
-      return this.buildMinimalResponse({
+      return this.buildResponse({
         completion: {
           stepId: input.stepId,
           result: input.result,
@@ -268,7 +268,7 @@ export class StepExecutionMcpService extends BaseMcpService {
         });
 
       if (!executionResult.execution) {
-        return this.buildMinimalResponse({
+        return this.buildResponse({
           taskId: input.id,
           status: 'no_execution',
           error: 'No active execution found',
@@ -278,7 +278,7 @@ export class StepExecutionMcpService extends BaseMcpService {
       const execution = executionResult.execution;
       const currentStep = execution.currentStep;
 
-      return this.buildMinimalResponse({
+      return this.buildResponse({
         taskId: input.id,
         status: execution.completedAt ? 'completed' : 'in_progress',
         currentStep: {
@@ -314,7 +314,7 @@ export class StepExecutionMcpService extends BaseMcpService {
         });
 
       if (!executionResult.execution) {
-        return this.buildMinimalResponse({
+        return this.buildResponse({
           taskId: input.id,
           roleId: input.roleId,
           status: 'no_execution',
@@ -325,7 +325,7 @@ export class StepExecutionMcpService extends BaseMcpService {
       const execution = executionResult.execution;
 
       if (execution.currentRoleId !== input.roleId) {
-        return this.buildMinimalResponse({
+        return this.buildResponse({
           taskId: input.id,
           roleId: input.roleId,
           status: 'role_mismatch',
@@ -341,7 +341,7 @@ export class StepExecutionMcpService extends BaseMcpService {
           input.roleId,
         );
 
-      return this.buildMinimalResponse({
+      return this.buildResponse({
         taskId: input.id,
         roleId: input.roleId,
         nextStep: nextStep

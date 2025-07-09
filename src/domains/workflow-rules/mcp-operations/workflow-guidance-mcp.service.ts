@@ -5,6 +5,7 @@ import { ZodSchema, z } from 'zod';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { WorkflowExecutionService } from '../services/workflow-execution.service';
 import { WorkflowGuidanceService } from '../services/workflow-guidance.service';
+import { BaseMcpService } from '../utils/mcp-response.utils';
 
 const GetWorkflowGuidanceInputSchema = z
   .object({
@@ -44,12 +45,14 @@ type GetWorkflowGuidanceInput = z.infer<typeof GetWorkflowGuidanceInputSchema>;
  * 🔧 ENHANCED: Added execution state verification for role transitions
  */
 @Injectable()
-export class WorkflowGuidanceMcpService {
+export class WorkflowGuidanceMcpService extends BaseMcpService {
   constructor(
     private readonly workflowGuidanceService: WorkflowGuidanceService,
     private readonly prisma: PrismaService,
     private readonly workflowExecutionService: WorkflowExecutionService,
-  ) {}
+  ) {
+    super();
+  }
 
   @Tool({
     name: 'get_workflow_guidance',
@@ -142,16 +145,12 @@ export class WorkflowGuidanceMcpService {
         content: [
           {
             type: 'text',
-            text: JSON.stringify(
-              {
-                success: true,
-                currentRole: roleGuidance.currentRole,
-                projectContext: roleGuidance.projectContext,
-                executionContext: executionContext,
-              },
-              null,
-              2,
-            ),
+            text: this.buildResponse({
+              success: true,
+              currentRole: roleGuidance.currentRole,
+              projectContext: roleGuidance.projectContext,
+              executionContext: executionContext,
+            }),
           },
         ],
       };

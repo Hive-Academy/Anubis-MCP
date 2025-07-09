@@ -179,13 +179,7 @@ export class CoreServiceOrchestrator {
    */
   getSupportedServices(): Record<string, string[]> {
     return {
-      TaskOperations: [
-        'create',
-        'create_with_subtasks',
-        'update',
-        'get',
-        'list',
-      ],
+      TaskOperations: ['create', 'update', 'get', 'list'],
       WorkflowOperations: ['delegate', 'complete', 'escalate'],
       ReviewOperations: [
         'create_review',

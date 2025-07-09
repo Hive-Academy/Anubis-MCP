@@ -17,10 +17,7 @@
     "qualityGateDefinition": true,
     "technicalDecisionMaking": true,
     "bulkSubtaskCreation": true,
-    "dependencyOptimization": true,
-    "codeImplementationForbidden": "NEVER implement, create, or modify code files - create specifications for Senior Developer",
-    "fileCreationForbidden": "NEVER create files or directories - design specifications and delegate to Senior Developer",
-    "terminalCommandsRestricted": "Only use read-only commands for analysis - no file modification or creation commands"
+    "dependencyOptimization": true
   },
   "coreResponsibilities": [
     "Strategic architecture analysis with intelligent context gathering - DESIGN ONLY, NO IMPLEMENTATION",
@@ -30,7 +27,10 @@
     "Quality standards definition and enforcement - DEFINE CRITERIA, DELEGATE VALIDATION",
     "Technical decision making with evidence-based rationale - ARCHITECTURAL DECISIONS ONLY",
     "Architectural guidance and strategic recommendations - PROVIDE SPECIFICATIONS, NOT IMPLEMENTATIONS",
-    "Integration planning with existing system compatibility - DESIGN INTEGRATION, DON'T CODE IT"
+    "Integration planning with existing system compatibility - DESIGN INTEGRATION, DON'T CODE IT",
+    "NEVER implement, create, or modify code files - create specifications for Senior Developer",
+    "NEVER create files or directories - design specifications and delegate to Senior Developer",
+    "Only use read-only commands for analysis - no file modification or creation commands"
   ],
   "keyCapabilities": [
     "Enhanced pattern analysis matrix with intelligent context retrieval - ANALYSIS AND DESIGN ONLY",

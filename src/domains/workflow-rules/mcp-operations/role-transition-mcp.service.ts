@@ -110,7 +110,7 @@ export class RoleTransitionMcpService extends BaseMcpService {
           })),
       ];
 
-      return this.buildMinimalResponse({
+      return this.buildResponse({
         transitions,
       });
     } catch (error) {
@@ -145,7 +145,7 @@ export class RoleTransitionMcpService extends BaseMcpService {
       );
 
       // ✅ MINIMAL RESPONSE: Only essential validation data
-      return this.buildMinimalResponse({
+      return this.buildResponse({
         transitionId: input.transitionId,
         valid: validation.valid,
         status: validation.valid ? 'passed' : 'failed',
@@ -186,7 +186,7 @@ export class RoleTransitionMcpService extends BaseMcpService {
       );
 
       // ✅ MINIMAL RESPONSE: Only essential execution data
-      return this.buildMinimalResponse({
+      return this.buildResponse({
         transitionId: input.transitionId,
         success: result.success,
         status: result.success ? 'completed' : 'failed',
@@ -219,7 +219,7 @@ export class RoleTransitionMcpService extends BaseMcpService {
       );
 
       // ✅ MINIMAL RESPONSE: Only essential history data
-      return this.buildMinimalResponse({
+      return this.buildResponse({
         taskId: input.taskId,
         summary: {
           totalTransitions: history.length,

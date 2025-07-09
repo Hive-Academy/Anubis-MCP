@@ -81,28 +81,6 @@ export const ImplementationContextSchema = z.object({
     .describe('Current testing methodology'),
 });
 
-// Integration Points Structure
-export const IntegrationPointsSchema = z.object({
-  apis: z
-    .array(
-      z.object({
-        name: z.string(),
-        type: z.string().describe('REST, GraphQL, gRPC, etc.'),
-        purpose: z.string().describe('What this API does'),
-      }),
-    )
-    .optional(),
-  services: z
-    .array(z.string())
-    .optional()
-    .describe('External services integrated'),
-  databases: z.array(z.string()).optional().describe('Database connections'),
-  externalDependencies: z
-    .array(z.string())
-    .optional()
-    .describe('External system dependencies'),
-});
-
 // Quality Assessment Structure
 export const QualityAssessmentSchema = z.object({
   codeQuality: z
@@ -226,106 +204,24 @@ export const SubtaskDataSchema = z.object({
     .enum(['not-started', 'in-progress', 'completed'])
     .optional()
     .default('not-started'),
-  estimatedDuration: z
-    .string()
-    .optional()
-    .describe('Estimated completion time'),
 
-  // Implementation Details
-  implementationOverview: z
-    .string()
-    .optional()
-    .describe('Overview of what this subtask accomplishes'),
+  // Implementation guidance - consolidated
   implementationApproach: z
     .string()
     .optional()
-    .describe('Detailed approach for implementing this specific subtask'),
-  technicalDecisions: z
-    .record(z.any())
-    .optional()
-    .describe('Technical decisions specific to this subtask'),
-  filesToModify: z
-    .array(z.string())
-    .optional()
-    .describe('Specific files this subtask will modify'),
-  codeExamples: z
-    .record(z.string())
-    .optional()
-    .describe('Code examples and patterns to follow'),
+    .describe('Detailed approach and technical specifications'),
 
-  // Strategic Context
-  strategicGuidance: z
-    .record(z.any())
-    .optional()
-    .describe('Strategic guidance for this specific subtask'),
-  architecturalContext: z
-    .string()
-    .optional()
-    .describe('How this subtask fits into overall architecture'),
-  architecturalRationale: z
-    .record(z.any())
-    .optional()
-    .describe('Architectural rationale for this subtask'),
-
-  // Quality and Constraints
-  qualityConstraints: z
-    .record(z.any())
-    .optional()
-    .describe('Quality constraints and requirements'),
-  qualityGates: z
-    .record(z.any())
-    .optional()
-    .describe('Quality gates specific to this subtask'),
+  // Quality validation
   acceptanceCriteria: z
     .array(z.string())
     .optional()
-    .describe('Acceptance criteria for this subtask'),
-  successCriteria: z
-    .record(z.any())
-    .optional()
-    .describe('Success criteria for completion validation'),
-  testingRequirements: z
-    .record(z.any())
-    .optional()
-    .describe('Specific testing requirements for this subtask'),
+    .describe('Acceptance criteria for validation'),
 
-  // Implementation Specifications
-  technicalSpecifications: z
-    .record(z.any())
-    .optional()
-    .describe('Technical specifications and requirements'),
-  performanceTargets: z
-    .record(z.any())
-    .optional()
-    .describe('Performance targets for this subtask'),
-  securityConsiderations: z
-    .record(z.any())
-    .optional()
-    .describe('Security considerations for this subtask'),
-  errorHandlingStrategy: z
-    .string()
-    .optional()
-    .describe('Error handling approach for this subtask'),
-
-  // Dependencies and Integration
+  // Dependencies (used by dependency system)
   dependencies: z
     .array(z.string())
     .optional()
-    .describe('Dependencies on other subtasks or external factors'),
-  integrationPoints: z
-    .record(z.any())
-    .optional()
-    .describe('Integration points with other components'),
-  externalDependencies: z
-    .record(z.any())
-    .optional()
-    .describe('External system dependencies'),
-
-  // Evidence and Validation
-  validationSteps: z
-    .record(z.any())
-    .optional()
-    .describe('Steps to validate completion'),
+    .describe('Dependencies on other subtasks'),
 });
 
 // ===================================================================
@@ -339,7 +235,6 @@ export const TaskOperationsSchema = z
       'update',
       'get',
       'list',
-      'create_with_subtasks',
     ]), // Added new operation
 
     // Required for get and update operations
@@ -390,7 +285,6 @@ export const TaskOperationsSchema = z
         architectureFindings: ArchitectureFindingsSchema.optional(),
         problemsIdentified: ProblemsIdentifiedSchema.optional(),
         implementationContext: ImplementationContextSchema.optional(),
-        integrationPoints: IntegrationPointsSchema.optional(),
         qualityAssessment: QualityAssessmentSchema.optional(),
         filesCovered: z.array(z.string()).optional(),
         technologyStack: TechnologyStackSchema.optional(),
@@ -438,8 +332,8 @@ export const TaskOperationsSchema = z
     (data) => {
       // For 'create' operations, require taskData with name
       if (
-        data.operation === 'create' ||
-        data.operation === 'create_with_subtasks'
+        data.operation === 'create' 
+    
       ) {
         return data.taskData?.name !== undefined;
       }
@@ -453,8 +347,7 @@ export const TaskOperationsSchema = z
     (data) => {
       // For 'create' operations, require executionId for workflow linking
       if (
-        data.operation === 'create' ||
-        data.operation === 'create_with_subtasks'
+        data.operation === 'create'
       ) {
         return data.executionId !== undefined;
       }
@@ -476,19 +369,6 @@ export const TaskOperationsSchema = z
     {
       message: "For 'update' operations, 'taskId' is required",
     },
-  )
-  .refine(
-    (data) => {
-      // For 'create_with_subtasks' operations, require subtasks array
-      if (data.operation === 'create_with_subtasks') {
-        return data.subtasks !== undefined && data.subtasks.length > 0;
-      }
-      return true;
-    },
-    {
-      message:
-        "For 'create_with_subtasks' operations, 'subtasks' array is required and must not be empty",
-    },
   );
 
 export type TaskOperationsInput = z.infer<typeof TaskOperationsSchema>;
@@ -497,7 +377,7 @@ export type TaskOperationsInput = z.infer<typeof TaskOperationsSchema>;
 export type ArchitectureFindings = z.infer<typeof ArchitectureFindingsSchema>;
 export type ProblemsIdentified = z.infer<typeof ProblemsIdentifiedSchema>;
 export type ImplementationContext = z.infer<typeof ImplementationContextSchema>;
-export type IntegrationPoints = z.infer<typeof IntegrationPointsSchema>;
+
 export type QualityAssessment = z.infer<typeof QualityAssessmentSchema>;
 export type TechnologyStack = z.infer<typeof TechnologyStackSchema>;
 export type ResearchFindings = z.infer<typeof ResearchFindingsSchema>;

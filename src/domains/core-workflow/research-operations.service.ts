@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { Comment, Prisma, ResearchReport } from 'generated/prisma';
+import { Prisma, ResearchReport } from 'generated/prisma';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ResearchOperationsInput } from './schemas/research-operations.schema';
 
 // Type-safe interfaces for research operations
 export interface ResearchOperationResult {
   success: boolean;
-  data?: ResearchReport | Comment | ResearchWithComments | CommentSummary;
+  data?: ResearchReport;
   error?: {
     message: string;
     code: string;
@@ -17,18 +17,6 @@ export interface ResearchOperationResult {
     taskId: number;
     responseTime: number;
   };
-}
-
-export interface ResearchWithComments extends ResearchReport {
-  comments: Comment[];
-}
-
-export interface CommentSummary {
-  summary: {
-    total: number;
-    byType: Record<string, number>;
-  };
-  comments: Comment[];
 }
 
 /**
@@ -54,11 +42,7 @@ export class ResearchOperationsService {
     const startTime = performance.now();
 
     try {
-      let result:
-        | ResearchReport
-        | Comment
-        | ResearchWithComments
-        | CommentSummary;
+      let result: ResearchReport;
 
       switch (input.operation) {
         case 'create_research':
@@ -69,12 +53,6 @@ export class ResearchOperationsService {
           break;
         case 'get_research':
           result = await this.getResearch(input);
-          break;
-        case 'add_comment':
-          result = await this.addComment(input);
-          break;
-        case 'get_comments':
-          result = await this.getComments(input);
           break;
         default:
           throw new Error(`Unknown operation: ${String(input.operation)}`);
@@ -164,8 +142,8 @@ export class ResearchOperationsService {
 
   private async getResearch(
     input: ResearchOperationsInput,
-  ): Promise<ResearchReport | ResearchWithComments> {
-    const { taskId, includeComments } = input;
+  ): Promise<ResearchReport> {
+    const { taskId } = input;
 
     const research = await this.prisma.researchReport.findFirst({
       where: { taskId },
@@ -175,69 +153,6 @@ export class ResearchOperationsService {
       throw new Error(`Research report not found for task ${taskId}`);
     }
 
-    // If comments requested, get them separately since they're not directly related
-    if (includeComments) {
-      const comments = await this.prisma.comment.findMany({
-        where: { taskId },
-        orderBy: { createdAt: 'desc' },
-      });
-
-      return {
-        ...research,
-        comments,
-      } as ResearchWithComments;
-    }
-
     return research;
-  }
-
-  private async addComment(input: ResearchOperationsInput): Promise<Comment> {
-    const { taskId, commentData } = input;
-
-    if (!commentData) {
-      throw new Error('Comment data is required for creation');
-    }
-
-    const comment = await this.prisma.comment.create({
-      data: {
-        task: { connect: { id: taskId } },
-        content: commentData.content,
-        mode: commentData.author || 'system', // Map author to mode field
-      } satisfies Prisma.CommentCreateInput,
-    });
-
-    return comment;
-  }
-
-  private async getComments(
-    input: ResearchOperationsInput,
-  ): Promise<CommentSummary> {
-    const { taskId, commentType } = input;
-
-    const where: Prisma.CommentWhereInput = { taskId };
-    if (commentType) {
-      where.mode = commentType; // Map contextType to mode field
-    }
-
-    const comments = await this.prisma.comment.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-    });
-
-    const summary = {
-      total: comments.length,
-      byType: {} as Record<string, number>,
-    };
-
-    // Build summary properly typed
-    comments.forEach((comment) => {
-      const type = comment.mode;
-      summary.byType[type] = (summary.byType[type] || 0) + 1;
-    });
-
-    return {
-      summary,
-      comments,
-    };
   }
 }
