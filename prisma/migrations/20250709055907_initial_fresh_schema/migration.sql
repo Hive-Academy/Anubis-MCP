@@ -309,7 +309,7 @@ CREATE TABLE "workflow_executions" (
     "maxRecoveryAttempts" INTEGER NOT NULL DEFAULT 3,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "workflow_executions_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT "workflow_executions_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "task" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "workflow_executions_currentRoleId_fkey" FOREIGN KEY ("currentRoleId") REFERENCES "workflow_roles" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "workflow_executions_currentStepId_fkey" FOREIGN KEY ("currentStepId") REFERENCES "workflow_steps" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
@@ -341,7 +341,7 @@ CREATE TABLE "task_description" (
     "acceptanceCriteria" JSONB NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "TaskDescription_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "TaskDescription_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -360,7 +360,7 @@ CREATE TABLE "subtask" (
     "acceptanceCriteria" JSONB,
     "dependencies" JSONB,
     "completionEvidence" JSONB,
-    CONSTRAINT "Subtask_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "Subtask_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -369,8 +369,8 @@ CREATE TABLE "subtask_dependency" (
     "dependentSubtaskId" INTEGER NOT NULL,
     "requiredSubtaskId" INTEGER NOT NULL,
     "dependencyType" TEXT NOT NULL DEFAULT 'sequential',
-    CONSTRAINT "SubtaskDependency_dependentSubtaskId_fkey" FOREIGN KEY ("dependentSubtaskId") REFERENCES "Subtask" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "SubtaskDependency_requiredSubtaskId_fkey" FOREIGN KEY ("requiredSubtaskId") REFERENCES "Subtask" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "SubtaskDependency_dependentSubtaskId_fkey" FOREIGN KEY ("dependentSubtaskId") REFERENCES "subtask" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "SubtaskDependency_requiredSubtaskId_fkey" FOREIGN KEY ("requiredSubtaskId") REFERENCES "subtask" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -381,7 +381,7 @@ CREATE TABLE "delegation_record" (
     "toMode" TEXT NOT NULL,
     "delegationTimestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "message" TEXT,
-    CONSTRAINT "DelegationRecord_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "DelegationRecord_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -395,7 +395,7 @@ CREATE TABLE "research_report" (
     "references" JSONB NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "ResearchReport_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "ResearchReport_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -411,7 +411,7 @@ CREATE TABLE "code_review" (
     "requiredChanges" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "CodeReview_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "CodeReview_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -424,7 +424,7 @@ CREATE TABLE "completion_report" (
     "acceptanceCriteriaVerification" JSONB NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "CompletionReport_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "CompletionReport_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -436,7 +436,7 @@ CREATE TABLE "workflow_transition" (
     "transitionTimestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "reason" TEXT,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "WorkflowTransition_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "WorkflowTransition_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -453,7 +453,7 @@ CREATE TABLE "codebase_analysis" (
     "updatedAt" DATETIME NOT NULL,
     "analyzedBy" TEXT NOT NULL,
     "analysisVersion" TEXT NOT NULL DEFAULT '1.0',
-    CONSTRAINT "CodebaseAnalysis_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "CodebaseAnalysis_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateIndex
