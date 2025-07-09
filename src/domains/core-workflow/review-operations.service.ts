@@ -1,7 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { CodeReview, CompletionReport, Prisma } from 'generated/prisma';
+import { ZodSchema } from 'zod';
 import { PrismaService } from '../../prisma/prisma.service';
-import { ReviewOperationsInput } from './schemas/review-operations.schema';
+import {
+  BaseMcpService,
+  McpResponse,
+} from '../workflow-rules/utils/mcp-response.utils';
+import {
+  ReviewOperationsInput,
+  ReviewOperationsInputSchema,
+} from './schemas/review-operations.schema';
+import { Tool } from '@rekog/mcp-nest';
 
 // Type-safe interfaces for review operations
 export interface ReviewOperationResult {
@@ -32,10 +41,8 @@ export interface CompletionSummary {
 }
 
 /**
- * Review Operations Service (Internal)
- *
- * Internal service for code review and completion report management.
- * No longer exposed as MCP tool - used by workflow-rules MCP interface.
+ * Review Operations Service - MCP Tool
+ * Handles code review and completion report management for workflow tasks
  *
  * SOLID Principles Applied:
  * - Single Responsibility: Focused on review and completion operations only
@@ -45,12 +52,20 @@ export interface CompletionSummary {
  * - Dependency Inversion: Depends on PrismaService abstraction
  */
 @Injectable()
-export class ReviewOperationsService {
-  constructor(private readonly prisma: PrismaService) {}
+export class ReviewOperationsService extends BaseMcpService {
+  constructor(private readonly prisma: PrismaService) {
+    super();
+  }
 
+  @Tool({
+    name: 'execute_review_operation',
+    description:
+      'Execute review operations including create, update, get for code reviews and completion reports',
+    parameters: ReviewOperationsInputSchema as ZodSchema,
+  })
   async executeReviewOperation(
     input: ReviewOperationsInput,
-  ): Promise<ReviewOperationResult> {
+  ): Promise<McpResponse> {
     const startTime = performance.now();
 
     try {
@@ -82,7 +97,7 @@ export class ReviewOperationsService {
 
       const responseTime = performance.now() - startTime;
 
-      return {
+      return this.buildResponse({
         success: true,
         data: result,
         metadata: {
@@ -90,16 +105,16 @@ export class ReviewOperationsService {
           taskId: input.taskId,
           responseTime: Math.round(responseTime),
         },
-      };
+      });
     } catch (error: any) {
-      return {
+      return this.buildResponse({
         success: false,
         error: {
           message: error.message,
           code: 'REVIEW_OPERATION_FAILED',
           operation: input.operation,
         },
-      };
+      });
     }
   }
 
@@ -243,5 +258,64 @@ export class ReviewOperationsService {
     }
 
     return completion;
+  }
+
+  /**
+   * Internal method for backward compatibility
+   * Allows other services to call review operations without MCP wrapping
+   */
+  async executeReviewOperationInternal(
+    input: ReviewOperationsInput,
+  ): Promise<ReviewOperationResult> {
+    const startTime = performance.now();
+
+    try {
+      let result:
+        | CodeReview
+        | CompletionReport
+        | ReviewSummary
+        | CompletionSummary;
+
+      switch (input.operation) {
+        case 'create_review':
+          result = await this.createReview(input);
+          break;
+        case 'update_review':
+          result = await this.updateReview(input);
+          break;
+        case 'get_review':
+          result = await this.getReview(input);
+          break;
+        case 'create_completion':
+          result = await this.createCompletion(input);
+          break;
+        case 'get_completion':
+          result = await this.getCompletion(input);
+          break;
+        default:
+          throw new Error(`Unknown operation: ${String(input.operation)}`);
+      }
+
+      const responseTime = performance.now() - startTime;
+
+      return {
+        success: true,
+        data: result,
+        metadata: {
+          operation: input.operation,
+          taskId: input.taskId,
+          responseTime: Math.round(responseTime),
+        },
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'REVIEW_OPERATION_FAILED',
+          operation: input.operation,
+        },
+      };
+    }
   }
 }

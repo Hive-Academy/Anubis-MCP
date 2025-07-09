@@ -1,7 +1,16 @@
 import { Injectable } from '@nestjs/common';
+import { Tool } from '@rekog/mcp-nest';
 import { Prisma, ResearchReport } from 'generated/prisma';
+import { ZodSchema } from 'zod';
 import { PrismaService } from '../../prisma/prisma.service';
-import { ResearchOperationsInput } from './schemas/research-operations.schema';
+import {
+  BaseMcpService,
+  McpResponse,
+} from '../workflow-rules/utils/mcp-response.utils';
+import {
+  ResearchOperationsInput,
+  ResearchOperationsInputSchema,
+} from './schemas/research-operations.schema';
 
 // Type-safe interfaces for research operations
 export interface ResearchOperationResult {
@@ -20,10 +29,8 @@ export interface ResearchOperationResult {
 }
 
 /**
- * Research Operations Service (Internal)
- *
- * Internal service for research reports and communication management.
- * No longer exposed as MCP tool - used by workflow-rules MCP interface.
+ * Research Operations Service - MCP Tool
+ * Handles research report lifecycle management for workflow tasks
  *
  * SOLID Principles Applied:
  * - Single Responsibility: Focused on research and communication operations only
@@ -33,12 +40,20 @@ export interface ResearchOperationResult {
  * - Dependency Inversion: Depends on PrismaService abstraction
  */
 @Injectable()
-export class ResearchOperationsService {
-  constructor(private readonly prisma: PrismaService) {}
+export class ResearchOperationsService extends BaseMcpService {
+  constructor(private readonly prisma: PrismaService) {
+    super();
+  }
 
+  @Tool({
+    name: 'execute_research_operation',
+    description:
+      'Execute research operations including create, update, get, and list operations for research reports',
+    parameters: ResearchOperationsInputSchema as ZodSchema,
+  })
   async executeResearchOperation(
     input: ResearchOperationsInput,
-  ): Promise<ResearchOperationResult> {
+  ): Promise<McpResponse> {
     const startTime = performance.now();
 
     try {
@@ -60,7 +75,7 @@ export class ResearchOperationsService {
 
       const responseTime = performance.now() - startTime;
 
-      return {
+      return this.buildResponse({
         success: true,
         data: result,
         metadata: {
@@ -68,16 +83,16 @@ export class ResearchOperationsService {
           taskId: input.taskId,
           responseTime: Math.round(responseTime),
         },
-      };
+      });
     } catch (error: any) {
-      return {
+      return this.buildResponse({
         success: false,
         error: {
           message: error.message,
           code: 'RESEARCH_OPERATION_FAILED',
           operation: input.operation,
         },
-      };
+      });
     }
   }
 
@@ -154,5 +169,55 @@ export class ResearchOperationsService {
     }
 
     return research;
+  }
+
+  /**
+   * Internal method for backward compatibility
+   * Allows other services to call research operations without MCP wrapping
+   */
+  async executeResearchOperationInternal(
+    input: ResearchOperationsInput,
+  ): Promise<ResearchOperationResult> {
+    const startTime = performance.now();
+
+    try {
+      let result: ResearchReport | ResearchReport[];
+
+      switch (input.operation) {
+        case 'create_research':
+          result = await this.createResearch(input);
+          break;
+        case 'update_research':
+          result = await this.updateResearch(input);
+          break;
+        case 'get_research':
+          result = await this.getResearch(input);
+          break;
+
+        default:
+          throw new Error(`Unknown operation: ${String(input.operation)}`);
+      }
+
+      const responseTime = performance.now() - startTime;
+
+      return {
+        success: true,
+        data: result,
+        metadata: {
+          operation: input.operation,
+          taskId: input.taskId,
+          responseTime: Math.round(responseTime),
+        },
+      };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: {
+          message: error.message,
+          code: 'RESEARCH_OPERATION_FAILED',
+          operation: input.operation,
+        },
+      };
+    }
   }
 }

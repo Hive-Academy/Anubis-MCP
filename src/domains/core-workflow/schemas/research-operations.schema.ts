@@ -19,3 +19,6 @@ export const ResearchOperationsSchema = z.object({
 });
 
 export type ResearchOperationsInput = z.infer<typeof ResearchOperationsSchema>;
+
+// Export schema for MCP tool usage
+export const ResearchOperationsInputSchema = ResearchOperationsSchema;

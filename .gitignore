@@ -17,7 +17,6 @@ yarn-error.log*
 /anubis-mcp-reports
 /working-demo
 /workflow-reports
-# Keep the pre-seeded database template
-# /prisma/data/workflow.db - INCLUDED for NPM package
+
 /.vscode
 /.vscode/mcp.json

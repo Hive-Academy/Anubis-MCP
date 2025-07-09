@@ -13,6 +13,7 @@
           "Check git status: 'git status --porcelain'",
           "ASK USER: 'Continue on current branch or create new branch? If new, what name?'",
           "Execute user's branch decision",
+          "Commit any pending changes with 'git add . && git commit -m \"Initial commit for task\"'",
           "IF memory-bank folder exists: Read ProjectOverview.md, TechnicalArchitecture.md, DeveloperGuide.md",
           "Document key context points (3-5 bullet points maximum)",
           "COMPLETE STEP - NO FURTHER ANALYSIS NEEDED"
@@ -31,7 +32,7 @@
       "sequenceNumber": 2,
       "isRequired": true,
       "stepType": "ACTION",
-     "approach": "Perform a high-level codebase analysis based on the already-validated task context.",
+      "approach": "Perform a high-level codebase analysis based on the already-validated task context.",
       "approachGuidance": {
         "stepByStep": [
           "🚨 QUICK CODEBASE ANALYSIS ",

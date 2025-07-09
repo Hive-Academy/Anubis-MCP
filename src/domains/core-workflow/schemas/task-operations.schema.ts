@@ -230,12 +230,7 @@ export const SubtaskDataSchema = z.object({
 
 export const TaskOperationsSchema = z
   .object({
-    operation: z.enum([
-      'create',
-      'update',
-      'get',
-      'list',
-    ]), // Added new operation
+    operation: z.enum(['create_task', 'update_task', 'get_task', 'list_task']), // Added new operation
 
     // Required for get and update operations
     taskId: z.number().optional(),
@@ -318,7 +313,7 @@ export const TaskOperationsSchema = z
   .refine(
     (data) => {
       // For 'get' operations, require either taskId or slug
-      if (data.operation === 'get') {
+      if (data.operation === 'get_task') {
         return data.taskId !== undefined || data.slug !== undefined;
       }
       return true;
@@ -331,10 +326,7 @@ export const TaskOperationsSchema = z
   .refine(
     (data) => {
       // For 'create' operations, require taskData with name
-      if (
-        data.operation === 'create' 
-    
-      ) {
+      if (data.operation === 'create_task') {
         return data.taskData?.name !== undefined;
       }
       return true;
@@ -346,9 +338,7 @@ export const TaskOperationsSchema = z
   .refine(
     (data) => {
       // For 'create' operations, require executionId for workflow linking
-      if (
-        data.operation === 'create'
-      ) {
+      if (data.operation === 'create_task') {
         return data.executionId !== undefined;
       }
       return true;
@@ -361,7 +351,7 @@ export const TaskOperationsSchema = z
   .refine(
     (data) => {
       // For 'update' operations, require taskId
-      if (data.operation === 'update') {
+      if (data.operation === 'update_task') {
         return data.taskId !== undefined;
       }
       return true;
@@ -372,6 +362,7 @@ export const TaskOperationsSchema = z
   );
 
 export type TaskOperationsInput = z.infer<typeof TaskOperationsSchema>;
+export const TaskOperationsInputSchema = TaskOperationsSchema;
 
 // Export individual schemas for reuse
 export type ArchitectureFindings = z.infer<typeof ArchitectureFindingsSchema>;

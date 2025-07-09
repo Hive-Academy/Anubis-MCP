@@ -1,7 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { Tool } from '@rekog/mcp-nest';
 import { DelegationRecord, Prisma, WorkflowTransition } from 'generated/prisma';
 import { PrismaService } from '../../prisma/prisma.service';
-import { WorkflowOperationsInput } from './schemas/workflow-operations.schema';
+import {
+  BaseMcpService,
+  McpResponse,
+} from '../workflow-rules/utils/mcp-response.utils';
+import {
+  WorkflowOperationsInput,
+  WorkflowOperationsSchema,
+} from './schemas/workflow-operations.schema';
 
 // Type-safe interfaces for workflow operations
 export interface WorkflowOperationResult {
@@ -20,10 +28,8 @@ export interface WorkflowOperationResult {
 }
 
 /**
- * Workflow Operations Service (Internal)
- *
- * Internal service for workflow delegation and state management.
- * No longer exposed as MCP tool - used by workflow-rules MCP interface.
+ * Workflow Operations Service - MCP Tool
+ * Handles workflow delegation and state management for workflow tasks
  *
  * SOLID Principles Applied:
  * - Single Responsibility: Focused on workflow state transitions only
@@ -33,12 +39,20 @@ export interface WorkflowOperationResult {
  * - Dependency Inversion: Depends on PrismaService abstraction
  */
 @Injectable()
-export class WorkflowOperationsService {
-  constructor(private readonly prisma: PrismaService) {}
+export class WorkflowOperationsService extends BaseMcpService {
+  constructor(private readonly prisma: PrismaService) {
+    super();
+  }
 
+  @Tool({
+    name: 'execute_workflow_operation',
+    description:
+      'Execute workflow operations including delegate, complete, escalate, and transition operations',
+    parameters: WorkflowOperationsSchema,
+  })
   async executeWorkflowOperation(
     input: WorkflowOperationsInput,
-  ): Promise<WorkflowOperationResult> {
+  ): Promise<McpResponse> {
     const startTime = performance.now();
 
     try {
@@ -63,7 +77,7 @@ export class WorkflowOperationsService {
 
       const responseTime = performance.now() - startTime;
 
-      return {
+      return this.buildResponse({
         success: true,
         data: result,
         metadata: {
@@ -71,16 +85,16 @@ export class WorkflowOperationsService {
           taskId: input.taskId,
           responseTime: Math.round(responseTime),
         },
-      };
+      });
     } catch (error: any) {
-      return {
+      return this.buildResponse({
         success: false,
         error: {
           message: error.message,
           code: 'WORKFLOW_OPERATION_FAILED',
           operation: input.operation,
         },
-      };
+      });
     }
   }
 

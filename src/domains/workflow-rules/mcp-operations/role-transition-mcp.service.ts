@@ -33,17 +33,9 @@ const ExecuteTransitionInputSchema = z.object({
   roleId: z.string().describe('Role ID for transition context'),
   handoffMessage: z.string().optional().describe('Optional handoff message'),
 });
-
-const GetTransitionHistoryInputSchema = z.object({
-  taskId: z.number().describe('Task ID for transition history'),
-});
-
 type GetRoleTransitionsInput = z.infer<typeof GetRoleTransitionsInputSchema>;
 type ValidateTransitionInput = z.infer<typeof ValidateTransitionInputSchema>;
 type ExecuteTransitionInput = z.infer<typeof ExecuteTransitionInputSchema>;
-type GetTransitionHistoryInput = z.infer<
-  typeof GetTransitionHistoryInputSchema
->;
 
 /**
  * 🚀 REVAMPED: RoleTransitionMcpService
@@ -201,50 +193,4 @@ export class RoleTransitionMcpService extends BaseMcpService {
       );
     }
   }
-
-  // ===================================================================
-  // ✅ TRANSITION HISTORY - Focused history summary
-  // ===================================================================
-
-  @Tool({
-    name: 'get_transition_history',
-    description: `Retrieves transition history with timeline overview and basic statistics for task context.`,
-    parameters:
-      GetTransitionHistoryInputSchema as ZodSchema<GetTransitionHistoryInput>,
-  })
-  async getTransitionHistory(input: GetTransitionHistoryInput) {
-    try {
-      const history = await this.roleTransitionService.getTransitionHistory(
-        input.taskId,
-      );
-
-      // ✅ MINIMAL RESPONSE: Only essential history data
-      return this.buildResponse({
-        taskId: input.taskId,
-        summary: {
-          totalTransitions: history.length,
-          uniqueRoles: new Set(history.map((h) => h.fromMode)).size,
-          latestTransition:
-            history[0]?.delegationTimestamp.toISOString() || null,
-        },
-        recentTransitions: history.slice(0, 3).map((h) => ({
-          fromRole: h.fromMode,
-          toRole: h.toMode,
-          timestamp: h.delegationTimestamp.toISOString(),
-          message: h.message,
-        })),
-        // ❌ REMOVED: nextAction (hardcoded flow control)
-      });
-    } catch (error) {
-      return this.buildErrorResponse(
-        'Failed to get transition history',
-        getErrorMessage(error),
-        'HISTORY_QUERY_ERROR',
-      );
-    }
-  }
-
-  // ===================================================================
-  // 🔧 PRIVATE HELPER METHODS - Using inherited response builders
-  // ===================================================================
 }

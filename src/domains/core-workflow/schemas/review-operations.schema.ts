@@ -66,3 +66,6 @@ export const ReviewOperationsSchema = z.object({
 });
 
 export type ReviewOperationsInput = z.infer<typeof ReviewOperationsSchema>;
+
+// Export schema for MCP tool usage
+export const ReviewOperationsInputSchema = ReviewOperationsSchema;

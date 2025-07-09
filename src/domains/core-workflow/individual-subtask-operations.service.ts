@@ -1,10 +1,17 @@
 import { Injectable } from '@nestjs/common';
+import { ZodSchema } from 'zod';
 import { Prisma, Subtask } from 'generated/prisma';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   IndividualSubtaskOperationsInput,
+  IndividualSubtaskOperationsInputSchema,
   BulkSubtaskCreationResult,
 } from './schemas/individual-subtask-operations.schema';
+import { Tool } from '@rekog/mcp-nest';
+import {
+  BaseMcpService,
+  McpResponse,
+} from '../workflow-rules/utils/mcp-response.utils';
 
 // Type-safe interfaces for subtask operations
 export interface SubtaskOperationResult {
@@ -100,11 +107,11 @@ interface BatchCompletionResult {
 }
 
 /**
- * Individual Subtask Operations Service (Internal)
+ * Individual Subtask Operations Service (MCP Tool)
  *
- * Internal service for individual subtask management with evidence collection
- * and dependency validation. No longer exposed as MCP tool - used by
- * workflow-rules MCP interface.
+ * MCP tool for individual subtask management with evidence collection
+ * and dependency validation. Provides comprehensive subtask lifecycle
+ * management including creation, updates, dependency tracking, and batch operations.
  *
  * SOLID Principles Applied:
  * - Single Responsibility: Focused on individual subtask operations only
@@ -114,10 +121,80 @@ interface BatchCompletionResult {
  * - Dependency Inversion: Depends on PrismaService abstraction
  */
 @Injectable()
-export class IndividualSubtaskOperationsService {
-  constructor(private readonly prisma: PrismaService) {}
+export class IndividualSubtaskOperationsService extends BaseMcpService {
+  constructor(private readonly prisma: PrismaService) {
+    super();
+  }
 
+  @Tool({
+    name: 'individual_subtask_operations',
+    description:
+      'Execute individual subtask operations including creation, updates, dependency tracking, and batch management with evidence collection',
+    parameters: IndividualSubtaskOperationsInputSchema as ZodSchema,
+  })
   async executeIndividualSubtaskOperation(
+    input: IndividualSubtaskOperationsInput,
+  ): Promise<McpResponse> {
+    const startTime = performance.now();
+
+    try {
+      let result:
+        | Subtask
+        | SubtaskWithDependencies
+        | NextSubtaskResult
+        | SubtaskCreationResult
+        | SubtaskUpdateResult
+        | BulkSubtaskCreationResult;
+
+      switch (input.operation) {
+        case 'create_subtask':
+          result = await this.createSubtask(input);
+          break;
+        case 'create_subtasks_batch':
+          result = await this.createSubtasksBatch(input);
+          break;
+        case 'update_subtask':
+          result = await this.updateSubtask(input);
+          break;
+        case 'get_subtask':
+          result = await this.getSubtask(input);
+          break;
+        case 'get_next_subtask':
+          result = await this.getNextSubtask(input);
+          break;
+        default:
+          throw new Error(`Unknown operation: ${String(input.operation)}`);
+      }
+
+      const responseTime = performance.now() - startTime;
+
+      return this.buildResponse({
+        success: true,
+        data: result,
+        metadata: {
+          operation: input.operation,
+          taskId: input.taskId,
+          subtaskId: input.subtaskId,
+          responseTime: Math.round(responseTime),
+        },
+      });
+    } catch (error: any) {
+      return this.buildResponse({
+        success: false,
+        error: {
+          message: error.message,
+          code: 'SUBTASK_OPERATION_FAILED',
+          operation: input.operation,
+        },
+      });
+    }
+  }
+
+  /**
+   * Internal method for backward compatibility
+   * Allows other services to call subtask operations without MCP wrapping
+   */
+  async executeIndividualSubtaskOperationInternal(
     input: IndividualSubtaskOperationsInput,
   ): Promise<SubtaskOperationResult> {
     const startTime = performance.now();

@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { Tool } from '@rekog/mcp-nest';
+import { ZodSchema } from 'zod';
 import {
   CodebaseAnalysis,
   Prisma,
@@ -7,7 +9,14 @@ import {
   TaskDescription,
 } from 'generated/prisma';
 import { PrismaService } from '../../prisma/prisma.service';
-import { TaskOperationsInput } from './schemas/task-operations.schema';
+import {
+  TaskOperationsInput,
+  TaskOperationsInputSchema,
+} from './schemas/task-operations.schema';
+import {
+  BaseMcpService,
+  McpResponse,
+} from '../../domains/workflow-rules/utils/mcp-response.utils';
 
 // Type-safe interfaces for service operations
 export interface TaskOperationResult {
@@ -76,10 +85,10 @@ export interface TaskListResult {
 }
 
 /**
- * Task Operations Service (Internal)
+ * Task Operations MCP Service
  *
- * Provides core task lifecycle management as internal service.
- * Now called by workflow-rules MCP tools instead of being exposed directly.
+ * Provides core task lifecycle management as MCP tool.
+ * Exposes task CRUD operations through MCP protocol.
  *
  * SOLID Principles Applied:
  * - Single Responsibility: Focused on task CRUD operations only
@@ -89,32 +98,38 @@ export interface TaskListResult {
  * - Dependency Inversion: Depends on PrismaService abstraction
  */
 @Injectable()
-export class TaskOperationsService {
-  constructor(private readonly prisma: PrismaService) {}
+export class TaskOperationsService extends BaseMcpService {
+  constructor(private readonly prisma: PrismaService) {
+    super();
+  }
 
   /**
-   * Execute task operation as internal service
-   * Returns type-safe data without MCP wrapping
+   * Execute task operation as MCP tool
+   * Returns MCP-formatted response
    */
-  async executeTaskOperation(
-    input: TaskOperationsInput,
-  ): Promise<TaskOperationResult> {
+  @Tool({
+    name: 'task_operations',
+    description:
+      'Execute task lifecycle operations (create, update, get, list) with comprehensive task management capabilities.',
+    parameters: TaskOperationsInputSchema as ZodSchema<TaskOperationsInput>,
+  })
+  async executeTaskOperation(input: TaskOperationsInput): Promise<McpResponse> {
     const startTime = performance.now();
 
     try {
       let result: any;
 
       switch (input.operation) {
-        case 'create':
+        case 'create_task':
           result = await this.createTask(input);
           break;
-        case 'update':
+        case 'update_task':
           result = await this.updateTask(input);
           break;
-        case 'get':
+        case 'get_task':
           result = await this.getTask(input);
           break;
-        case 'list':
+        case 'list_task':
           result = await this.listTasks(input);
           break;
         default:
@@ -126,7 +141,61 @@ export class TaskOperationsService {
 
       const responseTime = performance.now() - startTime;
 
-      // Return type-safe data for internal service use
+      // Return MCP-formatted response
+      return this.buildResponse({
+        success: true,
+        data: result,
+        metadata: {
+          operation: input.operation,
+          id: input.taskId ?? 'unknown',
+          responseTime: Math.round(responseTime),
+        },
+      });
+    } catch (error: any) {
+      return this.buildResponse({
+        success: false,
+        error: {
+          message: error.message,
+          code: 'TASK_OPERATION_FAILED',
+          operation: input.operation,
+        },
+      });
+    }
+  }
+
+  /**
+   * Internal service method for backward compatibility
+   * Used by other services that need direct access without MCP wrapping
+   */
+  async executeTaskOperationInternal(
+    input: TaskOperationsInput,
+  ): Promise<TaskOperationResult> {
+    const startTime = performance.now();
+
+    try {
+      let result: any;
+
+      switch (input.operation) {
+        case 'create_task':
+          result = await this.createTask(input);
+          break;
+        case 'update_task':
+          result = await this.updateTask(input);
+          break;
+        case 'get_task':
+          result = await this.getTask(input);
+          break;
+        case 'list_task':
+          result = await this.listTasks(input);
+          break;
+        default:
+          throw new Error(
+            `Unknown operation: ${String((input as any).operation)}`,
+          );
+      }
+
+      const responseTime = performance.now() - startTime;
+
       return {
         success: true,
         data: result,
