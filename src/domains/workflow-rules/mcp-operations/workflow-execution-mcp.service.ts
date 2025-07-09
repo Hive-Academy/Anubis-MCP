@@ -232,9 +232,9 @@ export class WorkflowExecutionMcpService extends BaseMcpService {
     description: `Manages workflow execution state through strongly-typed operations for creating, querying, updating, and completing workflow executions. Handles execution context and progress tracking with validated parameters.`,
     parameters: WorkflowExecutionSchema,
   })
-  async executeWorkflowOperation(input: WorkflowExecutionInputSchema): Promise<{
-    content: Array<{ type: 'text'; text: McpResponse }>;
-  }> {
+  async executeWorkflowOperation(
+    input: WorkflowExecutionInputSchema,
+  ): Promise<McpResponse> {
     try {
       const workflowInput: WorkflowExecutionInput = {
         taskId: input.taskId,
@@ -300,34 +300,20 @@ export class WorkflowExecutionMcpService extends BaseMcpService {
       }
 
       // Return MINIMAL state data only - NO guidance generation, NO envelopes
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: this.buildResponse({
-              success: true,
-              data: result,
-              timestamp: new Date().toISOString(),
-            }),
-          },
-        ],
-      };
+      return this.buildResponse({
+        success: true,
+        data: result,
+        timestamp: new Date().toISOString(),
+      });
     } catch (error: unknown) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
 
-      return {
-        content: [
-          {
-            type: 'text' as const,
-            text: this.buildErrorResponse(
-              errorMessage,
-              '',
-              'WORKFLOW_EXECUTION_FAILED',
-            ),
-          },
-        ],
-      };
+      return this.buildErrorResponse(
+        errorMessage,
+        '',
+        'WORKFLOW_EXECUTION_FAILED',
+      );
     }
   }
 }

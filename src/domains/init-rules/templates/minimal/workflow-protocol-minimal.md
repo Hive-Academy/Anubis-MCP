@@ -4,7 +4,7 @@
 
 ## 🎯 MENTAL STATE TRACKER
 
-Always maintain: **ROLE** | **STEP** | **EXECUTION_ID** | **TASK_ID**
+Always maintain: **ROLE** | **ROLE_ID** | **STEP_ID** | **EXECUTION_ID** | **TASK_ID**
 
 ## 🚨 CRITICAL: WORKFLOW STARTUP SEQUENCE
 

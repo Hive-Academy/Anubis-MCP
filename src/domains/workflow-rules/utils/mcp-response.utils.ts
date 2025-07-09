@@ -123,10 +123,10 @@ export abstract class BaseMcpService {
     const optimized = optimizeJson(data, {
       removeNulls: true,
       removeEmptyStrings: true,
-      removeEmptyArrays: true,
-      removeEmptyObjects: true,
+      removeEmptyArrays: false,
+      removeEmptyObjects: false,
       cleanMarkdown: true,
-      flattenLevel: 2, // Don't flatten by default to preserve structure
+      flattenLevel: 2,
       ...config,
     });
 
@@ -200,9 +200,20 @@ export function optimizeJson(
 } {
   const finalConfig = { ...DEFAULT_CONFIG, ...config };
 
+  // Handle null/undefined data
+  if (data === null || data === undefined) {
+    return {
+      optimized: data,
+      originalSize: 0,
+      optimizedSize: 0,
+      savings: 0,
+      savingsPercent: 0,
+    };
+  }
+
   // Calculate original size
   const originalJson = JSON.stringify(data, null, 2);
-  const originalSize = originalJson.length;
+  const originalSize = originalJson?.length || 0;
 
   let result = data;
 
@@ -213,24 +224,25 @@ export function optimizeJson(
     finalConfig.removeEmptyArrays ||
     finalConfig.removeEmptyObjects
   ) {
-    result = cleanObject(result, finalConfig);
+    result = cleanObject(result, finalConfig) as object;
   }
 
   // Step 2: Clean markdown from string fields
   if (finalConfig.cleanMarkdown) {
-    result = cleanMarkdown(result, finalConfig.preserveFields || []);
+    result = cleanMarkdown(result, finalConfig.preserveFields || []) as object;
   }
 
   // Step 3: Flatten nested structures (limited depth)
   if (finalConfig.flattenLevel && finalConfig.flattenLevel > 0) {
-    result = flattenObject(result, finalConfig.flattenLevel);
+    result = flattenObject(result, finalConfig.flattenLevel) as object;
   }
 
   // Calculate savings
   const optimizedJson = JSON.stringify(result, null, 2);
-  const optimizedSize = optimizedJson.length;
+  const optimizedSize = optimizedJson?.length || 0;
   const savings = originalSize - optimizedSize;
-  const savingsPercent = Math.round((savings / originalSize) * 100);
+  const savingsPercent =
+    originalSize > 0 ? Math.round((savings / originalSize) * 100) : 0;
 
   return {
     optimized: result,
