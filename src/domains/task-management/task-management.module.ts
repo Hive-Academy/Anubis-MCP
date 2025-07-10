@@ -22,4 +22,4 @@ import { ResearchOperationsService } from './research-operations.service';
     ResearchOperationsService,
   ],
 })
-export class CoreWorkflowModule {}
+export class TaskManagementModule {}

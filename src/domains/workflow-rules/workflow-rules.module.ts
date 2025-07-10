@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CoreWorkflowModule } from '../core-workflow/core-workflow.module';
-
 // MCP Operations
 import { WorkflowGuidanceMcpService } from './mcp-operations/workflow-guidance-mcp.service';
 import { StepExecutionMcpService } from './mcp-operations/step-execution-mcp.service';
@@ -24,7 +22,7 @@ import { WorkflowBootstrapService } from './services/workflow-bootstrap.service'
 import { ExecutionAnalyticsService } from './services/execution-analytics.service';
 
 @Module({
-  imports: [CoreWorkflowModule],
+  imports: [],
   providers: [
     PrismaService,
 

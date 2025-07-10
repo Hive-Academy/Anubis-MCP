@@ -75,6 +75,13 @@ export interface SubtaskCreationResult {
 export interface SubtaskUpdateResult {
   subtask: Subtask;
   message: string;
+  dependencyUpdateInfo?: {
+    dependenciesUpdated?: number;
+    dependencyNames?: string[];
+    resolvedDependencies?: string[];
+    unresolvedDependencies?: string[];
+    error?: string;
+  } | null;
   batchCompletionInfo?: {
     batchId: string | null;
     batchCompleted: boolean;
@@ -624,14 +631,107 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
     // Prepare update data
     const updateFields: Prisma.SubtaskUpdateInput = {};
 
+    // Basic subtask properties
+    if (updateData.name !== undefined) {
+      updateFields.name = updateData.name;
+    }
+
+    if (updateData.description !== undefined) {
+      updateFields.description = updateData.description;
+    }
+
+    if (updateData.sequenceNumber !== undefined) {
+      updateFields.sequenceNumber = updateData.sequenceNumber;
+    }
+
+    if (updateData.batchId !== undefined) {
+      updateFields.batchId = updateData.batchId;
+    }
+
+    if (updateData.batchTitle !== undefined) {
+      updateFields.batchTitle = updateData.batchTitle;
+    }
+
+    // Implementation details
+    if (updateData.implementationApproach !== undefined) {
+      updateFields.implementationApproach = updateData.implementationApproach;
+    }
+
+    if (updateData.acceptanceCriteria !== undefined) {
+      updateFields.acceptanceCriteria = updateData.acceptanceCriteria;
+    }
+
+    if (updateData.dependencies !== undefined) {
+      updateFields.dependencies = updateData.dependencies;
+    }
+
+    // Status and completion
     if (updateData.status) {
       updateFields.status = updateData.status;
-
       // Status updated without timestamp tracking
     }
 
     if (updateData.completionEvidence) {
       updateFields.completionEvidence = updateData.completionEvidence;
+    }
+
+    // Handle dependency updates if provided
+    let dependencyUpdateResult = null;
+    if (updateData.dependencies !== undefined) {
+      try {
+        // Remove existing dependencies for this subtask
+        await this.prisma.subtaskDependency.deleteMany({
+          where: { dependentSubtaskId: subtaskId },
+        });
+
+        // Add new dependencies if any
+        if (updateData.dependencies.length > 0) {
+          // Find subtasks by name within the same task
+          const dependencySubtasks = await this.prisma.subtask.findMany({
+            where: {
+              taskId,
+              name: { in: updateData.dependencies },
+            },
+            select: { id: true, name: true },
+          });
+
+          // Create new dependency records
+          const dependencyRecords = dependencySubtasks.map((depSubtask) => ({
+            dependentSubtaskId: subtaskId,
+            requiredSubtaskId: depSubtask.id,
+            dependencyType: 'sequential',
+          }));
+
+          if (dependencyRecords.length > 0) {
+            await this.prisma.subtaskDependency.createMany({
+              data: dependencyRecords,
+            });
+          }
+
+          dependencyUpdateResult = {
+            dependenciesUpdated: dependencyRecords.length,
+            dependencyNames: updateData.dependencies,
+            resolvedDependencies: dependencySubtasks.map((d) => d.name),
+            unresolvedDependencies: updateData.dependencies.filter(
+              (name) => !dependencySubtasks.some((d) => d.name === name),
+            ),
+          };
+        } else {
+          dependencyUpdateResult = {
+            dependenciesUpdated: 0,
+            dependencyNames: [],
+            resolvedDependencies: [],
+            unresolvedDependencies: [],
+          };
+        }
+      } catch (error) {
+        // Log dependency update error but don't fail the entire update
+        console.error('Error updating subtask dependencies:', error);
+        dependencyUpdateResult = {
+          error: 'Failed to update dependencies',
+          dependencyNames: updateData.dependencies,
+        };
+      }
     }
 
     // Update the subtask
@@ -669,9 +769,34 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
       }
     }
 
+    // Build comprehensive update message
+    const updatedFields = [];
+    if (updateData.name !== undefined) updatedFields.push('name');
+    if (updateData.description !== undefined) updatedFields.push('description');
+    if (updateData.sequenceNumber !== undefined)
+      updatedFields.push('sequenceNumber');
+    if (updateData.batchId !== undefined) updatedFields.push('batchId');
+    if (updateData.batchTitle !== undefined) updatedFields.push('batchTitle');
+    if (updateData.implementationApproach !== undefined)
+      updatedFields.push('implementationApproach');
+    if (updateData.acceptanceCriteria !== undefined)
+      updatedFields.push('acceptanceCriteria');
+    if (updateData.dependencies !== undefined)
+      updatedFields.push('dependencies');
+    if (updateData.status) updatedFields.push('status');
+    if (updateData.completionEvidence) updatedFields.push('completionEvidence');
+
+    const updateMessage =
+      updatedFields.length > 0
+        ? `Subtask '${updatedSubtask.name}' updated successfully. Fields updated: ${updatedFields.join(', ')}`
+        : `Subtask '${updatedSubtask.name}' - no changes made`;
+
     return {
       subtask: updatedSubtask,
-      message: `Subtask '${updatedSubtask.name}' updated successfully to status: ${updateData.status || 'unchanged'}`,
+      message: updateMessage,
+
+      // Include dependency update information
+      dependencyUpdateInfo: dependencyUpdateResult,
 
       // Enhanced: Include batch completion information
       batchCompletionInfo: batchCompletionResult

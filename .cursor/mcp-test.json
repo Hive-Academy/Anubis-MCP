@@ -24,15 +24,19 @@
         "PROJECT_ROOT": "D:/projects/anubis"
       }
     },
+ {
+  "mcpServers": {
     "anubis": {
       "command": "node",
       "args": [
-        "D:/projects/anubis/dist/main.js"
+        "D:/projects/anubis/build-anubis/main.js"
       ],
-       "env": {
+      "env": {
         "PROJECT_ROOT": "D:/projects/anubis"
       }
     }
+  }
+}
   }
 },
 {

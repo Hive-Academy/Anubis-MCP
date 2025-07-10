@@ -71,6 +71,19 @@ export const IndividualSubtaskOperationsSchema = z.object({
   // Update data for update_subtask operation
   updateData: z
     .object({
+      // Basic subtask properties
+      name: z.string().optional(),
+      description: z.string().optional(),
+      sequenceNumber: z.number().optional(),
+      batchId: z.string().optional(),
+      batchTitle: z.string().optional(),
+
+      // Implementation details
+      implementationApproach: z.string().optional(),
+      acceptanceCriteria: z.array(z.string()).optional(),
+      dependencies: z.array(z.string()).optional(),
+
+      // Status and completion
       status: z
         .enum([
           'not-started',
