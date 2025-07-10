@@ -309,6 +309,10 @@ export const TaskOperationsSchema = z
       .boolean()
       .optional()
       .describe('Include subtasks in response'),
+    includeCodeReviews: z
+      .boolean()
+      .optional()
+      .describe('Include code review reports in response'),
   })
   .refine(
     (data) => {

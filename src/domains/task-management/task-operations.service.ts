@@ -17,6 +17,11 @@ import {
   BaseMcpService,
   McpResponse,
 } from '../../domains/workflow-rules/utils/mcp-response.utils';
+import { ITaskRepository } from './repositories/interfaces/task.repository.interface';
+import {
+  CreateTaskData,
+  UpdateTaskData,
+} from './repositories/types/task.types';
 
 // Type-safe interfaces for service operations
 export interface TaskOperationResult {
@@ -96,7 +101,10 @@ export interface TaskListResult {
  */
 @Injectable()
 export class TaskOperationsService extends BaseMcpService {
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    private readonly taskRepository: ITaskRepository,
+    private readonly prisma: PrismaService, // Keep for workflow execution updates
+  ) {
     super();
   }
 
@@ -229,58 +237,25 @@ export class TaskOperationsService extends BaseMcpService {
       throw new Error('Task name is required for creation');
     }
 
-    // Create task with description in transaction
-    const result = await this.prisma.$transaction(async (tx) => {
-      // Generate unique slug from task name
-      const slug = await this.ensureUniqueSlug(
-        this.generateSlugFromName(taskData.name!),
-      );
-
-      // Create the task with proper Prisma types
-      const task = await tx.task.create({
-        data: {
-          name: taskData.name!,
-          slug,
-          status: taskData.status || 'not-started',
-          priority: taskData.priority || 'Medium',
-          dependencies: taskData.dependencies || [],
-          gitBranch: taskData.gitBranch,
-          owner: 'boomerang',
-          currentMode: 'boomerang',
-        } satisfies Prisma.TaskCreateInput,
-      });
-
-      // Use the auto-generated taskId for related records
-      const taskId = task.id;
-
-      // CRITICAL: Link task to workflow execution if executionId provided
-      if (executionId) {
-        await tx.workflowExecution.update({
-          where: { id: executionId },
-          data: { taskId: taskId },
-        });
-      }
-
-      // Create task description if provided
-      let taskDescription: TaskDescription | null = null;
-      if (description) {
-        taskDescription = await tx.taskDescription.create({
-          data: {
-            task: { connect: { id: taskId } },
+    // Prepare CreateTaskData for repository
+    const createData: CreateTaskData = {
+      name: taskData.name,
+      status: taskData.status || 'not-started',
+      priority: taskData.priority || 'Medium',
+      dependencies: taskData.dependencies || [],
+      gitBranch: taskData.gitBranch,
+      owner: 'boomerang',
+      currentMode: 'boomerang',
+      taskDescription: description
+        ? {
             description: description.description || '',
             businessRequirements: description.businessRequirements || '',
             technicalRequirements: description.technicalRequirements || '',
             acceptanceCriteria: description.acceptanceCriteria || [],
-          } satisfies Prisma.TaskDescriptionCreateInput,
-        });
-      }
-
-      // Create codebase analysis if provided
-      let analysis: CodebaseAnalysis | null = null;
-      if (codebaseAnalysis) {
-        analysis = await tx.codebaseAnalysis.create({
-          data: {
-            task: { connect: { id: taskId } },
+          }
+        : undefined,
+      codebaseAnalysis: codebaseAnalysis
+        ? {
             architectureFindings: codebaseAnalysis.architectureFindings || {},
             problemsIdentified: codebaseAnalysis.problemsIdentified || {},
             implementationContext: codebaseAnalysis.implementationContext || {},
@@ -288,19 +263,32 @@ export class TaskOperationsService extends BaseMcpService {
             filesCovered: codebaseAnalysis.filesCovered || [],
             technologyStack: codebaseAnalysis.technologyStack || {},
             analyzedBy: codebaseAnalysis.analyzedBy || 'system',
-          } satisfies Prisma.CodebaseAnalysisCreateInput,
+          }
+        : undefined,
+    };
+
+    // Create task with repository transaction support
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Create task using repository with transaction
+      const task = await this.taskRepository.createWithTransaction(
+        createData,
+        tx,
+      );
+
+      // CRITICAL: Link task to workflow execution if executionId provided
+      if (executionId) {
+        await tx.workflowExecution.update({
+          where: { id: executionId },
+          data: { taskId: task.id },
         });
       }
 
-      // Create research reports if provided
-      const researchReports: Prisma.ResearchReportGetPayload<
-        Record<string, never>
-      >[] = [];
+      // Create research reports if provided (not handled by repository yet)
       if (researchFindings?.researchQuestions) {
         for (const question of researchFindings.researchQuestions) {
-          const report = await tx.researchReport.create({
+          await tx.researchReport.create({
             data: {
-              task: { connect: { id: taskId } },
+              task: { connect: { id: task.id } },
               title: question.question || 'Research Finding',
               summary: question.findings || '',
               findings: JSON.stringify({
@@ -318,17 +306,10 @@ export class TaskOperationsService extends BaseMcpService {
               references: question.sources || [],
             } satisfies Prisma.ResearchReportCreateInput,
           });
-          researchReports.push(report);
         }
       }
 
-      // Return as TaskWithRelations for consistent interface
-      return {
-        ...task,
-        taskDescription,
-        codebaseAnalysis: analysis,
-        researchReports,
-      } as TaskWithRelations;
+      return task;
     });
 
     return result;
@@ -343,109 +324,41 @@ export class TaskOperationsService extends BaseMcpService {
       throw new Error('Task ID is required for updates');
     }
 
+    // Prepare UpdateTaskData for repository
+    const updateData: UpdateTaskData = {
+      ...(taskData?.name && { name: taskData.name }),
+      ...(taskData?.status && { status: taskData.status }),
+      ...(taskData?.priority && { priority: taskData.priority }),
+      ...(taskData?.dependencies && { dependencies: taskData.dependencies }),
+      ...(taskData?.gitBranch && { gitBranch: taskData.gitBranch }),
+      ...(description && {
+        taskDescription: {
+          description: description.description || '',
+          businessRequirements: description.businessRequirements || '',
+          technicalRequirements: description.technicalRequirements || '',
+          acceptanceCriteria: description.acceptanceCriteria || [],
+        },
+      }),
+      ...(codebaseAnalysis && {
+        codebaseAnalysis: {
+          architectureFindings: codebaseAnalysis.architectureFindings || {},
+          problemsIdentified: codebaseAnalysis.problemsIdentified || {},
+          implementationContext: codebaseAnalysis.implementationContext || {},
+          qualityAssessment: codebaseAnalysis.qualityAssessment || {},
+          filesCovered: codebaseAnalysis.filesCovered || [],
+          technologyStack: codebaseAnalysis.technologyStack || {},
+          analyzedBy: codebaseAnalysis.analyzedBy || 'system',
+        },
+      }),
+    };
+
+    // Update task using repository with transaction support
     const result = await this.prisma.$transaction(async (tx) => {
-      let task: Task | null = null;
-      let taskDescription: TaskDescription | null = null;
-      let analysis: CodebaseAnalysis | null = null;
-
-      // Update task if data provided
-      if (taskData) {
-        const updateData: Prisma.TaskUpdateInput = {};
-
-        if (taskData.name) updateData.name = taskData.name;
-        if (taskData.status) updateData.status = taskData.status;
-        if (taskData.priority) updateData.priority = taskData.priority;
-        if (taskData.dependencies)
-          updateData.dependencies = taskData.dependencies;
-        if (taskData.gitBranch) updateData.gitBranch = taskData.gitBranch;
-
-        task = await tx.task.update({
-          where: { id: taskId },
-          data: updateData,
-        });
-      }
-
-      // Update task description if provided
-      if (description) {
-        const descriptionData: Prisma.TaskDescriptionUpsertArgs['update'] = {};
-
-        if (description.description)
-          descriptionData.description = description.description;
-        if (description.businessRequirements)
-          descriptionData.businessRequirements =
-            description.businessRequirements;
-        if (description.technicalRequirements)
-          descriptionData.technicalRequirements =
-            description.technicalRequirements;
-        if (description.acceptanceCriteria)
-          descriptionData.acceptanceCriteria = description.acceptanceCriteria;
-
-        taskDescription = await tx.taskDescription.upsert({
-          where: { taskId: taskId },
-          update: descriptionData,
-          create: {
-            taskId: taskId,
-            description: description.description || '',
-            businessRequirements: description.businessRequirements || '',
-            technicalRequirements: description.technicalRequirements || '',
-            acceptanceCriteria: description.acceptanceCriteria || [],
-          },
-        });
-      }
-
-      // Update codebase analysis if provided
-      if (codebaseAnalysis) {
-        const analysisData: Prisma.CodebaseAnalysisUpsertArgs['update'] = {};
-
-        if (codebaseAnalysis.architectureFindings)
-          analysisData.architectureFindings =
-            codebaseAnalysis.architectureFindings;
-        if (codebaseAnalysis.problemsIdentified)
-          analysisData.problemsIdentified = codebaseAnalysis.problemsIdentified;
-        if (codebaseAnalysis.implementationContext)
-          analysisData.implementationContext =
-            codebaseAnalysis.implementationContext;
-
-        if (codebaseAnalysis.qualityAssessment)
-          analysisData.qualityAssessment = codebaseAnalysis.qualityAssessment;
-        if (codebaseAnalysis.filesCovered)
-          analysisData.filesCovered = codebaseAnalysis.filesCovered;
-        if (codebaseAnalysis.technologyStack)
-          analysisData.technologyStack = codebaseAnalysis.technologyStack;
-        if (codebaseAnalysis.analyzedBy)
-          analysisData.analyzedBy = codebaseAnalysis.analyzedBy;
-
-        analysis = await tx.codebaseAnalysis.upsert({
-          where: { taskId: taskId },
-          update: analysisData,
-          create: {
-            taskId: taskId,
-            architectureFindings: codebaseAnalysis.architectureFindings || {},
-            problemsIdentified: codebaseAnalysis.problemsIdentified || {},
-            implementationContext: codebaseAnalysis.implementationContext || {},
-
-            qualityAssessment: codebaseAnalysis.qualityAssessment || {},
-            filesCovered: codebaseAnalysis.filesCovered || [],
-            technologyStack: codebaseAnalysis.technologyStack || {},
-            analyzedBy: codebaseAnalysis.analyzedBy || 'system',
-          },
-        });
-      }
-
-      // If no task data was provided, fetch the current task
-      if (!task) {
-        task = await tx.task.findUnique({ where: { id: taskId } });
-        if (!task) {
-          throw new Error(`Task with id ${taskId} not found`);
-        }
-      }
-
-      // Return as TaskWithRelations for consistent interface
-      return {
-        ...task,
-        taskDescription,
-        codebaseAnalysis: analysis,
-      } as TaskWithRelations;
+      return await this.taskRepository.updateWithTransaction(
+        taskId,
+        updateData,
+        tx,
+      );
     });
 
     return result;
@@ -461,38 +374,28 @@ export class TaskOperationsService extends BaseMcpService {
       includeAnalysis,
       includeResearch,
       includeSubtasks,
+      includeCodeReviews,
     } = input;
 
     if (!taskId && !slug) {
       throw new Error('Either Task ID or Task Slug is required for retrieval');
     }
 
-    const include: Prisma.TaskInclude = {};
-    if (includeDescription) {
-      include.taskDescription = true;
-    }
-    if (includeAnalysis) {
-      include.codebaseAnalysis = true;
-    }
-    if (includeResearch) {
-      include.researchReports = {
-        orderBy: { createdAt: 'desc' },
-        take: 1, // Get the most recent research report
-      };
-    }
-    if (includeSubtasks) {
-      include.subtasks = {
-        orderBy: { sequenceNumber: 'asc' },
-      };
-    }
+    const includeOptions = {
+      taskDescription: includeDescription || false,
+      codebaseAnalysis: includeAnalysis || false,
+      researchReports: includeResearch || false,
+      subtasks: includeSubtasks || false,
+      codeReviews: includeCodeReviews || false,
+    };
 
-    // Use slug first, fallback to taskId
-    const whereClause = slug ? { slug } : { id: taskId };
+    let task: TaskWithRelations | null = null;
 
-    const task = await this.prisma.task.findFirst({
-      where: whereClause,
-      include,
-    });
+    if (slug) {
+      task = await this.taskRepository.findBySlug(slug, includeOptions);
+    } else if (taskId) {
+      task = await this.taskRepository.findById(taskId, includeOptions);
+    }
 
     if (!task) {
       throw new Error(`Task not found: ${slug || taskId}`);
@@ -507,7 +410,7 @@ export class TaskOperationsService extends BaseMcpService {
       } as TaskWithSubtasks;
     }
 
-    return task as TaskWithRelations;
+    return task;
   }
 
   private async listTasks(input: TaskOperationsInput): Promise<TaskListResult> {
@@ -520,33 +423,23 @@ export class TaskOperationsService extends BaseMcpService {
       includeResearch,
     } = input;
 
-    const where: Prisma.TaskWhereInput = {};
-    if (status) where.status = status;
-    if (priority) where.priority = priority;
-    if (slug) {
-      // Support partial slug matching (contains the slug pattern)
-      where.slug = { contains: slug };
-    }
+    const includeOptions = {
+      taskDescription: includeDescription || false,
+      codebaseAnalysis: includeAnalysis || false,
+      researchReports: includeResearch || false,
+      subtasks: false,
+    };
 
-    const include: Prisma.TaskInclude = {};
-    if (includeDescription) {
-      include.taskDescription = true;
-    }
-    if (includeAnalysis) {
-      include.codebaseAnalysis = true;
-    }
-    if (includeResearch) {
-      include.researchReports = {
-        orderBy: { createdAt: 'desc' },
-        take: 1,
-      };
-    }
+    const findOptions = {
+      where: {
+        ...(status && { status }),
+        ...(priority && { priority }),
+        ...(slug && { slug: { contains: slug } }),
+      },
+      orderBy: { createdAt: 'desc' as const },
+    };
 
-    const tasks = await this.prisma.task.findMany({
-      where,
-      include,
-      orderBy: { createdAt: 'desc' },
-    });
+    const tasks = await this.taskRepository.findMany(findOptions, includeOptions);
 
     return {
       tasks: tasks as TaskWithRelations[],
@@ -579,15 +472,7 @@ export class TaskOperationsService extends BaseMcpService {
     baseSlug: string,
     excludeTaskId?: number,
   ): Promise<string> {
-    let slug = baseSlug;
-    let counter = 1;
-
-    while (await this.isSlugTaken(slug, excludeTaskId)) {
-      slug = `${baseSlug}-${counter}`;
-      counter++;
-    }
-
-    return slug;
+    return await this.taskRepository.ensureUniqueSlug(baseSlug, excludeTaskId);
   }
 
   /**
@@ -597,14 +482,7 @@ export class TaskOperationsService extends BaseMcpService {
     slug: string,
     excludeTaskId?: number,
   ): Promise<boolean> {
-    const existingTask = await this.prisma.task.findFirst({
-      where: {
-        slug: slug,
-        ...(excludeTaskId && { id: { not: excludeTaskId } }),
-      },
-    });
-
-    return !!existingTask;
+    return await this.taskRepository.isSlugTaken(slug, excludeTaskId);
   }
 
   /**
