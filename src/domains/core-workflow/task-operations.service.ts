@@ -50,9 +50,6 @@ export interface TaskWithRelations extends Task {
   completionReports?: Prisma.CompletionReportGetPayload<
     Record<string, never>
   >[];
-  workflowTransitions?: Prisma.WorkflowTransitionGetPayload<
-    Record<string, never>
-  >[];
   workflowExecutions?: Prisma.WorkflowExecutionGetPayload<
     Record<string, never>
   >[];

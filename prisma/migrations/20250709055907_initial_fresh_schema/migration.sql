@@ -427,17 +427,7 @@ CREATE TABLE "completion_report" (
     CONSTRAINT "CompletionReport_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
--- CreateTable
-CREATE TABLE "workflow_transition" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "taskId" INTEGER NOT NULL,
-    "fromMode" TEXT NOT NULL,
-    "toMode" TEXT NOT NULL,
-    "transitionTimestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "reason" TEXT,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "WorkflowTransition_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
-);
+
 
 -- CreateTable
 CREATE TABLE "codebase_analysis" (
