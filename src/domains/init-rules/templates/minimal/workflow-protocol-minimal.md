@@ -98,6 +98,8 @@ For EACH qualityChecklist item:
 
 ### **4. Report Completion**
 
+> Always make sure you are using the stepId and the executionId that's coming from our database, Don't ever use a made-up stepId or executionId, always use the ones we provide you.
+
 ```typescript
 await report_step_completion({
   executionId: 'your-database-execution-id',

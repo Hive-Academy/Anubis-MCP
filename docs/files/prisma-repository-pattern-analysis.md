@@ -1,4 +1,4 @@
-# Prisma Repository Pattern Analysis & Implementation Plan
+# Repository Pattern Analysis & Implementation Plan
 
 ## 📊 **Current State Analysis**
 
@@ -135,11 +135,11 @@ src/task-workflow/domains/workflow-rules/
 │   │   ├── workflow-step.repository.interface.ts
 │   │   └── workflow-guidance.repository.interface.ts
 │   ├── implementations/         # Prisma implementations
-│   │   ├── prisma-workflow-execution.repository.ts
-│   │   ├── prisma-step-progress.repository.ts
-│   │   ├── prisma-role-transition.repository.ts
-│   │   ├── prisma-workflow-step.repository.ts
-│   │   └── prisma-workflow-guidance.repository.ts
+│   │   ├── workflow-execution.repository.ts
+│   │   ├── step-progress.repository.ts
+│   │   ├── role-transition.repository.ts
+│   │   ├── workflow-step.repository.ts
+│   │   └── workflow-guidance.repository.ts
 │   ├── types/                   # Repository-specific types
 │   │   ├── execution.types.ts
 │   │   ├── progress.types.ts
