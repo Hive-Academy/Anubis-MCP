@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 import { CompletionReport, Prisma } from '../../../../../generated/prisma';
 import {
   CompletionReportOrderByInput,

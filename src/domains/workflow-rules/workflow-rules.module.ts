@@ -14,6 +14,7 @@ import { WorkflowBootstrapRepository } from './repositories/implementations/work
 import { StepProgressRepository } from './repositories/implementations/step-progress.repository';
 import { ProjectContextRepository } from './repositories/implementations/project-context.repository';
 import { ProgressCalculationRepository } from './repositories/implementations/progress-calculation.repository';
+import { WorkflowStepRepository } from './repositories/implementations/workflow-step.repository';
 
 // Services
 import { WorkflowGuidanceService } from './services/workflow-guidance.service';
@@ -46,6 +47,10 @@ import { ExecutionAnalyticsService } from './services/execution-analytics.servic
     {
       provide: 'IStepProgressRepository',
       useClass: StepProgressRepository,
+    },
+    {
+      provide: 'IWorkflowStepRepository',
+      useClass: WorkflowStepRepository,
     },
     {
       provide: 'IProjectContextRepository',

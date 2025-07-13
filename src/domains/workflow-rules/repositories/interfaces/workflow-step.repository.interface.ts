@@ -52,6 +52,12 @@ export interface IWorkflowStepRepository {
     include?: WorkflowStepIncludeOptions,
   ): Promise<WorkflowStepWithRelations | null>;
 
+  findNextStepBySequence(
+    roleId: string,
+    afterSequenceNumber: number,
+    include?: WorkflowStepIncludeOptions,
+  ): Promise<WorkflowStepWithRelations | null>;
+
   findByStepType(
     stepType: string,
     include?: WorkflowStepIncludeOptions,

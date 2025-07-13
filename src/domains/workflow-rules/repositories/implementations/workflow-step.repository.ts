@@ -180,6 +180,29 @@ export class WorkflowStepRepository implements IWorkflowStepRepository {
     }
   }
 
+  async findNextStepBySequence(
+    roleId: string,
+    afterSequenceNumber: number,
+    include?: WorkflowStepIncludeOptions,
+  ): Promise<WorkflowStepWithRelations | null> {
+    try {
+      return await this.prisma.workflowStep.findFirst({
+        where: {
+          roleId,
+          sequenceNumber: { gt: afterSequenceNumber },
+        },
+        include: this.buildInclude(include),
+        orderBy: { sequenceNumber: 'asc' },
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to find next step after sequence ${afterSequenceNumber} for role ${roleId}:`,
+        error,
+      );
+      throw error;
+    }
+  }
+
   async findByStepType(
     stepType: string,
     include?: WorkflowStepIncludeOptions,

@@ -66,21 +66,14 @@ export interface IWorkflowRoleRepository {
     include?: WorkflowRoleIncludeOptions,
   ): Promise<WorkflowRoleWithRelations[]>;
   getRoleCapabilities(roleId: string): Promise<any>;
-  getRoleResponsibilities(roleId: string): Promise<any>;
+
   updateRoleCapabilities(
     roleId: string,
     capabilities: any,
   ): Promise<WorkflowRoleWithRelations>;
-  updateRoleResponsibilities(
-    roleId: string,
-    responsibilities: any,
-  ): Promise<WorkflowRoleWithRelations>;
 
   // Relationship Loading
-  findWithSteps(
-    roleId: string,
-    include?: WorkflowRoleIncludeOptions,
-  ): Promise<WorkflowRoleWithRelations | null>;
+
   findWithTransitions(
     roleId: string,
     include?: WorkflowRoleIncludeOptions,
@@ -95,8 +88,7 @@ export interface IWorkflowRoleRepository {
 
   // Utility Operations
   count(where?: any): Promise<number>;
-  isRoleActive(roleId: string): Promise<boolean>;
-  getRoleByNameOrThrow(name: string): Promise<WorkflowRoleWithRelations>;
+
   validateRoleExists(roleId: string): Promise<boolean>;
 
   // Transaction Support
@@ -114,15 +106,6 @@ export interface IWorkflowRoleRepository {
   findRolesWithBehavioralProfiles(
     include?: WorkflowRoleIncludeOptions,
   ): Promise<WorkflowRoleWithRelations[]>;
-  findRolesByProjectType(
-    projectType: string,
-    include?: WorkflowRoleIncludeOptions,
-  ): Promise<WorkflowRoleWithRelations[]>;
 
   // Role Transition Operations
-  findTransitionsFrom(fromRoleId: string): Promise<any[]>;
-  findTransitionById(transitionId: string): Promise<any>;
-  findDelegationHistory(fromRoleId: string): Promise<any[]>;
-  createDelegationRecord(data: any): Promise<any>;
-  findFirstStepForRole(roleId: string): Promise<any>;
 }

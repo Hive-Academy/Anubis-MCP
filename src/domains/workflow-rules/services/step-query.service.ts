@@ -1,7 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import { IWorkflowStepRepository } from '../repositories/interfaces/workflow-step.repository.interface';
 import { IWorkflowExecutionRepository } from '../repositories/interfaces/workflow-execution.repository.interface';
-import { PrismaService } from '../../../prisma/prisma.service';
 
 // ===================================================================
 // 🔥 STEP QUERY SERVICE - ENHANCED WITH ROLE TRANSITION AWARENESS
@@ -98,10 +97,13 @@ export interface StepQueryOptions {
  */
 @Injectable()
 export class StepQueryService {
+  private readonly logger = new Logger(StepQueryService.name);
+
   constructor(
+    @Inject('IWorkflowStepRepository')
     private readonly stepRepository: IWorkflowStepRepository,
+    @Inject('IWorkflowExecutionRepository')
     private readonly executionRepository: IWorkflowExecutionRepository,
-    private readonly prisma: PrismaService, // TODO: Remove after full refactoring
   ) {}
 
   /**
@@ -213,13 +215,10 @@ export class StepQueryService {
       console.log(
         `📋 Standard logic: looking for next step after sequence ${execution.currentStep.sequenceNumber} for role ${roleId}`,
       );
-      const nextStep = await this.prisma.workflowStep.findFirst({
-        where: {
-          roleId,
-          sequenceNumber: { gt: execution.currentStep.sequenceNumber },
-        },
-        orderBy: { sequenceNumber: 'asc' },
-      });
+      const nextStep = await this.stepRepository.findNextStepBySequence(
+        roleId,
+        execution.currentStep.sequenceNumber,
+      );
 
       if (nextStep) {
         console.log(
@@ -250,14 +249,13 @@ export class StepQueryService {
     roleId: string,
   ): Promise<PostTransitionState> {
     try {
-      const execution = await this.prisma.workflowExecution.findFirst({
-        where: { taskId: parseInt(taskId) },
-        include: {
+      const execution = await this.executionRepository.findByTaskId(
+        parseInt(taskId),
+        {
           currentStep: true,
           currentRole: true,
         },
-        orderBy: { createdAt: 'desc' },
-      });
+      );
 
       if (!execution) {
         return {
@@ -280,9 +278,9 @@ export class StepQueryService {
 
       if (isPostTransition && executionState?.currentStep?.id) {
         // Get the step from execution state (set by transition service)
-        assignedStep = await this.prisma.workflowStep.findUnique({
-          where: { id: executionState.currentStep.id },
-        });
+        assignedStep = await this.stepRepository.findById(
+          executionState.currentStep.id,
+        );
 
         // Validate step belongs to current role
         if (assignedStep && assignedStep.roleId !== roleId) {
@@ -424,14 +422,13 @@ export class StepQueryService {
     currentStep: WorkflowStep | null;
   }> {
     try {
-      const execution = await this.prisma.workflowExecution.findFirst({
-        where: { taskId: parseInt(taskId) },
-        include: {
+      const execution = await this.executionRepository.findByTaskId(
+        parseInt(taskId),
+        {
           currentStep: true,
           currentRole: true,
         },
-        orderBy: { createdAt: 'desc' },
-      });
+      );
 
       if (!execution) {
         return { isValid: false, corrected: false, currentStep: null };
@@ -444,15 +441,14 @@ export class StepQueryService {
 
       // Check if currentStepId is null but execution state has step info
       if (!execution.currentStepId && executionState?.currentStep?.id) {
-        const stepFromState = await this.prisma.workflowStep.findUnique({
-          where: { id: executionState.currentStep.id },
-        });
+        const stepFromState = await this.stepRepository.findById(
+          executionState.currentStep.id,
+        );
 
         if (stepFromState && stepFromState.roleId === roleId) {
           // Sync the currentStepId with execution state
-          await this.prisma.workflowExecution.update({
-            where: { id: execution.id },
-            data: { currentStepId: stepFromState.id },
+          await this.executionRepository.update(execution.id, {
+            currentStepId: stepFromState.id,
           });
 
           currentStep = stepFromState;
@@ -462,9 +458,9 @@ export class StepQueryService {
           isValid = false;
         }
       } else if (execution.currentStepId) {
-        currentStep = await this.prisma.workflowStep.findUnique({
-          where: { id: execution.currentStepId },
-        });
+        currentStep = await this.stepRepository.findById(
+          execution.currentStepId,
+        );
 
         if (!currentStep || currentStep.roleId !== roleId) {
           isValid = false;

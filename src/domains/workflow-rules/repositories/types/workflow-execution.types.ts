@@ -4,6 +4,62 @@ import {
   WorkflowExecutionMode,
 } from '../../../../../generated/prisma';
 
+// Execution Phase enum for workflow state management
+export enum ExecutionPhase {
+  INITIALIZED = 'initialized',
+  IN_PROGRESS = 'in-progress',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+  PAUSED = 'paused',
+}
+
+// Execution Mode enum for workflow execution type
+export enum ExecutionMode {
+  GUIDED = 'GUIDED',
+  AUTOMATED = 'AUTOMATED',
+  HYBRID = 'HYBRID',
+}
+
+// Execution Statistics interface for metrics aggregation
+export interface ExecutionStatistics {
+  totalExecutions: number;
+  completedExecutions: number;
+  failedExecutions: number;
+  averageExecutionTime: number;
+  successRate: number;
+  activeExecutions: number;
+}
+
+// Execution Progress Summary interface for comprehensive status tracking
+export interface ExecutionProgressSummary {
+  executionId: string;
+  taskId: number;
+  phase: ExecutionPhase;
+  progressPercentage: number;
+  stepsCompleted: number;
+  totalSteps: number;
+  currentStep?: {
+    id: string;
+    name: string;
+    roleName: string;
+    startedAt: Date;
+    estimatedDuration?: number;
+  };
+  lastCompletedStep?: {
+    id: string;
+    name: string;
+    completedAt: Date;
+    result: 'success' | 'failure';
+  };
+  recentActivity: Array<{
+    stepId: string;
+    stepName: string;
+    roleName: string;
+    timestamp: Date;
+    action: string;
+  }>;
+}
+
 // Transaction type
 export type PrismaTransaction = Prisma.TransactionClient;
 
@@ -33,6 +89,7 @@ export interface CreateWorkflowExecutionData {
   progressPercentage?: number;
   executionMode?: WorkflowExecutionMode;
   executionContext?: any;
+  recoveryAttempts?: number;
   maxRecoveryAttempts?: number;
 }
 

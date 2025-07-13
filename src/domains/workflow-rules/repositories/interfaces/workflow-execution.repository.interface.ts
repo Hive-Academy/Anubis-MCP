@@ -1,12 +1,11 @@
 import { WorkflowExecution } from '../../../../../generated/prisma';
 import {
   CreateWorkflowExecutionData,
-  UpdateWorkflowExecutionData,
-  WorkflowExecutionWithRelations,
-  WorkflowExecutionIncludeOptions,
-  WorkflowExecutionFindManyOptions,
-  ExecutionErrorRecoveryResult,
   PrismaTransaction,
+  UpdateWorkflowExecutionData,
+  WorkflowExecutionFindManyOptions,
+  WorkflowExecutionIncludeOptions,
+  WorkflowExecutionWithRelations,
 } from '../types/workflow-execution.types';
 
 export interface IWorkflowExecutionRepository {
@@ -35,46 +34,14 @@ export interface IWorkflowExecutionRepository {
   findActiveExecutions(
     include?: WorkflowExecutionIncludeOptions,
   ): Promise<WorkflowExecutionWithRelations[]>;
-  findByRoleId(
-    roleId: string,
-    include?: WorkflowExecutionIncludeOptions,
-  ): Promise<WorkflowExecutionWithRelations[]>;
+
   findByExecutionMode(
     mode: string,
     include?: WorkflowExecutionIncludeOptions,
   ): Promise<WorkflowExecutionWithRelations[]>;
 
-  // Progress Management
-  updateProgress(
-    id: string,
-    progressData: {
-      stepsCompleted?: number;
-      totalSteps?: number;
-      progressPercentage?: number;
-      currentStepId?: string;
-      currentRoleId?: string;
-    },
-  ): Promise<WorkflowExecutionWithRelations>;
-  completeExecution(id: string): Promise<WorkflowExecutionWithRelations>;
-
-  // Error Handling & Recovery
-  handleExecutionError(
-    id: string,
-    error: any,
-  ): Promise<ExecutionErrorRecoveryResult>;
-  updateExecutionState(
-    id: string,
-    stateUpdate: Partial<any>,
-  ): Promise<WorkflowExecutionWithRelations>;
-
   // Utility Operations
   count(where?: any): Promise<number>;
-  isExecutionActive(id: string): Promise<boolean>;
-  getExecutionsByDateRange(
-    startDate: Date,
-    endDate: Date,
-    include?: WorkflowExecutionIncludeOptions,
-  ): Promise<WorkflowExecutionWithRelations[]>;
 
   // Transaction Support
   createWithTransaction(
@@ -86,12 +53,4 @@ export interface IWorkflowExecutionRepository {
     data: UpdateWorkflowExecutionData,
     tx?: PrismaTransaction,
   ): Promise<WorkflowExecutionWithRelations>;
-
-  // Relationship Loading
-  findWithAllRelations(
-    id: string,
-  ): Promise<WorkflowExecutionWithRelations | null>;
-  findWithStepProgress(
-    id: string,
-  ): Promise<WorkflowExecutionWithRelations | null>;
 }

@@ -647,6 +647,34 @@ export class StepProgressRepository implements IStepProgressRepository {
     }
   }
 
+  /**
+   * Find incomplete step progress for a role
+   */
+  async findIncompleteForRole(
+    roleId: string,
+  ): Promise<StepProgressWithRelations | null> {
+    try {
+      return await this.prisma.workflowStepProgress.findFirst({
+        where: {
+          roleId,
+          status: {
+            in: ['NOT_STARTED', 'IN_PROGRESS'],
+          },
+        },
+        include: this.buildInclude(),
+        orderBy: {
+          updatedAt: 'desc',
+        },
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to find incomplete step progress for role ${roleId}:`,
+        error,
+      );
+      throw error;
+    }
+  }
+
   // ===================================================================
   // TRANSACTION SUPPORT
   // ===================================================================

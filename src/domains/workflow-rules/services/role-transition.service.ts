@@ -137,9 +137,8 @@ export class RoleTransitionService {
     context: { roleId: string; taskId: string; projectPath?: string },
   ): Promise<TransitionValidationResult> {
     try {
-      const transition = await this.workflowRoleRepository.findTransitionById(
-        transitionId,
-      );
+      const transition =
+        await this.workflowRoleRepository.findTransitionById(transitionId);
 
       if (!transition) {
         return { valid: false, errors: ['Transition not found'] };
@@ -197,7 +196,8 @@ export class RoleTransitionService {
         };
       }
 
-      const transition = await this.workflowRoleRepository.findTransitionById(transitionId);
+      const transition =
+        await this.workflowRoleRepository.findTransitionById(transitionId);
 
       if (!transition) {
         return { success: false, message: 'Transition not found' };
@@ -319,7 +319,8 @@ export class RoleTransitionService {
     roleId: string;
     taskId: string;
   }): Promise<boolean> {
-    const incompleteSteps = await this.stepProgressRepository.findIncompleteForRole(context.roleId);
+    const incompleteSteps =
+      await this.stepProgressRepository.findIncompleteForRole(context.roleId);
     return !incompleteSteps;
   }
 
@@ -334,7 +335,9 @@ export class RoleTransitionService {
   private async checkReviewCompleted(context: {
     taskId: string;
   }): Promise<boolean> {
-    const review = await this.codeReviewRepository.findLatestByTaskId(Number(context.taskId));
+    const review = await this.codeReviewRepository.findLatestByTaskId(
+      Number(context.taskId),
+    );
     return !!review;
   }
 
@@ -419,14 +422,17 @@ export class RoleTransitionService {
     handoffMessage?: string,
   ): Promise<void> {
     // Get the workflow execution for this task
-    const execution = await this.workflowExecutionRepository.findByTaskId(Number(taskId));
+    const execution = await this.workflowExecutionRepository.findByTaskId(
+      Number(taskId),
+    );
 
     if (!execution) {
       return;
     }
 
     // Get the first step for the new role
-    const firstStep = await this.workflowRoleRepository.findFirstStepForRole(newRoleId);
+    const firstStep =
+      await this.workflowRoleRepository.findFirstStepForRole(newRoleId);
 
     // Update core fields first
     await this.workflowExecutionRepository.update(execution.id, {

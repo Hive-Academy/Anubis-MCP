@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 import { DelegationRecord } from '../../../../../generated/prisma';
 import {
   CreateDelegationRecordData,

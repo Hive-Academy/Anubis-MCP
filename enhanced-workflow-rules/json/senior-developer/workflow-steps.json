@@ -163,6 +163,13 @@
       "approach": "Rigorous validation of entire implementation to ensure production readiness and comprehensive evidence collection for code review.",
       "approachGuidance": {
         "stepByStep": [
+          "🔍 CRITICAL PRE-VALIDATION - SUBTASK COMPLETION VERIFICATION:",
+          "MANDATORY check before any validation activities begin:",
+          "  - Execute SubtaskOperations.get_next_subtask to verify NO remaining subtasks",
+          "  - If ANY subtasks remain (status != 'completed'), STOP immediately",
+          "  - Return to implement_subtasks step to complete remaining work",
+          "  - Do NOT proceed with validation until ALL subtasks are completed",
+          "  - Document any subtasks found and their current status",
           "🧪 COMPREHENSIVE TESTING SUITE EXECUTION:",
           "Execute complete test suite to ensure no regressions or failures:",
           "  - Run all unit tests with coverage reporting (target: >90% coverage)",
@@ -224,6 +231,9 @@
         ]
       },
       "qualityChecklist": [
+        "✅ CRITICAL: ALL SUBTASKS VERIFIED COMPLETED: SubtaskOperations.get_next_subtask returns no remaining subtasks",
+        "✅ SUBTASK COMPLETION STATUS VALIDATED: All subtasks show 'completed' status with evidence",
+        "✅ NO INCOMPLETE WORK REMAINING: Zero subtasks in 'not-started', 'in-progress', or 'needs-review' status",
         "✅ COMPLETE TEST SUITE EXECUTION: All unit, integration, and e2e tests pass successfully",
         "✅ TEST COVERAGE ACHIEVED: Code coverage meets or exceeds 90% threshold",
         "✅ ACCEPTANCE CRITERIA VALIDATED: All task and subtask acceptance criteria met with evidence",

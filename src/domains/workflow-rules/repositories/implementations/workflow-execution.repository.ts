@@ -1,21 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  WorkflowExecution,
-  ExecutionPhase,
-  ExecutionMode,
-  Prisma,
-} from '../../../../../generated/prisma';
+import { Prisma, WorkflowExecution } from '../../../../../generated/prisma';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { IWorkflowExecutionRepository } from '../interfaces/workflow-execution.repository.interface';
 import {
-  WorkflowExecutionWithRelations,
-  WorkflowExecutionIncludeOptions,
-  WorkflowExecutionFindManyOptions,
   CreateWorkflowExecutionData,
-  UpdateWorkflowExecutionData,
-  ExecutionStatistics,
-  ExecutionProgressSummary,
   PrismaTransaction,
+  UpdateWorkflowExecutionData,
+  WorkflowExecutionFindManyOptions,
+  WorkflowExecutionIncludeOptions,
+  WorkflowExecutionWithRelations,
 } from '../types/workflow-execution.types';
 
 @Injectable()
@@ -26,10 +19,7 @@ export class WorkflowExecutionRepository
 
   constructor(private readonly prisma: PrismaService) {}
 
-  // ===================================================================
-  // BASIC CRUD OPERATIONS
-  // ===================================================================
-
+  // Basic CRUD Operations
   async findById(
     id: string,
     include?: WorkflowExecutionIncludeOptions,
@@ -45,25 +35,9 @@ export class WorkflowExecutionRepository
     }
   }
 
-  async findMany(
-    options?: WorkflowExecutionFindManyOptions,
-  ): Promise<WorkflowExecutionWithRelations[]> {
-    try {
-      return await this.prisma.workflowExecution.findMany({
-        where: options?.where,
-        orderBy: options?.orderBy || { createdAt: 'desc' },
-        take: options?.take,
-        skip: options?.skip,
-        include: this.buildInclude(options?.include),
-        select: options?.select,
-      });
-    } catch (error) {
-      this.logger.error('Failed to find many executions:', error);
-      throw error;
-    }
-  }
-
-  async create(data: CreateWorkflowExecutionData): Promise<WorkflowExecution> {
+  async create(
+    data: CreateWorkflowExecutionData,
+  ): Promise<WorkflowExecutionWithRelations> {
     try {
       return await this.prisma.workflowExecution.create({
         data: {
@@ -79,6 +53,7 @@ export class WorkflowExecutionRepository
           maxRecoveryAttempts: data.maxRecoveryAttempts || 3,
           recoveryAttempts: data.recoveryAttempts || 0,
         },
+        include: this.buildInclude(),
       });
     } catch (error) {
       this.logger.error('Failed to create execution:', error);
@@ -89,11 +64,12 @@ export class WorkflowExecutionRepository
   async update(
     id: string,
     data: UpdateWorkflowExecutionData,
-  ): Promise<WorkflowExecution> {
+  ): Promise<WorkflowExecutionWithRelations> {
     try {
       return await this.prisma.workflowExecution.update({
         where: { id },
         data,
+        include: this.buildInclude(),
       });
     } catch (error) {
       this.logger.error(`Failed to update execution ${id}:`, error);
@@ -101,9 +77,9 @@ export class WorkflowExecutionRepository
     }
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string): Promise<WorkflowExecution> {
     try {
-      await this.prisma.workflowExecution.delete({
+      return await this.prisma.workflowExecution.delete({
         where: { id },
       });
     } catch (error) {
@@ -112,41 +88,25 @@ export class WorkflowExecutionRepository
     }
   }
 
-  async count(options?: WorkflowExecutionFindManyOptions): Promise<number> {
-    try {
-      return await this.prisma.workflowExecution.count({
-        where: options?.where,
-      });
-    } catch (error) {
-      this.logger.error('Failed to count executions:', error);
-      throw error;
-    }
-  }
-
-  // ===================================================================
-  // EXECUTION QUERY OPERATIONS
-  // ===================================================================
-
-  async findByTaskId(
-    taskId: number,
-    include?: WorkflowExecutionIncludeOptions,
+  // Query Operations
+  async findMany(
+    options?: WorkflowExecutionFindManyOptions,
   ): Promise<WorkflowExecutionWithRelations[]> {
     try {
       return await this.prisma.workflowExecution.findMany({
-        where: { taskId },
-        include: this.buildInclude(include),
-        orderBy: { createdAt: 'desc' },
+        where: options?.where,
+        orderBy: options?.orderBy || { createdAt: 'desc' },
+        take: options?.take,
+        skip: options?.skip,
+        include: this.buildInclude(options?.include),
       });
     } catch (error) {
-      this.logger.error(
-        `Failed to find executions by task ID ${taskId}:`,
-        error,
-      );
+      this.logger.error('Failed to find many executions:', error);
       throw error;
     }
   }
 
-  async findLatestByTaskId(
+  async findByTaskId(
     taskId: number,
     include?: WorkflowExecutionIncludeOptions,
   ): Promise<WorkflowExecutionWithRelations | null> {
@@ -158,113 +118,12 @@ export class WorkflowExecutionRepository
       });
     } catch (error) {
       this.logger.error(
-        `Failed to find latest execution by task ID ${taskId}:`,
+        `Failed to find execution by task ID ${taskId}:`,
         error,
       );
       throw error;
     }
   }
-
-  async findByCurrentRole(
-    roleId: string,
-    include?: WorkflowExecutionIncludeOptions,
-  ): Promise<WorkflowExecutionWithRelations[]> {
-    try {
-      return await this.prisma.workflowExecution.findMany({
-        where: { currentRoleId: roleId },
-        include: this.buildInclude(include),
-        orderBy: { updatedAt: 'desc' },
-      });
-    } catch (error) {
-      this.logger.error(
-        `Failed to find executions by current role ${roleId}:`,
-        error,
-      );
-      throw error;
-    }
-  }
-
-  async findByCurrentStep(
-    stepId: string,
-    include?: WorkflowExecutionIncludeOptions,
-  ): Promise<WorkflowExecutionWithRelations[]> {
-    try {
-      return await this.prisma.workflowExecution.findMany({
-        where: { currentStepId: stepId },
-        include: this.buildInclude(include),
-        orderBy: { updatedAt: 'desc' },
-      });
-    } catch (error) {
-      this.logger.error(
-        `Failed to find executions by current step ${stepId}:`,
-        error,
-      );
-      throw error;
-    }
-  }
-
-  async findByPhase(
-    phase: ExecutionPhase,
-    include?: WorkflowExecutionIncludeOptions,
-  ): Promise<WorkflowExecutionWithRelations[]> {
-    try {
-      return await this.prisma.workflowExecution.findMany({
-        where: {
-          executionState: {
-            path: ['phase'],
-            equals: phase,
-          },
-        },
-        include: this.buildInclude(include),
-        orderBy: { updatedAt: 'desc' },
-      });
-    } catch (error) {
-      this.logger.error(`Failed to find executions by phase ${phase}:`, error);
-      throw error;
-    }
-  }
-
-  async findByExecutionMode(
-    mode: ExecutionMode,
-    include?: WorkflowExecutionIncludeOptions,
-  ): Promise<WorkflowExecutionWithRelations[]> {
-    try {
-      return await this.prisma.workflowExecution.findMany({
-        where: { executionMode: mode },
-        include: this.buildInclude(include),
-        orderBy: { createdAt: 'desc' },
-      });
-    } catch (error) {
-      this.logger.error(`Failed to find executions by mode ${mode}:`, error);
-      throw error;
-    }
-  }
-
-  async findByDateRange(
-    startDate: Date,
-    endDate: Date,
-    include?: WorkflowExecutionIncludeOptions,
-  ): Promise<WorkflowExecutionWithRelations[]> {
-    try {
-      return await this.prisma.workflowExecution.findMany({
-        where: {
-          createdAt: {
-            gte: startDate,
-            lte: endDate,
-          },
-        },
-        include: this.buildInclude(include),
-        orderBy: { createdAt: 'desc' },
-      });
-    } catch (error) {
-      this.logger.error(`Failed to find executions by date range:`, error);
-      throw error;
-    }
-  }
-
-  // ===================================================================
-  // EXECUTION STATE MANAGEMENT
-  // ===================================================================
 
   async findActiveExecutions(
     include?: WorkflowExecutionIncludeOptions,
@@ -272,25 +131,7 @@ export class WorkflowExecutionRepository
     try {
       return await this.prisma.workflowExecution.findMany({
         where: {
-          AND: [
-            { completedAt: null },
-            {
-              OR: [
-                {
-                  executionState: {
-                    path: ['phase'],
-                    in: ['initialized', 'in-progress'],
-                  },
-                },
-                {
-                  executionState: {
-                    path: ['phase'],
-                    equals: null,
-                  },
-                },
-              ],
-            },
-          ],
+          completedAt: null,
         },
         include: this.buildInclude(include),
         orderBy: { updatedAt: 'desc' },
@@ -301,129 +142,85 @@ export class WorkflowExecutionRepository
     }
   }
 
-  async findCompletedExecutions(
+  async findByExecutionMode(
+    mode: string,
     include?: WorkflowExecutionIncludeOptions,
   ): Promise<WorkflowExecutionWithRelations[]> {
     try {
       return await this.prisma.workflowExecution.findMany({
-        where: {
-          OR: [
-            { completedAt: { not: null } },
-            {
-              executionState: {
-                path: ['phase'],
-                equals: 'completed',
-              },
-            },
-          ],
-        },
+        where: { executionMode: mode as any },
         include: this.buildInclude(include),
-        orderBy: { completedAt: 'desc' },
+        orderBy: { createdAt: 'desc' },
       });
     } catch (error) {
-      this.logger.error('Failed to find completed executions:', error);
+      this.logger.error(`Failed to find executions by mode ${mode}:`, error);
       throw error;
     }
   }
 
-  async findFailedExecutions(
-    include?: WorkflowExecutionIncludeOptions,
-  ): Promise<WorkflowExecutionWithRelations[]> {
+  async count(where?: any): Promise<number> {
     try {
-      return await this.prisma.workflowExecution.findMany({
-        where: {
-          OR: [
-            {
-              executionState: {
-                path: ['phase'],
-                equals: 'failed',
-              },
-            },
-            {
-              lastError: {
-                not: null,
-              },
-            },
-          ],
-        },
-        include: this.buildInclude(include),
-        orderBy: { updatedAt: 'desc' },
-      });
+      return await this.prisma.workflowExecution.count({ where });
     } catch (error) {
-      this.logger.error('Failed to find failed executions:', error);
+      this.logger.error('Failed to count executions:', error);
       throw error;
     }
   }
 
-  async findPausedExecutions(
-    include?: WorkflowExecutionIncludeOptions,
-  ): Promise<WorkflowExecutionWithRelations[]> {
+  // Transaction Support
+  async createWithTransaction(
+    data: CreateWorkflowExecutionData,
+    tx?: PrismaTransaction,
+  ): Promise<WorkflowExecutionWithRelations> {
+    const prismaClient = tx || this.prisma;
+
     try {
-      return await this.prisma.workflowExecution.findMany({
-        where: {
-          executionState: {
-            path: ['phase'],
-            equals: 'paused',
-          },
+      return await prismaClient.workflowExecution.create({
+        data: {
+          taskId: data.taskId,
+          currentRoleId: data.currentRoleId,
+          currentStepId: data.currentStepId,
+          executionState: data.executionState || {},
+          executionMode: data.executionMode || 'GUIDED',
+          executionContext: data.executionContext || {},
+          stepsCompleted: data.stepsCompleted || 0,
+          totalSteps: data.totalSteps || 0,
+          progressPercentage: data.progressPercentage || 0,
+          maxRecoveryAttempts: data.maxRecoveryAttempts || 3,
+          recoveryAttempts: data.recoveryAttempts || 0,
         },
-        include: this.buildInclude(include),
-        orderBy: { updatedAt: 'desc' },
+        include: this.buildInclude(),
       });
     } catch (error) {
-      this.logger.error('Failed to find paused executions:', error);
+      this.logger.error('Failed to create execution with transaction:', error);
       throw error;
     }
   }
 
-  async findStuckExecutions(
-    thresholdHours: number = 24,
-    include?: WorkflowExecutionIncludeOptions,
-  ): Promise<WorkflowExecutionWithRelations[]> {
+  async updateWithTransaction(
+    id: string,
+    data: UpdateWorkflowExecutionData,
+    tx?: PrismaTransaction,
+  ): Promise<WorkflowExecutionWithRelations> {
+    const prismaClient = tx || this.prisma;
+
     try {
-      const thresholdDate = new Date(
-        Date.now() - thresholdHours * 60 * 60 * 1000,
+      return await prismaClient.workflowExecution.update({
+        where: { id },
+        data,
+        include: this.buildInclude(),
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to update execution ${id} with transaction:`,
+        error,
       );
-
-      return await this.prisma.workflowExecution.findMany({
-        where: {
-          AND: [
-            { completedAt: null },
-            {
-              OR: [
-                {
-                  executionState: {
-                    path: ['phase'],
-                    equals: 'in-progress',
-                  },
-                },
-                {
-                  currentStepId: {
-                    not: null,
-                  },
-                },
-              ],
-            },
-            {
-              updatedAt: {
-                lt: thresholdDate,
-              },
-            },
-          ],
-        },
-        include: this.buildInclude(include),
-        orderBy: { updatedAt: 'asc' },
-      });
-    } catch (error) {
-      this.logger.error('Failed to find stuck executions:', error);
       throw error;
     }
   }
 
-  // ===================================================================
-  // EXECUTION PROGRESS MANAGEMENT
-  // ===================================================================
-
-  async updateExecutionProgress(
+  // Additional methods used by services (not in interface but needed)
+  async updateProgress(
     id: string,
     progressData: {
       stepsCompleted?: number;
@@ -432,7 +229,7 @@ export class WorkflowExecutionRepository
       currentStepId?: string;
       currentRoleId?: string;
     },
-  ): Promise<WorkflowExecution> {
+  ): Promise<WorkflowExecutionWithRelations> {
     try {
       const updateData: any = {
         ...progressData,
@@ -454,6 +251,7 @@ export class WorkflowExecutionRepository
       return await this.prisma.workflowExecution.update({
         where: { id },
         data: updateData,
+        include: this.buildInclude(),
       });
     } catch (error) {
       this.logger.error(`Failed to update execution progress ${id}:`, error);
@@ -461,106 +259,7 @@ export class WorkflowExecutionRepository
     }
   }
 
-  async updateExecutionState(
-    id: string,
-    stateUpdates: Record<string, any>,
-  ): Promise<WorkflowExecution> {
-    try {
-      const execution = await this.prisma.workflowExecution.findUniqueOrThrow({
-        where: { id },
-        select: { executionState: true },
-      });
-
-      const currentState =
-        (execution.executionState as Record<string, any>) || {};
-      const newState = { ...currentState, ...stateUpdates };
-
-      return await this.prisma.workflowExecution.update({
-        where: { id },
-        data: {
-          executionState: newState,
-          updatedAt: new Date(),
-        },
-      });
-    } catch (error) {
-      this.logger.error(`Failed to update execution state ${id}:`, error);
-      throw error;
-    }
-  }
-
-  async updateExecutionContext(
-    id: string,
-    contextUpdates: Record<string, any>,
-  ): Promise<WorkflowExecution> {
-    try {
-      const execution = await this.prisma.workflowExecution.findUniqueOrThrow({
-        where: { id },
-        select: { executionContext: true },
-      });
-
-      const currentContext =
-        (execution.executionContext as Record<string, any>) || {};
-      const newContext = { ...currentContext, ...contextUpdates };
-
-      return await this.prisma.workflowExecution.update({
-        where: { id },
-        data: {
-          executionContext: newContext,
-          updatedAt: new Date(),
-        },
-      });
-    } catch (error) {
-      this.logger.error(`Failed to update execution context ${id}:`, error);
-      throw error;
-    }
-  }
-
-  async markExecutionCompleted(
-    id: string,
-    completionData?: {
-      finalState?: Record<string, any>;
-      completionNotes?: string;
-    },
-  ): Promise<WorkflowExecution> {
-    try {
-      const updateData: any = {
-        completedAt: new Date(),
-        progressPercentage: 100,
-        updatedAt: new Date(),
-      };
-
-      if (completionData?.finalState) {
-        const execution = await this.prisma.workflowExecution.findUniqueOrThrow(
-          {
-            where: { id },
-            select: { executionState: true },
-          },
-        );
-
-        const currentState =
-          (execution.executionState as Record<string, any>) || {};
-        updateData.executionState = {
-          ...currentState,
-          ...completionData.finalState,
-          phase: 'completed',
-        };
-      } else {
-        updateData.executionState = {
-          phase: 'completed',
-        };
-      }
-
-      return await this.prisma.workflowExecution.update({
-        where: { id },
-        data: updateData,
-      });
-    } catch (error) {
-      this.logger.error(`Failed to mark execution completed ${id}:`, error);
-      throw error;
-    }
-  }
-
-  async markExecutionFailed(
+  async handleExecutionError(
     id: string,
     error: {
       message: string;
@@ -568,7 +267,7 @@ export class WorkflowExecutionRepository
       code?: string;
       details?: Record<string, any>;
     },
-  ): Promise<WorkflowExecution> {
+  ): Promise<WorkflowExecutionWithRelations> {
     try {
       const execution = await this.prisma.workflowExecution.findUniqueOrThrow({
         where: { id },
@@ -603,551 +302,28 @@ export class WorkflowExecutionRepository
           recoveryAttempts: execution.recoveryAttempts + 1,
           updatedAt: new Date(),
         },
+        include: this.buildInclude(),
       });
     } catch (error) {
-      this.logger.error(`Failed to mark execution failed ${id}:`, error);
+      this.logger.error(`Failed to handle execution error ${id}:`, error);
       throw error;
     }
   }
 
-  async pauseExecution(
-    id: string,
-    reason?: string,
-  ): Promise<WorkflowExecution> {
-    try {
-      const execution = await this.prisma.workflowExecution.findUniqueOrThrow({
-        where: { id },
-        select: { executionState: true },
-      });
-
-      const currentState =
-        (execution.executionState as Record<string, any>) || {};
-      const newState = {
-        ...currentState,
-        phase: 'paused',
-        pausedAt: new Date().toISOString(),
-        pauseReason: reason,
-      };
-
-      return await this.prisma.workflowExecution.update({
-        where: { id },
-        data: {
-          executionState: newState,
-          updatedAt: new Date(),
-        },
-      });
-    } catch (error) {
-      this.logger.error(`Failed to pause execution ${id}:`, error);
-      throw error;
-    }
-  }
-
-  async resumeExecution(
-    id: string,
-    resumeNotes?: string,
-  ): Promise<WorkflowExecution> {
-    try {
-      const execution = await this.prisma.workflowExecution.findUniqueOrThrow({
-        where: { id },
-        select: { executionState: true },
-      });
-
-      const currentState =
-        (execution.executionState as Record<string, any>) || {};
-      const newState = {
-        ...currentState,
-        phase: 'in-progress',
-        resumedAt: new Date().toISOString(),
-        resumeNotes,
-        pausedAt: undefined,
-        pauseReason: undefined,
-      };
-
-      return await this.prisma.workflowExecution.update({
-        where: { id },
-        data: {
-          executionState: newState,
-          updatedAt: new Date(),
-        },
-      });
-    } catch (error) {
-      this.logger.error(`Failed to resume execution ${id}:`, error);
-      throw error;
-    }
-  }
-
-  // ===================================================================
-  // EXECUTION STATISTICS & ANALYTICS
-  // ===================================================================
-
-  async getExecutionStatistics(id: string): Promise<ExecutionStatistics> {
-    try {
-      const execution = await this.prisma.workflowExecution.findUniqueOrThrow({
-        where: { id },
-        include: {
-          stepProgress: {
-            include: {
-              step: true,
-            },
-          },
-        },
-      });
-
-      const stepProgress = execution.stepProgress || [];
-      const totalSteps = stepProgress.length;
-      const completedSteps = stepProgress.filter(
-        (p) => p.status === 'COMPLETED',
-      ).length;
-      const failedSteps = stepProgress.filter(
-        (p) => p.status === 'FAILED',
-      ).length;
-      const inProgressSteps = stepProgress.filter(
-        (p) => p.status === 'IN_PROGRESS',
-      ).length;
-
-      // Calculate execution duration
-      const startTime = execution.createdAt;
-      const endTime = execution.completedAt || new Date();
-      const totalDuration = endTime.getTime() - startTime.getTime();
-
-      // Calculate step durations
-      const stepDurations = stepProgress
-        .filter((p) => p.startedAt && p.completedAt)
-        .map((p) => p.completedAt!.getTime() - p.startedAt!.getTime());
-
-      const averageStepDuration =
-        stepDurations.length > 0
-          ? stepDurations.reduce((a, b) => a + b, 0) / stepDurations.length
-          : 0;
-
+  // Private helper methods
+  private buildInclude(
+    include?: WorkflowExecutionIncludeOptions,
+  ): Prisma.WorkflowExecutionInclude | undefined {
+    if (!include) {
+      // Default include for basic relations
       return {
-        executionId: id,
-        totalDuration,
-        totalSteps,
-        completedSteps,
-        failedSteps,
-        inProgressSteps,
-        notStartedSteps:
-          totalSteps - completedSteps - failedSteps - inProgressSteps,
-        completionPercentage: execution.progressPercentage || 0,
-        averageStepDuration,
-        executionMode: execution.executionMode,
-        recoveryAttempts: execution.recoveryAttempts,
-        currentPhase: (execution.executionState as any)?.phase || 'unknown',
-        startedAt: execution.createdAt,
-        completedAt: execution.completedAt,
-        lastUpdated: execution.updatedAt,
-        errorCount: failedSteps,
-        successRate: totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0,
-        failureRate: totalSteps > 0 ? (failedSteps / totalSteps) * 100 : 0,
+        task: true,
+        currentRole: true,
+        currentStep: true,
       };
-    } catch (error) {
-      this.logger.error(`Failed to get execution statistics for ${id}:`, error);
-      throw error;
     }
-  }
 
-  async getExecutionProgressSummary(
-    id: string,
-  ): Promise<ExecutionProgressSummary> {
-    try {
-      const execution = await this.prisma.workflowExecution.findUniqueOrThrow({
-        where: { id },
-        include: {
-          stepProgress: {
-            include: {
-              step: {
-                include: {
-                  role: true,
-                },
-              },
-            },
-            orderBy: {
-              createdAt: 'asc',
-            },
-          },
-        },
-      });
-
-      const stepProgress = execution.stepProgress || [];
-      const currentStep = stepProgress.find((p) => p.status === 'IN_PROGRESS');
-      const lastCompletedStep = stepProgress
-        .filter((p) => p.status === 'COMPLETED')
-        .sort((a, b) => b.completedAt!.getTime() - a.completedAt!.getTime())[0];
-
-      const nextSteps = stepProgress
-        .filter((p) => p.status === 'NOT_STARTED')
-        .slice(0, 3)
-        .map((p) => ({
-          stepId: p.stepId,
-          stepName: p.step.name,
-          roleName: p.step.role.name,
-          estimatedDuration: p.step.estimatedDuration,
-        }));
-
-      const recentActivity = stepProgress
-        .filter((p) => p.status === 'COMPLETED' || p.status === 'FAILED')
-        .sort((a, b) => {
-          const aTime = p.completedAt || p.failedAt || p.updatedAt;
-          const bTime = p.completedAt || p.failedAt || p.updatedAt;
-          return bTime.getTime() - aTime.getTime();
-        })
-        .slice(0, 5)
-        .map((p) => ({
-          stepId: p.stepId,
-          stepName: p.step.name,
-          status: p.status,
-          completedAt: p.completedAt,
-          duration:
-            p.startedAt && p.completedAt
-              ? p.completedAt.getTime() - p.startedAt.getTime()
-              : undefined,
-        }));
-
-      return {
-        executionId: id,
-        currentPhase: (execution.executionState as any)?.phase || 'unknown',
-        overallProgress: execution.progressPercentage || 0,
-        stepsCompleted: execution.stepsCompleted || 0,
-        totalSteps: execution.totalSteps || stepProgress.length,
-        currentStep: currentStep
-          ? {
-              stepId: currentStep.stepId,
-              stepName: currentStep.step.name,
-              roleName: currentStep.step.role.name,
-              startedAt: currentStep.startedAt,
-              estimatedDuration: currentStep.step.estimatedDuration,
-            }
-          : undefined,
-        lastCompletedStep: lastCompletedStep
-          ? {
-              stepId: lastCompletedStep.stepId,
-              stepName: lastCompletedStep.step.name,
-              completedAt: lastCompletedStep.completedAt!,
-              duration:
-                lastCompletedStep.startedAt && lastCompletedStep.completedAt
-                  ? lastCompletedStep.completedAt.getTime() -
-                    lastCompletedStep.startedAt.getTime()
-                  : undefined,
-            }
-          : undefined,
-        nextSteps,
-        recentActivity,
-        estimatedTimeRemaining: 0, // TODO: Calculate based on remaining steps and average duration
-        blockers: [], // TODO: Identify current blockers
-        warnings: [], // TODO: Identify potential issues
-      };
-    } catch (error) {
-      this.logger.error(
-        `Failed to get execution progress summary for ${id}:`,
-        error,
-      );
-      throw error;
-    }
-  }
-
-  async getGlobalExecutionStatistics(): Promise<{
-    totalExecutions: number;
-    activeExecutions: number;
-    completedExecutions: number;
-    failedExecutions: number;
-    averageExecutionTime: number;
-    successRate: number;
-  }> {
-    try {
-      const [total, active, completed, failed] = await Promise.all([
-        this.prisma.workflowExecution.count(),
-        this.prisma.workflowExecution.count({
-          where: {
-            AND: [
-              { completedAt: null },
-              {
-                executionState: {
-                  path: ['phase'],
-                  in: ['initialized', 'in-progress'],
-                },
-              },
-            ],
-          },
-        }),
-        this.prisma.workflowExecution.count({
-          where: {
-            completedAt: { not: null },
-          },
-        }),
-        this.prisma.workflowExecution.count({
-          where: {
-            executionState: {
-              path: ['phase'],
-              equals: 'failed',
-            },
-          },
-        }),
-      ]);
-
-      // Calculate average execution time for completed executions
-      const completedExecutions = await this.prisma.workflowExecution.findMany({
-        where: {
-          completedAt: { not: null },
-        },
-        select: {
-          createdAt: true,
-          completedAt: true,
-        },
-      });
-
-      const executionTimes = completedExecutions
-        .filter((e) => e.completedAt)
-        .map((e) => e.completedAt!.getTime() - e.createdAt.getTime());
-
-      const averageExecutionTime =
-        executionTimes.length > 0
-          ? executionTimes.reduce((a, b) => a + b, 0) / executionTimes.length
-          : 0;
-
-      const successRate = total > 0 ? (completed / total) * 100 : 0;
-
-      return {
-        totalExecutions: total,
-        activeExecutions: active,
-        completedExecutions: completed,
-        failedExecutions: failed,
-        averageExecutionTime,
-        successRate,
-      };
-    } catch (error) {
-      this.logger.error('Failed to get global execution statistics:', error);
-      throw error;
-    }
-  }
-
-  // ===================================================================
-  // EXECUTION RECOVERY & CLEANUP
-  // ===================================================================
-
-  async findExecutionsNeedingRecovery(
-    maxRecoveryAttempts: number = 3,
-  ): Promise<WorkflowExecutionWithRelations[]> {
-    try {
-      return await this.prisma.workflowExecution.findMany({
-        where: {
-          AND: [
-            {
-              executionState: {
-                path: ['phase'],
-                equals: 'failed',
-              },
-            },
-            {
-              recoveryAttempts: {
-                lt: maxRecoveryAttempts,
-              },
-            },
-            {
-              lastError: {
-                not: null,
-              },
-            },
-          ],
-        },
-        include: {
-          task: true,
-          stepProgress: {
-            include: {
-              step: true,
-            },
-          },
-        },
-        orderBy: {
-          updatedAt: 'asc',
-        },
-      });
-    } catch (error) {
-      this.logger.error('Failed to find executions needing recovery:', error);
-      throw error;
-    }
-  }
-
-  async cleanupOldExecutions(
-    olderThanDays: number = 30,
-    keepCompleted: boolean = true,
-  ): Promise<number> {
-    try {
-      const cutoffDate = new Date(
-        Date.now() - olderThanDays * 24 * 60 * 60 * 1000,
-      );
-
-      const whereClause: any = {
-        createdAt: {
-          lt: cutoffDate,
-        },
-      };
-
-      if (keepCompleted) {
-        whereClause.AND = [
-          {
-            completedAt: null,
-          },
-          {
-            executionState: {
-              path: ['phase'],
-              not: 'completed',
-            },
-          },
-        ];
-      }
-
-      const result = await this.prisma.workflowExecution.deleteMany({
-        where: whereClause,
-      });
-
-      return result.count;
-    } catch (error) {
-      this.logger.error('Failed to cleanup old executions:', error);
-      throw error;
-    }
-  }
-
-  // ===================================================================
-  // UTILITY OPERATIONS
-  // ===================================================================
-
-  async validateExecutionExists(id: string): Promise<boolean> {
-    try {
-      const execution = await this.prisma.workflowExecution.findUnique({
-        where: { id },
-        select: { id: true },
-      });
-      return !!execution;
-    } catch (error) {
-      this.logger.error(`Failed to validate execution exists ${id}:`, error);
-      return false;
-    }
-  }
-
-  async duplicateExecution(
-    id: string,
-    newTaskId?: number,
-  ): Promise<WorkflowExecution> {
-    try {
-      const originalExecution =
-        await this.prisma.workflowExecution.findUniqueOrThrow({
-          where: { id },
-          include: {
-            stepProgress: true,
-          },
-        });
-
-      return await this.prisma.$transaction(async (tx) => {
-        // Create the duplicated execution
-        const duplicatedExecution = await tx.workflowExecution.create({
-          data: {
-            taskId: newTaskId || originalExecution.taskId,
-            currentRoleId: originalExecution.currentRoleId,
-            currentStepId: null, // Reset current step
-            executionState: {
-              phase: 'initialized',
-              duplicatedFrom: id,
-              originalExecutionId: id,
-            },
-            executionMode: originalExecution.executionMode,
-            executionContext: originalExecution.executionContext,
-            stepsCompleted: 0,
-            totalSteps: originalExecution.totalSteps,
-            progressPercentage: 0,
-            maxRecoveryAttempts: originalExecution.maxRecoveryAttempts,
-            recoveryAttempts: 0,
-          },
-        });
-
-        return duplicatedExecution;
-      });
-    } catch (error) {
-      this.logger.error(`Failed to duplicate execution ${id}:`, error);
-      throw error;
-    }
-  }
-
-  // ===================================================================
-  // TRANSACTION SUPPORT
-  // ===================================================================
-
-  async createWithTransaction(
-    data: CreateWorkflowExecutionData,
-    transaction?: PrismaTransaction,
-  ): Promise<WorkflowExecution> {
-    const tx = transaction || this.prisma;
-
-    try {
-      return await tx.workflowExecution.create({
-        data: {
-          taskId: data.taskId,
-          currentRoleId: data.currentRoleId,
-          currentStepId: data.currentStepId,
-          executionState: data.executionState || {},
-          executionMode: data.executionMode || 'GUIDED',
-          executionContext: data.executionContext || {},
-          stepsCompleted: data.stepsCompleted || 0,
-          totalSteps: data.totalSteps || 0,
-          progressPercentage: data.progressPercentage || 0,
-          maxRecoveryAttempts: data.maxRecoveryAttempts || 3,
-          recoveryAttempts: data.recoveryAttempts || 0,
-        },
-      });
-    } catch (error) {
-      this.logger.error('Failed to create execution with transaction:', error);
-      throw error;
-    }
-  }
-
-  async updateWithTransaction(
-    id: string,
-    data: UpdateWorkflowExecutionData,
-    transaction?: PrismaTransaction,
-  ): Promise<WorkflowExecution> {
-    const tx = transaction || this.prisma;
-
-    try {
-      return await tx.workflowExecution.update({
-        where: { id },
-        data,
-      });
-    } catch (error) {
-      this.logger.error(
-        `Failed to update execution ${id} with transaction:`,
-        error,
-      );
-      throw error;
-    }
-  }
-
-  async deleteWithTransaction(
-    id: string,
-    transaction?: PrismaTransaction,
-  ): Promise<void> {
-    const tx = transaction || this.prisma;
-
-    try {
-      await tx.workflowExecution.delete({
-        where: { id },
-      });
-    } catch (error) {
-      this.logger.error(
-        `Failed to delete execution ${id} with transaction:`,
-        error,
-      );
-      throw error;
-    }
-  }
-
-  // ===================================================================
-  // PRIVATE HELPER METHODS
-  // ===================================================================
-
-  private buildInclude(include?: WorkflowExecutionIncludeOptions): any {
-    if (!include) return undefined;
-
-    const result: any = {};
+    const result: Prisma.WorkflowExecutionInclude = {};
 
     if (include.task) {
       result.task = true;
@@ -1174,9 +350,6 @@ export class WorkflowExecutionRepository
         };
       } else {
         result.stepProgress = {
-          where: include.stepProgress.where,
-          orderBy: include.stepProgress.orderBy,
-          take: include.stepProgress.take,
           include: {
             step: {
               include: {
@@ -1188,18 +361,6 @@ export class WorkflowExecutionRepository
       }
     }
 
-    if (include.transitions) {
-      if (typeof include.transitions === 'boolean') {
-        result.transitions = true;
-      } else {
-        result.transitions = {
-          where: include.transitions.where,
-          orderBy: include.transitions.orderBy,
-          take: include.transitions.take,
-        };
-      }
-    }
-
-    return result;
+    return Object.keys(result).length > 0 ? result : undefined;
   }
 }

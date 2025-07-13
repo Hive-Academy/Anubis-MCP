@@ -4,7 +4,6 @@ import { PrismaService } from '../../../../prisma/prisma.service';
 import { IWorkflowRoleRepository } from '../interfaces/workflow-role.repository.interface';
 import {
   CreateWorkflowRoleData,
-  DelegationCandidate,
   PrismaTransaction,
   RoleCapability,
   UpdateWorkflowRoleData,
@@ -23,12 +22,22 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
   // Basic CRUD Operations
   async findById(
     id: string,
-    include?: WorkflowRoleIncludeOptions,
+    _include?: WorkflowRoleIncludeOptions,
   ): Promise<WorkflowRoleWithRelations | null> {
     try {
       return await this.prisma.workflowRole.findUnique({
         where: { id },
-        include: this.buildInclude(include),
+        include: {
+          steps: {
+            include: {
+              stepGuidance: true,
+              qualityChecks: true,
+              stepDependencies: true,
+            },
+          },
+          fromTransitions: { include: { toRole: true } },
+          toTransitions: { include: { fromRole: true } },
+        },
       });
     } catch (error) {
       this.logger.error(`Failed to find workflow role by id ${id}:`, error);
@@ -38,12 +47,22 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
 
   async findByName(
     name: string,
-    include?: WorkflowRoleIncludeOptions,
+    _include?: WorkflowRoleIncludeOptions,
   ): Promise<WorkflowRoleWithRelations | null> {
     try {
       return await this.prisma.workflowRole.findUnique({
         where: { name },
-        include: this.buildInclude(include),
+        include: {
+          steps: {
+            include: {
+              stepGuidance: true,
+              qualityChecks: true,
+              stepDependencies: true,
+            },
+          },
+          fromTransitions: { include: { toRole: true } },
+          toTransitions: { include: { fromRole: true } },
+        },
       });
     } catch (error) {
       this.logger.error(`Failed to find workflow role by name ${name}:`, error);
@@ -58,7 +77,13 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
       return await this.prisma.workflowRole.create({
         data,
         include: {
-          steps: true,
+          steps: {
+            include: {
+              stepGuidance: true,
+              qualityChecks: true,
+              stepDependencies: true,
+            },
+          },
           fromTransitions: { include: { toRole: true } },
           toTransitions: { include: { fromRole: true } },
         },
@@ -78,7 +103,13 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
         where: { id },
         data,
         include: {
-          steps: true,
+          steps: {
+            include: {
+              stepGuidance: true,
+              qualityChecks: true,
+              stepDependencies: true,
+            },
+          },
           fromTransitions: { include: { toRole: true } },
           toTransitions: { include: { fromRole: true } },
         },
@@ -197,7 +228,7 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
   async findDelegationCandidates(
     fromRoleId: string,
     include?: WorkflowRoleIncludeOptions,
-  ): Promise<DelegationCandidate[]> {
+  ): Promise<WorkflowRoleWithRelations[]> {
     try {
       // Find roles that can be transitioned to from the current role
       const transitions = await this.prisma.roleTransition.findMany({
@@ -209,13 +240,10 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
         },
       });
 
-      // Convert to delegation candidates with basic scoring
-      return transitions.map((transition) => ({
-        role: transition.toRole as WorkflowRoleWithRelations,
-        score: this.calculateDelegationScore(transition.toRole),
-        reasons: this.getDelegationReasons(transition),
-        availableTransitions: [transition.id],
-      }));
+      // Return the role objects directly
+      return transitions.map(
+        (transition) => transition.toRole as WorkflowRoleWithRelations,
+      );
     } catch (error) {
       this.logger.error(
         `Failed to find delegation candidates for role ${fromRoleId}:`,
@@ -272,7 +300,13 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
         where: { id: roleId },
         data: { capabilities },
         include: {
-          steps: true,
+          steps: {
+            include: {
+              stepGuidance: true,
+              qualityChecks: true,
+              stepDependencies: true,
+            },
+          },
           fromTransitions: { include: { toRole: true } },
           toTransitions: { include: { fromRole: true } },
         },
@@ -326,8 +360,8 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
       return await this.prisma.workflowRole.findMany({
         where: {
           coreResponsibilities: {
-            path: [],
-            array_contains: [responsibility],
+            path: '$',
+            string_contains: responsibility,
           },
         },
         include: this.buildInclude(include),
@@ -342,16 +376,14 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
     }
   }
 
-  // Relationship Loading
-  async findWithSteps(
+  async findWithTransitions(
     roleId: string,
-    include?: WorkflowRoleIncludeOptions,
+    _include?: WorkflowRoleIncludeOptions,
   ): Promise<WorkflowRoleWithRelations | null> {
     try {
       return await this.prisma.workflowRole.findUnique({
         where: { id: roleId },
         include: {
-          ...this.buildInclude(include),
           steps: {
             include: {
               stepGuidance: true,
@@ -359,23 +391,6 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
               stepDependencies: true,
             },
           },
-        },
-      });
-    } catch (error) {
-      this.logger.error(`Failed to find role ${roleId} with steps:`, error);
-      throw error;
-    }
-  }
-
-  async findWithTransitions(
-    roleId: string,
-    include?: WorkflowRoleIncludeOptions,
-  ): Promise<WorkflowRoleWithRelations | null> {
-    try {
-      return await this.prisma.workflowRole.findUnique({
-        where: { id: roleId },
-        include: {
-          ...this.buildInclude(include),
           fromTransitions: {
             include: {
               toRole: true,
@@ -399,13 +414,29 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
 
   async findWithActiveExecutions(
     roleId: string,
-    include?: WorkflowRoleIncludeOptions,
+    _include?: WorkflowRoleIncludeOptions,
   ): Promise<WorkflowRoleWithRelations | null> {
     try {
       return await this.prisma.workflowRole.findUnique({
         where: { id: roleId },
         include: {
-          ...this.buildInclude(include),
+          steps: {
+            include: {
+              stepGuidance: true,
+              qualityChecks: true,
+              stepDependencies: true,
+            },
+          },
+          fromTransitions: {
+            include: {
+              toRole: true,
+            },
+          },
+          toTransitions: {
+            include: {
+              fromRole: true,
+            },
+          },
           activeExecutions: {
             where: {
               completedAt: null,
@@ -519,31 +550,6 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
     }
   }
 
-  async findRolesByProjectType(
-    projectType: string,
-    include?: WorkflowRoleIncludeOptions,
-  ): Promise<WorkflowRoleWithRelations[]> {
-    try {
-      return await this.prisma.workflowRole.findMany({
-        where: {
-          behavioralProfiles: {
-            some: {
-              projectType,
-            },
-          },
-        },
-        include: this.buildInclude(include),
-        orderBy: { priority: 'asc' },
-      });
-    } catch (error) {
-      this.logger.error(
-        `Failed to find roles by project type ${projectType}:`,
-        error,
-      );
-      throw error;
-    }
-  }
-
   // Transaction Support
   async createWithTransaction(
     data: CreateWorkflowRoleData,
@@ -555,7 +561,13 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
       return await prismaClient.workflowRole.create({
         data,
         include: {
-          steps: true,
+          steps: {
+            include: {
+              stepGuidance: true,
+              qualityChecks: true,
+              stepDependencies: true,
+            },
+          },
           fromTransitions: { include: { toRole: true } },
           toTransitions: { include: { fromRole: true } },
         },
@@ -581,7 +593,13 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
         where: { id },
         data,
         include: {
-          steps: true,
+          steps: {
+            include: {
+              stepGuidance: true,
+              qualityChecks: true,
+              stepDependencies: true,
+            },
+          },
           fromTransitions: { include: { toRole: true } },
           toTransitions: { include: { fromRole: true } },
         },
@@ -603,13 +621,19 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
     // Handle steps include
     if (include.steps !== undefined) {
       if (include.steps === true) {
-        result.steps = true;
+        result.steps = {
+          include: {
+            stepGuidance: true,
+            qualityChecks: true,
+            stepDependencies: true,
+          },
+        };
       } else if (typeof include.steps === 'object') {
         result.steps = {
           include: {
-            stepGuidance: include.steps.stepGuidance,
-            qualityChecks: include.steps.qualityChecks,
-            stepDependencies: include.steps.stepDependencies,
+            stepGuidance: include.steps.stepGuidance || true,
+            qualityChecks: include.steps.qualityChecks || true,
+            stepDependencies: include.steps.stepDependencies || true,
             stepProgress: include.steps.stepProgress,
           },
         };
@@ -619,11 +643,15 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
     // Handle fromTransitions include
     if (include.fromTransitions !== undefined) {
       if (include.fromTransitions === true) {
-        result.fromTransitions = true;
+        result.fromTransitions = {
+          include: {
+            toRole: true,
+          },
+        };
       } else if (typeof include.fromTransitions === 'object') {
         result.fromTransitions = {
           include: {
-            toRole: include.fromTransitions.toRole,
+            toRole: include.fromTransitions.toRole || true,
           },
         };
       }
@@ -632,11 +660,15 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
     // Handle toTransitions include
     if (include.toTransitions !== undefined) {
       if (include.toTransitions === true) {
-        result.toTransitions = true;
+        result.toTransitions = {
+          include: {
+            fromRole: true,
+          },
+        };
       } else if (typeof include.toTransitions === 'object') {
         result.toTransitions = {
           include: {
-            fromRole: include.toTransitions.fromRole,
+            fromRole: include.toTransitions.fromRole || true,
           },
         };
       }
@@ -677,44 +709,5 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
     }
 
     return Object.keys(result).length > 0 ? result : undefined;
-  }
-
-  private calculateDelegationScore(role: WorkflowRole): number {
-    // Basic scoring algorithm - can be enhanced
-    let score = 50; // Base score
-
-    // Higher priority roles get higher scores
-    if (role.priority <= 3) score += 20;
-    else if (role.priority <= 6) score += 10;
-
-    // Active roles get bonus
-    if (role.isActive) score += 15;
-
-    // Roles with more capabilities get bonus
-    const capabilities = role.capabilities as any;
-    if (capabilities && Object.keys(capabilities).length > 5) {
-      score += 10;
-    }
-
-    return Math.min(score, 100);
-  }
-
-  private getDelegationReasons(transition: any): string[] {
-    const reasons: string[] = [];
-
-    if (transition.toRole.isActive) {
-      reasons.push('Role is currently active');
-    }
-
-    if (transition.toRole.priority <= 5) {
-      reasons.push('High priority role');
-    }
-
-    const capabilities = transition.toRole.capabilities;
-    if (capabilities && Object.keys(capabilities).length > 0) {
-      reasons.push('Role has defined capabilities');
-    }
-
-    return reasons.length > 0 ? reasons : ['Available for delegation'];
   }
 }
