@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service';
+import { Injectable, Inject } from '@nestjs/common';
+import { IProgressCalculationRepository } from '../repositories/interfaces/progress-calculation.repository.interface';
 import {
   ProgressCalculationResult,
   ProgressMetrics,
@@ -9,7 +9,10 @@ import { WorkflowGuidance } from './workflow-guidance.service';
 
 @Injectable()
 export class ProgressCalculatorService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject('IProgressCalculationRepository')
+    private readonly progressCalculationRepository: IProgressCalculationRepository,
+  ) {}
 
   /**
    * Calculate real-time progress from database with type safety
@@ -35,10 +38,12 @@ export class ProgressCalculatorService {
       }
 
       // Get role steps and progress data
-      const [roleSteps, stepProgress] = await Promise.all([
+      const [roleSteps, stepProgressResult] = await Promise.all([
         this.getRoleSteps(guidance.currentRole.name),
         this.getStepProgress(taskId),
       ]);
+
+      const stepProgress = stepProgressResult || [];
 
       // Calculate progress metrics with type safety
       const currentStepProgress = this.calculateCurrentStepProgress(
@@ -89,47 +94,27 @@ export class ProgressCalculatorService {
    * Get basic task information from database
    */
   private async getTaskBasicInfo(taskId: number) {
-    return await this.prisma.task.findUnique({
-      where: { id: taskId },
-      select: {
-        id: true,
-        name: true,
-        status: true,
-        createdAt: true,
-      },
-    });
+    const result =
+      await this.progressCalculationRepository.findTaskBasicInfo(taskId);
+    return result.success ? result.data : null;
   }
 
   /**
    * Get steps for a specific role from database
    */
   private async getRoleSteps(roleName: string) {
-    const role = await this.prisma.workflowRole.findUnique({
-      where: { name: roleName },
-      include: {
-        steps: {
-          orderBy: { sequenceNumber: 'asc' },
-        },
-      },
-    });
-
-    return role?.steps || [];
+    const result =
+      await this.progressCalculationRepository.findRoleWithSteps(roleName);
+    return result.success && result.data ? result.data.steps : [];
   }
 
   /**
    * Get step progress for task
    */
   private async getStepProgress(taskId: number) {
-    return await this.prisma.workflowStepProgress.findMany({
-      where: {
-        taskId: taskId.toString(),
-      },
-      include: {
-        step: true,
-        role: true,
-      },
-      orderBy: { createdAt: 'asc' },
-    });
+    const result =
+      await this.progressCalculationRepository.findStepProgressByTaskId(taskId);
+    return result.success ? result.data : [];
   }
 
   /**
