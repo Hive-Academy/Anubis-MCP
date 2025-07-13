@@ -19,7 +19,9 @@ import {
 } from '../types/workflow-execution.types';
 
 @Injectable()
-export class WorkflowExecutionRepository implements IWorkflowExecutionRepository {
+export class WorkflowExecutionRepository
+  implements IWorkflowExecutionRepository
+{
   private readonly logger = new Logger(WorkflowExecutionRepository.name);
 
   constructor(private readonly prisma: PrismaService) {}
@@ -136,7 +138,10 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
         orderBy: { createdAt: 'desc' },
       });
     } catch (error) {
-      this.logger.error(`Failed to find executions by task ID ${taskId}:`, error);
+      this.logger.error(
+        `Failed to find executions by task ID ${taskId}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -152,7 +157,10 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
         orderBy: { createdAt: 'desc' },
       });
     } catch (error) {
-      this.logger.error(`Failed to find latest execution by task ID ${taskId}:`, error);
+      this.logger.error(
+        `Failed to find latest execution by task ID ${taskId}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -168,7 +176,10 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
         orderBy: { updatedAt: 'desc' },
       });
     } catch (error) {
-      this.logger.error(`Failed to find executions by current role ${roleId}:`, error);
+      this.logger.error(
+        `Failed to find executions by current role ${roleId}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -184,7 +195,10 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
         orderBy: { updatedAt: 'desc' },
       });
     } catch (error) {
-      this.logger.error(`Failed to find executions by current step ${stepId}:`, error);
+      this.logger.error(
+        `Failed to find executions by current step ${stepId}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -366,8 +380,10 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
     include?: WorkflowExecutionIncludeOptions,
   ): Promise<WorkflowExecutionWithRelations[]> {
     try {
-      const thresholdDate = new Date(Date.now() - thresholdHours * 60 * 60 * 1000);
-      
+      const thresholdDate = new Date(
+        Date.now() - thresholdHours * 60 * 60 * 1000,
+      );
+
       return await this.prisma.workflowExecution.findMany({
         where: {
           AND: [
@@ -455,7 +471,8 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
         select: { executionState: true },
       });
 
-      const currentState = (execution.executionState as Record<string, any>) || {};
+      const currentState =
+        (execution.executionState as Record<string, any>) || {};
       const newState = { ...currentState, ...stateUpdates };
 
       return await this.prisma.workflowExecution.update({
@@ -481,7 +498,8 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
         select: { executionContext: true },
       });
 
-      const currentContext = (execution.executionContext as Record<string, any>) || {};
+      const currentContext =
+        (execution.executionContext as Record<string, any>) || {};
       const newContext = { ...currentContext, ...contextUpdates };
 
       return await this.prisma.workflowExecution.update({
@@ -512,12 +530,15 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
       };
 
       if (completionData?.finalState) {
-        const execution = await this.prisma.workflowExecution.findUniqueOrThrow({
-          where: { id },
-          select: { executionState: true },
-        });
+        const execution = await this.prisma.workflowExecution.findUniqueOrThrow(
+          {
+            where: { id },
+            select: { executionState: true },
+          },
+        );
 
-        const currentState = (execution.executionState as Record<string, any>) || {};
+        const currentState =
+          (execution.executionState as Record<string, any>) || {};
         updateData.executionState = {
           ...currentState,
           ...completionData.finalState,
@@ -554,7 +575,8 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
         select: { executionState: true, recoveryAttempts: true },
       });
 
-      const currentState = (execution.executionState as Record<string, any>) || {};
+      const currentState =
+        (execution.executionState as Record<string, any>) || {};
       const newState = {
         ...currentState,
         phase: 'failed',
@@ -598,7 +620,8 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
         select: { executionState: true },
       });
 
-      const currentState = (execution.executionState as Record<string, any>) || {};
+      const currentState =
+        (execution.executionState as Record<string, any>) || {};
       const newState = {
         ...currentState,
         phase: 'paused',
@@ -629,7 +652,8 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
         select: { executionState: true },
       });
 
-      const currentState = (execution.executionState as Record<string, any>) || {};
+      const currentState =
+        (execution.executionState as Record<string, any>) || {};
       const newState = {
         ...currentState,
         phase: 'in-progress',
@@ -656,9 +680,7 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
   // EXECUTION STATISTICS & ANALYTICS
   // ===================================================================
 
-  async getExecutionStatistics(
-    id: string,
-  ): Promise<ExecutionStatistics> {
+  async getExecutionStatistics(id: string): Promise<ExecutionStatistics> {
     try {
       const execution = await this.prisma.workflowExecution.findUniqueOrThrow({
         where: { id },
@@ -673,9 +695,15 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
 
       const stepProgress = execution.stepProgress || [];
       const totalSteps = stepProgress.length;
-      const completedSteps = stepProgress.filter(p => p.status === 'COMPLETED').length;
-      const failedSteps = stepProgress.filter(p => p.status === 'FAILED').length;
-      const inProgressSteps = stepProgress.filter(p => p.status === 'IN_PROGRESS').length;
+      const completedSteps = stepProgress.filter(
+        (p) => p.status === 'COMPLETED',
+      ).length;
+      const failedSteps = stepProgress.filter(
+        (p) => p.status === 'FAILED',
+      ).length;
+      const inProgressSteps = stepProgress.filter(
+        (p) => p.status === 'IN_PROGRESS',
+      ).length;
 
       // Calculate execution duration
       const startTime = execution.createdAt;
@@ -684,12 +712,13 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
 
       // Calculate step durations
       const stepDurations = stepProgress
-        .filter(p => p.startedAt && p.completedAt)
-        .map(p => p.completedAt!.getTime() - p.startedAt!.getTime());
+        .filter((p) => p.startedAt && p.completedAt)
+        .map((p) => p.completedAt!.getTime() - p.startedAt!.getTime());
 
-      const averageStepDuration = stepDurations.length > 0
-        ? stepDurations.reduce((a, b) => a + b, 0) / stepDurations.length
-        : 0;
+      const averageStepDuration =
+        stepDurations.length > 0
+          ? stepDurations.reduce((a, b) => a + b, 0) / stepDurations.length
+          : 0;
 
       return {
         executionId: id,
@@ -698,7 +727,8 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
         completedSteps,
         failedSteps,
         inProgressSteps,
-        notStartedSteps: totalSteps - completedSteps - failedSteps - inProgressSteps,
+        notStartedSteps:
+          totalSteps - completedSteps - failedSteps - inProgressSteps,
         completionPercentage: execution.progressPercentage || 0,
         averageStepDuration,
         executionMode: execution.executionMode,
@@ -740,15 +770,15 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
       });
 
       const stepProgress = execution.stepProgress || [];
-      const currentStep = stepProgress.find(p => p.status === 'IN_PROGRESS');
+      const currentStep = stepProgress.find((p) => p.status === 'IN_PROGRESS');
       const lastCompletedStep = stepProgress
-        .filter(p => p.status === 'COMPLETED')
+        .filter((p) => p.status === 'COMPLETED')
         .sort((a, b) => b.completedAt!.getTime() - a.completedAt!.getTime())[0];
 
       const nextSteps = stepProgress
-        .filter(p => p.status === 'NOT_STARTED')
+        .filter((p) => p.status === 'NOT_STARTED')
         .slice(0, 3)
-        .map(p => ({
+        .map((p) => ({
           stepId: p.stepId,
           stepName: p.step.name,
           roleName: p.step.role.name,
@@ -756,21 +786,22 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
         }));
 
       const recentActivity = stepProgress
-        .filter(p => p.status === 'COMPLETED' || p.status === 'FAILED')
+        .filter((p) => p.status === 'COMPLETED' || p.status === 'FAILED')
         .sort((a, b) => {
           const aTime = p.completedAt || p.failedAt || p.updatedAt;
           const bTime = p.completedAt || p.failedAt || p.updatedAt;
           return bTime.getTime() - aTime.getTime();
         })
         .slice(0, 5)
-        .map(p => ({
+        .map((p) => ({
           stepId: p.stepId,
           stepName: p.step.name,
           status: p.status,
           completedAt: p.completedAt,
-          duration: p.startedAt && p.completedAt
-            ? p.completedAt.getTime() - p.startedAt.getTime()
-            : undefined,
+          duration:
+            p.startedAt && p.completedAt
+              ? p.completedAt.getTime() - p.startedAt.getTime()
+              : undefined,
         }));
 
       return {
@@ -779,21 +810,27 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
         overallProgress: execution.progressPercentage || 0,
         stepsCompleted: execution.stepsCompleted || 0,
         totalSteps: execution.totalSteps || stepProgress.length,
-        currentStep: currentStep ? {
-          stepId: currentStep.stepId,
-          stepName: currentStep.step.name,
-          roleName: currentStep.step.role.name,
-          startedAt: currentStep.startedAt,
-          estimatedDuration: currentStep.step.estimatedDuration,
-        } : undefined,
-        lastCompletedStep: lastCompletedStep ? {
-          stepId: lastCompletedStep.stepId,
-          stepName: lastCompletedStep.step.name,
-          completedAt: lastCompletedStep.completedAt!,
-          duration: lastCompletedStep.startedAt && lastCompletedStep.completedAt
-            ? lastCompletedStep.completedAt.getTime() - lastCompletedStep.startedAt.getTime()
-            : undefined,
-        } : undefined,
+        currentStep: currentStep
+          ? {
+              stepId: currentStep.stepId,
+              stepName: currentStep.step.name,
+              roleName: currentStep.step.role.name,
+              startedAt: currentStep.startedAt,
+              estimatedDuration: currentStep.step.estimatedDuration,
+            }
+          : undefined,
+        lastCompletedStep: lastCompletedStep
+          ? {
+              stepId: lastCompletedStep.stepId,
+              stepName: lastCompletedStep.step.name,
+              completedAt: lastCompletedStep.completedAt!,
+              duration:
+                lastCompletedStep.startedAt && lastCompletedStep.completedAt
+                  ? lastCompletedStep.completedAt.getTime() -
+                    lastCompletedStep.startedAt.getTime()
+                  : undefined,
+            }
+          : undefined,
         nextSteps,
         recentActivity,
         estimatedTimeRemaining: 0, // TODO: Calculate based on remaining steps and average duration
@@ -801,7 +838,10 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
         warnings: [], // TODO: Identify potential issues
       };
     } catch (error) {
-      this.logger.error(`Failed to get execution progress summary for ${id}:`, error);
+      this.logger.error(
+        `Failed to get execution progress summary for ${id}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -857,12 +897,13 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
       });
 
       const executionTimes = completedExecutions
-        .filter(e => e.completedAt)
-        .map(e => e.completedAt!.getTime() - e.createdAt.getTime());
+        .filter((e) => e.completedAt)
+        .map((e) => e.completedAt!.getTime() - e.createdAt.getTime());
 
-      const averageExecutionTime = executionTimes.length > 0
-        ? executionTimes.reduce((a, b) => a + b, 0) / executionTimes.length
-        : 0;
+      const averageExecutionTime =
+        executionTimes.length > 0
+          ? executionTimes.reduce((a, b) => a + b, 0) / executionTimes.length
+          : 0;
 
       const successRate = total > 0 ? (completed / total) * 100 : 0;
 
@@ -932,8 +973,10 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
     keepCompleted: boolean = true,
   ): Promise<number> {
     try {
-      const cutoffDate = new Date(Date.now() - olderThanDays * 24 * 60 * 60 * 1000);
-      
+      const cutoffDate = new Date(
+        Date.now() - olderThanDays * 24 * 60 * 60 * 1000,
+      );
+
       const whereClause: any = {
         createdAt: {
           lt: cutoffDate,
@@ -987,12 +1030,13 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
     newTaskId?: number,
   ): Promise<WorkflowExecution> {
     try {
-      const originalExecution = await this.prisma.workflowExecution.findUniqueOrThrow({
-        where: { id },
-        include: {
-          stepProgress: true,
-        },
-      });
+      const originalExecution =
+        await this.prisma.workflowExecution.findUniqueOrThrow({
+          where: { id },
+          include: {
+            stepProgress: true,
+          },
+        });
 
       return await this.prisma.$transaction(async (tx) => {
         // Create the duplicated execution
@@ -1033,7 +1077,7 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
     transaction?: PrismaTransaction,
   ): Promise<WorkflowExecution> {
     const tx = transaction || this.prisma;
-    
+
     try {
       return await tx.workflowExecution.create({
         data: {
@@ -1062,14 +1106,17 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
     transaction?: PrismaTransaction,
   ): Promise<WorkflowExecution> {
     const tx = transaction || this.prisma;
-    
+
     try {
       return await tx.workflowExecution.update({
         where: { id },
         data,
       });
     } catch (error) {
-      this.logger.error(`Failed to update execution ${id} with transaction:`, error);
+      this.logger.error(
+        `Failed to update execution ${id} with transaction:`,
+        error,
+      );
       throw error;
     }
   }
@@ -1079,13 +1126,16 @@ export class WorkflowExecutionRepository implements IWorkflowExecutionRepository
     transaction?: PrismaTransaction,
   ): Promise<void> {
     const tx = transaction || this.prisma;
-    
+
     try {
       await tx.workflowExecution.delete({
         where: { id },
       });
     } catch (error) {
-      this.logger.error(`Failed to delete execution ${id} with transaction:`, error);
+      this.logger.error(
+        `Failed to delete execution ${id} with transaction:`,
+        error,
+      );
       throw error;
     }
   }

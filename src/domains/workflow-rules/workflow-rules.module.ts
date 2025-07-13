@@ -10,6 +10,10 @@ import { WorkflowBootstrapMcpService } from './mcp-operations/workflow-bootstrap
 // Repository Implementations
 import { WorkflowExecutionRepository } from './repositories/implementations/workflow-execution.repository';
 import { WorkflowRoleRepository } from './repositories/implementations/workflow-role.repository';
+import { WorkflowBootstrapRepository } from './repositories/implementations/workflow-bootstrap.repository';
+import { StepProgressRepository } from './repositories/implementations/step-progress.repository';
+import { ProjectContextRepository } from './repositories/implementations/project-context.repository';
+import { ProgressCalculationRepository } from './repositories/implementations/progress-calculation.repository';
 
 // Services
 import { WorkflowGuidanceService } from './services/workflow-guidance.service';
@@ -39,6 +43,19 @@ import { ExecutionAnalyticsService } from './services/execution-analytics.servic
       provide: 'IWorkflowRoleRepository',
       useClass: WorkflowRoleRepository,
     },
+    {
+      provide: 'IStepProgressRepository',
+      useClass: StepProgressRepository,
+    },
+    {
+      provide: 'IProjectContextRepository',
+      useClass: ProjectContextRepository,
+    },
+    {
+      provide: 'IProgressCalculationRepository',
+      useClass: ProgressCalculationRepository,
+    },
+    WorkflowBootstrapRepository,
 
     // MCP Operations
     WorkflowGuidanceMcpService,
@@ -68,6 +85,10 @@ import { ExecutionAnalyticsService } from './services/execution-analytics.servic
     RoleTransitionMcpService,
     WorkflowExecutionMcpService,
     WorkflowBootstrapMcpService,
+
+    // Repository Implementations
+
+    WorkflowBootstrapRepository,
 
     // Core Services
     WorkflowGuidanceService,

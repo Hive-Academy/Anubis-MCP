@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import {
   ProjectBehavioralProfile,
   ProjectContext,
   WorkflowRole,
 } from 'generated/prisma';
-import { PrismaService } from '../../../prisma/prisma.service';
+import { IProjectContextRepository } from '../repositories/interfaces/project-context.repository.interface';
+import { IWorkflowRoleRepository } from '../repositories/interfaces/workflow-role.repository.interface';
 import {
   BaseServiceConfig,
   ConfigurableService,
@@ -77,7 +78,12 @@ export class WorkflowGuidanceService extends ConfigurableService<GuidanceConfig>
     },
   };
 
-  constructor(private prisma: PrismaService) {
+  constructor(
+    @Inject('IProjectContextRepository')
+    private projectContextRepository: IProjectContextRepository,
+    @Inject('IWorkflowRoleRepository')
+    private workflowRoleRepository: IWorkflowRoleRepository,
+  ) {
     super();
     this.initializeConfig();
   }
@@ -127,21 +133,7 @@ export class WorkflowGuidanceService extends ConfigurableService<GuidanceConfig>
   private async getWorkflowRole(
     roleName: string,
   ): Promise<WorkflowRole | null> {
-    return await this.prisma.workflowRole.findUnique({
-      where: { name: roleName },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        priority: true,
-        isActive: true,
-        capabilities: true,
-        coreResponsibilities: true,
-        keyCapabilities: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    return await this.workflowRoleRepository.findByName(roleName);
   }
 
   private getProjectContext(
@@ -149,9 +141,7 @@ export class WorkflowGuidanceService extends ConfigurableService<GuidanceConfig>
   ): Promise<ProjectContext | null> {
     if (!projectPath) return Promise.resolve(null);
 
-    return this.prisma.projectContext.findFirst({
-      where: { projectPath },
-    });
+    return this.projectContextRepository.findProjectByPath(projectPath);
   }
 
   private getProjectBehavioralProfile(
@@ -160,22 +150,23 @@ export class WorkflowGuidanceService extends ConfigurableService<GuidanceConfig>
   ): Promise<ProjectBehavioralProfile | null> {
     if (!projectContextId || !roleName) return Promise.resolve(null);
 
-    return this.prisma.projectBehavioralProfile.findFirst({
-      where: {
-        projectContextId,
-      },
-    });
+    return this.projectContextRepository.findBehavioralProfile(
+      projectContextId,
+    );
   }
 
   private async getProjectPatterns(projectContextId: number): Promise<any[]> {
-    const patterns = await this.prisma.projectPattern.findMany({
-      where: { projectContextId },
-      take: this.getConfigValue('performance').maxPatternsReturned,
-    });
+    const patterns = await this.projectContextRepository.findProjectPatterns(
+      projectContextId,
+      {
+        maxPatternsReturned:
+          this.getConfigValue('performance').maxPatternsReturned,
+      },
+    );
 
     return patterns.map((pattern) => ({
-      name: pattern.patternName,
-      type: pattern.patternType,
+      name: pattern.name,
+      type: pattern.type,
       description: pattern.description,
       usage: this.getConfigValue('defaults').patternUsage,
       confidence: this.getConfigValue('defaults').patternConfidence,
