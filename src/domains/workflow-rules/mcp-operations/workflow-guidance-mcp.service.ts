@@ -1,11 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { WorkflowExecution } from 'generated/prisma';
 import { ZodSchema, z } from 'zod';
-import { PrismaService } from '../../../prisma/prisma.service';
 import { WorkflowExecutionService } from '../services/workflow-execution.service';
 import { WorkflowGuidanceService } from '../services/workflow-guidance.service';
 import { BaseMcpService } from '../utils/mcp-response.utils';
+import { IWorkflowExecutionRepository } from '../repositories/interfaces/workflow-execution.repository.interface';
+import { IWorkflowStepRepository } from '../repositories/interfaces/workflow-step.repository.interface';
 
 const GetWorkflowGuidanceInputSchema = z
   .object({
@@ -48,7 +49,10 @@ type GetWorkflowGuidanceInput = z.infer<typeof GetWorkflowGuidanceInputSchema>;
 export class WorkflowGuidanceMcpService extends BaseMcpService {
   constructor(
     private readonly workflowGuidanceService: WorkflowGuidanceService,
-    private readonly prisma: PrismaService,
+    @Inject('IWorkflowExecutionRepository')
+    private readonly workflowExecutionRepository: IWorkflowExecutionRepository,
+    @Inject('IWorkflowStepRepository')
+    private readonly workflowStepRepository: IWorkflowStepRepository,
     private readonly workflowExecutionService: WorkflowExecutionService,
   ) {
     super();
@@ -68,13 +72,13 @@ export class WorkflowGuidanceMcpService extends BaseMcpService {
 
       if (input.executionId) {
         // Query by executionId (bootstrap mode)
-        currentExecution = await this.prisma.workflowExecution.findUnique({
-          where: { id: input.executionId },
-          include: {
+        currentExecution = await this.workflowExecutionRepository.findById(
+          input.executionId,
+          {
             currentRole: true,
             currentStep: true,
           },
-        });
+        );
         contextTaskId = currentExecution?.taskId || 0; // Use 0 for bootstrap mode
       } else if (input.taskId !== undefined) {
         // Query by taskId (normal mode)
@@ -87,14 +91,13 @@ export class WorkflowGuidanceMcpService extends BaseMcpService {
           throw new Error(`Invalid taskId: ${input.taskId}`);
         }
 
-        currentExecution = await this.prisma.workflowExecution.findFirst({
-          where: { taskId: taskId },
-          include: {
+        currentExecution = await this.workflowExecutionRepository.findByTaskId(
+          taskId,
+          {
             currentRole: true,
             currentStep: true,
           },
-          orderBy: { createdAt: 'desc' },
-        });
+        );
         contextTaskId = taskId;
       } else {
         throw new Error('Either taskId or executionId must be provided');
@@ -104,10 +107,10 @@ export class WorkflowGuidanceMcpService extends BaseMcpService {
         // Check if execution has proper step assignment
         if (!currentExecution.currentStepId) {
           // Try to find and assign the first step for the current role
-          const firstStepForRole = await this.prisma.workflowStep.findFirst({
-            where: { roleId: currentExecution.currentRoleId },
-            orderBy: { sequenceNumber: 'asc' },
-          });
+          const firstStepForRole =
+            await this.workflowStepRepository.findFirstStepForRole(
+              currentExecution.currentRoleId,
+            );
 
           if (firstStepForRole) {
             await this.fixMissingCurrentStep(
@@ -172,11 +175,8 @@ export class WorkflowGuidanceMcpService extends BaseMcpService {
     },
   ) {
     // Persist simple relational update first (without executionState)
-    await this.prisma.workflowExecution.update({
-      where: { id: currentExecution.id },
-      data: {
-        currentStepId: firstStepForRole.id,
-      },
+    await this.workflowExecutionRepository.update(currentExecution.id, {
+      currentStepId: firstStepForRole.id,
     });
 
     // Use validated helper for state patching
