@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CodeReview, CompletionReport, Prisma } from 'generated/prisma';
 import { ZodSchema } from 'zod';
-import { PrismaService } from '../../prisma/prisma.service';
 import {
   BaseMcpService,
   McpResponse,
@@ -11,6 +10,8 @@ import {
   ReviewOperationsInputSchema,
 } from './schemas/review-operations.schema';
 import { Tool } from '@rekog/mcp-nest';
+import { CodeReviewRepository } from './repositories/implementations/code-review.repository';
+import { CompletionReportRepository } from './repositories/implementations/completion-report.repository';
 
 // Type-safe interfaces for review operations
 export interface ReviewOperationResult {
@@ -53,7 +54,10 @@ export interface CompletionSummary {
  */
 @Injectable()
 export class ReviewOperationsService extends BaseMcpService {
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    private readonly codeReviewRepository: CodeReviewRepository,
+    private readonly completionReportRepository: CompletionReportRepository,
+  ) {
     super();
   }
 
@@ -127,19 +131,17 @@ export class ReviewOperationsService extends BaseMcpService {
       throw new Error('Review data is required for creation');
     }
 
-    const review = await this.prisma.codeReview.create({
-      data: {
-        task: { connect: { id: taskId } },
-        status: reviewData.status,
-        summary: reviewData.summary,
-        strengths: reviewData.strengths || '',
-        issues: reviewData.issues || '',
-        acceptanceCriteriaVerification:
-          reviewData.acceptanceCriteriaVerification || {},
-        manualTestingResults: reviewData.manualTestingResults || '',
-        requiredChanges: reviewData.requiredChanges || null,
-      } satisfies Prisma.CodeReviewCreateInput,
-    });
+    const review = await this.codeReviewRepository.create({
+      task: { connect: { id: taskId } },
+      status: reviewData.status,
+      summary: reviewData.summary,
+      strengths: reviewData.strengths || '',
+      issues: reviewData.issues || '',
+      acceptanceCriteriaVerification:
+        reviewData.acceptanceCriteriaVerification || {},
+      manualTestingResults: reviewData.manualTestingResults || '',
+      requiredChanges: reviewData.requiredChanges || null,
+    } satisfies Prisma.CodeReviewCreateInput);
 
     return review;
   }
@@ -154,15 +156,13 @@ export class ReviewOperationsService extends BaseMcpService {
     }
 
     // Find the code review by taskId first
-    const existingReview = await this.prisma.codeReview.findFirst({
-      where: { taskId },
-    });
+    const existingReview = await this.codeReviewRepository.findByTaskId(taskId);
 
     if (!existingReview) {
       throw new Error(`Code review not found for task ${taskId}`);
     }
 
-    const updateData: Prisma.CodeReviewUpdateInput = {};
+    const updateData: any = {};
 
     if (reviewData.status) updateData.status = reviewData.status;
     if (reviewData.summary) updateData.summary = reviewData.summary;
@@ -179,10 +179,10 @@ export class ReviewOperationsService extends BaseMcpService {
       updateData.requiredChanges = reviewData.requiredChanges;
     }
 
-    const review = await this.prisma.codeReview.update({
-      where: { id: existingReview.id },
-      data: updateData,
-    });
+    const review = await this.codeReviewRepository.update(
+      existingReview.id,
+      updateData,
+    );
 
     return review;
   }
@@ -192,9 +192,7 @@ export class ReviewOperationsService extends BaseMcpService {
   ): Promise<CodeReview | ReviewSummary> {
     const { taskId, includeDetails } = input;
 
-    const review = await this.prisma.codeReview.findFirst({
-      where: { taskId },
-    });
+    const review = await this.codeReviewRepository.findByTaskId(taskId);
 
     if (!review) {
       throw new Error(`Code review not found for task ${taskId}`);
@@ -221,16 +219,14 @@ export class ReviewOperationsService extends BaseMcpService {
       throw new Error('Completion data is required for creation');
     }
 
-    const completion = await this.prisma.completionReport.create({
-      data: {
-        task: { connect: { id: taskId } },
-        summary: completionData.summary,
-        filesModified: completionData.filesModified || [],
-        acceptanceCriteriaVerification:
-          completionData.acceptanceCriteriaVerification || {},
-        delegationSummary: completionData.delegationSummary || '',
-      } satisfies Prisma.CompletionReportCreateInput,
-    });
+    const completion = await this.completionReportRepository.create({
+      task: { connect: { id: taskId } },
+      summary: completionData.summary,
+      filesModified: completionData.filesModified || [],
+      acceptanceCriteriaVerification:
+        completionData.acceptanceCriteriaVerification || {},
+      delegationSummary: completionData.delegationSummary || '',
+    } satisfies Prisma.CompletionReportCreateInput);
 
     return completion;
   }
@@ -240,9 +236,8 @@ export class ReviewOperationsService extends BaseMcpService {
   ): Promise<CompletionReport | CompletionSummary> {
     const { taskId, includeDetails } = input;
 
-    const completion = await this.prisma.completionReport.findFirst({
-      where: { taskId },
-    });
+    const completion =
+      await this.completionReportRepository.findByTaskId(taskId);
 
     if (!completion) {
       throw new Error(`Completion report not found for task ${taskId}`);

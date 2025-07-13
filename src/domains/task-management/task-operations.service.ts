@@ -1,36 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
+import { Subtask } from 'generated/prisma';
 import { ZodSchema } from 'zod';
-import {
-  CodebaseAnalysis,
-  Prisma,
-  Subtask,
-  Task,
-  TaskDescription,
-} from 'generated/prisma';
-import { PrismaService } from '../../prisma/prisma.service';
-import {
-  TaskOperationsInput,
-  TaskOperationsInputSchema,
-} from './schemas/task-operations.schema';
 import {
   BaseMcpService,
   McpResponse,
 } from '../../domains/workflow-rules/utils/mcp-response.utils';
+import { PrismaService } from '../../prisma/prisma.service';
 import { ITaskRepository } from './repositories/interfaces/task.repository.interface';
 import {
   CreateTaskData,
+  TaskWithRelations,
   UpdateTaskData,
 } from './repositories/types/task.types';
+import {
+  TaskOperationsInput,
+  TaskOperationsInputSchema,
+} from './schemas/task-operations.schema';
 
 // Type-safe interfaces for service operations
 export interface TaskOperationResult {
   success: boolean;
-  data?:
-    | TaskWithRelations
-    | TaskWithRelations[]
-    | TaskListResult
-    | TaskWithSubtasks;
+  data?: TaskWithRelations | TaskWithRelations[] | TaskListResult;
   error?: {
     message: string;
     code: string;
@@ -40,39 +31,6 @@ export interface TaskOperationResult {
     operation: string;
     id: string | number;
     responseTime: number;
-  };
-}
-
-export interface TaskWithRelations extends Task {
-  taskDescription?: TaskDescription | null;
-  codebaseAnalysis?: CodebaseAnalysis | null;
-  subtasks?: Prisma.SubtaskGetPayload<Record<string, never>>[];
-  delegationRecords?: Prisma.DelegationRecordGetPayload<
-    Record<string, never>
-  >[];
-  researchReports?: Prisma.ResearchReportGetPayload<Record<string, never>>[];
-  codeReviews?: Prisma.CodeReviewGetPayload<Record<string, never>>[];
-  completionReports?: Prisma.CompletionReportGetPayload<
-    Record<string, never>
-  >[];
-  workflowExecutions?: Prisma.WorkflowExecutionGetPayload<
-    Record<string, never>
-  >[];
-}
-
-// NEW: Enhanced interface for tasks with subtasks
-export interface TaskWithSubtasks extends TaskWithRelations {
-  subtasks: Subtask[];
-  subtaskSummary?: {
-    total: number;
-    completed: number;
-    inProgress: number;
-    notStarted: number;
-    batches: Array<{
-      batchId: string;
-      batchTitle: string;
-      count: number;
-    }>;
   };
 }
 
@@ -134,9 +92,7 @@ export class TaskOperationsService extends BaseMcpService {
         case 'get_task':
           result = await this.getTask(input);
           break;
-        case 'list_task':
-          result = await this.listTasks(input);
-          break;
+
         default:
           // This should never happen due to Zod validation, but TypeScript needs exhaustive checking
           throw new Error(
@@ -168,70 +124,10 @@ export class TaskOperationsService extends BaseMcpService {
     }
   }
 
-  /**
-   * Internal service method for backward compatibility
-   * Used by other services that need direct access without MCP wrapping
-   */
-  async executeTaskOperationInternal(
-    input: TaskOperationsInput,
-  ): Promise<TaskOperationResult> {
-    const startTime = performance.now();
-
-    try {
-      let result: any;
-
-      switch (input.operation) {
-        case 'create_task':
-          result = await this.createTask(input);
-          break;
-        case 'update_task':
-          result = await this.updateTask(input);
-          break;
-        case 'get_task':
-          result = await this.getTask(input);
-          break;
-        case 'list_task':
-          result = await this.listTasks(input);
-          break;
-        default:
-          throw new Error(
-            `Unknown operation: ${String((input as any).operation)}`,
-          );
-      }
-
-      const responseTime = performance.now() - startTime;
-
-      return {
-        success: true,
-        data: result,
-        metadata: {
-          operation: input.operation,
-          id: input.taskId ?? 'unknown',
-          responseTime: Math.round(responseTime),
-        },
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        error: {
-          message: error.message,
-          code: 'TASK_OPERATION_FAILED',
-          operation: input.operation,
-        },
-      };
-    }
-  }
-
   private async createTask(
     input: TaskOperationsInput,
-  ): Promise<TaskWithRelations> {
-    const {
-      taskData,
-      description,
-      codebaseAnalysis,
-      researchFindings,
-      executionId,
-    } = input;
+  ): Promise<{ id: number; name: string }> {
+    const { taskData, description, codebaseAnalysis, executionId } = input;
 
     if (!taskData?.name) {
       throw new Error('Task name is required for creation');
@@ -283,41 +179,15 @@ export class TaskOperationsService extends BaseMcpService {
         });
       }
 
-      // Create research reports if provided (not handled by repository yet)
-      if (researchFindings?.researchQuestions) {
-        for (const question of researchFindings.researchQuestions) {
-          await tx.researchReport.create({
-            data: {
-              task: { connect: { id: task.id } },
-              title: question.question || 'Research Finding',
-              summary: question.findings || '',
-              findings: JSON.stringify({
-                methodology: question.methodology,
-                findings: question.findings,
-                riskAssessment: question.riskAssessment,
-                technicalInsights: researchFindings.technicalInsights,
-                implementationImplications:
-                  researchFindings.implementationImplications,
-                alternativeApproaches: researchFindings.alternativeApproaches,
-              }),
-              recommendations: Array.isArray(question.recommendations)
-                ? question.recommendations.join('\n')
-                : question.recommendations || '',
-              references: question.sources || [],
-            } satisfies Prisma.ResearchReportCreateInput,
-          });
-        }
-      }
-
       return task;
     });
 
-    return result;
+    return { id: result.id, name: result.name };
   }
 
   private async updateTask(
     input: TaskOperationsInput,
-  ): Promise<TaskWithRelations> {
+  ): Promise<{ id: number; name: string }> {
     const { taskId, taskData, description, codebaseAnalysis } = input;
 
     if (!taskId) {
@@ -361,7 +231,7 @@ export class TaskOperationsService extends BaseMcpService {
       );
     });
 
-    return result;
+    return { id: result.id, name: result.name };
   }
 
   private async getTask(
@@ -407,82 +277,10 @@ export class TaskOperationsService extends BaseMcpService {
       return {
         ...task,
         subtaskSummary,
-      } as TaskWithSubtasks;
+      } as TaskWithRelations;
     }
 
     return task;
-  }
-
-  private async listTasks(input: TaskOperationsInput): Promise<TaskListResult> {
-    const {
-      status,
-      priority,
-      slug,
-      includeDescription,
-      includeAnalysis,
-      includeResearch,
-    } = input;
-
-    const includeOptions = {
-      taskDescription: includeDescription || false,
-      codebaseAnalysis: includeAnalysis || false,
-      researchReports: includeResearch || false,
-      subtasks: false,
-    };
-
-    const findOptions = {
-      where: {
-        ...(status && { status }),
-        ...(priority && { priority }),
-        ...(slug && { slug: { contains: slug } }),
-      },
-      orderBy: { createdAt: 'desc' as const },
-    };
-
-    const tasks = await this.taskRepository.findMany(findOptions, includeOptions);
-
-    return {
-      tasks: tasks as TaskWithRelations[],
-      count: tasks.length,
-      filters: {
-        status,
-        priority,
-        slug,
-      },
-    };
-  }
-
-  /**
-   * Generate a kebab-case slug from a task name
-   * Converts to lowercase, removes special characters, replaces spaces with hyphens
-   */
-  private generateSlugFromName(name: string): string {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters except spaces and hyphens
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
-      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-      .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
-  }
-
-  /**
-   * Ensure the generated slug is unique by checking database and appending counter if needed
-   */
-  private async ensureUniqueSlug(
-    baseSlug: string,
-    excludeTaskId?: number,
-  ): Promise<string> {
-    return await this.taskRepository.ensureUniqueSlug(baseSlug, excludeTaskId);
-  }
-
-  /**
-   * Check if a slug is already taken by another task
-   */
-  private async isSlugTaken(
-    slug: string,
-    excludeTaskId?: number,
-  ): Promise<boolean> {
-    return await this.taskRepository.isSlugTaken(slug, excludeTaskId);
   }
 
   /**

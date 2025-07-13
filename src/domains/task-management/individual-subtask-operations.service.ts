@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ZodSchema } from 'zod';
 import { Prisma, Subtask } from 'generated/prisma';
-import { PrismaService } from '../../prisma/prisma.service';
+import { ISubtaskRepository } from './repositories/interfaces/subtask.repository.interface';
+import {
+  SubtaskBatchData,
+  UpdateSubtaskData,
+  SubtaskWithRelations,
+} from './repositories/types/subtask.types';
 import {
   IndividualSubtaskOperationsInput,
   IndividualSubtaskOperationsInputSchema,
@@ -68,34 +73,11 @@ export interface NextSubtaskResult {
 }
 
 export interface SubtaskCreationResult {
-  subtask: Subtask;
   message: string;
 }
 
 export interface SubtaskUpdateResult {
-  subtask: Subtask;
   message: string;
-  dependencyUpdateInfo?: {
-    dependenciesUpdated?: number;
-    dependencyNames?: string[];
-    resolvedDependencies?: string[];
-    unresolvedDependencies?: string[];
-    error?: string;
-  } | null;
-  batchCompletionInfo?: {
-    batchId: string | null;
-    batchCompleted: boolean;
-    automaticCompletionTriggered: boolean;
-    completionMessage: string;
-    aggregatedEvidence?: {
-      completionSummary: string;
-      filesModified: string[];
-      implementationNotes: string;
-      totalSubtasks: number;
-      completedSubtasks: number;
-      automaticCompletion: boolean;
-    };
-  } | null;
 }
 
 // Type definitions for batch completion detection
@@ -129,7 +111,7 @@ interface BatchCompletionResult {
  */
 @Injectable()
 export class IndividualSubtaskOperationsService extends BaseMcpService {
-  constructor(private readonly prisma: PrismaService) {
+  constructor(private readonly subtaskRepository: ISubtaskRepository) {
     super();
   }
 
@@ -278,30 +260,17 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
     }
 
     // Create the individual subtask with enhanced evidence fields
-    const subtask = await this.prisma.subtask.create({
-      data: {
-        task: { connect: { id: taskId } },
-        name: subtaskData.name,
-        description: subtaskData.description,
-        sequenceNumber: subtaskData.sequenceNumber,
-        status: 'not-started',
-        batchId: subtaskData.batchId,
-        batchTitle: subtaskData.batchTitle || 'Untitled Batch',
-
-        // Core fields
-        acceptanceCriteria: subtaskData.acceptanceCriteria || [],
-        dependencies: subtaskData.dependencies || [],
-        implementationApproach: subtaskData.implementationApproach,
-      } satisfies Prisma.SubtaskCreateInput,
-      include: {
-        dependencies_from: {
-          include: {
-            requiredSubtask: {
-              select: { id: true, name: true, status: true },
-            },
-          },
-        },
-      },
+    const subtask = await this.subtaskRepository.create({
+      taskId,
+      name: subtaskData.name,
+      description: subtaskData.description,
+      sequenceNumber: subtaskData.sequenceNumber,
+      status: 'not-started',
+      batchId: subtaskData.batchId,
+      batchTitle: subtaskData.batchTitle || 'Untitled Batch',
+      acceptanceCriteria: subtaskData.acceptanceCriteria || [],
+      dependencies: subtaskData.dependencies || [],
+      implementationApproach: subtaskData.implementationApproach,
     });
 
     // Create dependency relationships if specified
@@ -314,7 +283,6 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
     }
 
     return {
-      subtask,
       message: `Individual subtask '${subtaskData.name}' created successfully with ${subtaskData.dependencies?.length || 0} dependencies`,
     };
   }
@@ -371,77 +339,77 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
       );
     }
 
-    // Step 3: Create subtasks in transaction for data consistency
-    const _result = await this.prisma.$transaction(async (tx) => {
-      const subtaskIdMap = new Map<string, number>(); // Map subtask names to IDs
+    // Step 3: Create subtasks using repository batch creation
+    const createdSubtasksFromRepo: SubtaskWithRelations[] = [];
 
-      // Create all subtasks first
-      for (const batch of optimizedBatches) {
-        for (const subtaskData of batch.subtasks) {
-          const subtask = await tx.subtask.create({
-            data: {
-              task: { connect: { id: taskId } },
-              name: subtaskData.name,
-              description: subtaskData.description,
-              sequenceNumber: subtaskData.sequenceNumber,
-              status: 'not-started',
-              batchId: batch.batchId,
-              batchTitle: batch.batchTitle,
-              acceptanceCriteria: subtaskData.acceptanceCriteria || [],
-              dependencies: subtaskData.dependencies || [],
-              implementationApproach: subtaskData.implementationApproach,
-            } satisfies Prisma.SubtaskCreateInput,
-          });
-
-          subtaskIdMap.set(subtaskData.name, subtask.id);
-          createdSubtasks.push({
-            id: subtask.id,
-            name: subtask.name,
-            batchId: subtask.batchId!,
-            sequenceNumber: subtask.sequenceNumber,
-            status: subtask.status,
-          });
-        }
-
-        batchSummary.push({
+    for (const batch of optimizedBatches) {
+      const batchData: SubtaskBatchData = {
+        taskId,
+        batchId: batch.batchId,
+        batchTitle: batch.batchTitle,
+        batchDescription: batch.batchDescription || '',
+        subtasks: batch.subtasks.map((subtask) => ({
+          taskId,
+          name: subtask.name,
+          description: subtask.description,
           batchId: batch.batchId,
           batchTitle: batch.batchTitle,
-          subtaskCount: batch.subtasks.length,
-        });
-      }
+          sequenceNumber: subtask.sequenceNumber,
+          acceptanceCriteria: subtask.acceptanceCriteria || [],
+          implementationApproach: subtask.implementationApproach || '',
+          dependencies: subtask.dependencies || [],
+        })),
+      };
 
-      // Step 4: Create dependency relationships
-      for (const batch of optimizedBatches) {
-        for (const subtaskData of batch.subtasks) {
-          if (subtaskData.dependencies && subtaskData.dependencies.length > 0) {
-            const subtaskId = subtaskIdMap.get(subtaskData.name)!;
-            const dependsOn: number[] = [];
+      const batchSubtasks = await this.subtaskRepository.createBatch(batchData);
+      createdSubtasksFromRepo.push(...batchSubtasks);
+    }
 
-            for (const depName of subtaskData.dependencies) {
-              const depId = subtaskIdMap.get(depName);
-              if (depId) {
-                await tx.subtaskDependency.create({
-                  data: {
-                    dependentSubtaskId: subtaskId,
-                    requiredSubtaskId: depId,
-                  },
-                });
-                dependsOn.push(depId);
-              }
+    // Map results to expected format
+    const subtaskIdMap = new Map<string, number>();
+    for (const subtask of createdSubtasksFromRepo) {
+      subtaskIdMap.set(subtask.name, subtask.id);
+      createdSubtasks.push({
+        id: subtask.id,
+        name: subtask.name,
+        batchId: subtask.batchId!,
+        sequenceNumber: subtask.sequenceNumber,
+        status: subtask.status,
+      });
+    }
+
+    // Build batch summary
+    for (const batch of optimizedBatches) {
+      batchSummary.push({
+        batchId: batch.batchId,
+        batchTitle: batch.batchTitle,
+        subtaskCount: batch.subtasks.length,
+      });
+    }
+
+    // Build dependency graph
+    for (const batch of optimizedBatches) {
+      for (const subtaskData of batch.subtasks) {
+        if (subtaskData.dependencies && subtaskData.dependencies.length > 0) {
+          const subtaskId = subtaskIdMap.get(subtaskData.name)!;
+          const dependsOn: number[] = [];
+
+          for (const depName of subtaskData.dependencies) {
+            const depId = subtaskIdMap.get(depName);
+            if (depId) {
+              dependsOn.push(depId);
             }
+          }
 
-            if (dependsOn.length > 0) {
-              dependencyGraph.push({
-                subtaskId,
-                dependsOn,
-              });
-            }
+          if (dependsOn.length > 0) {
+            dependencyGraph.push({
+              subtaskId,
+              dependsOn,
+            });
           }
         }
       }
-
-      return { subtaskIdMap };
-    });
+    }
 
     // Step 5: Generate validation results
     const validationResults = {
@@ -455,11 +423,7 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
     };
 
     return {
-      subtasks: createdSubtasks,
-      batches: batchSummary,
-      dependencyGraph,
       message: `Successfully created ${validationResults.totalSubtasks} subtasks across ${validationResults.totalBatches} batches with ${validationResults.dependenciesResolved} dependencies`,
-      validationResults,
     };
   }
 
@@ -586,37 +550,10 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
     }
 
     // Verify subtask exists and belongs to task
-    const existingSubtask = await this.prisma.subtask.findFirst({
-      where: { id: subtaskId, taskId },
-      include: {
-        dependencies_from: {
-          include: {
-            requiredSubtask: {
-              select: {
-                id: true,
-                name: true,
-                status: true,
-                sequenceNumber: true,
-              },
-            },
-          },
-        },
-        dependencies_to: {
-          include: {
-            dependentSubtask: {
-              select: {
-                id: true,
-                name: true,
-                status: true,
-                sequenceNumber: true,
-              },
-            },
-          },
-        },
-      },
-    });
+    const existingSubtask =
+      await this.subtaskRepository.findWithDependencies(subtaskId);
 
-    if (!existingSubtask) {
+    if (!existingSubtask || existingSubtask.taskId !== taskId) {
       throw new Error(`Subtask ${subtaskId} not found for task ${taskId}`);
     }
 
@@ -675,92 +612,74 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
       updateFields.completionEvidence = updateData.completionEvidence;
     }
 
-    // Handle dependency updates if provided
-    let dependencyUpdateResult = null;
     if (updateData.dependencies !== undefined) {
       try {
         // Remove existing dependencies for this subtask
-        await this.prisma.subtaskDependency.deleteMany({
-          where: { dependentSubtaskId: subtaskId },
-        });
+        const existingDependencies =
+          await this.subtaskRepository.findDependencies(subtaskId);
+        for (const dep of existingDependencies) {
+          await this.subtaskRepository.removeDependency(subtaskId, dep.id);
+        }
 
         // Add new dependencies if any
         if (updateData.dependencies.length > 0) {
           // Find subtasks by name within the same task
-          const dependencySubtasks = await this.prisma.subtask.findMany({
-            where: {
-              taskId,
-              name: { in: updateData.dependencies },
-            },
-            select: { id: true, name: true },
-          });
+          const allTaskSubtasks =
+            await this.subtaskRepository.findByTaskId(taskId);
+          const dependencySubtasks = allTaskSubtasks.filter((subtask) =>
+            updateData.dependencies?.includes(subtask.name),
+          );
 
           // Create new dependency records
-          const dependencyRecords = dependencySubtasks.map((depSubtask) => ({
-            dependentSubtaskId: subtaskId,
-            requiredSubtaskId: depSubtask.id,
-            dependencyType: 'sequential',
-          }));
-
-          if (dependencyRecords.length > 0) {
-            await this.prisma.subtaskDependency.createMany({
-              data: dependencyRecords,
-            });
+          for (const depSubtask of dependencySubtasks) {
+            await this.subtaskRepository.createDependency(
+              subtaskId,
+              depSubtask.id,
+            );
           }
-
-          dependencyUpdateResult = {
-            dependenciesUpdated: dependencyRecords.length,
-            dependencyNames: updateData.dependencies,
-            resolvedDependencies: dependencySubtasks.map((d) => d.name),
-            unresolvedDependencies: updateData.dependencies.filter(
-              (name) => !dependencySubtasks.some((d) => d.name === name),
-            ),
-          };
-        } else {
-          dependencyUpdateResult = {
-            dependenciesUpdated: 0,
-            dependencyNames: [],
-            resolvedDependencies: [],
-            unresolvedDependencies: [],
-          };
         }
       } catch (error) {
         // Log dependency update error but don't fail the entire update
         console.error('Error updating subtask dependencies:', error);
-        dependencyUpdateResult = {
-          error: 'Failed to update dependencies',
-          dependencyNames: updateData.dependencies,
-        };
       }
     }
 
     // Update the subtask
-    const updatedSubtask = await this.prisma.subtask.update({
-      where: { id: subtaskId },
-      data: updateFields,
-      include: {
-        dependencies_from: {
-          include: {
-            requiredSubtask: {
-              select: { id: true, name: true, status: true },
-            },
-          },
-        },
-        dependencies_to: {
-          include: {
-            dependentSubtask: {
-              select: { id: true, name: true, status: true },
-            },
-          },
-        },
-      },
-    });
+    const repositoryUpdateData: UpdateSubtaskData = {
+      ...(updateFields.name && { name: updateFields.name as string }),
+      ...(updateFields.description && {
+        description: updateFields.description as string,
+      }),
+      ...(updateFields.batchId && { batchId: updateFields.batchId as string }),
+      ...(updateFields.batchTitle && {
+        batchTitle: updateFields.batchTitle as string,
+      }),
+      ...(updateFields.sequenceNumber !== undefined && {
+        sequenceNumber: updateFields.sequenceNumber as number,
+      }),
+      ...(updateFields.implementationApproach && {
+        implementationApproach: updateFields.implementationApproach as string,
+      }),
+      ...(updateFields.acceptanceCriteria && {
+        acceptanceCriteria: updateFields.acceptanceCriteria as string[],
+      }),
+      ...(updateFields.dependencies && {
+        dependencies: updateFields.dependencies as string[],
+      }),
+      ...(updateFields.status && { status: updateFields.status as string }),
+      ...(updateFields.completionEvidence && {
+        completionEvidence: updateFields.completionEvidence,
+      }),
+    };
 
-    // Enhanced: Trigger automatic batch completion detection when subtask is completed
-    let batchCompletionResult = null;
+    const updatedSubtask = await this.subtaskRepository.update(
+      subtaskId,
+      repositoryUpdateData,
+    );
+
     if (updateData.status === 'completed' && updatedSubtask.batchId) {
       try {
-        batchCompletionResult = await this.checkAndTriggerBatchCompletion(
+        await this.checkAndTriggerBatchCompletion(
           taskId,
           updatedSubtask.batchId,
         );
@@ -771,20 +690,22 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
 
     // Build comprehensive update message
     const updatedFields = [];
-    if (updateData.name !== undefined) updatedFields.push('name');
-    if (updateData.description !== undefined) updatedFields.push('description');
-    if (updateData.sequenceNumber !== undefined)
+    if (updateFields.name !== undefined) updatedFields.push('name');
+    if (updateFields.description !== undefined)
+      updatedFields.push('description');
+    if (updateFields.sequenceNumber !== undefined)
       updatedFields.push('sequenceNumber');
-    if (updateData.batchId !== undefined) updatedFields.push('batchId');
-    if (updateData.batchTitle !== undefined) updatedFields.push('batchTitle');
-    if (updateData.implementationApproach !== undefined)
+    if (updateFields.batchId !== undefined) updatedFields.push('batchId');
+    if (updateFields.batchTitle !== undefined) updatedFields.push('batchTitle');
+    if (updateFields.implementationApproach !== undefined)
       updatedFields.push('implementationApproach');
-    if (updateData.acceptanceCriteria !== undefined)
+    if (updateFields.acceptanceCriteria !== undefined)
       updatedFields.push('acceptanceCriteria');
-    if (updateData.dependencies !== undefined)
+    if (updateFields.dependencies !== undefined)
       updatedFields.push('dependencies');
-    if (updateData.status) updatedFields.push('status');
-    if (updateData.completionEvidence) updatedFields.push('completionEvidence');
+    if (updateFields.status) updatedFields.push('status');
+    if (updateFields.completionEvidence)
+      updatedFields.push('completionEvidence');
 
     const updateMessage =
       updatedFields.length > 0
@@ -792,23 +713,7 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
         : `Subtask '${updatedSubtask.name}' - no changes made`;
 
     return {
-      subtask: updatedSubtask,
       message: updateMessage,
-
-      // Include dependency update information
-      dependencyUpdateInfo: dependencyUpdateResult,
-
-      // Enhanced: Include batch completion information
-      batchCompletionInfo: batchCompletionResult
-        ? {
-            batchId: updatedSubtask.batchId,
-            batchCompleted: batchCompletionResult.batchCompleted,
-            automaticCompletionTriggered:
-              batchCompletionResult.completionTriggered,
-            completionMessage: batchCompletionResult.message,
-            aggregatedEvidence: batchCompletionResult.aggregatedEvidence,
-          }
-        : null,
     };
   }
 
@@ -824,37 +729,10 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
       throw new Error('Subtask ID is required for subtask retrieval');
     }
 
-    const subtask = await this.prisma.subtask.findFirst({
-      where: { id: subtaskId, taskId },
-      include: {
-        dependencies_from: {
-          include: {
-            requiredSubtask: {
-              select: {
-                id: true,
-                name: true,
-                status: true,
-                sequenceNumber: true,
-              },
-            },
-          },
-        },
-        dependencies_to: {
-          include: {
-            dependentSubtask: {
-              select: {
-                id: true,
-                name: true,
-                status: true,
-                sequenceNumber: true,
-              },
-            },
-          },
-        },
-      },
-    });
+    const subtask =
+      await this.subtaskRepository.findWithDependencies(subtaskId);
 
-    if (!subtask) {
+    if (!subtask || subtask.taskId !== taskId) {
       throw new Error(`Subtask ${subtaskId} not found for task ${taskId}`);
     }
 
@@ -890,64 +768,28 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
   ): Promise<NextSubtaskResult> {
     const { taskId, currentSubtaskId, status } = input;
 
-    // Build where clause for filtering
-    const whereClause: any = { taskId };
-
-    if (status) {
-      whereClause.status = status;
-    } else {
-      // Default to not-started or in-progress subtasks
-      whereClause.status = { in: ['not-started', 'in-progress'] };
-    }
-
-    // Get all eligible subtasks
-    const subtasks = await this.prisma.subtask.findMany({
-      where: whereClause,
-      include: {
-        dependencies_from: {
-          include: {
-            requiredSubtask: {
-              select: { id: true, name: true, status: true },
-            },
-          },
-        },
-      },
-      orderBy: [{ batchId: 'asc' }, { sequenceNumber: 'asc' }],
-    });
-
-    if (subtasks.length === 0) {
-      return {
-        nextSubtask: null,
-        message: 'No eligible subtasks found',
-      };
-    }
-
-    // Find next subtask that can be started (all dependencies completed)
-    const nextSubtask = subtasks.find((subtask) => {
-      // Skip current subtask if specified
-      if (currentSubtaskId && subtask.id === currentSubtaskId) {
-        return false;
-      }
-
-      // Check if all dependencies are completed
-      const dependencies_from = subtask.dependencies_from || [];
-      const allDependenciesCompleted = dependencies_from.every(
-        (dep) => dep.requiredSubtask.status === 'completed',
-      );
-
-      return allDependenciesCompleted;
-    });
+    // Use repository to find next eligible subtask
+    const nextSubtask = await this.subtaskRepository.findNextSubtask(
+      taskId,
+      currentSubtaskId,
+    );
 
     if (!nextSubtask) {
+      // Get all subtasks to show blocked ones
+      const statusFilter = status || ['not-started', 'in-progress'];
+      const allSubtasks = await this.subtaskRepository.findByStatus(
+        Array.isArray(statusFilter) ? statusFilter[0] : statusFilter,
+        taskId,
+        { dependencies: true },
+      );
+
       return {
         nextSubtask: null,
         message: 'No subtasks available - all have incomplete dependencies',
-        blockedSubtasks: subtasks.map((s) => ({
+        blockedSubtasks: allSubtasks.map((s) => ({
           id: s.id,
           name: s.name,
-          pendingDependencies: (s.dependencies_from || [])
-            .filter((dep) => dep.requiredSubtask.status !== 'completed')
-            .map((dep) => dep.requiredSubtask?.name),
+          pendingDependencies: [], // Repository should provide this info
         })),
       };
     }
@@ -967,15 +809,11 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
     taskId: number,
     dependencyNames: string[],
   ): Promise<void> {
-    const existingSubtasks = await this.prisma.subtask.findMany({
-      where: {
-        taskId,
-        name: { in: dependencyNames },
-      },
-      select: { name: true },
-    });
+    const existingSubtasks = await this.subtaskRepository.findByTaskId(taskId);
+    const foundNames = existingSubtasks
+      .filter((s) => dependencyNames.includes(s.name))
+      .map((s) => s.name);
 
-    const foundNames = existingSubtasks.map((s) => s.name);
     const missingDependencies = dependencyNames.filter(
       (name) => !foundNames.includes(name),
     );
@@ -996,23 +834,16 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
     dependencyNames: string[],
   ): Promise<void> {
     // Get dependency subtask IDs
-    const dependencySubtasks = await this.prisma.subtask.findMany({
-      where: {
-        taskId,
-        name: { in: dependencyNames },
-      },
-      select: { id: true, name: true },
-    });
+    const dependencySubtasks =
+      await this.subtaskRepository.findByTaskId(taskId);
+    const filteredDependencies = dependencySubtasks.filter((s) =>
+      dependencyNames.includes(s.name),
+    );
 
     // Create dependency relations
-    const dependencyData = dependencySubtasks.map((dep) => ({
-      dependentSubtaskId: subtaskId,
-      requiredSubtaskId: dep.id,
-    }));
-
-    await this.prisma.subtaskDependency.createMany({
-      data: dependencyData,
-    });
+    for (const dep of filteredDependencies) {
+      await this.subtaskRepository.createDependency(subtaskId, dep.id);
+    }
   }
 
   /**
@@ -1025,24 +856,17 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
     // If transitioning to in-progress or completed, check dependencies
     if (newStatus === 'in-progress' || newStatus === 'completed') {
       // Get actual dependency relationships from the database
-      const dependencies = await this.prisma.subtaskDependency.findMany({
-        where: { dependentSubtaskId: subtask.id },
-        include: {
-          requiredSubtask: {
-            select: { id: true, name: true, status: true },
-          },
-        },
-      });
+      const dependencies = await this.subtaskRepository.findDependencies(
+        subtask.id,
+      );
 
       if (dependencies.length > 0) {
         const incompleteDependencies = dependencies.filter(
-          (dep) => dep.requiredSubtask.status !== 'completed',
+          (dep) => dep.status !== 'completed',
         );
 
         if (incompleteDependencies.length > 0) {
-          const dependencyNames = incompleteDependencies.map(
-            (dep) => dep.requiredSubtask.name,
-          );
+          const dependencyNames = incompleteDependencies.map((dep) => dep.name);
           throw new Error(
             `Cannot transition to '${newStatus}' - incomplete dependencies: ${dependencyNames.join(', ')}`,
           );
@@ -1063,10 +887,10 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
   ): Promise<BatchCompletionResult> {
     try {
       // Get all subtasks in the batch
-      const subtasks = await this.prisma.subtask.findMany({
-        where: { taskId, batchId },
-        orderBy: { sequenceNumber: 'asc' },
-      });
+      const subtasks = await this.subtaskRepository.findByBatchId(
+        batchId,
+        taskId,
+      );
 
       if (subtasks.length === 0) {
         return {

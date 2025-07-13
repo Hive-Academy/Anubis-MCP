@@ -4,7 +4,7 @@ import {
   ConfigurableService,
 } from '../utils/configurable-service.base';
 import { ExecutionDataUtils } from '../utils/execution-data.utils';
-import { WorkflowExecutionWithRelations } from './workflow-execution.service';
+import { WorkflowExecutionWithRelations } from '../repositories/types/workflow-execution.types';
 
 // Define ProgressOverview interface locally to remove dependency
 export interface ProgressOverview {

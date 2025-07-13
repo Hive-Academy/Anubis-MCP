@@ -230,7 +230,7 @@ export const SubtaskDataSchema = z.object({
 
 export const TaskOperationsSchema = z
   .object({
-    operation: z.enum(['create_task', 'update_task', 'get_task', 'list_task']), // Added new operation
+    operation: z.enum(['create_task', 'update_task', 'get_task']),
 
     // Required for get and update operations
     taskId: z.number().optional(),

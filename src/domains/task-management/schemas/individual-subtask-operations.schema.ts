@@ -144,27 +144,5 @@ export const IndividualSubtaskOperationsInputSchema =
 
 // NEW: Type definitions for bulk creation results
 export interface BulkSubtaskCreationResult {
-  subtasks: Array<{
-    id: number;
-    name: string;
-    batchId: string;
-    sequenceNumber: number;
-    status: string;
-  }>;
-  batches: Array<{
-    batchId: string;
-    batchTitle: string;
-    subtaskCount: number;
-  }>;
-  dependencyGraph: Array<{
-    subtaskId: number;
-    dependsOn: number[];
-  }>;
   message: string;
-  validationResults: {
-    totalSubtasks: number;
-    totalBatches: number;
-    dependenciesResolved: number;
-    optimizationApplied: boolean;
-  };
 }

@@ -1,14 +1,8 @@
 import {
+  CodebaseAnalysis,
   Prisma,
   Task,
   TaskDescription,
-  Subtask,
-  DelegationRecord,
-  ResearchReport,
-  CodeReview,
-  CompletionReport,
-  CodebaseAnalysis,
-  WorkflowExecution,
 } from '../../../../../generated/prisma';
 
 // Transaction type
@@ -19,22 +13,22 @@ export type TaskWhereInput = Prisma.TaskWhereInput;
 export type TaskOrderByInput = Prisma.TaskOrderByWithRelationInput;
 
 // Comprehensive Task with all relations
-export type TaskWithRelations = Task & {
+export interface TaskWithRelations extends Task {
   taskDescription?: TaskDescription | null;
   codebaseAnalysis?: CodebaseAnalysis | null;
-  researchReports?: ResearchReport[];
-  subtasks?: Subtask[];
-  delegationRecords?: DelegationRecord[];
-  codeReviews?: CodeReview[];
-  completionReports?: CompletionReport[];
-  workflowExecutions?: WorkflowExecution[];
-};
-
-// Task with subtasks specifically
-export type TaskWithSubtasks = Task & {
-  subtasks: Subtask[];
-  taskDescription?: TaskDescription | null;
-};
+  subtasks?: Prisma.SubtaskGetPayload<Record<string, never>>[];
+  delegationRecords?: Prisma.DelegationRecordGetPayload<
+    Record<string, never>
+  >[];
+  researchReports?: Prisma.ResearchReportGetPayload<Record<string, never>>[];
+  codeReviews?: Prisma.CodeReviewGetPayload<Record<string, never>>[];
+  completionReports?: Prisma.CompletionReportGetPayload<
+    Record<string, never>
+  >[];
+  workflowExecutions?: Prisma.WorkflowExecutionGetPayload<
+    Record<string, never>
+  >[];
+}
 
 // Create and Update data types
 export interface CreateTaskData {

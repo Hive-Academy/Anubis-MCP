@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { Prisma, ResearchReport } from 'generated/prisma';
 import { ZodSchema } from 'zod';
-import { PrismaService } from '../../prisma/prisma.service';
 import {
   BaseMcpService,
   McpResponse,
@@ -11,6 +10,7 @@ import {
   ResearchOperationsInput,
   ResearchOperationsInputSchema,
 } from './schemas/research-operations.schema';
+import { ResearchReportRepository } from './repositories/implementations/research-report.repository';
 
 // Type-safe interfaces for research operations
 export interface ResearchOperationResult {
@@ -41,7 +41,9 @@ export interface ResearchOperationResult {
  */
 @Injectable()
 export class ResearchOperationsService extends BaseMcpService {
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    private readonly researchReportRepository: ResearchReportRepository,
+  ) {
     super();
   }
 
@@ -105,16 +107,14 @@ export class ResearchOperationsService extends BaseMcpService {
       throw new Error('Research data is required for creation');
     }
 
-    const research = await this.prisma.researchReport.create({
-      data: {
-        task: { connect: { id: taskId } },
-        title: researchData.title || 'Research Report',
-        summary: researchData.summary || '',
-        findings: researchData.findings,
-        recommendations: researchData.recommendations || '',
-        references: researchData.references || [],
-      } satisfies Prisma.ResearchReportCreateInput,
-    });
+    const research = await this.researchReportRepository.create({
+      task: { connect: { id: taskId } },
+      title: researchData.title || 'Research Report',
+      summary: researchData.summary || '',
+      findings: researchData.findings,
+      recommendations: researchData.recommendations || '',
+      references: researchData.references || [],
+    } satisfies Prisma.ResearchReportCreateInput);
 
     return research;
   }
@@ -129,15 +129,16 @@ export class ResearchOperationsService extends BaseMcpService {
     }
 
     // Find the research report by taskId first
-    const existingResearch = await this.prisma.researchReport.findFirst({
-      where: { taskId },
-    });
+    const existingReports =
+      await this.researchReportRepository.findByTaskId(taskId);
 
-    if (!existingResearch) {
+    if (!existingReports || existingReports.length === 0) {
       throw new Error(`Research report not found for task ${taskId}`);
     }
 
-    const updateData: Prisma.ResearchReportUpdateInput = {};
+    const existingResearch = existingReports[0]; // Get the most recent one
+
+    const updateData: any = {};
 
     if (researchData.title) updateData.title = researchData.title;
     if (researchData.summary) updateData.summary = researchData.summary;
@@ -147,10 +148,10 @@ export class ResearchOperationsService extends BaseMcpService {
     if (researchData.references)
       updateData.references = researchData.references;
 
-    const research = await this.prisma.researchReport.update({
-      where: { id: existingResearch.id },
-      data: updateData,
-    });
+    const research = await this.researchReportRepository.update(
+      existingResearch.id,
+      updateData,
+    );
 
     return research;
   }
@@ -160,15 +161,13 @@ export class ResearchOperationsService extends BaseMcpService {
   ): Promise<ResearchReport> {
     const { taskId } = input;
 
-    const research = await this.prisma.researchReport.findFirst({
-      where: { taskId },
-    });
+    const reports = await this.researchReportRepository.findByTaskId(taskId);
 
-    if (!research) {
+    if (!reports || reports.length === 0) {
       throw new Error(`Research report not found for task ${taskId}`);
     }
 
-    return research;
+    return reports[0]; // Return the most recent one
   }
 
   /**

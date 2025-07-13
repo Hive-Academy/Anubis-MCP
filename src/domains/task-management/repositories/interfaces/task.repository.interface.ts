@@ -32,7 +32,6 @@ export interface ITaskRepository {
   ): Promise<TaskWithRelations[]>;
 
   // Relationship Loading
-  findWithSubtasks(id: number): Promise<Task | null>;
   findWithAllRelations(id: number): Promise<Task | null>;
 
   // Utility Operations

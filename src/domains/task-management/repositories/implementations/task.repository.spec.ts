@@ -7,17 +7,33 @@ describe('TaskRepository', () => {
   let repository: TaskRepository;
   let _prismaService: PrismaService;
 
-  const mockPrismaService = {
-    task: {
-      create: jest.fn(),
-      findUnique: jest.fn(),
-      findMany: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-      count: jest.fn(),
-    },
-    $transaction: jest.fn(),
+  const mockTaskMethods = {
+    create: jest.fn(),
+    findUnique: jest.fn(),
+    findUniqueOrThrow: jest.fn(),
+    findFirst: jest.fn(),
+    findFirstOrThrow: jest.fn(),
+    findMany: jest.fn(),
+    createMany: jest.fn(),
+    update: jest.fn(),
+    updateMany: jest.fn(),
+    upsert: jest.fn(),
+    delete: jest.fn(),
+    deleteMany: jest.fn(),
+    count: jest.fn(),
+    aggregate: jest.fn(),
+    groupBy: jest.fn(),
   };
+
+  const mockPrismaService = {
+    task: mockTaskMethods,
+    $transaction: jest
+      .fn()
+      .mockImplementation(<T>(callback: (prisma: any) => Promise<T>) => {
+        // Mock transaction by calling the callback with the mock prisma service
+        return callback({ task: mockTaskMethods });
+      }),
+  } as any;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -36,6 +52,7 @@ describe('TaskRepository', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+    Object.values(mockTaskMethods).forEach((mock) => mock.mockClear());
   });
 
   describe('create', () => {
@@ -50,16 +67,34 @@ describe('TaskRepository', () => {
       const expectedTask = {
         id: 1,
         ...createData,
+        slug: 'test-task',
         createdAt: new Date(),
         updatedAt: new Date(),
+        taskDescription: null,
+        codebaseAnalysis: null,
+        researchReports: [],
+        subtasks: [],
       };
 
-      mockPrismaService.task.create.mockResolvedValue(expectedTask);
+      // Mock the slug check to return false (slug not taken)
+      mockTaskMethods.findFirst.mockResolvedValue(null);
+      mockTaskMethods.create.mockResolvedValue(expectedTask);
 
       const result = await repository.create(createData);
 
-      expect(mockPrismaService.task.create).toHaveBeenCalledWith({
-        data: createData,
+      expect(mockTaskMethods.create).toHaveBeenCalledWith({
+        data: {
+          ...createData,
+          slug: 'test-task',
+          taskDescription: undefined,
+          codebaseAnalysis: undefined,
+        },
+        include: {
+          taskDescription: true,
+          codebaseAnalysis: true,
+          researchReports: true,
+          subtasks: true,
+        },
       });
       expect(result).toEqual(expectedTask);
     });
@@ -78,11 +113,11 @@ describe('TaskRepository', () => {
         updatedAt: new Date(),
       };
 
-      mockPrismaService.task.findUnique.mockResolvedValue(expectedTask);
+      mockTaskMethods.findUnique.mockResolvedValue(expectedTask);
 
       const result = await repository.findById(taskId);
 
-      expect(mockPrismaService.task.findUnique).toHaveBeenCalledWith({
+      expect(mockTaskMethods.findUnique).toHaveBeenCalledWith({
         where: { id: taskId },
       });
       expect(result).toEqual(expectedTask);
@@ -90,7 +125,7 @@ describe('TaskRepository', () => {
 
     it('should return null when task not found', async () => {
       const taskId = 999;
-      mockPrismaService.task.findUnique.mockResolvedValue(null);
+      mockTaskMethods.findUnique.mockResolvedValue(null);
 
       const result = await repository.findById(taskId);
 
@@ -112,17 +147,32 @@ describe('TaskRepository', () => {
         status: 'in-progress',
         priority: 'Medium',
         gitBranch: 'feature/test',
+        slug: 'updated-task',
         createdAt: new Date(),
         updatedAt: new Date(),
+        taskDescription: null,
+        codebaseAnalysis: null,
+        researchReports: [],
+        subtasks: [],
       };
 
-      mockPrismaService.task.update.mockResolvedValue(expectedTask);
+      mockTaskMethods.update.mockResolvedValue(expectedTask);
 
       const result = await repository.update(taskId, updateData);
 
-      expect(mockPrismaService.task.update).toHaveBeenCalledWith({
+      expect(mockTaskMethods.update).toHaveBeenCalledWith({
         where: { id: taskId },
-        data: updateData,
+        data: {
+          ...updateData,
+          taskDescription: undefined,
+          codebaseAnalysis: undefined,
+        },
+        include: {
+          taskDescription: true,
+          codebaseAnalysis: true,
+          researchReports: true,
+          subtasks: true,
+        },
       });
       expect(result).toEqual(expectedTask);
     });
@@ -141,11 +191,11 @@ describe('TaskRepository', () => {
         updatedAt: new Date(),
       };
 
-      mockPrismaService.task.delete.mockResolvedValue(expectedTask);
+      mockTaskMethods.delete.mockResolvedValue(expectedTask);
 
       const result = await repository.delete(taskId);
 
-      expect(mockPrismaService.task.delete).toHaveBeenCalledWith({
+      expect(mockTaskMethods.delete).toHaveBeenCalledWith({
         where: { id: taskId },
       });
       expect(result).toEqual(expectedTask);
@@ -175,11 +225,11 @@ describe('TaskRepository', () => {
         },
       ];
 
-      mockPrismaService.task.findMany.mockResolvedValue(expectedTasks);
+      mockTaskMethods.findMany.mockResolvedValue(expectedTasks);
 
       const result = await repository.findMany();
 
-      expect(mockPrismaService.task.findMany).toHaveBeenCalled();
+      expect(mockTaskMethods.findMany).toHaveBeenCalled();
       expect(result).toEqual(expectedTasks);
     });
   });

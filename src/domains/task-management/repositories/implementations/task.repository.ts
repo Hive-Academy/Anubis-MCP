@@ -1,18 +1,17 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma, Task } from '../../../../../generated/prisma';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import {
   ITaskRepository,
-  TaskIncludeOptions,
   TaskFindManyOptions,
+  TaskIncludeOptions,
 } from '../interfaces/task.repository.interface';
 import {
-  TaskWithRelations,
-  TaskWithSubtasks,
   CreateTaskData,
-  UpdateTaskData,
   PrismaTransaction,
+  TaskWithRelations,
+  UpdateTaskData,
 } from '../types/task.types';
-import { Task, Prisma } from '../../../../../generated/prisma';
 
 @Injectable()
 export class TaskRepository implements ITaskRepository {
@@ -205,16 +204,6 @@ export class TaskRepository implements ITaskRepository {
     return this.prisma.task.findMany({
       where: { owner },
       include: this.buildInclude(include),
-    });
-  }
-
-  async findWithSubtasks(id: number): Promise<TaskWithSubtasks | null> {
-    return this.prisma.task.findUnique({
-      where: { id },
-      include: {
-        subtasks: true,
-        taskDescription: true,
-      },
     });
   }
 

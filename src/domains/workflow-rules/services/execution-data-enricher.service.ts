@@ -8,7 +8,7 @@ import {
 import { ExecutionDataUtils } from '../utils/execution-data.utils';
 import { RoleTransitionService } from './role-transition.service';
 import { StepExecutionService } from './step-execution.service';
-import { WorkflowExecutionWithRelations } from './workflow-execution.service';
+import { WorkflowExecutionWithRelations } from '../repositories/types/workflow-execution.types';
 import { WorkflowGuidanceService } from './workflow-guidance.service';
 
 // Configuration interfaces to eliminate hardcoding

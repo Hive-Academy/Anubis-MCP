@@ -7,6 +7,10 @@ import { RoleTransitionMcpService } from './mcp-operations/role-transition-mcp.s
 import { WorkflowExecutionMcpService } from './mcp-operations/workflow-execution-mcp.service';
 import { WorkflowBootstrapMcpService } from './mcp-operations/workflow-bootstrap-mcp.service';
 
+// Repository Implementations
+import { WorkflowExecutionRepository } from './repositories/implementations/workflow-execution.repository';
+import { WorkflowRoleRepository } from './repositories/implementations/workflow-role.repository';
+
 // Services
 import { WorkflowGuidanceService } from './services/workflow-guidance.service';
 import { ProgressCalculatorService } from './services/progress-calculator.service';
@@ -25,6 +29,16 @@ import { ExecutionAnalyticsService } from './services/execution-analytics.servic
   imports: [],
   providers: [
     PrismaService,
+
+    // Repository Implementations
+    {
+      provide: 'IWorkflowExecutionRepository',
+      useClass: WorkflowExecutionRepository,
+    },
+    {
+      provide: 'IWorkflowRoleRepository',
+      useClass: WorkflowRoleRepository,
+    },
 
     // MCP Operations
     WorkflowGuidanceMcpService,
