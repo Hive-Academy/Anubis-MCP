@@ -1,5 +1,4 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service';
+import { Injectable, Inject } from '@nestjs/common';
 import { ProgressMetrics } from '../types/progress-calculator.types';
 import {
   BaseServiceConfig,
@@ -10,6 +9,8 @@ import { RoleTransitionService } from './role-transition.service';
 import { StepExecutionService } from './step-execution.service';
 import { WorkflowExecutionWithRelations } from '../repositories/types/workflow-execution.types';
 import { WorkflowGuidanceService } from './workflow-guidance.service';
+import { IWorkflowExecutionRepository } from '../repositories/interfaces/workflow-execution.repository.interface';
+import { IStepProgressRepository } from '../repositories/interfaces/step-progress.repository.interface';
 
 // Configuration interfaces to eliminate hardcoding
 export interface DataEnricherConfig extends BaseServiceConfig {
@@ -112,7 +113,10 @@ export class ExecutionDataEnricherService extends ConfigurableService<DataEnrich
     private readonly stepExecution: StepExecutionService,
     private readonly roleTransition: RoleTransitionService,
     private readonly workflowGuidance: WorkflowGuidanceService,
-    private readonly prisma: PrismaService,
+    @Inject('IWorkflowExecutionRepository')
+    private readonly workflowExecutionRepository: IWorkflowExecutionRepository,
+    @Inject('IStepProgressRepository')
+    private readonly stepProgressRepository: IStepProgressRepository,
   ) {
     super();
     this.initializeConfig();
@@ -142,13 +146,13 @@ export class ExecutionDataEnricherService extends ConfigurableService<DataEnrich
   async getNextStepsForExecution(executionId: string): Promise<NextStep[]> {
     try {
       // Get the execution to find current role and task
-      const execution = await this.prisma.workflowExecution.findUnique({
-        where: { id: executionId },
-        include: {
+      const execution = await this.workflowExecutionRepository.findById(
+        executionId,
+        {
           currentRole: true,
           task: true,
         },
-      });
+      );
 
       if (!execution) {
         return [
@@ -180,13 +184,17 @@ export class ExecutionDataEnricherService extends ConfigurableService<DataEnrich
       }
 
       // Get step progress to determine status
-      const stepProgress = await this.prisma.workflowStepProgress.findFirst({
+      const stepProgressList = await this.stepProgressRepository.findMany({
         where: {
           taskId: String(execution.taskId),
           roleId: execution.currentRoleId,
           stepId: nextStep.id,
         },
+        take: 1,
       });
+
+      const stepProgress =
+        stepProgressList.length > 0 ? stepProgressList[0] : null;
 
       const stepStatus =
         stepProgress?.status === 'IN_PROGRESS' ? 'pending' : 'ready';
