@@ -219,6 +219,13 @@ export interface IStepProgressRepository {
     include?: StepProgressIncludeOptions,
   ): Promise<StepProgressWithRelations[]>;
 
+  /**
+   * Find incomplete step progress for a role
+   */
+  findIncompleteForRole(
+    roleId: string,
+  ): Promise<StepProgressWithRelations | null>;
+
   // ===================================================================
   // TRANSACTION SUPPORT
   // ===================================================================

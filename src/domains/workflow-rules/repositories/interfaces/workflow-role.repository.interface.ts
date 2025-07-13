@@ -118,4 +118,11 @@ export interface IWorkflowRoleRepository {
     projectType: string,
     include?: WorkflowRoleIncludeOptions,
   ): Promise<WorkflowRoleWithRelations[]>;
+
+  // Role Transition Operations
+  findTransitionsFrom(fromRoleId: string): Promise<any[]>;
+  findTransitionById(transitionId: string): Promise<any>;
+  findDelegationHistory(fromRoleId: string): Promise<any[]>;
+  createDelegationRecord(data: any): Promise<any>;
+  findFirstStepForRole(roleId: string): Promise<any>;
 }

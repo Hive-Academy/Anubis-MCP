@@ -1,6 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { RoleTransition } from 'generated/prisma';
-import { PrismaService } from '../../../prisma/prisma.service';
+import { IWorkflowRoleRepository } from '../repositories/interfaces/workflow-role.repository.interface';
+import { IWorkflowExecutionRepository } from '../repositories/interfaces/workflow-execution.repository.interface';
+import { IStepProgressRepository } from '../repositories/interfaces/step-progress.repository.interface';
+import { ITaskRepository } from '../../task-management/repositories/interfaces/task.repository.interface';
+import { ICodeReviewRepository } from '../../task-management/repositories/interfaces/code-review.repository.interface';
 import { WorkflowExecutionService } from './workflow-execution.service';
 
 // Configuration interfaces to eliminate hardcoding
@@ -79,7 +83,16 @@ export class RoleTransitionService {
   };
 
   constructor(
-    private prisma: PrismaService,
+    @Inject('IWorkflowRoleRepository')
+    private readonly workflowRoleRepository: IWorkflowRoleRepository,
+    @Inject('IWorkflowExecutionRepository')
+    private readonly workflowExecutionRepository: IWorkflowExecutionRepository,
+    @Inject('IStepProgressRepository')
+    private readonly stepProgressRepository: IStepProgressRepository,
+    @Inject('ITaskRepository')
+    private readonly taskRepository: ITaskRepository,
+    @Inject('ICodeReviewRepository')
+    private readonly codeReviewRepository: ICodeReviewRepository,
     private workflowExecutionService: WorkflowExecutionService,
   ) {}
 
@@ -89,26 +102,17 @@ export class RoleTransitionService {
   async getAvailableTransitions(
     fromRoleName: string,
   ): Promise<AvailableTransition[]> {
-    const fromRole = await this.prisma.workflowRole.findUnique({
-      where: { name: fromRoleName },
-    });
+    const fromRole = await this.workflowRoleRepository.findByName(fromRoleName);
 
     if (!fromRole) {
       throw new Error(`Role '${fromRoleName}' not found`);
     }
 
-    const transitions = await this.prisma.roleTransition.findMany({
-      where: {
-        fromRoleId: fromRole.id,
-        isActive: true,
-      },
-      include: {
-        fromRole: true,
-        toRole: true,
-      },
-    });
+    const transitions = await this.workflowRoleRepository.findTransitionsFrom(
+      fromRole.id,
+    );
 
-    return transitions.map((transition) => ({
+    return transitions.map((transition: any) => ({
       id: transition.id,
       transitionName: transition.transitionName,
       fromRole: {
@@ -133,13 +137,9 @@ export class RoleTransitionService {
     context: { roleId: string; taskId: string; projectPath?: string },
   ): Promise<TransitionValidationResult> {
     try {
-      const transition = await this.prisma.roleTransition.findUnique({
-        where: { id: transitionId },
-        include: {
-          fromRole: true,
-          toRole: true,
-        },
-      });
+      const transition = await this.workflowRoleRepository.findTransitionById(
+        transitionId,
+      );
 
       if (!transition) {
         return { valid: false, errors: ['Transition not found'] };
@@ -197,13 +197,7 @@ export class RoleTransitionService {
         };
       }
 
-      const transition = await this.prisma.roleTransition.findUnique({
-        where: { id: transitionId },
-        include: {
-          fromRole: true,
-          toRole: true,
-        },
-      });
+      const transition = await this.workflowRoleRepository.findTransitionById(transitionId);
 
       if (!transition) {
         return { success: false, message: 'Transition not found' };
@@ -242,10 +236,7 @@ export class RoleTransitionService {
    * Get transition history for a task
    */
   getTransitionHistory(taskId: number) {
-    return this.prisma.delegationRecord.findMany({
-      where: { taskId },
-      orderBy: { delegationTimestamp: 'desc' },
-    });
+    return this.workflowRoleRepository.findDelegationHistory(taskId.toString());
   }
 
   /**
@@ -328,13 +319,7 @@ export class RoleTransitionService {
     roleId: string;
     taskId: string;
   }): Promise<boolean> {
-    const incompleteSteps = await this.prisma.workflowStepProgress.findFirst({
-      where: {
-        taskId: context.taskId,
-        roleId: context.roleId,
-        status: { not: 'COMPLETED' },
-      },
-    });
+    const incompleteSteps = await this.stepProgressRepository.findIncompleteForRole(context.roleId);
     return !incompleteSteps;
   }
 
@@ -342,22 +327,14 @@ export class RoleTransitionService {
     context: { taskId: string },
     requiredStatus: string,
   ): Promise<boolean> {
-    const task = await this.prisma.task.findUnique({
-      where: { id: Number(context.taskId) },
-      select: { status: true },
-    });
+    const task = await this.taskRepository.findById(Number(context.taskId));
     return task?.status === requiredStatus;
   }
 
   private async checkReviewCompleted(context: {
     taskId: string;
   }): Promise<boolean> {
-    const review = await this.prisma.codeReview.findFirst({
-      where: {
-        taskId: Number(context.taskId),
-        status: 'APPROVED',
-      },
-    });
+    const review = await this.codeReviewRepository.findLatestByTaskId(Number(context.taskId));
     return !!review;
   }
 
@@ -366,15 +343,13 @@ export class RoleTransitionService {
     context: { roleId: string; taskId: string },
     handoffMessage?: string,
   ): Promise<void> {
-    await this.prisma.delegationRecord.create({
-      data: {
-        taskId: Number(context.taskId),
-        fromMode: transition.fromRole.name,
-        toMode: transition.toRole.name,
-        delegationTimestamp: new Date(),
-        message:
-          handoffMessage || `Transitioned via ${transition.transitionName}`,
-      },
+    await this.workflowRoleRepository.createDelegationRecord({
+      taskId: Number(context.taskId),
+      fromMode: transition.fromRole.name,
+      toMode: transition.toRole.name,
+      delegationTimestamp: new Date(),
+      message:
+        handoffMessage || `Transitioned via ${transition.transitionName}`,
     });
   }
 
@@ -382,12 +357,9 @@ export class RoleTransitionService {
     taskId: string,
     newOwner: string,
   ): Promise<void> {
-    await this.prisma.task.update({
-      where: { id: parseInt(taskId) },
-      data: {
-        owner: newOwner,
-        currentMode: newOwner,
-      },
+    await this.taskRepository.update(parseInt(taskId), {
+      owner: newOwner,
+      currentMode: newOwner,
     });
   }
 
@@ -447,29 +419,19 @@ export class RoleTransitionService {
     handoffMessage?: string,
   ): Promise<void> {
     // Get the workflow execution for this task
-    const execution = await this.prisma.workflowExecution.findFirst({
-      where: { taskId: Number(taskId) },
-      orderBy: { createdAt: 'desc' },
-    });
+    const execution = await this.workflowExecutionRepository.findByTaskId(Number(taskId));
 
     if (!execution) {
       return;
     }
 
     // Get the first step for the new role
-    const firstStep = await this.prisma.workflowStep.findFirst({
-      where: { roleId: newRoleId },
-      orderBy: { sequenceNumber: 'asc' },
-    });
+    const firstStep = await this.workflowRoleRepository.findFirstStepForRole(newRoleId);
 
     // Update core fields first
-    await this.prisma.workflowExecution.update({
-      where: { id: execution.id },
-      data: {
-        currentRoleId: newRoleId,
-        currentStepId: firstStep?.id || null,
-        updatedAt: new Date(),
-      },
+    await this.workflowExecutionRepository.update(execution.id, {
+      currentRoleId: newRoleId,
+      currentStepId: firstStep?.id || undefined,
     });
 
     // Update executionState via helper
