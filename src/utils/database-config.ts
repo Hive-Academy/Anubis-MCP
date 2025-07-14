@@ -20,6 +20,10 @@ export interface DatabaseConfigOptions {
   projectRoot?: string;
   customDatabasePath?: string;
   verbose?: boolean;
+  /**
+   * Skip environment-based project root detection (for testing)
+   */
+  skipProjectRootDetection?: boolean;
 }
 
 export class DatabaseConfigManager {
@@ -113,7 +117,7 @@ export class DatabaseConfigManager {
   ): DatabaseConfig {
     // Docker uses container-internal paths but supports volume mounting for project isolation
     const dataDirectory = '/app/.anubis';
-    const databasePath = path.join(dataDirectory, 'workflow.db');
+    const databasePath = `${dataDirectory}/workflow.db`; // Always use Unix-style paths in Docker
     const databaseUrl = `file:${databasePath}`;
 
     return {
@@ -132,23 +136,34 @@ export class DatabaseConfigManager {
    */
   private getNpxDatabaseConfig(
     projectRoot: string,
-    _options: DatabaseConfigOptions,
+    options: DatabaseConfigOptions,
   ): DatabaseConfig {
     // Enhanced path resolution for VS Code extensions and MCP clients
     let resolvedProjectRoot = projectRoot;
 
-    // CRITICAL: Always respect PROJECT_ROOT environment variable from MCP configuration
-    if (process.env.PROJECT_ROOT && path.isAbsolute(process.env.PROJECT_ROOT)) {
-      resolvedProjectRoot = process.env.PROJECT_ROOT;
-    }
-    // If running in VS Code extension context, try to find workspace folder as fallback only
-    else if (process.env.VSCODE_PID || process.env.TERM_PROGRAM === 'vscode') {
-      // Try to use workspace folder if available
-      const workspaceFolder =
-        process.env.VSCODE_WORKSPACE_FOLDER || process.env.PWD || process.cwd();
+    // Skip environment detection if explicitly requested (for testing)
+    if (!options.skipProjectRootDetection) {
+      // CRITICAL: Always respect PROJECT_ROOT environment variable from MCP configuration
+      if (
+        process.env.PROJECT_ROOT &&
+        path.isAbsolute(process.env.PROJECT_ROOT)
+      ) {
+        resolvedProjectRoot = process.env.PROJECT_ROOT;
+      }
+      // If running in VS Code extension context, try to find workspace folder as fallback only
+      else if (
+        process.env.VSCODE_PID ||
+        process.env.TERM_PROGRAM === 'vscode'
+      ) {
+        // Try to use workspace folder if available
+        const workspaceFolder =
+          process.env.VSCODE_WORKSPACE_FOLDER ||
+          process.env.PWD ||
+          process.cwd();
 
-      if (workspaceFolder && fs.existsSync(workspaceFolder)) {
-        resolvedProjectRoot = workspaceFolder;
+        if (workspaceFolder && fs.existsSync(workspaceFolder)) {
+          resolvedProjectRoot = workspaceFolder;
+        }
       }
     }
 
@@ -364,7 +379,10 @@ export function setupDatabaseEnvironment(
   // Set environment variables
   const envVars = manager.getEnvironmentVariables(config);
   Object.entries(envVars).forEach(([key, value]) => {
-    if (!process.env[key]) {
+    // CRITICAL: For NPX deployment, always override DATABASE_URL to ensure project isolation
+    if (key === 'DATABASE_URL' && config.deploymentMethod === 'npx') {
+      process.env[key] = value;
+    } else if (!process.env[key]) {
       process.env[key] = value;
     }
   });

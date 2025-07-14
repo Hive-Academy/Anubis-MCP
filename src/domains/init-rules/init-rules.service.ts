@@ -28,10 +28,10 @@ export class InitRulesService {
     copilot: {
       name: 'GitHub Copilot',
       sourceTemplate: 'workflow-protocol-function-calls.md',
-      targetPath: '.github/chatmodes',
-      targetFileName: '𓂀𓁢𓋹𝔸ℕ𝕌𝔹𝕀𝕊𓋹𓁢𓂀.chatmode.md',
-      requiresFrontmatter: true,
-      ensureDirectories: ['.github', '.github/chatmodes'],
+      targetPath: '.github',
+      targetFileName: 'copilot-instructions.md',
+      requiresFrontmatter: false,
+      ensureDirectories: ['.github'],
     },
     roocode: {
       name: 'RooCode',
@@ -63,7 +63,6 @@ export class InitRulesService {
   async InitRules(
     agentName: string,
     projectRoot: string,
-    templateFile?: string,
   ): Promise<{
     success: boolean;
     message: string;
@@ -82,7 +81,7 @@ export class InitRulesService {
       await this.ensureDirectories(projectRoot, config.ensureDirectories);
 
       // Use the provided template file if specified, otherwise use the default from config
-      const templateToUse = templateFile || config.sourceTemplate;
+      const templateToUse = config.sourceTemplate;
 
       // Read source template
       const sourceContent = await this.readTemplate(templateToUse);
@@ -196,13 +195,6 @@ export class InitRulesService {
 description: 
 globs: 
 alwaysApply: true
----`;
-
-      case 'GitHub Copilot':
-        return `---
-description: 'Anubis is the intelligent guide for AI workflows - the first MCP-compliant system that embeds intelligent guidance directly into each step, ensuring your AI agents follow complex development processes consistently and reliably.'
-
-tools: ['changes', 'codebase', 'editFiles', 'extensions', 'fetch', 'findTestFiles', 'githubRepo', 'new', 'openSimpleBrowser', 'problems', 'runCommands', 'runNotebooks', 'runTasks', 'search', 'searchResults', 'terminalLastCommand', 'terminalSelection', 'testFailure', 'usages', 'vscodeAPI', 'anubis', 'bootstrap_workflow', 'execute_mcp_operation', 'execute_transition', 'generate_workflow_report', 'get_next_available_step', 'get_operation_schema', 'get_report_status', 'get_role_transitions', 'get_step_guidance', 'get_step_progress', 'get_transition_history', 'get_workflow_guidance', 'report_step_completion', 'validate_transition', 'workflow_execution_operations', 'filesystem', 'read_file', 'mcp-server-firecrawl', 'firecrawl_crawl', 'firecrawl_generate_llmstxt', 'firecrawl_scrape', 'firecrawl_search']
 ---`;
 
       default:

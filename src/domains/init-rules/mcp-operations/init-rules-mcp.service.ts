@@ -35,16 +35,9 @@ export class InitRulesMcpService {
     try {
       const projectRoot = input.projectRoot || process.cwd();
 
-      // Choose template based on agent
-      const templateFile =
-        input.agentName === 'cursor'
-          ? 'workflow-protocol-function-calls.md'
-          : 'workflow-protocol-xml.md';
-
       const result = await this.initRulesService.InitRules(
         input.agentName,
         projectRoot,
-        templateFile,
       );
 
       return {

@@ -8,8 +8,13 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   constructor() {
+    // Use DATABASE_URL from environment (set by database-config.ts)
+    // Fallback should align with Docker deployment pattern
+    const databaseUrl =
+      process.env.DATABASE_URL || 'file:./.anubis/workflow.db';
+
     const adapter = new PrismaBetterSQLite3({
-      url: 'file:D:/projects/anubis/.anubis/workflow.db',
+      url: databaseUrl,
     });
 
     super({

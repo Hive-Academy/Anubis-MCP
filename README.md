@@ -26,46 +26,6 @@
 </div>
 
 ---
-
-## 🏆 **RECENT ACHIEVEMENTS (v1.2.11)**
-
-### **Repository Pattern Implementation Success** 🎯
-
-**225% Completion Rate** - Exceeded target goals by migrating 9 services (target: 4 services)
-
-**Successfully Migrated Services:**
-- ✅ `workflow-guidance.service.ts` - Enhanced testability and maintainability
-- ✅ `step-progress-tracker.service.ts` - Clean state management
-- ✅ `workflow-bootstrap.service.ts` - Simplified bootstrap process
-- ✅ `progress-calculator.service.ts` - Pure business logic functions
-- ✅ `step-query.service.ts` - Flexible data access strategies
-- ✅ `step-execution.service.ts` - Reliable execution tracking
-- ✅ `role-transition.service.ts` - Consistent role management
-- ✅ `execution-data-enricher.service.ts` - Efficient data aggregation
-- ✅ `workflow-guidance-mcp.service.ts` - Standardized MCP operations
-
-### **Technical Excellence Achievements** 🚀
-
-**95% Type Safety** - Enhanced TypeScript compliance across the entire codebase  
-**Zero Compilation Errors** - Complete elimination of TypeScript build issues  
-**75% Maintainability Improvement** - Cleaner separation of concerns through repository pattern  
-
-### **MCP Protocol Compliance** 🤖
-
-**Multi-Agent Support** - Comprehensive template system for:
-- ✅ **Cursor IDE** - Intelligent workflow guidance integration
-- ✅ **GitHub Copilot** - Enhanced AI assistant capabilities
-- ✅ **RooCode** - Streamlined development workflows
-- ✅ **KiloCode** - Advanced automation support
-
-### **Performance Optimizations** ⚡
-
-**Database Optimization** - 434,176 → 421,888 bytes (optimized storage)  
-**Enhanced Query Performance** - Repository pattern enables efficient data access  
-**Improved State Management** - ExecutionId-based workflow tracking  
-
----
-
 ## **QUICK START**
 
 ### **Option 1: NPX (Recommended)**
@@ -154,77 +114,6 @@ Begin a new workflow for [your-project] with Anubis guidance
 
 ---
 
-## **🏗️ ARCHITECTURE EXCELLENCE**
-
-### **🏆 Recent Achievements (v1.2.11)**
-
-#### **Repository Pattern Implementation Success**
-- **225% Completion Rate**: Exceeded target by migrating 9 services (target: 4)
-- **95% Type Safety**: Enhanced TypeScript compliance across the codebase
-- **Zero Compilation Errors**: Complete elimination of TypeScript build issues
-- **75% Maintainability Improvement**: Cleaner separation of concerns
-
-#### **Services Successfully Migrated**
-- workflow-guidance.service.ts
-- step-progress-tracker.service.ts
-- workflow-bootstrap.service.ts
-- progress-calculator.service.ts
-- step-query.service.ts
-- step-execution.service.ts
-- role-transition.service.ts
-- execution-data-enricher.service.ts
-- workflow-guidance-mcp.service.ts
-
-#### **Technical Highlights**
-
-- ✅ **Zero TypeScript Compilation Errors** - 95% type safety achieved
-- ✅ **9 Services Migrated** - Exceeded 4 service target by 225%  
-- ✅ **6 Repository Implementations** - Complete data access abstraction layer
-- ✅ **100+ Repository Methods** - Comprehensive database operations
-- ✅ **SOLID Principles** - Clean architecture with dependency injection
-- ✅ **Transaction Support** - Data integrity across complex operations
-
-#### **Services Utilizing Repository Pattern**
-
-```typescript
-// Example: Service with Repository Pattern
-@Injectable()
-export class WorkflowGuidanceService {
-  constructor(
-    @Inject('IProjectContextRepository')
-    private readonly projectContextRepository: IProjectContextRepository,
-    @Inject('IWorkflowRoleRepository') 
-    private readonly workflowRoleRepository: IWorkflowRoleRepository,
-  ) {}
-  
-  // 75% maintenance reduction through abstraction layer
-}
-```
-
-**Repositories**: WorkflowExecution • StepProgress • ProjectContext • WorkflowBootstrap • ProgressCalculation • WorkflowRole
-
----
-
-## **🚀 Key Features**
-
-### **Repository Pattern Architecture**
-- **Clean Data Access Layer**: Separated business logic from data persistence
-- **Enhanced Testability**: Mock-friendly repository interfaces
-- **SOLID Principles Compliance**: Dependency inversion and single responsibility
-- **Type-Safe Operations**: Comprehensive TypeScript coverage
-
-### **MCP Protocol Compliance**
-- **Multi-Agent Support**: Cursor, Copilot, RooCode, KiloCode templates
-- **Standardized Interactions**: Official Model Context Protocol implementation
-- **Enhanced AI Integration**: Optimized for LLM workflow automation
-
-### **Performance Optimizations**
-- **Database Size Reduction**: 434176 → 421888 bytes optimized storage
-- **Enhanced Query Performance**: Repository pattern enables efficient data access
-- **Improved State Management**: ExecutionId-based workflow tracking
-
----
-
 ## **ROOCODE Setup Example**
 
 [![Anubis MCP server Demo](https://img.youtube.com/vi/NPWrGJ_lRqY/0.jpg)](https://www.youtube.com/embed/NPWrGJ_lRqY?si=dXFzTf-qJqNRzOu6&start=477)
@@ -298,6 +187,119 @@ export class WorkflowGuidanceService {
 
 ---
 
+
+
+## 🏆 **RECENT ACHIEVEMENTS (v1.2.11)**
+
+### **Repository Pattern Implementation Success** 🎯
+
+**225% Completion Rate** - Exceeded target goals by migrating 9 services (target: 4 services)
+
+**Successfully Migrated Services:**
+- ✅ `workflow-guidance.service.ts` - Enhanced testability and maintainability
+- ✅ `step-progress-tracker.service.ts` - Clean state management
+- ✅ `workflow-bootstrap.service.ts` - Simplified bootstrap process
+- ✅ `progress-calculator.service.ts` - Pure business logic functions
+- ✅ `step-query.service.ts` - Flexible data access strategies
+- ✅ `step-execution.service.ts` - Reliable execution tracking
+- ✅ `role-transition.service.ts` - Consistent role management
+- ✅ `execution-data-enricher.service.ts` - Efficient data aggregation
+- ✅ `workflow-guidance-mcp.service.ts` - Standardized MCP operations
+
+### **Technical Excellence Achievements** 🚀
+
+**95% Type Safety** - Enhanced TypeScript compliance across the entire codebase  
+**Zero Compilation Errors** - Complete elimination of TypeScript build issues  
+**75% Maintainability Improvement** - Cleaner separation of concerns through repository pattern  
+
+### **MCP Protocol Compliance** 🤖
+
+**Multi-Agent Support** - Comprehensive template system for:
+- ✅ **Cursor IDE** - Intelligent workflow guidance integration
+- ✅ **GitHub Copilot** - Enhanced AI assistant capabilities
+- ✅ **RooCode** - Streamlined development workflows
+- ✅ **KiloCode** - Advanced automation support
+
+### **Performance Optimizations** ⚡
+
+**Database Optimization** - 434,176 → 421,888 bytes (optimized storage)  
+**Enhanced Query Performance** - Repository pattern enables efficient data access  
+**Improved State Management** - ExecutionId-based workflow tracking  
+
+---
+
+
+## **🏗️ ARCHITECTURE EXCELLENCE**
+
+### **🏆 Recent Achievements (v1.2.11)**
+
+#### **Repository Pattern Implementation Success**
+- **225% Completion Rate**: Exceeded target by migrating 9 services (target: 4)
+- **95% Type Safety**: Enhanced TypeScript compliance across the codebase
+- **Zero Compilation Errors**: Complete elimination of TypeScript build issues
+- **75% Maintainability Improvement**: Cleaner separation of concerns
+
+#### **Services Successfully Migrated**
+- workflow-guidance.service.ts
+- step-progress-tracker.service.ts
+- workflow-bootstrap.service.ts
+- progress-calculator.service.ts
+- step-query.service.ts
+- step-execution.service.ts
+- role-transition.service.ts
+- execution-data-enricher.service.ts
+- workflow-guidance-mcp.service.ts
+
+#### **Technical Highlights**
+
+- ✅ **Zero TypeScript Compilation Errors** - 95% type safety achieved
+- ✅ **9 Services Migrated** - Exceeded 4 service target by 225%  
+- ✅ **6 Repository Implementations** - Complete data access abstraction layer
+- ✅ **100+ Repository Methods** - Comprehensive database operations
+- ✅ **SOLID Principles** - Clean architecture with dependency injection
+- ✅ **Transaction Support** - Data integrity across complex operations
+
+#### **Services Utilizing Repository Pattern**
+
+```typescript
+// Example: Service with Repository Pattern
+@Injectable()
+export class WorkflowGuidanceService {
+  constructor(
+    @Inject('IProjectContextRepository')
+    private readonly projectContextRepository: IProjectContextRepository,
+    @Inject('IWorkflowRoleRepository') 
+    private readonly workflowRoleRepository: IWorkflowRoleRepository,
+  ) {}
+  
+  // 75% maintenance reduction through abstraction layer
+}
+```
+
+**Repositories**: WorkflowExecution • StepProgress • ProjectContext • WorkflowBootstrap • ProgressCalculation • WorkflowRole
+
+---
+
+## **🚀 Key Features**
+
+### **Repository Pattern Architecture**
+- **Clean Data Access Layer**: Separated business logic from data persistence
+- **Enhanced Testability**: Mock-friendly repository interfaces
+- **SOLID Principles Compliance**: Dependency inversion and single responsibility
+- **Type-Safe Operations**: Comprehensive TypeScript coverage
+
+### **MCP Protocol Compliance**
+- **Multi-Agent Support**: Cursor, Copilot, RooCode, KiloCode templates
+- **Standardized Interactions**: Official Model Context Protocol implementation
+- **Enhanced AI Integration**: Optimized for LLM workflow automation
+
+### **Performance Optimizations**
+- **Database Size Reduction**: 434176 → 421888 bytes optimized storage
+- **Enhanced Query Performance**: Repository pattern enables efficient data access
+- **Improved State Management**: ExecutionId-based workflow tracking
+
+---
+
 ## **CORE VALUE #1: INTELLIGENT GUIDANCE FOR AI AGENTS**
 
 **Your AI agent receives step-by-step intelligent rules for every development task:**
@@ -355,7 +357,6 @@ export class WorkflowGuidanceService {
 | Role                 | Intelligent Purpose     | Key Powers                                        |
 | -------------------- | ----------------------- | ------------------------------------------------- |
 | **Boomerang**        | Strategic Orchestration | Project setup, task creation, workflow management |
-| **Researcher**       | Knowledge Gathering     | Evidence-based research, feasibility analysis     |
 | **Architect**        | System Design           | Technical architecture, implementation planning   |
 | **Senior Developer** | Code Manifestation      | High-quality implementation, testing              |
 | **Code Review**      | Quality Guardian        | Security validation, performance review, approval |

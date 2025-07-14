@@ -12,7 +12,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:D:/projects/anubis/.anubis/workflow.db"
+  url      =  env("DATABASE_URL") // Use environment variable for flexibility
 }
 
 // All models are now organized in separate files in the same directory:
