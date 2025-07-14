@@ -1,11 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service';
+import { Injectable, Inject } from '@nestjs/common';
 import { StepDataUtils } from '../utils/step-data.utils';
 import { getErrorMessage } from '../utils/type-safety.utils';
 import { StepGuidanceService } from './step-guidance.service';
 import { StepProgressTrackerService } from './step-progress-tracker.service';
 import { StepQueryService, WorkflowStep } from './step-query.service';
 import { WorkflowExecutionService } from './workflow-execution.service';
+import { IWorkflowExecutionRepository } from '../repositories/interfaces/workflow-execution.repository.interface';
+import { IStepProgressRepository } from '../repositories/interfaces/step-progress.repository.interface';
 
 // ===================================================================
 // 🔥 STEP EXECUTION SERVICE - CONSOLIDATED SERVICE (PHASE 2)
@@ -88,7 +89,10 @@ export class StepExecutionService {
     private readonly guidanceService: StepGuidanceService,
     private readonly progressService: StepProgressTrackerService,
     private readonly queryService: StepQueryService,
-    private readonly prisma: PrismaService,
+    @Inject('IWorkflowExecutionRepository')
+    private readonly workflowExecutionRepository: IWorkflowExecutionRepository,
+    @Inject('IStepProgressRepository')
+    private readonly stepProgressRepository: IStepProgressRepository,
     private readonly workflowExecutionService: WorkflowExecutionService,
   ) {}
 
@@ -175,31 +179,32 @@ export class StepExecutionService {
     executionData?: unknown,
   ) {
     // Get current execution to get taskId and roleId
-    const execution = await this.prisma.workflowExecution.findUnique({
-      where: { id: executionId },
-      select: { taskId: true, currentRoleId: true },
-    });
+    const execution = await this.workflowExecutionRepository.findById(
+      executionId,
+      {
+        task: true,
+        currentRole: true,
+      },
+    );
 
     if (!execution) {
       throw new Error(`Execution not found: ${executionId}`);
     }
 
     // Update step progress tied to execution
-    await this.prisma.workflowStepProgress.create({
-      data: {
-        executionId: executionId,
-        taskId: execution.taskId?.toString(),
-        stepId,
-        roleId: execution.currentRoleId,
-        status: result === 'success' ? 'COMPLETED' : 'FAILED',
-        startedAt: new Date(),
-        completedAt: result === 'success' ? new Date() : null,
-        failedAt: result === 'failure' ? new Date() : null,
-        result: result === 'success' ? 'SUCCESS' : 'FAILURE',
-        executionData: executionData
-          ? JSON.parse(JSON.stringify(executionData))
-          : null,
-      },
+    await this.stepProgressRepository.create({
+      executionId: executionId,
+      taskId: execution.taskId?.toString(),
+      stepId,
+      roleId: execution.currentRoleId,
+      status: result === 'success' ? 'COMPLETED' : 'FAILED',
+      startedAt: new Date(),
+      completedAt: result === 'success' ? new Date() : undefined,
+      failedAt: result === 'failure' ? new Date() : undefined,
+      result: result === 'success' ? 'SUCCESS' : 'FAILURE',
+      executionData: executionData
+        ? JSON.parse(JSON.stringify(executionData))
+        : null,
     });
 
     // If step completed successfully, advance to next step
@@ -208,18 +213,14 @@ export class StepExecutionService {
         await this.queryService.getNextStepAfterCompletion(stepId);
 
       // Update workflow execution to point to next step
-      const currentExecution = await this.prisma.workflowExecution.findUnique({
-        where: { id: executionId },
-      });
+      const currentExecution =
+        await this.workflowExecutionRepository.findById(executionId);
 
       if (currentExecution) {
         // Update execution core fields (currentStepId, stepsCompleted)
-        await this.prisma.workflowExecution.update({
-          where: { id: executionId },
-          data: {
-            currentStepId: nextStep?.id || null,
-            stepsCompleted: (currentExecution.stepsCompleted || 0) + 1,
-          },
+        await this.workflowExecutionRepository.update(executionId, {
+          currentStepId: nextStep?.id || undefined,
+          stepsCompleted: (currentExecution.stepsCompleted || 0) + 1,
         });
 
         // Update executionState via validated helper

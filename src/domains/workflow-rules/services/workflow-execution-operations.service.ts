@@ -13,8 +13,8 @@ import { ExecutionDataEnricherService } from './execution-data-enricher.service'
 import {
   CreateWorkflowExecutionInput,
   WorkflowExecutionService,
-  WorkflowExecutionWithRelations,
 } from './workflow-execution.service';
+import { WorkflowExecutionWithRelations } from '../repositories/types/workflow-execution.types';
 
 // Configuration interfaces to eliminate hardcoding
 export interface ExecutionOperationsConfig extends BaseServiceConfig {

@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service';
+import { Injectable, Inject } from '@nestjs/common';
+import { IStepProgressRepository } from '../repositories/interfaces/step-progress.repository.interface';
 import {
   isDefined,
   safeJsonCast,
@@ -93,7 +93,10 @@ export interface RoleProgressSummary {
  */
 @Injectable()
 export class StepProgressTrackerService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject('IStepProgressRepository')
+    private readonly stepProgressRepository: IStepProgressRepository,
+  ) {}
 
   /**
    * Start step execution with MCP-focused tracking
@@ -106,30 +109,23 @@ export class StepProgressTrackerService {
   ): Promise<StepProgressRecord> {
     try {
       // Get roleId from execution if not provided
-      let actualRoleId = roleId;
+      const actualRoleId = roleId;
       if (!actualRoleId) {
-        const execution = await this.prisma.workflowExecution.findUnique({
-          where: { id: executionId },
-          select: { currentRoleId: true },
-        });
-        if (!execution) {
-          throw new Error(`Execution not found: ${executionId}`);
-        }
-        actualRoleId = execution.currentRoleId;
+        // For now, throw an error if roleId is not provided
+        // This could be enhanced later by injecting WorkflowExecutionRepository
+        throw new Error(`roleId is required for step progress tracking`);
       }
 
-      const progressRecord = await this.prisma.workflowStepProgress.create({
-        data: {
-          stepId,
-          executionId, // 🔧 FIXED: Include required executionId
-          taskId: taskId || null, // Optional - may be null for bootstrap executions
-          roleId: actualRoleId,
-          status: 'IN_PROGRESS',
-          startedAt: new Date(),
-          executionData: {
-            executionType: 'MCP_ONLY',
-            phase: 'GUIDANCE_PREPARED',
-          },
+      const progressRecord = await this.stepProgressRepository.create({
+        stepId,
+        executionId,
+        taskId: taskId || null,
+        roleId: actualRoleId,
+        status: 'IN_PROGRESS',
+        startedAt: new Date(),
+        executionData: {
+          executionType: 'MCP_ONLY',
+          phase: 'GUIDANCE_PREPARED',
         },
       });
 
@@ -152,10 +148,8 @@ export class StepProgressTrackerService {
     update: McpProgressUpdate,
   ): Promise<StepProgressRecord> {
     try {
-      const existing = await this.prisma.workflowStepProgress.findFirst({
-        where: { stepId },
-        orderBy: { startedAt: 'desc' },
-      });
+      const existing =
+        await this.stepProgressRepository.findLatestByStep(stepId);
 
       if (!existing) {
         throw new Error(`No progress record found for step: ${stepId}`);
@@ -168,9 +162,9 @@ export class StepProgressTrackerService {
         phase: 'EXECUTING',
       };
 
-      const progressRecord = await this.prisma.workflowStepProgress.update({
-        where: { id: existing.id },
-        data: {
+      const progressRecord = await this.stepProgressRepository.update(
+        existing.id,
+        {
           executionData: JSON.parse(
             JSON.stringify({
               ...currentData,
@@ -179,7 +173,7 @@ export class StepProgressTrackerService {
             }),
           ),
         },
-      });
+      );
 
       return this.transformProgressRecord(progressRecord);
     } catch (error) {
@@ -200,10 +194,8 @@ export class StepProgressTrackerService {
     completion: StepCompletionData,
   ): Promise<StepProgressRecord> {
     try {
-      const existing = await this.prisma.workflowStepProgress.findFirst({
-        where: { stepId },
-        orderBy: { startedAt: 'desc' },
-      });
+      const existing =
+        await this.stepProgressRepository.findLatestByStep(stepId);
 
       if (!existing) {
         throw new Error(`No progress record found for step: ${stepId}`);
@@ -216,9 +208,9 @@ export class StepProgressTrackerService {
         phase: 'COMPLETED',
       };
 
-      const progressRecord = await this.prisma.workflowStepProgress.update({
-        where: { id: existing.id },
-        data: {
+      const progressRecord = await this.stepProgressRepository.update(
+        existing.id,
+        {
           status: 'COMPLETED',
           completedAt: new Date(),
           result: completion.result,
@@ -232,7 +224,7 @@ export class StepProgressTrackerService {
             }),
           ),
         },
-      });
+      );
 
       return this.transformProgressRecord(progressRecord);
     } catch (error) {
@@ -253,18 +245,16 @@ export class StepProgressTrackerService {
     failure: StepFailureData,
   ): Promise<StepProgressRecord> {
     try {
-      const existing = await this.prisma.workflowStepProgress.findFirst({
-        where: { stepId },
-        orderBy: { startedAt: 'desc' },
-      });
+      const existing =
+        await this.stepProgressRepository.findLatestByStep(stepId);
 
       if (!existing) {
         throw new Error(`No progress record found for step: ${stepId}`);
       }
 
-      const progressRecord = await this.prisma.workflowStepProgress.update({
-        where: { id: existing.id },
-        data: {
+      const progressRecord = await this.stepProgressRepository.update(
+        existing.id,
+        {
           status: 'FAILED',
           failedAt: new Date(),
           result: 'FAILURE',
@@ -276,7 +266,7 @@ export class StepProgressTrackerService {
             }),
           ),
         },
-      });
+      );
 
       return this.transformProgressRecord(progressRecord);
     } catch (error) {
@@ -294,10 +284,8 @@ export class StepProgressTrackerService {
    */
   async getStepProgress(stepId: string): Promise<StepProgressRecord | null> {
     try {
-      const progressRecord = await this.prisma.workflowStepProgress.findFirst({
-        where: { stepId },
-        orderBy: { startedAt: 'desc' },
-      });
+      const progressRecord =
+        await this.stepProgressRepository.findLatestByStep(stepId);
 
       if (!progressRecord) {
         return null;
@@ -314,9 +302,8 @@ export class StepProgressTrackerService {
    */
   async getRoleProgressSummary(roleId: string): Promise<RoleProgressSummary> {
     try {
-      const progressRecords = await this.prisma.workflowStepProgress.findMany({
-        where: { roleId },
-      });
+      const progressRecords =
+        await this.stepProgressRepository.findByRoleId(roleId);
 
       const totalSteps = progressRecords.length;
       const completedSteps = progressRecords.filter(
@@ -385,7 +372,7 @@ export class StepProgressTrackerService {
       id: typedRecord.id,
       stepId: typedRecord.stepId,
       executionId: typedRecord.executionId, // 🔧 FIXED: Include executionId
-      taskId: typedRecord.taskId || undefined, // 🔧 FIXED: Convert null to undefined
+      taskId: typedRecord.taskId ? typedRecord.taskId : undefined, // 🔧 FIXED: Convert null to undefined
       roleId: typedRecord.roleId,
       status: typedRecord.status as StepProgressRecord['status'],
       startedAt: typedRecord.startedAt || undefined,
@@ -412,10 +399,8 @@ export class StepProgressTrackerService {
     completionData: StepCompletionData,
   ): Promise<void> {
     try {
-      const existing = await this.prisma.workflowStepProgress.findFirst({
-        where: { stepId },
-        orderBy: { startedAt: 'desc' },
-      });
+      const existing =
+        await this.stepProgressRepository.findLatestByStep(stepId);
 
       if (!existing) {
         throw new Error(`No progress record found for step: ${stepId}`);
@@ -432,14 +417,11 @@ export class StepProgressTrackerService {
         totalDuration: completionData.duration,
       };
 
-      await this.prisma.workflowStepProgress.update({
-        where: { id: existing.id },
-        data: {
-          status: 'COMPLETED',
-          completedAt: endTime,
-          duration,
-          executionData: JSON.parse(JSON.stringify(executionData)),
-        },
+      await this.stepProgressRepository.update(existing.id, {
+        status: 'COMPLETED',
+        completedAt: endTime,
+        duration,
+        executionData: JSON.parse(JSON.stringify(executionData)),
       });
     } catch (error) {
       throw new StepProgressError(

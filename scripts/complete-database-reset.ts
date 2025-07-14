@@ -35,7 +35,6 @@ async function completelyResetDatabase() {
     // 4. Delete all task-related data
     console.log('📋 Deleting task management data...');
 
-    await prisma.workflowTransition.deleteMany();
     await prisma.completionReport.deleteMany();
     await prisma.codeReview.deleteMany();
     await prisma.researchReport.deleteMany();

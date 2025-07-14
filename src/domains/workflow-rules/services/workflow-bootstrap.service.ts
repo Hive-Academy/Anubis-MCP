@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service';
+import { WorkflowBootstrapRepository } from '../repositories/implementations/workflow-bootstrap.repository';
 
 // Simplified bootstrap input - just execution setup
 export interface BootstrapWorkflowInput {
@@ -20,7 +20,9 @@ export interface BootstrapWorkflowInput {
  */
 @Injectable()
 export class WorkflowBootstrapService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly bootstrapRepository: WorkflowBootstrapRepository,
+  ) {}
 
   /**
    * Bootstrap a workflow - SIMPLE EXECUTION KICKOFF
@@ -39,128 +41,12 @@ export class WorkflowBootstrapService {
    * - Step 5: Role delegation
    */
   async bootstrapWorkflow(input: BootstrapWorkflowInput): Promise<any> {
-    try {
-      // Single transaction for workflow execution creation
-      const result = await this.prisma.$transaction(async (tx) => {
-        // Step 1: Get role with full context including capabilities
-        const role = await tx.workflowRole.findUnique({
-          where: { name: input.initialRole },
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            priority: true,
-            isActive: true,
-            capabilities: true,
-            coreResponsibilities: true,
-            keyCapabilities: true,
-          },
-        });
+    const result = await this.bootstrapRepository.bootstrapWorkflow(input);
 
-        if (!role) {
-          throw new Error(`Role '${input.initialRole}' not found`);
-        }
-
-        // Step 2: Get the first workflow step for this role
-        const firstStep = await tx.workflowStep.findFirst({
-          where: {
-            roleId: role.id,
-          },
-          orderBy: { sequenceNumber: 'asc' },
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            sequenceNumber: true,
-            stepType: true,
-            approach: true,
-          },
-        });
-
-        if (!firstStep) {
-          throw new Error(
-            `No workflow steps found for role '${input.initialRole}'`,
-          );
-        }
-
-        // Step 3: Create workflow execution - simple kickoff
-        const workflowExecution = await tx.workflowExecution.create({
-          data: {
-            taskId: null, // No task yet - will be created by workflow
-            currentRoleId: role.id,
-            currentStepId: firstStep.id,
-            executionMode: input.executionMode || 'GUIDED',
-            autoCreatedTask: false,
-            executionContext: {
-              bootstrapped: true,
-              bootstrapTime: new Date().toISOString(),
-              projectPath: input.projectPath,
-              initialRoleName: input.initialRole,
-              firstStepName: firstStep.name,
-              workflowPhase: 'kickoff',
-            },
-            executionState: {
-              phase: 'initialized',
-              currentContext: {},
-              progressMarkers: [],
-              currentStep: {
-                id: firstStep.id,
-                name: firstStep.name,
-                description: firstStep.description,
-                sequenceNumber: firstStep.sequenceNumber,
-                assignedAt: new Date().toISOString(),
-              },
-            },
-          },
-          include: {
-            task: true, // Will be null
-            currentRole: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-                priority: true,
-                isActive: true,
-                capabilities: true,
-                coreResponsibilities: true,
-                keyCapabilities: true,
-              },
-            },
-            currentStep: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-                approach: true,
-              },
-            },
-          },
-        });
-
-        return {
-          workflowExecution,
-          role,
-          firstStep,
-        };
-      });
-
-      // Return execution data for immediate workflow start
-      return {
-        success: true,
-        message: `Workflow execution started successfully. Begin with: ${result.firstStep.description}`,
-        resources: {
-          taskId: null, // Will be created by workflow
-          executionId: result.workflowExecution.id,
-          firstStepId: result.firstStep.id,
-        },
-        task: result.workflowExecution.task,
-        currentStep: result.firstStep,
-        currentRole: result.role,
-      };
-    } catch (error) {
+    if (!result.success || !result.data) {
       return {
         success: false,
-        message: `Bootstrap failed: ${error.message}`,
+        message: `Bootstrap failed: ${result.error || 'Unknown error'}`,
         resources: {
           taskId: null,
           executionId: '',
@@ -171,5 +57,19 @@ export class WorkflowBootstrapService {
         currentRole: null,
       };
     }
+
+    // Return execution data for immediate workflow start
+    return {
+      success: true,
+      message: `Workflow execution started successfully. Begin with: ${result.data.firstStep.description}`,
+      resources: {
+        taskId: null, // Will be created by workflow
+        executionId: result.data.workflowExecution.id,
+        firstStepId: result.data.firstStep.id,
+      },
+      task: result.data.workflowExecution.task,
+      currentStep: result.data.firstStep,
+      currentRole: result.data.role,
+    };
   }
 }

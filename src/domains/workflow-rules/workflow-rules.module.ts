@@ -1,13 +1,20 @@
 import { Module } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CoreWorkflowModule } from '../core-workflow/core-workflow.module';
-
 // MCP Operations
 import { WorkflowGuidanceMcpService } from './mcp-operations/workflow-guidance-mcp.service';
 import { StepExecutionMcpService } from './mcp-operations/step-execution-mcp.service';
 import { RoleTransitionMcpService } from './mcp-operations/role-transition-mcp.service';
 import { WorkflowExecutionMcpService } from './mcp-operations/workflow-execution-mcp.service';
 import { WorkflowBootstrapMcpService } from './mcp-operations/workflow-bootstrap-mcp.service';
+
+// Repository Implementations
+import { WorkflowExecutionRepository } from './repositories/implementations/workflow-execution.repository';
+import { WorkflowRoleRepository } from './repositories/implementations/workflow-role.repository';
+import { WorkflowBootstrapRepository } from './repositories/implementations/workflow-bootstrap.repository';
+import { StepProgressRepository } from './repositories/implementations/step-progress.repository';
+import { ProjectContextRepository } from './repositories/implementations/project-context.repository';
+import { ProgressCalculationRepository } from './repositories/implementations/progress-calculation.repository';
+import { WorkflowStepRepository } from './repositories/implementations/workflow-step.repository';
 
 // Services
 import { WorkflowGuidanceService } from './services/workflow-guidance.service';
@@ -21,14 +28,39 @@ import { WorkflowExecutionService } from './services/workflow-execution.service'
 import { WorkflowExecutionOperationsService } from './services/workflow-execution-operations.service';
 import { ExecutionDataEnricherService } from './services/execution-data-enricher.service';
 import { WorkflowBootstrapService } from './services/workflow-bootstrap.service';
-import { CoreServiceOrchestrator } from './services/core-service-orchestrator.service';
-
 import { ExecutionAnalyticsService } from './services/execution-analytics.service';
 
 @Module({
-  imports: [CoreWorkflowModule],
+  imports: [],
   providers: [
     PrismaService,
+
+    // Repository Implementations
+    {
+      provide: 'IWorkflowExecutionRepository',
+      useClass: WorkflowExecutionRepository,
+    },
+    {
+      provide: 'IWorkflowRoleRepository',
+      useClass: WorkflowRoleRepository,
+    },
+    {
+      provide: 'IStepProgressRepository',
+      useClass: StepProgressRepository,
+    },
+    {
+      provide: 'IWorkflowStepRepository',
+      useClass: WorkflowStepRepository,
+    },
+    {
+      provide: 'IProjectContextRepository',
+      useClass: ProjectContextRepository,
+    },
+    {
+      provide: 'IProgressCalculationRepository',
+      useClass: ProgressCalculationRepository,
+    },
+    WorkflowBootstrapRepository,
 
     // MCP Operations
     WorkflowGuidanceMcpService,
@@ -49,7 +81,6 @@ import { ExecutionAnalyticsService } from './services/execution-analytics.servic
     WorkflowExecutionOperationsService,
     ExecutionDataEnricherService,
     WorkflowBootstrapService,
-    CoreServiceOrchestrator,
     ExecutionAnalyticsService,
   ],
   exports: [
@@ -59,6 +90,10 @@ import { ExecutionAnalyticsService } from './services/execution-analytics.servic
     RoleTransitionMcpService,
     WorkflowExecutionMcpService,
     WorkflowBootstrapMcpService,
+
+    // Repository Implementations
+
+    WorkflowBootstrapRepository,
 
     // Core Services
     WorkflowGuidanceService,
@@ -72,8 +107,6 @@ import { ExecutionAnalyticsService } from './services/execution-analytics.servic
     ExecutionDataEnricherService,
     WorkflowBootstrapService,
     ExecutionAnalyticsService,
-
-    // Note: CoreServiceOrchestrator not exported - internal use only by MCP operation execution service
   ],
 })
 export class WorkflowRulesModule {}

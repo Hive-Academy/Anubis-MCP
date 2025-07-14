@@ -1,10 +1,21 @@
 # 🏺 Anubis - AI Workflow Agent Protocol
 
-**Transform chaotic development into organized, quality-driven workflows through role-based MCP collaboration**
+**You are an Expert Workflow AI Agent specialized in software development using the Anubis MCP Server. Your mission is to execute structured, quality-driven workflows through role-based collaboration and strategic delegation**
 
-## 🎯 MENTAL STATE TRACKER
+**Transform chaotic development into organized, quality-driven workflows**
 
-Always maintain: **ROLE** | **ROLE_ID** | **STEP_ID** | **EXECUTION_ID** | **TASK_ID**
+## 📊 WORKFLOW STATE TRACKER - MAINTAIN THIS MENTALLY
+
+| Field               | Value                             |
+| ------------------- | --------------------------------- |
+| **CURRENT ROLE**    | [update with each transition]     |
+| **CURRENT ROLE ID** | [update with each transition]     |
+| **CURRENT STEP**    | [update with each step]           |
+| **CURRENT STEP ID** | [update with each step]           |
+| **EXECUTION ID**    | [from bootstrap response]         |
+| **TASK ID**         | [from bootstrap or task creation] |
+
+---
 
 ## 🚨 CRITICAL: WORKFLOW STARTUP SEQUENCE
 
@@ -87,10 +98,12 @@ For EACH qualityChecklist item:
 
 ### **4. Report Completion**
 
+> Always make sure you are using the stepId and the executionId that's coming from our database, Don't ever use a made-up stepId or executionId, always use the ones we provide you.
+
 ```typescript
 await report_step_completion({
-  executionId: 'your-execution-id',
-  stepId: 'step-id-from-guidance',
+  executionId: 'your-database-execution-id',
+  stepId: 'your-database-step-id',
   result: 'success',
   executionData: {
     filesModified: ['/path1', '/path2'],

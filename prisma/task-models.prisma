@@ -24,7 +24,7 @@ model Task {
   codeReviews       CodeReview[]
   completionReports CompletionReport[]
 
-  workflowTransitions WorkflowTransition[]
+
   codebaseAnalysis    CodebaseAnalysis?
   workflowExecutions  WorkflowExecution[]
 
@@ -168,19 +168,7 @@ model CompletionReport {
   @@map("completion_reports")
 }
 
-model WorkflowTransition {
-  id                  Int      @id @default(autoincrement())
-  taskId              Int
-  fromMode            String
-  toMode              String
-  transitionTimestamp DateTime @default(now())
-  reason              String?
-  updatedAt           DateTime @updatedAt
 
-  task Task @relation(fields: [taskId], references: [id])
-
-  @@map("workflow_transitions")
-}
 
 // CodebaseAnalysis model for storing structured codebase analysis results
 // Critical for maintaining consistency across roles and preventing re-analysis

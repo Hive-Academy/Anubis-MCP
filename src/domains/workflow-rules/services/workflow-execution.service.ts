@@ -1,6 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { WorkflowExecution, WorkflowExecutionMode } from 'generated/prisma';
-import { PrismaService } from '../../../prisma/prisma.service';
+import { Injectable, Inject } from '@nestjs/common';
+import { WorkflowExecutionMode } from 'generated/prisma';
+import { IWorkflowExecutionRepository } from '../repositories/interfaces/workflow-execution.repository.interface';
+import {
+  CreateWorkflowExecutionData,
+  WorkflowExecutionWithRelations,
+} from '../repositories/types/workflow-execution.types';
 import {
   BaseServiceConfig,
   ConfigurableService,
@@ -10,6 +14,7 @@ import {
   WorkflowExecutionState,
   WorkflowExecutionStateSchema,
 } from '../utils/workflow-execution-state.schema';
+import { IWorkflowStepRepository } from '../repositories';
 
 // Configuration interfaces to eliminate hardcoding
 export interface ExecutionServiceConfig extends BaseServiceConfig {
@@ -55,11 +60,7 @@ export interface UpdateWorkflowExecutionDto {
   lastError?: Record<string, any>;
 }
 
-export interface WorkflowExecutionWithRelations extends WorkflowExecution {
-  task?: any;
-  currentRole?: any;
-  currentStep?: any;
-}
+// WorkflowExecutionWithRelations is now imported from repository types
 
 /**
  * Workflow Execution Service
@@ -98,7 +99,12 @@ export class WorkflowExecutionService extends ConfigurableService<ExecutionServi
     },
   };
 
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    @Inject('IWorkflowExecutionRepository')
+    private readonly workflowExecutionRepository: IWorkflowExecutionRepository,
+    @Inject('IWorkflowStepRepository')
+    private readonly stepRepository: IWorkflowStepRepository,
+  ) {
     super();
     this.initializeConfig();
   }
@@ -134,16 +140,17 @@ export class WorkflowExecutionService extends ConfigurableService<ExecutionServi
   ): Promise<WorkflowExecutionWithRelations> {
     this.validateInput(input);
 
-    // Get the first step for the role to assign as currentStepId
-    const firstStep = await this.prisma.workflowStep.findFirst({
-      where: { roleId: input.currentRoleId },
-      orderBy: { sequenceNumber: 'asc' },
-    });
+    const firstStepResponse = await this.stepRepository.findByRoleId(
+      input.currentRoleId,
+    );
 
-    // Build create data with optional taskId
-    const createData: any = {
+    const firstStep =
+      firstStepResponse.length > 0 ? firstStepResponse[0] : null;
+
+    // Build create data with repository type
+    const createData: CreateWorkflowExecutionData = {
+      taskId: input.taskId,
       currentRoleId: input.currentRoleId,
-      currentStepId: firstStep?.id || null,
       executionMode:
         input.executionMode || this.getConfigValue('defaults').executionMode,
       autoCreatedTask: input.autoCreatedTask || false,
@@ -163,19 +170,7 @@ export class WorkflowExecutionService extends ConfigurableService<ExecutionServi
       },
     };
 
-    // Only add taskId if provided
-    if (input.taskId !== undefined) {
-      createData.taskId = input.taskId;
-    }
-
-    const execution = await this.prisma.workflowExecution.create({
-      data: createData,
-      include: {
-        task: true,
-        currentRole: true,
-        currentStep: true,
-      },
-    });
+    const execution = await this.workflowExecutionRepository.create(createData);
 
     return execution;
   }
@@ -186,14 +181,14 @@ export class WorkflowExecutionService extends ConfigurableService<ExecutionServi
   async getExecutionById(
     executionId: string,
   ): Promise<WorkflowExecutionWithRelations> {
-    const execution = await this.prisma.workflowExecution.findUnique({
-      where: { id: executionId },
-      include: {
+    const execution = await this.workflowExecutionRepository.findById(
+      executionId,
+      {
         task: true,
         currentRole: true,
         currentStep: true,
       },
-    });
+    );
 
     if (!execution) {
       throw new Error(`Workflow execution not found: ${executionId}`);
@@ -208,14 +203,10 @@ export class WorkflowExecutionService extends ConfigurableService<ExecutionServi
   async getExecutionByTaskId(
     taskId: number,
   ): Promise<WorkflowExecutionWithRelations | null> {
-    return await this.prisma.workflowExecution.findFirst({
-      where: { taskId },
-      include: {
-        task: true,
-        currentRole: true,
-        currentStep: true,
-      },
-      orderBy: { createdAt: 'desc' },
+    return await this.workflowExecutionRepository.findByTaskId(taskId, {
+      task: true,
+      currentRole: true,
+      currentStep: true,
     });
   }
 
@@ -226,15 +217,10 @@ export class WorkflowExecutionService extends ConfigurableService<ExecutionServi
     executionId: string,
     updateData: Record<string, any>,
   ): Promise<WorkflowExecutionWithRelations> {
-    const execution = await this.prisma.workflowExecution.update({
-      where: { id: executionId },
-      data: updateData,
-      include: {
-        task: true,
-        currentRole: true,
-        currentStep: true,
-      },
-    });
+    const execution = await this.workflowExecutionRepository.update(
+      executionId,
+      updateData,
+    );
 
     return execution;
   }
@@ -259,16 +245,10 @@ export class WorkflowExecutionService extends ConfigurableService<ExecutionServi
       );
     }
 
-    return this.updateExecution(executionId, {
+    return this.workflowExecutionRepository.update(executionId, {
       stepsCompleted,
       totalSteps,
       progressPercentage,
-      executionState: {
-        ...(currentExecution.executionState as Record<string, any>),
-        lastProgressUpdate: new Date().toISOString(),
-        stepsCompleted,
-        totalSteps,
-      },
     });
   }
 
@@ -292,16 +272,10 @@ export class WorkflowExecutionService extends ConfigurableService<ExecutionServi
    * Get all active executions
    */
   async getActiveExecutions(): Promise<WorkflowExecutionWithRelations[]> {
-    return await this.prisma.workflowExecution.findMany({
-      where: {
-        completedAt: null,
-      },
-      include: {
-        task: true,
-        currentRole: true,
-        currentStep: true,
-      },
-      orderBy: { createdAt: 'desc' },
+    return await this.workflowExecutionRepository.findActiveExecutions({
+      task: true,
+      currentRole: true,
+      currentStep: true,
     });
   }
 
@@ -316,22 +290,30 @@ export class WorkflowExecutionService extends ConfigurableService<ExecutionServi
     retryCount: number;
     maxRetries: number;
   }> {
-    const currentExecution = await this.getExecutionById(executionId);
-    const newRecoveryAttempts = currentExecution.recoveryAttempts + 1;
+    // Simplified: Get execution and manually handle error
+    const execution =
+      await this.workflowExecutionRepository.findById(executionId);
+    if (!execution) {
+      throw new Error(`Execution not found: ${executionId}`);
+    }
 
-    await this.updateExecution(executionId, {
+    const newRecoveryAttempts = (execution.recoveryAttempts || 0) + 1;
+    const maxRetries = execution.maxRecoveryAttempts || 3;
+
+    await this.workflowExecutionRepository.update(executionId, {
+      recoveryAttempts: newRecoveryAttempts,
       lastError: {
-        message: error.message,
+        message: error.message || 'Unknown error',
         timestamp: new Date().toISOString(),
         stack: error.stack,
+        details: error.details || error,
       },
-      recoveryAttempts: newRecoveryAttempts,
     });
 
     return {
-      canRetry: newRecoveryAttempts < currentExecution.maxRecoveryAttempts,
+      canRetry: newRecoveryAttempts < maxRetries,
       retryCount: newRecoveryAttempts,
-      maxRetries: currentExecution.maxRecoveryAttempts,
+      maxRetries,
     };
   }
 
@@ -356,11 +338,8 @@ export class WorkflowExecutionService extends ConfigurableService<ExecutionServi
     // Runtime validation – throws if schema mismatch
     WorkflowExecutionStateSchema.parse(newState);
 
-    await this.prisma.workflowExecution.update({
-      where: { id: executionId },
-      data: {
-        executionState: newState as unknown as Record<string, any>,
-      },
+    await this.workflowExecutionRepository.update(executionId, {
+      executionState: newState as unknown as Record<string, any>,
     });
   }
 }

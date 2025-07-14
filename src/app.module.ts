@@ -13,7 +13,7 @@ import {
   HttpException,
   Logger,
 } from '@nestjs/common';
-import { CoreWorkflowModule } from './domains/core-workflow/core-workflow.module';
+import { TaskManagementModule } from './domains/task-management/task-management.module';
 import { InitRulesModule } from './domains/init-rules/init-rules.module';
 import { WorkflowRulesModule } from './domains/workflow-rules/workflow-rules.module';
 
@@ -92,7 +92,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     }),
 
     // Rule-based workflow architecture - clean and focused
-    CoreWorkflowModule, // Internal task management services (NOT MCP tools)
+    TaskManagementModule, // Internal task management services (NOT MCP tools)
     WorkflowRulesModule, // Rule-driven workflow MCP interface (8 tools)
     InitRulesModule, // Tool initialization for different AI agents,
     UtilsModule,

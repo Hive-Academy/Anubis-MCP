@@ -309,13 +309,13 @@ CREATE TABLE "workflow_executions" (
     "maxRecoveryAttempts" INTEGER NOT NULL DEFAULT 3,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "workflow_executions_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT "workflow_executions_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "tasks" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "workflow_executions_currentRoleId_fkey" FOREIGN KEY ("currentRoleId") REFERENCES "workflow_roles" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "workflow_executions_currentStepId_fkey" FOREIGN KEY ("currentStepId") REFERENCES "workflow_steps" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable
-CREATE TABLE "task" (
+CREATE TABLE "tasks" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "name" TEXT NOT NULL,
     "slug" TEXT,
@@ -332,7 +332,7 @@ CREATE TABLE "task" (
 );
 
 -- CreateTable
-CREATE TABLE "task_description" (
+CREATE TABLE "task_descriptions" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "taskId" INTEGER NOT NULL,
     "description" TEXT NOT NULL,
@@ -341,11 +341,11 @@ CREATE TABLE "task_description" (
     "acceptanceCriteria" JSONB NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "TaskDescription_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "TaskDescription_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "tasks" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
-CREATE TABLE "subtask" (
+CREATE TABLE "subtasks" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "taskId" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
@@ -360,32 +360,32 @@ CREATE TABLE "subtask" (
     "acceptanceCriteria" JSONB,
     "dependencies" JSONB,
     "completionEvidence" JSONB,
-    CONSTRAINT "Subtask_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "Subtask_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "tasks" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
-CREATE TABLE "subtask_dependency" (
+CREATE TABLE "subtask_dependencies" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "dependentSubtaskId" INTEGER NOT NULL,
     "requiredSubtaskId" INTEGER NOT NULL,
     "dependencyType" TEXT NOT NULL DEFAULT 'sequential',
-    CONSTRAINT "SubtaskDependency_dependentSubtaskId_fkey" FOREIGN KEY ("dependentSubtaskId") REFERENCES "Subtask" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "SubtaskDependency_requiredSubtaskId_fkey" FOREIGN KEY ("requiredSubtaskId") REFERENCES "Subtask" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "SubtaskDependency_dependentSubtaskId_fkey" FOREIGN KEY ("dependentSubtaskId") REFERENCES "subtasks" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "SubtaskDependency_requiredSubtaskId_fkey" FOREIGN KEY ("requiredSubtaskId") REFERENCES "subtasks" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
-CREATE TABLE "delegation_record" (
+CREATE TABLE "delegation_records" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "taskId" INTEGER NOT NULL,
     "fromMode" TEXT NOT NULL,
     "toMode" TEXT NOT NULL,
     "delegationTimestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "message" TEXT,
-    CONSTRAINT "DelegationRecord_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "DelegationRecord_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "tasks" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
-CREATE TABLE "research_report" (
+CREATE TABLE "research_reports" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "taskId" INTEGER NOT NULL,
     "title" TEXT NOT NULL,
@@ -395,11 +395,11 @@ CREATE TABLE "research_report" (
     "references" JSONB NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "ResearchReport_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "ResearchReport_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "tasks" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
-CREATE TABLE "code_review" (
+CREATE TABLE "code_reviews" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "taskId" INTEGER NOT NULL,
     "status" TEXT NOT NULL,
@@ -411,11 +411,11 @@ CREATE TABLE "code_review" (
     "requiredChanges" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "CodeReview_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "CodeReview_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "tasks" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
-CREATE TABLE "completion_report" (
+CREATE TABLE "completion_reports" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "taskId" INTEGER NOT NULL,
     "summary" TEXT NOT NULL,
@@ -424,20 +424,10 @@ CREATE TABLE "completion_report" (
     "acceptanceCriteriaVerification" JSONB NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "CompletionReport_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "CompletionReport_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "tasks" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
--- CreateTable
-CREATE TABLE "workflow_transition" (
-    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "taskId" INTEGER NOT NULL,
-    "fromMode" TEXT NOT NULL,
-    "toMode" TEXT NOT NULL,
-    "transitionTimestamp" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "reason" TEXT,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "WorkflowTransition_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
-);
+
 
 -- CreateTable
 CREATE TABLE "codebase_analysis" (
@@ -453,7 +443,7 @@ CREATE TABLE "codebase_analysis" (
     "updatedAt" DATETIME NOT NULL,
     "analyzedBy" TEXT NOT NULL,
     "analysisVersion" TEXT NOT NULL DEFAULT '1.0',
-    CONSTRAINT "CodebaseAnalysis_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "CodebaseAnalysis_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "tasks" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateIndex
@@ -598,55 +588,55 @@ CREATE INDEX "workflow_executions_currentStepId_idx" ON "workflow_executions"("c
 CREATE INDEX "workflow_executions_progressPercentage_idx" ON "workflow_executions"("progressPercentage");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Task_slug_key" ON "task"("slug");
+CREATE UNIQUE INDEX "Task_slug_key" ON "tasks"("slug");
 
 -- CreateIndex
-CREATE INDEX "Task_status_idx" ON "task"("status");
+CREATE INDEX "Task_status_idx" ON "tasks"("status");
 
 -- CreateIndex
-CREATE INDEX "Task_owner_idx" ON "task"("owner");
+CREATE INDEX "Task_owner_idx" ON "tasks"("owner");
 
 -- CreateIndex
-CREATE INDEX "Task_currentMode_idx" ON "task"("currentMode");
+CREATE INDEX "Task_currentMode_idx" ON "tasks"("currentMode");
 
 -- CreateIndex
-CREATE INDEX "Task_priority_idx" ON "task"("priority");
+CREATE INDEX "Task_priority_idx" ON "tasks"("priority");
 
 -- CreateIndex
-CREATE INDEX "Task_slug_idx" ON "task"("slug");
+CREATE INDEX "Task_slug_idx" ON "tasks"("slug");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "TaskDescription_taskId_key" ON "task_description"("taskId");
+CREATE UNIQUE INDEX "TaskDescription_taskId_key" ON "task_descriptions"("taskId");
 
 -- CreateIndex
-CREATE INDEX "Subtask_taskId_idx" ON "subtask"("taskId");
+CREATE INDEX "Subtask_taskId_idx" ON "subtasks"("taskId");
 
 -- CreateIndex
-CREATE INDEX "Subtask_status_idx" ON "subtask"("status");
+CREATE INDEX "Subtask_status_idx" ON "subtasks"("status");
 
 -- CreateIndex
-CREATE INDEX "Subtask_batchId_idx" ON "subtask"("batchId");
+CREATE INDEX "Subtask_batchId_idx" ON "subtasks"("batchId");
 
 -- CreateIndex
-CREATE INDEX "Subtask_sequenceNumber_idx" ON "subtask"("sequenceNumber");
+CREATE INDEX "Subtask_sequenceNumber_idx" ON "subtasks"("sequenceNumber");
 
 -- CreateIndex
-CREATE INDEX "SubtaskDependency_dependentSubtaskId_idx" ON "subtask_dependency"("dependentSubtaskId");
+CREATE INDEX "SubtaskDependency_dependentSubtaskId_idx" ON "subtask_dependencies"("dependentSubtaskId");
 
 -- CreateIndex
-CREATE INDEX "SubtaskDependency_requiredSubtaskId_idx" ON "subtask_dependency"("requiredSubtaskId");
+CREATE INDEX "SubtaskDependency_requiredSubtaskId_idx" ON "subtask_dependencies"("requiredSubtaskId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "SubtaskDependency_dependentSubtaskId_requiredSubtaskId_key" ON "subtask_dependency"("dependentSubtaskId", "requiredSubtaskId");
+CREATE UNIQUE INDEX "SubtaskDependency_dependentSubtaskId_requiredSubtaskId_key" ON "subtask_dependencies"("dependentSubtaskId", "requiredSubtaskId");
 
 -- CreateIndex
-CREATE INDEX "DelegationRecord_taskId_idx" ON "delegation_record"("taskId");
+CREATE INDEX "DelegationRecord_taskId_idx" ON "delegation_records"("taskId");
 
 -- CreateIndex
-CREATE INDEX "DelegationRecord_fromMode_idx" ON "delegation_record"("fromMode");
+CREATE INDEX "DelegationRecord_fromMode_idx" ON "delegation_records"("fromMode");
 
 -- CreateIndex
-CREATE INDEX "DelegationRecord_toMode_idx" ON "delegation_record"("toMode");
+CREATE INDEX "DelegationRecord_toMode_idx" ON "delegation_records"("toMode");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "CodebaseAnalysis_taskId_key" ON "codebase_analysis"("taskId");

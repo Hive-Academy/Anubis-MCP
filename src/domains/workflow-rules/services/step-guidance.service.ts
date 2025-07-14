@@ -113,11 +113,30 @@ export class StepGuidanceService {
       }
     }
 
-    // Get guidance from database step data
-    const enhancedGuidance = extractStreamlinedGuidance(step);
+    // Get guidance from database step data (fix type mismatch)
+    const guidanceData = {
+      stepGuidance:
+        Array.isArray(step.stepGuidance) && step.stepGuidance.length > 0
+          ? step.stepGuidance[0]
+          : null,
+      qualityChecks: step.qualityChecks,
+    };
+
+    const enhancedGuidance = extractStreamlinedGuidance(guidanceData);
 
     return {
-      step: StepDataUtils.extractStepInfo(step),
+      step: StepDataUtils.extractStepInfo({
+        id: step.id,
+        name: step.name,
+        description: step.description,
+        stepType: step.stepType,
+        roleId: step.roleId,
+        approach: step.approach,
+        sequenceNumber: step.sequenceNumber,
+        isRequired: step.isRequired,
+        createdAt: new Date(), // Provide default dates
+        updatedAt: new Date(),
+      }),
       qualityChecklist: enhancedGuidance.qualityChecklist,
       stepByStep: enhancedGuidance.stepByStep,
       approach: step.approach,
