@@ -22,10 +22,7 @@
     "cursor",
     "nestjs",
     "prisma",
-    "docker",
-    "reporting",
-    "analytics",
-    "playwright"
+    "docker"
   ],
   "main": "dist/cli.js",
   "bin": {
