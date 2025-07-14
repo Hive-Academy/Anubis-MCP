@@ -1,130 +1,56 @@
 # 🏺 Developer Guide - Anubis (v1.2.11)
 
-**Intelligent Guidance for AI Workflows | Enterprise-Grade MCP Workflow Intelligence System**
-
-**Anubis is the intelligent guide for AI workflows - the first MCP-compliant system that embeds intelligent guidance directly into each step, ensuring your AI agents follow complex development processes consistently and reliably.**
-
-This guide documents the **Anubis** v1.2.11 - a sophisticated, enterprise-grade workflow management system built with NestJS v11.0.1, Prisma v6.9.0, and @rekog/mcp-nest v1.5.2.
+**Repository Pattern Architecture | Enterprise MCP Workflow System**
 
 ## Quick Reference
 
 - **Version**: v1.2.11
-- **Package**: @hive-academy/anubis v1.2.11
-- **Docker**: hiveacademy/anubis
-- **MCP Protocol**: Fully compliant guidance-only architecture
-- **Database**: SQLite (default) / PostgreSQL (production)
-- **Node.js**: >=18.0.0 required
+- **Package**: @hive-academy/anubis v1.2.11  
+- **Architecture**: Repository Pattern (225% implementation success)
+- **Type Safety**: 95% TypeScript compliance, zero compilation errors
 
-### **🎯 Architecture Overview**
-
-**Current Implementation:**
-
-- **Backend**: NestJS v11.0.1 with TypeScript for enterprise-grade scalability
-- **Database**: Prisma ORM v6.9.0 with SQLite (default) and PostgreSQL support
-- **MCP Integration**: @rekog/mcp-nest v1.5.2 for seamless protocol compliance
-- **Validation**: Zod v3.24.4 for comprehensive parameter validation
-- **Package**: @hive-academy/anubis v1.2.11
-
-**Key Features (v1.2.11):**
-
-- **Repository Pattern Architecture** with comprehensive data access abstraction (225% implementation success)
-- **95% Type Safety** with zero TypeScript compilation errors
-- **Domain-driven design** with clear boundaries and separation of concerns
-- **MCP-compliant guidance architecture** providing intelligent workflow guidance
-- **Database-driven workflow intelligence** with dynamic rule management
-- **Feature-based organization** with embedded workflow intelligence
-- **12 specialized MCP tools** for comprehensive workflow management
-
-## **1. Development Setup**
-
-### **Prerequisites**
+## **🚀 Quick Setup**
 
 ```bash
-# Required versions
-Node.js >= 18.0.0
-npm >= 8.0.0
-```
-
-### **Local Development Setup**
-
-```bash
-# Clone the repository
-git clone https://github.com/Hive-Academy/Anubis-MCP.git
-cd Anubis
-
-# Install dependencies
+# Clone and install
+git clone https://github.com/hive-academy/anubis.git
+cd anubis
 npm install
 
-# Setup database (automatic Prisma client generation)
-npx prisma generate
-npx prisma db push
+# Database setup
+npm run prisma:generate
+npm run prisma:migrate
 
-# Start development server
-npm run start:dev
-
-# Alternative: Start with debugging
-npm run start:debug
+# Build and verify
+npm run build
+npm run test
 ```
 
-### **Database Setup**
+### **Development Commands**
 
 ```bash
-# Generate Prisma client
-npm run db:generate
-
-# Run database migrations
-npm run db:migrate
-
-# Initialize database (generate + migrate)
-npm run db:init
-
-# Reset database and seed workflow rules
-npm run db:reset
-
-# Generate workflow rules
-npm run rules:gen
-
-# Verify v1.2.11 setup - should show 0 TypeScript compilation errors
-npm run type-check
-echo "TypeScript compilation should show 0 errors (v1.2.11 achievement)"
+npm run start:dev    # Development server
+npm run build        # Production build  
+npm run test         # Run tests
+npm run type-check   # TypeScript validation
 ```
 
-### **NPX Package Usage (Recommended)**
+## **🏗️ Repository Pattern Development**
 
-```bash
-# Use as NPX package (no local installation needed)
-npx -y @hive-academy/anubis
-
-# Configure in MCP client (Cursor IDE)
-{
-  "mcpServers": {
-    "anubis": {
-      "command": "npx",
-      "args": ["-y", "@hive-academy/anubis"]
-    }
-  }
-}
-```
-
-## **1.5 Repository Pattern Development (v1.2.11)**
-
-### **Creating New Services with Repository Pattern**
-
-When creating new services, follow the established repository pattern:
+### **Creating Services**
 
 ```typescript
-// 1. Define Repository Interface
+// 1. Repository Interface
 export interface IMyEntityRepository {
   findById(id: string): Promise<MyEntity | null>;
   create(data: CreateMyEntityData): Promise<MyEntity>;
   update(id: string, data: UpdateMyEntityData): Promise<MyEntity>;
-  delete(id: string): Promise<void>;
 }
 
-// 2. Implement Repository
+// 2. Repository Implementation  
 @Injectable()
 export class MyEntityRepository implements IMyEntityRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
 
   async findById(id: string): Promise<MyEntity | null> {
     return this.prisma.myEntity.findUnique({ where: { id } });
@@ -133,440 +59,94 @@ export class MyEntityRepository implements IMyEntityRepository {
   async create(data: CreateMyEntityData): Promise<MyEntity> {
     return this.prisma.myEntity.create({ data });
   }
-
-  async update(id: string, data: UpdateMyEntityData): Promise<MyEntity> {
-    return this.prisma.myEntity.update({ where: { id }, data });
-  }
-
-  async delete(id: string): Promise<void> {
-    await this.prisma.myEntity.delete({ where: { id } });
-  }
 }
 
-// 3. Create Business Service
+// 3. Operations Service
 @Injectable()
-export class MyEntityService {
-  constructor(
-    private readonly myEntityRepository: IMyEntityRepository,
-    private readonly logger: Logger,
-  ) {}
+export class MyEntityOperationsService {
+  constructor(private repository: IMyEntityRepository) {}
 
-  async processEntity(id: string): Promise<ProcessResult> {
-    const entity = await this.myEntityRepository.findById(id);
-    if (!entity) {
-      throw new NotFoundException('Entity not found');
-    }
-    
-    // Business logic here
-    return { success: true, entity };
+  async getEntity(id: string): Promise<MyEntity> {
+    const entity = await this.repository.findById(id);
+    if (!entity) throw new NotFoundException('Entity not found');
+    return entity;
   }
 }
 ```
 
-### **Module Registration**
+### **MCP Tool Integration**
 
 ```typescript
-@Module({
-  imports: [PrismaModule],
-  providers: [
-    // Repository Implementations
-    MyEntityRepository,
-    
-    // Business Services
-    MyEntityService,
-  ],
-  exports: [MyEntityService],
-})
-export class MyFeatureModule {}
-```
+@McpTool()
+export class MyEntityTools {
+  constructor(private operations: MyEntityOperationsService) {}
 
-### **Testing Repository Pattern Services**
-
-#### **Unit Testing with Mocks**
-
-```typescript
-// Test Setup
-const mockRepository = {
-  findById: jest.fn(),
-  create: jest.fn(),
-  update: jest.fn(),
-  delete: jest.fn(),
-};
-
-const module = await Test.createTestingModule({
-  providers: [
-    MyEntityService,
-    { provide: IMyEntityRepository, useValue: mockRepository },
-  ],
-}).compile();
-
-// Test Implementation
-it('should process entity successfully', async () => {
-  const entityData = { id: '1', name: 'Test' };
-  mockRepository.findById.mockResolvedValue(entityData);
-
-  const result = await service.processEntity('1');
-
-  expect(mockRepository.findById).toHaveBeenCalledWith('1');
-  expect(result.success).toBe(true);
-  expect(result.entity).toEqual(entityData);
-});
-```
-
-#### **Integration Testing**
-
-```typescript
-// Database Integration Test
-const module = await Test.createTestingModule({
-  imports: [PrismaModule],
-  providers: [MyEntityRepository, MyEntityService],
-}).compile();
-
-// Use test database for integration tests
-const prisma = module.get<PrismaService>(PrismaService);
-await prisma.$reset(); // Clean state for each test
-```
-
-## **2. Project Structure & Development Patterns**
-
-### **Domain-Driven Architecture**
-
-```
-src/task-workflow/
-├── domains/
-│   ├── workflow-rules/              # PRIMARY MCP INTERFACE
-│   │   ├── services/                # Core workflow services
-│   │   │   ├── workflow-guidance.service.ts
-│   │   │   ├── step-guidance.service.ts
-│   │   │   ├── step-execution.service.ts
-│   │   │   ├── role-transition.service.ts
-│   │   │   ├── workflow-execution.service.ts
-│   │   │   ├── workflow-bootstrap.service.ts
-│   │   │   └── core-service-orchestrator.service.ts
-│   │   ├── mcp-operations/          # MCP tool implementations
-│   │   │   ├── workflow-guidance-mcp.service.ts
-│   │   │   ├── step-execution-mcp.service.ts
-│   │   │   ├── role-transition-mcp.service.ts
-│   │   │   ├── workflow-execution-mcp.service.ts
-│   │   │   ├── workflow-bootstrap-mcp.service.ts
-│   │   │   └── mcp-operation-execution-mcp.service.ts
-│   │   └── utils/                   # Shared utilities
-│   ├── core-workflow/               # INTERNAL BUSINESS LOGIC
-│   │   ├── task-operations.service.ts
-│   │   ├── planning-operations.service.ts
-│   │   ├── individual-subtask-operations.service.ts
-│   │   ├── workflow-operations.service.ts
-│   │   ├── review-operations.service.ts
-│   │   ├── research-operations.service.ts
-│   │   └── schemas/                 # Zod validation schemas
-│   └── reporting/                   # ANALYTICS & DASHBOARDS
-│       ├── shared/                  # Core shared services
-│       ├── workflow-analytics/      # Workflow analysis
-│       ├── task-management/         # Task reporting
-│       └── dashboard/               # Interactive dashboards
-```
-
-### **Development Patterns**
-
-#### **1. MCP Tool Development Pattern**
-
-```typescript
-@Injectable()
-export class ExampleMCPService {
-  constructor(
-    private readonly workflowGuidance: WorkflowGuidanceService,
-    private readonly stepGuidance: StepGuidanceService,
-    private readonly prisma: PrismaService,
-  ) {}
-
-  @Tool({
-    name: 'example_operation',
-    description: 'Example MCP tool with embedded intelligence',
-    schema: ExampleParamsSchema, // Zod validation schema
+  @McpFunction('get_entity', {
+    description: 'Get entity by ID',
+    parameters: z.object({
+      id: z.string(),
+    }),
   })
-  async exampleOperation(params: ExampleParams): Promise<EnhancedMCPResponse> {
-    // 1. Validate parameters (automatic with Zod)
-    // 2. Execute core business logic
-    const result = await this.executeBusinessLogic(params);
-
-    // 3. Generate embedded intelligence
-    const guidance = await this.workflowGuidance.generateRoleGuidance({
-      roleName: params.currentRole,
-      serviceType: 'example',
-      taskContext: params.taskContext,
-      executionData: result,
-    });
-
-    // 4. Return enhanced response with embedded intelligence
-    return {
-      data: result,
-      workflowGuidance: guidance,
-      recommendations: await this.generateRecommendations(params, result),
-      metadata: {
-        operation: 'example_operation',
-        serviceValidated: true,
-        responseTime: Date.now() - startTime,
-      },
-    };
+  async getEntity(params: { id: string }) {
+    return this.operations.getEntity(params.id);
   }
 }
 ```
 
-#### **2. Service Development Pattern**
+## **📁 Project Structure**
 
-```typescript
-@Injectable()
-export class ExampleService extends ConfigurableService<ExampleConfig> {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly logger: GlobalFileLoggerService,
-  ) {
-    super('ExampleService');
-  }
-
-  async executeOperation(params: ExampleParams): Promise<ExampleResult> {
-    try {
-      // 1. Log operation start
-      this.logger.log('Starting example operation', { params });
-
-      // 2. Validate business rules
-      await this.validateBusinessRules(params);
-
-      // 3. Execute database operations with Prisma
-      const result = await this.prisma.exampleEntity.create({
-        data: params.data,
-        include: {
-          relatedEntities: true,
-        },
-      });
-
-      // 4. Apply business logic
-      const processedResult = await this.processResult(result);
-
-      // 5. Log success and return
-      this.logger.log('Example operation completed', {
-        result: processedResult,
-      });
-      return processedResult;
-    } catch (error) {
-      // 6. Handle errors with structured logging
-      this.logger.error('Example operation failed', { error, params });
-      throw new Error(`Example operation failed: ${error.message}`);
-    }
-  }
-}
+```
+src/
+├── domains/
+│   ├── task-management/        # Task workflow operations
+│   ├── workflow-rules/         # MCP workflow tools  
+│   └── init-rules/            # Rule initialization
+├── prisma/                    # Database services
+├── types/                     # Shared TypeScript types
+└── utils/                     # Common utilities
 ```
 
-#### **3. Zod Schema Pattern**
+## **🧪 Testing Strategy**
+
+### **Unit Tests**
 
 ```typescript
-import { z } from 'zod';
-
-// Define parameter schema
-export const ExampleParamsSchema = z.object({
-  taskId: z.number().int().positive(),
-  operationType: z.enum(['create', 'update', 'delete']),
-  data: z.object({
-    name: z.string().min(1).max(255),
-    description: z.string().optional(),
-    priority: z.enum(['Low', 'Medium', 'High', 'Critical']),
-  }),
-  options: z.object({
-    includeRelated: z.boolean().default(false),
-    validateConstraints: z.boolean().default(true),
-  }).optional(),
-});
-
-// Export type for TypeScript
-export type ExampleParams = z.infer<typeof ExampleParamsSchema>;
-
-// Use in MCP tool
-@Tool({
-  name: 'example_operation',
-  description: 'Example operation with comprehensive validation',
-  schema: ExampleParamsSchema,
-})
-async exampleOperation(params: ExampleParams): Promise<ExampleResponse> {
-  // Parameters are automatically validated by @rekog/mcp-nest
-  // TypeScript types are enforced
-  return await this.exampleService.executeOperation(params);
-}
-```
-
-## **3. Coding Standards & Best Practices**
-
-### **TypeScript Standards**
-
-```typescript
-// 1. Use strict TypeScript configuration
-{
-  "compilerOptions": {
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true
-  }
-}
-
-// 2. Prefer interfaces for object shapes
-interface UserProfile {
-  id: number;
-  username: string;
-  email: string;
-}
-
-// 3. Use type aliases for complex types
-type UserId = string | number;
-type UserWithRoles = UserProfile & { roles: string[] };
-
-// 4. Use const assertions for immutable data
-const httpMethods = ['GET', 'POST', 'PUT', 'DELETE'] as const;
-type HttpMethod = typeof httpMethods[number];
-
-// 5. Define return types explicitly
-function calculateTotal(items: Item[]): number {
-  return items.reduce((sum, item) => sum + item.price, 0);
-}
-```
-
-### **NestJS Patterns**
-
-```typescript
-// 1. Use dependency injection properly
-@Injectable()
-export class ExampleService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly logger: GlobalFileLoggerService,
-    @Inject('CONFIG_TOKEN') private readonly config: ExampleConfig,
-  ) {}
-}
-
-// 2. Use proper module organization
-@Module({
-  imports: [PrismaModule, UtilsModule],
-  providers: [ExampleService, ExampleMCPService],
-  exports: [ExampleService],
-})
-export class ExampleModule {}
-
-// 3. Use guards for validation
-@Injectable()
-export class ExampleGuard implements CanActivate {
-  canActivate(context: ExecutionContext): boolean {
-    // Validation logic
-    return true;
-  }
-}
-```
-
-### **Database Patterns with Prisma**
-
-```typescript
-// 1. Use proper Prisma patterns
-async findTaskWithRelations(taskId: number): Promise<TaskWithRelations> {
-  return await this.prisma.task.findUnique({
-    where: { id: taskId },
-    include: {
-      plans: {
-        include: {
-          subtasks: true,
-        },
-      },
-      delegations: true,
-      reviews: true,
-      research: true,
-    },
-  });
-}
-
-// 2. Use transactions for complex operations
-async createTaskWithPlan(taskData: TaskData, planData: PlanData): Promise<Task> {
-  return await this.prisma.$transaction(async (tx) => {
-    const task = await tx.task.create({
-      data: taskData,
-    });
-
-    const plan = await tx.implementationPlan.create({
-      data: {
-        ...planData,
-        taskId: task.id,
-      },
-    });
-
-    return task;
-  });
-}
-
-// 3. Handle Prisma errors properly
-try {
-  const result = await this.prisma.task.create({ data });
-  return result;
-} catch (error) {
-  if (error instanceof Prisma.PrismaClientKnownRequestError) {
-    if (error.code === 'P2002') {
-      throw new Error('Task with this name already exists');
-    }
-  }
-  throw error;
-}
-```
-
-## **4. Testing Approaches**
-
-### **Unit Testing with Jest**
-
-```typescript
-// Example unit test
-describe('ExampleService', () => {
-  let service: ExampleService;
-  let prisma: PrismaService;
+describe('MyEntityOperationsService', () => {
+  let service: MyEntityOperationsService;
+  let repository: jest.Mocked<IMyEntityRepository>;
 
   beforeEach(async () => {
+    const mockRepository = createMock<IMyEntityRepository>();
+    
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        ExampleService,
-        {
-          provide: PrismaService,
-          useValue: {
-            task: {
-              create: jest.fn(),
-              findUnique: jest.fn(),
-            },
-          },
-        },
+        MyEntityOperationsService,
+        { provide: IMyEntityRepository, useValue: mockRepository },
       ],
     }).compile();
 
-    service = module.get<ExampleService>(ExampleService);
-    prisma = module.get<PrismaService>(PrismaService);
+    service = module.get<MyEntityOperationsService>(MyEntityOperationsService);
+    repository = module.get(IMyEntityRepository);
   });
 
-  it('should create task successfully', async () => {
-    const taskData = { name: 'Test Task', priority: 'Medium' };
-    const expectedResult = { id: 1, ...taskData };
+  it('should get entity successfully', async () => {
+    const mockEntity = { id: '1', name: 'Test' };
+    repository.findById.mockResolvedValue(mockEntity);
 
-    jest.spyOn(prisma.task, 'create').mockResolvedValue(expectedResult);
-
-    const result = await service.createTask(taskData);
-
-    expect(result).toEqual(expectedResult);
-    expect(prisma.task.create).toHaveBeenCalledWith({
-      data: taskData,
-    });
+    const result = await service.getEntity('1');
+    expect(result).toEqual(mockEntity);
   });
 });
 ```
 
-### **Integration Testing**
+### **Integration Tests**
 
 ```typescript
-// Example integration test
-describe('TaskOperations Integration', () => {
+describe('MyEntity E2E', () => {
   let app: INestApplication;
   let prisma: PrismaService;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -576,575 +156,76 @@ describe('TaskOperations Integration', () => {
     await app.init();
   });
 
-  afterAll(async () => {
-    await prisma.$disconnect();
-    await app.close();
-  });
-
-  it('should create and retrieve task', async () => {
-    // Create task
-    const taskData = {
-      name: 'Integration Test Task',
-      priority: 'High',
-      description: { businessRequirements: 'Test requirements' },
-    };
-
-    const createdTask = await prisma.task.create({
-      data: taskData,
+  it('should create and retrieve entity', async () => {
+    const entity = await prisma.myEntity.create({
+      data: { name: 'Test Entity' },
     });
 
-    // Retrieve task
-    const retrievedTask = await prisma.task.findUnique({
-      where: { id: createdTask.id },
-    });
-
-    expect(retrievedTask).toBeDefined();
-    expect(retrievedTask.name).toBe(taskData.name);
+    expect(entity.name).toBe('Test Entity');
   });
 });
 ```
 
-### **MCP Tool Testing**
+## **🛠️ Common Troubleshooting**
 
-```bash
-# Start MCP server for testing
-npm run start:dev
-
-# Test MCP tools with client
-# 1. Connect MCP client to server
-# 2. Execute tool operations
-# 3. Verify responses and embedded guidance
-# 4. Test error scenarios
-```
-
-## **5. Performance Optimization**
-
-### **Caching Strategy**
-
-```typescript
-// Two-layer caching system
-interface MCPResponseCache {
-  key: string; // Generated from tool name + parameters
-  response: EnhancedMCPResponse;
-  ttl: number; // Time-to-live in seconds
-  tokenEstimate: number; // Token count for savings tracking
-  guidanceHash: string; // Hash for invalidation
-}
-
-interface DatabaseQueryCache {
-  key: string; // Generated from query + parameters
-  data: any; // Prisma query results
-  ttl: number; // Time-to-live in seconds
-  relationships: string[]; // Related entities for invalidation
-  rulesVersion: string; // Workflow rules version
-}
-```
-
-### **Database Optimization**
-
-```typescript
-// 1. Use proper indexing in Prisma schema
-model Task {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique // Indexed for fast lookups
-  status      String   @db.VarChar(50) // Optimize string length
-  priority    String   @db.VarChar(20)
-  createdAt   DateTime @default(now()) @db.Timestamp(6)
-
-  @@index([status, priority]) // Composite index for filtering
-  @@index([createdAt]) // Index for date-based queries
-}
-
-// 2. Use efficient queries
-async findTasksWithOptimization(filters: TaskFilters): Promise<Task[]> {
-  return await this.prisma.task.findMany({
-    where: {
-      status: filters.status,
-      priority: filters.priority,
-    },
-    select: {
-      id: true,
-      name: true,
-      status: true,
-      priority: true,
-      // Only select needed fields
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-    take: 50, // Limit results
-  });
-}
-```
-
-## **6. Error Handling & Logging**
-
-### **Structured Error Handling**
-
-```typescript
-// Custom error classes
-export class WorkflowError extends Error {
-  constructor(
-    message: string,
-    public code: string,
-    public details?: any,
-  ) {
-    super(message);
-    this.name = 'WorkflowError';
-  }
-}
-
-// Error handling in services
-async executeOperation(params: any): Promise<any> {
-  try {
-    return await this.performOperation(params);
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      throw new WorkflowError(
-        'Database operation failed',
-        'DB_ERROR',
-        { prismaCode: error.code, params },
-      );
-    }
-
-    if (error instanceof WorkflowError) {
-      throw error; // Re-throw workflow errors
-    }
-
-    throw new WorkflowError(
-      'Unexpected error occurred',
-      'UNKNOWN_ERROR',
-      { originalError: error.message, params },
-    );
-  }
-}
-```
-
-### **Logging Patterns**
-
-```typescript
-// Use GlobalFileLoggerService for STDIO-compatible logging
-@Injectable()
-export class ExampleService {
-  constructor(private readonly logger: GlobalFileLoggerService) {}
-
-  async performOperation(params: any): Promise<any> {
-    // Log operation start
-    this.logger.log('Operation started', {
-      operation: 'performOperation',
-      params: this.sanitizeParams(params),
-    });
-
-    try {
-      const result = await this.executeLogic(params);
-
-      // Log success
-      this.logger.log('Operation completed successfully', {
-        operation: 'performOperation',
-        resultSummary: this.summarizeResult(result),
-      });
-
-      return result;
-    } catch (error) {
-      // Log error with context
-      this.logger.error('Operation failed', {
-        operation: 'performOperation',
-        error: error.message,
-        stack: error.stack,
-        params: this.sanitizeParams(params),
-      });
-
-      throw error;
-    }
-  }
-}
-```
-
-## **7. Deployment & Production**
-
-### **Environment Configuration**
-
-```bash
-# Core environment variables
-DATABASE_URL=file:./workflow.db              # Database connection
-NODE_ENV=production                          # Environment mode
-LOG_LEVEL=info                              # Logging level
-CACHE_TTL=300                               # Cache time-to-live
-PERFORMANCE_MONITORING=true                  # Performance tracking
-WORKFLOW_RULES_VERSION=1.0.0                # Rules version tracking
-```
-
-### **Docker Deployment**
-
-```dockerfile
-# Dockerfile example
-FROM node:18-alpine
-
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-COPY prisma ./prisma/
-
-# Install dependencies
-RUN npm ci --only=production
-
-# Generate Prisma client
-RUN npx prisma generate
-
-# Copy application code
-COPY dist ./dist/
-
-# Expose port
-EXPOSE 3000
-
-# Start application
-CMD ["node", "dist/main.js"]
-```
-
-## **7.5 Multi-Agent Development Setup (v1.2.11)**
-
-### **Cursor IDE Setup**
-
-```bash
-# Install Anubis MCP extension
-cursor --install-extension anubis-mcp
-
-# Configure cursor settings
-echo '{
-  "anubis.mcp.enabled": true,
-  "anubis.workflow.mode": "guided"
-}' > .cursor/settings.json
-
-# Initialize Anubis rules for Cursor
-npm run anubis:init-rules cursor
-```
-
-### **Copilot Integration**
-
-```bash
-# Apply Copilot instructions
-npm run anubis:init-rules copilot
-
-# Verify integration
-echo "Copilot should now understand Anubis workflow patterns"
-
-# Test with a simple command
-# Ask Copilot: "Create a new repository following Anubis patterns"
-```
-
-### **RooCode Setup**
-
-```bash
-# Initialize for RooCode
-npm run anubis:init-rules roocode
-
-# Verify RooCode custom mode is created
-ls -la .roo/rules-anubis/
-
-# Should see rules.md file generated
-```
-
-### **KiloCode Setup**
-
-```bash
-# Initialize for KiloCode
-npm run anubis:init-rules kilocode
-
-# Verify KiloCode integration
-echo "KiloCode should now have Anubis workflow capabilities"
-```
-
-### **Universal MCP Configuration**
-
-```json
-{
-  "mcpServers": {
-    "anubis": {
-      "command": "npx",
-      "args": ["-y", "@hive-academy/anubis"],
-      "env": {
-        "PROJECT_ROOT": "/path/to/your/project"
-      }
-    }
-  }
-}
-```
-
-### **Production Checklist**
-
-- [ ] Environment variables configured
-- [ ] Database migrations applied
-- [ ] Prisma client generated
-- [ ] Logging configured for production
-- [ ] Performance monitoring enabled
-- [ ] Error tracking configured
-- [ ] Health checks implemented
-- [ ] Security headers configured
-
-## **8. Contributing Guidelines**
-
-### **Code Review Standards**
-
-1. **SOLID Principles Compliance**: All code must follow SOLID, KISS and DRY principles
-2. **Type Safety**: Comprehensive TypeScript typing required
-3. **Test Coverage**: Minimum 75% test coverage for new code
-4. **Documentation**: All public APIs must be documented
-5. **Performance**: No performance regressions allowed
-
-### **Pull Request Process**
-
-```bash
-# 1. Create feature branch
-git checkout -b feature/TSK-123-description
-
-# 2. Implement changes following coding standards
-# 3. Add comprehensive tests
-npm run test
-
-# 4. Run linting and formatting
-npm run lint
-npm run format
-
-# 5. Update documentation if needed
-# 6. Create pull request with detailed description
-# 7. Address code review feedback
-# 8. Merge after approval
-```
-
-### **Commit Message Format**
-
-```bash
-# Format: type(scope): description
-feat(subtask): Add new subtask management functionality
-fix(database): Resolve Prisma connection timeout issue
-docs(api): Update MCP tool documentation
-test(integration): Add comprehensive workflow tests
-refactor(services): Consolidate duplicate service logic
-```
-
-## **9. Troubleshooting**
-
-### **Repository Pattern Issues (v1.2.11)**
-
-#### **Dependency Injection Errors**
-
-```bash
-# Problem: "Cannot resolve dependency" error
-# Solution: Ensure repository is properly registered in module providers
-
-@Module({
-  providers: [
-    // Add your repository here
-    MyEntityRepository,
-    // Ensure interface binding if using custom providers
-    { provide: 'IMyEntityRepository', useClass: MyEntityRepository },
-  ],
-})
-```
-
-#### **TypeScript Compilation Errors**
-
-```bash
-# Problem: TypeScript compilation errors
-# Solution: Run type generation and check interfaces
-
-npm run prisma:generate
-npm run type-check
-
-# Verify zero compilation errors (v1.2.11 achievement)
-echo "Should show 0 errors - this is a v1.2.11 requirement"
-```
-
-#### **Repository Method Errors**
-
-```typescript
-// Problem: Repository methods not found
-// Solution: Ensure proper interface implementation
-
-// ❌ Wrong - missing method implementation
-export class MyRepository implements IMyRepository {
-  // Missing required methods
-}
-
-// ✅ Correct - complete interface implementation
-export class MyRepository implements IMyRepository {
-  async findById(id: string): Promise<Entity | null> {
-    return this.prisma.entity.findUnique({ where: { id } });
-  }
-  
-  async create(data: CreateData): Promise<Entity> {
-    return this.prisma.entity.create({ data });
-  }
-}
-```
-
-### **Performance Issues**
-
-#### **Slow Database Queries**
-
-```typescript
-// Problem: Slow database queries
-// Solution: Use repository includes for efficient loading
-
-// ❌ Inefficient - multiple queries
-async getBadExample(id: string) {
-  const entity = await this.repository.findById(id);
-  const relations = await this.repository.findRelations(id);
-  return { entity, relations };
-}
-
-// ✅ Efficient - single query with includes
-async getGoodExample(id: string) {
-  return this.repository.findWithRelations(id);
-}
-
-// Repository implementation
-async findWithRelations(id: string) {
-  return this.prisma.entity.findUnique({
-    where: { id },
-    include: { requiredRelation: true },
-  });
-}
-```
-
-### **Common Issues**
-
-#### **Database Issues**
-
-```bash
-# Prisma client out of sync
-npm run db:generate
-
-# Database schema issues
-npx prisma db push --force-reset
-
-# Migration issues
-npx prisma migrate reset
-```
-
-#### **MCP Connection Issues**
+### **MCP Connection Issues**
 
 ```bash
 # Check MCP server status
 npm run start:dev
 
-# Verify MCP client configuration
-# Check mcpServers configuration in client
+# Test MCP tools
+curl -X POST http://localhost:3000/mcp/tools
 
-# Test MCP tools manually
-# Use MCP client debugging tools
+# Debug with logging
+DEBUG=mcp:* npm run start:dev
 ```
 
-#### **Performance Issues**
+### **Database Issues**
 
 ```bash
-# Check database query performance
-npx prisma studio
+# Reset database
+npm run prisma:reset
 
-# Monitor cache hit rates
-# Check logs for performance metrics
+# Generate client
+npm run prisma:generate
 
-# Profile application performance
-npm run start:debug
+# Apply migrations
+npm run prisma:migrate
 ```
 
-## **10. Advanced Development Topics**
-
-### **Custom MCP Tool Development**
-
-```typescript
-// 1. Create service with business logic
-@Injectable()
-export class CustomService {
-  async executeCustomLogic(params: CustomParams): Promise<CustomResult> {
-    // Implementation
-  }
-}
-
-// 2. Create MCP tool wrapper
-@Injectable()
-export class CustomMCPService {
-  constructor(private readonly customService: CustomService) {}
-
-  @Tool({
-    name: 'custom_operation',
-    description: 'Custom MCP tool',
-    schema: CustomParamsSchema,
-  })
-  async customOperation(params: CustomParams): Promise<CustomResponse> {
-    const result = await this.customService.executeCustomLogic(params);
-    return {
-      data: result,
-      metadata: {
-        operation: 'custom_operation',
-        responseTime: Date.now() - startTime,
-      },
-    };
-  }
-}
-
-// 3. Register in module
-@Module({
-  providers: [CustomService, CustomMCPService],
-  exports: [CustomService],
-})
-export class CustomModule {}
-```
-
-### **Database Schema Evolution**
+### **TypeScript Errors**
 
 ```bash
-# 1. Update Prisma schema
-# Edit prisma/schema.prisma
+# Check types
+npm run type-check
 
-# 2. Create migration
-npx prisma migrate dev --name add-custom-feature
+# Fix imports
+npm run lint:fix
 
-# 3. Generate client
-npx prisma generate
-
-# 4. Update TypeScript types
-# 5. Update services to use new schema
-# 6. Add tests for new functionality
+# Rebuild
+npm run build
 ```
 
-### **Performance Monitoring**
+## **📈 Performance Tips**
 
-```typescript
-// Use performance decorator
-@Performance()
-async performanceMonitoredOperation(): Promise<any> {
-  // Operation implementation
-}
+- **Use Repository Pattern**: Centralized data access, easier testing
+- **Leverage Prisma**: Optimized queries, type safety
+- **Cache Expensive Operations**: Use in-memory cache for frequent queries
+- **Profile with @Performance**: Monitor critical operation timing
+- **Optimize Database**: Use proper indexes and relations
 
-// Custom performance tracking
-async customOperation(): Promise<any> {
-  const startTime = Date.now();
-  try {
-    const result = await this.executeOperation();
-    this.performanceMonitor.recordSuccess('customOperation', Date.now() - startTime);
-    return result;
-  } catch (error) {
-    this.performanceMonitor.recordError('customOperation', Date.now() - startTime, error);
-    throw error;
-  }
-}
-```
+## **🔧 Development Best Practices**
 
-### Writing to `executionState`
-
-Always use `WorkflowExecutionService.updateExecutionState(executionId, patch)` instead of direct `prisma.workflowExecution.update`. The helper merges patches, validates against the `WorkflowExecutionState` Zod schema, and prevents invalid states.
-
-```typescript
-await workflowExecutionService.updateExecutionState(execution.id, {
-  phase: 'in-progress',
-  lastProgressUpdate: new Date().toISOString(),
-});
-```
-
-This ensures all state mutations follow the centralized contract and are type-safe.
+1. **Follow DDD Architecture**: Organize by domain, not technical layers
+2. **Use Dependency Injection**: NestJS DI container for all services
+3. **Type Everything**: Explicit types, avoid `any`, use strict mode
+4. **Test Thoroughly**: Unit tests for logic, integration tests for data flow
+5. **Handle Errors Gracefully**: Use global exception filter, structured logging
+6. **Keep MCP Tools Thin**: Delegate to operation services for business logic
+7. **Document Public APIs**: JSDoc comments for all public methods
+8. **Use Prisma Best Practices**: Transactions for consistency, proper relations
 
 ---
 
-**🚀 This developer guide provides comprehensive guidance for working with the Anubis. The system represents a sophisticated, enterprise-grade architecture that combines NestJS v11.0.1, Prisma v6.9.0, and MCP protocol compliance to deliver intelligent workflow guidance for AI agents in software development.**
+**🏺 Anubis v1.2.11** - Repository Pattern Architecture for Enterprise MCP Workflows

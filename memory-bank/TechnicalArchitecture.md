@@ -327,23 +327,6 @@ src/task-workflow/
 │   │   ├── review-operations.service.ts # Code review operations
 │   │   ├── research-operations.service.ts # Research operations
 │   │   └── schemas/                 # Zod validation schemas
-│   └── reporting/                   # ANALYTICS & DASHBOARDS
-│       ├── shared/                  # Core shared services
-│       │   ├── report-data.service.ts        # Centralized Prisma queries
-│       │   ├── report-transform.service.ts   # Data formatting + Chart.js
-│       │   ├── report-metadata.service.ts    # Common metadata
-│       │   ├── mcp-file-manager.service.ts    # File management
-│       │   └── mcp-response-builder.service.ts # Response building
-│       ├── workflow-analytics/      # Workflow analysis
-│       │   ├── delegation-flow/     # Delegation pattern analysis
-│       │   ├── role-performance/    # Role performance metrics
-│       │   └── workflow-analytics/  # Cross-workflow analytics
-│       ├── task-management/         # Task reporting
-│       │   ├── task-detail/         # Individual task reports
-│       │   └── implementation-plan/ # Implementation tracking
-│       └── dashboard/               # Interactive dashboards
-│           ├── interactive-dashboard/ # Main dashboard
-│           └── simple-report/       # Simple reporting
 ```
 
 ### **Domain Responsibilities**
@@ -385,24 +368,9 @@ src/task-workflow/
   - `IndividualSubtaskOperationsService` - Subtask management with implementation context
   - `WorkflowOperationsService` - Delegation and workflow control
 
-#### **Reporting Domain (Analytics)**
-
-- **Purpose**: Analytics and dashboard generation
-- **Responsibilities**:
-  - Interactive dashboard creation with Chart.js
-  - Workflow analytics and performance metrics
-  - Task detail reports and progress tracking
-  - System health monitoring
-- **MCP Tools**: 4 specialized tools for reporting and analytics
-- **Key Features**:
-  - Feature-based organization with embedded intelligence
-  - HTML generation with TypeScript string interpolation
-  - Vanilla JavaScript with Chart.js visualizations
-  - Tailwind CSS styling via CDN
-
 ## **🔧 MCP Tool Architecture**
 
-### **Tool Organization (12 Total Tools)**
+### **Tool Organization (8 Total Tools)**
 
 #### **Workflow Management Tools (8 tools)**
 
@@ -423,12 +391,6 @@ src/task-workflow/
 #### **Service Operations Tool (1 tool)**
 
 - `execute_mcp_operation` - Execute core service operations (TaskOperations, PlanningOperations, etc.)
-
-#### **Reporting Tools (4 tools)**
-
-- `generate_workflow_report` - Interactive dashboards with Chart.js visualizations
-- `get_report_status` - Report generation status and progress
-- `cleanup_report` - Report file management and cleanup
 
 ### **MCP Tool Implementation Pattern**
 
@@ -610,9 +572,6 @@ model WorkflowStep {
   qualityChecklist  String[]
   patternEnforcement Json?
   contextValidation Json?
-  triggerReport     Boolean  @default(false)
-  reportType        String?
-  reportTemplate    String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }
@@ -689,51 +648,7 @@ interface DatabaseQueryCache {
 - **Low-frequency tools** (`execute_transition`): 30-second TTL, minimal caching
 - **Write operations**: Intelligent cache invalidation for related entities
 
-## **📊 Reporting Architecture**
-
-### **Feature-Based Organization**
-
-The reporting system uses feature-based organization with embedded workflow intelligence:
-
-```
-/src/task-workflow/domains/reporting/
-  /shared/                           # Core shared services
-    - report-data.service.ts         # Centralized Prisma queries
-    - report-transform.service.ts    # Data formatting + Chart.js
-    - report-metadata.service.ts     # Common metadata
-    - mcp-file-manager.service.ts    # File management
-    - mcp-response-builder.service.ts # Response building
-    - html-generator-factory.service.ts # HTML generation factory
-
-  /workflow-analytics/               # Workflow analysis domain
-    /delegation-flow/                # Delegation pattern analysis
-    /role-performance/               # Role performance metrics
-    /workflow-analytics/             # Cross-workflow analytics
-
-  /task-management/                  # Task reporting domain
-    /task-detail/                    # Individual task reports with enhanced subtask context
-
-  /dashboard/                        # Dashboard domain
-    /interactive-dashboard/          # Main dashboard
-      /view/                         # View generators
-        - html-head.generator.ts     # HTML head + CDN
-        - metrics-cards.generator.ts # Metric cards
-        - charts.generator.ts        # Chart.js integration
-        - tasks-list.generator.ts    # Task displays
-        - scripts.generator.ts       # Vanilla JavaScript
-    /simple-report/                  # Simple reporting
-```
-
-### **Report Generation Technology**
-
-- **Server-Side**: NestJS + TypeScript + Prisma ORM
-- **HTML Generation**: Direct TypeScript string interpolation (no template engines)
-- **Client-Side**: Vanilla JavaScript with Chart.js visualizations
-- **Styling**: Tailwind CSS via CDN with custom CSS classes
-- **Interactivity**: Native JavaScript DOM manipulation
-- **Charts**: Chart.js for data visualization with workflow progress indicators
-
-## **🔒 Security Architecture**
+## ** Security Architecture**
 
 ### **Input Validation**
 
