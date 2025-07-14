@@ -75,7 +75,10 @@
     "version:minor": "node scripts/version-manager.js --type minor",
     "version:major": "node scripts/version-manager.js --type major",
     "version:dry-run": "node scripts/version-manager.js --dry-run",
-    "publish:safe": "npm run version:resolve && npm run build && npm test && npm publish"
+    "publish:safe": "npm run version:resolve && npm run build && npm test && npm publish",
+    "cleanup:generated": "tsx scripts/cleanup-generated-files.ts",
+    "backup:prisma": "mkdir -p backup && cp -r generated/prisma backup/",
+    "restore:prisma": "cp -r backup/prisma generated/"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.4",

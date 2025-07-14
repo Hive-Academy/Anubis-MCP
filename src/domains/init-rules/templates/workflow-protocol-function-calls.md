@@ -86,8 +86,87 @@ console.log('Resuming workflow as [role name] with proper boundaries');
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Boomerang**        | ❌ NEVER implement, create, or modify code files<br>❌ NEVER create files or directories<br>❌ NEVER run modification commands      | ✅ Strategic analysis and delegation ONLY<br>✅ Create specifications for Senior Developer<br>✅ Use read-only commands for analysis          |
 | **Architect**        | ❌ NEVER implement, create, or modify code files<br>❌ NEVER create files or directories<br>❌ NEVER run file modification commands | ✅ Design specifications and blueprints ONLY<br>✅ Create implementation plans for Senior Developer<br>✅ Use read-only commands for analysis |
-| **Senior Developer** | ❌ NEVER make strategic decisions<br>❌ NEVER change architectural designs                                                          | ✅ Implement code based on specifications<br>✅ Create, modify, and manage files<br>✅ Execute all development commands                       |
+| **Senior Developer** | ❌ NEVER make strategic decisions<br>❌ NEVER change architectural designs<br>❌ NEVER skip subtasks or batch them together          | ✅ Implement code based on specifications<br>✅ Create, modify, and manage files<br>✅ Execute all development commands<br>✅ MUST complete ALL subtasks individually                       |
 | **Code Review**      | ❌ NEVER implement fixes directly<br>❌ NEVER create or modify files                                                                | ✅ Review and provide feedback ONLY<br>✅ Identify issues and delegate fixes                                                                  |
+
+### 🔄 CRITICAL: SUBTASK EXECUTION PROTOCOL FOR SENIOR DEVELOPER
+
+**Senior Developer MUST follow this exact sequence when implementing subtasks:**
+
+### Mandatory Subtask Loop Protocol
+
+**⚠️ VIOLATION WARNING**: Senior Developer who skips subtasks, batches them together, or fails to follow the iterative process violates the fundamental workflow protocol.
+
+#### Required Subtask Execution Sequence:
+
+1. **GET NEXT SUBTASK** (Always first action)
+   ```typescript
+   const nextSubtask = await individual_subtask_operations({
+     operation: 'get_next_subtask',
+     taskId: taskId
+   });
+   ```
+
+2. **UPDATE STATUS TO IN-PROGRESS** (Mandatory before implementation)
+   ```typescript
+   await individual_subtask_operations({
+     operation: 'update_subtask',
+     taskId: taskId,
+     subtaskId: subtaskId,
+     status: 'in-progress'
+   });
+   ```
+
+3. **IMPLEMENT SUBTASK** (Follow architect's specifications)
+   - Create/modify files as specified
+   - Write unit tests
+   - Perform integration testing
+   - Validate against acceptance criteria
+
+4. **UPDATE STATUS TO COMPLETED** (With comprehensive evidence)
+   ```typescript
+   await  individual_subtask_operations({
+     operation: 'update_subtask',
+     taskId: taskId,
+     subtaskId: subtaskId,
+     status: 'completed',
+     updateData: {
+       completionEvidence: {
+         filesModified: ['/path/to/file1', '/path/to/file2'],
+         implementationSummary: 'What was implemented',
+         testingResults: { unitTests: 'passed', integrationTests: 'passed' },
+         qualityAssurance: { codeQuality: 'meets standards' }
+       }
+     }
+   });
+   ```
+
+5. **ATOMIC COMMIT** (Individual commit per subtask)
+   ```bash
+   git add [subtask-specific-files]
+   git commit -m "feat: [subtask-name] - [brief description]"
+   ```
+
+6. **RETURN TO STEP 1** (Continue until no more subtasks)
+   - Immediately get next subtask
+   - Do NOT proceed to next workflow step until ALL subtasks completed
+
+### 🛑 SUBTASK EXECUTION VIOLATIONS
+
+**NEVER DO THESE ACTIONS:**
+- Skip any subtasks or mark them as completed without implementation
+- Batch multiple subtasks together in a single commit
+- Proceed to next workflow step while subtasks remain
+- Implement without updating status to 'in-progress'
+- Complete without providing comprehensive evidence
+- Jump ahead in the workflow without finishing all subtasks
+
+**RECOVERY FROM VIOLATIONS:**
+1. **STOP** current activity immediately
+2. **ACKNOWLEDGE** the protocol violation
+3. **RETURN** to get_next_subtask operation
+4. **RESUME** proper iterative execution
+5. **COMPLETE** all remaining subtasks individually
 
 ### Protocol Enforcement Rules
 
@@ -159,7 +238,6 @@ Your Options:
 A) Continue existing workflow - Resume from current step
 B) Start new workflow - Begin fresh
 C) Get quick help - View current guidance
-D) View dashboard - See detailed analytics
 
 Please select an option (A/B/C/D) to proceed.
 ```
@@ -360,6 +438,10 @@ await execute_mcp_operation({
 | "Direct tool call failed"         | Check transitionId and parameters from step guidance | Use exact parameters provided in workflow step instructions   |
 | "Role violation detected"         | Review role boundary cards                           | Stop immediately, acknowledge violation, and restore workflow |
 | "Workflow state lost"             | Check your mental workflow state tracker             | Re-query active executions and restore execution context      |
+| "Subtasks not completed"          | Check if get_next_subtask returns any subtasks       | Return to implement_subtasks step and complete all remaining  |
+| "Subtask batch implementation"    | Review subtask execution protocol                    | Implement each subtask individually with proper status updates |
+| "Missing subtask commits"         | Check git log for individual subtask commits         | Ensure each subtask has its own atomic commit                 |
+| "Subtask status not updated"      | Verify update_subtask operations were executed       | Always update status to 'in-progress' then 'completed'       |
 
 ---
 
@@ -391,6 +473,11 @@ To ensure workflow protocol remains in active memory:
 10. **Maintain consistent role behavior aligned with guidance response**
 11. **Update mental workflow state tracker after each operation**
 12. **Resume properly after interruptions with explicit acknowledgment**
+13. **Complete ALL subtasks individually using the mandatory loop protocol (Senior Developer)**
+14. **Update subtask status to 'in-progress' before implementing**
+15. **Update subtask status to 'completed' with evidence after implementing**
+16. **Create atomic commits for each individual subtask**
+17. **Continue subtask loop until get_next_subtask returns no results**
 
 ### PROHIBITED Actions
 
@@ -404,6 +491,11 @@ To ensure workflow protocol remains in active memory:
 8. **Never mix behavioral patterns from different roles**
 9. **Never violate role boundaries (review cards frequently)**
 10. **Never lose workflow state during interruptions**
+11. **Never skip subtasks or batch them together (Senior Developer)**
+12. **Never proceed to next workflow step while subtasks remain**
+13. **Never implement without updating subtask status to 'in-progress'**
+14. **Never complete subtasks without comprehensive evidence**
+15. **Never create bulk commits for multiple subtasks**
 
 ---
 
@@ -420,8 +512,13 @@ To ensure workflow protocol remains in active memory:
 ✅ All MCP tool calls follow the proper `await tool_name({parameters})` syntax  
 ✅ Maintain clear role boundaries at all times  
 ✅ Report workflow violations immediately if they occur  
-✅ Resume properly after interruptions without losing workflow state
+✅ Resume properly after interruptions without losing workflow state  
+✅ **Senior Developer completes ALL subtasks individually using mandatory loop protocol**  
+✅ **Each subtask gets proper status updates: not-started → in-progress → completed**  
+✅ **Each subtask implementation results in atomic commit with descriptive message**  
+✅ **Subtask loop continues until get_next_subtask returns no results**  
+✅ **All subtasks verified completed before proceeding to next workflow step**
 
-**Remember**: You are the EXECUTOR. MCP provides GUIDANCE. Execute locally using your tools, validate thoroughly against all requirements, report accurately with comprehensive evidence.
+**Remember**: You are the EXECUTOR. MCP provides GUIDANCE. Execute locally using your tools, validate thoroughly against all requirements, report accurately with comprehensive evidence. **Senior Developer must complete ALL subtasks individually - no shortcuts allowed.**
 
 ---

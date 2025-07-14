@@ -158,7 +158,6 @@ Your Options:
 A) Continue existing workflow - Resume from current step
 B) Start new workflow - Begin fresh
 C) Get quick help - View current guidance
-D) View dashboard - See detailed analytics
 
 Please select an option (A/B/C/D) to proceed.
 ```
