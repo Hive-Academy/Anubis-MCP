@@ -112,7 +112,7 @@ export class DatabaseConfigManager {
     _options: DatabaseConfigOptions,
   ): DatabaseConfig {
     // Docker uses container-internal paths but supports volume mounting for project isolation
-    const dataDirectory = '/app/data';
+    const dataDirectory = '/app/.anubis';
     const databasePath = path.join(dataDirectory, 'workflow.db');
     const databaseUrl = `file:${databasePath}`;
 
@@ -152,8 +152,8 @@ export class DatabaseConfigManager {
       }
     }
 
-    // ALWAYS use project-specific data directory - cross-platform path resolution
-    const dataDirectory = path.resolve(resolvedProjectRoot, 'data');
+    // ALWAYS use project-specific .anubis directory - cross-platform path resolution
+    const dataDirectory = path.resolve(resolvedProjectRoot, '.anubis');
 
     // Ensure we can create and write to the project data directory
     try {
@@ -228,7 +228,7 @@ export class DatabaseConfigManager {
     }
 
     // Default local development pattern
-    const dataDirectory = path.join(projectRoot, 'data');
+    const dataDirectory = path.join(projectRoot, '.anubis');
     const databasePath = path.join(dataDirectory, 'workflow.db');
     const databaseUrl = `file:${databasePath}`;
 
@@ -323,11 +323,11 @@ export class DatabaseConfigManager {
       );
     }
 
-    const hostDataPath = path.join(config.projectRoot, 'data');
+    const hostDataPath = path.join(config.projectRoot, '.anubis');
 
     return {
-      volumeMount: `${hostDataPath}:/app/data`,
-      containerPath: '/app/data',
+      volumeMount: `${hostDataPath}:/app/.anubis`,
+      containerPath: '/app/.anubis',
       hostPath: hostDataPath,
     };
   }

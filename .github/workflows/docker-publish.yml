@@ -176,14 +176,14 @@ jobs:
             else
               echo "⚠️ Database size ($DB_SIZE_BYTES bytes) is outside expected range"
               echo "🔧 Regenerating database template..."
-              mkdir -p prisma/data
+              mkdir -p prisma/.anubis
               npm ci
               npx prisma db push --accept-data-loss
               npm run db:seed
             fi
           else
             echo "❌ Pre-seeded database not found - regenerating..."
-            mkdir -p prisma/data
+            mkdir -p prisma/.anubis
             npm ci
             npx prisma db push --accept-data-loss
             npm run db:seed

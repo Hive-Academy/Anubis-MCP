@@ -8,9 +8,9 @@
         "-i",
         "--network=host",
         "-v",
-        "D:/projects/anubis/data:/app/data",
+        "D:/projects/anubis/.anubis:/app/.anubis",
         "-v",
-        "D:/projects/anubis/workflow-reports:/app/data/anubis-mcp-reports",
+        "D:/projects/anubis/workflow-reports:/app/.anubis/anubis-mcp-reports",
         "hiveacademy/anubis"
       ]
     },
@@ -49,9 +49,9 @@
         "-i",
         "--network=host",
         "-v",
-        "D:/projects/anubis/data:/app/data",
+        "D:/projects/anubis/.anubis:/app/.anubis",
         "-v",
-        "D:/projects/anubis/workflow-reports:/app/data/anubis-mcp-reports",
+        "D:/projects/anubis/workflow-reports:/app/.anubis/anubis-mcp-reports",
         "hiveacademy/anubis"
       ]
     }

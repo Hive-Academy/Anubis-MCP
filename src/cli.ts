@@ -26,7 +26,7 @@ function setupPrebuiltDatabase(dbConfig: any): void {
   const templateDbPath = path.join(
     packageRoot,
     'prisma',
-    'data',
+    '.anubis',
     'workflow.db',
   );
 

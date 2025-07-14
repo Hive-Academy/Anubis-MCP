@@ -102,7 +102,7 @@
         "-v",
         "${PWD}:/app/workspace",
         "-v",
-        "anubis-data:/app/data",
+        ".anubis:/app/.anubis",
         "hiveacademy/anubis"
       ]
     }
@@ -124,7 +124,7 @@
         "-v",
         "C:\\path\\to\\your\\project:/app/workspace",
         "-v",
-        "C:\\path\\to\\your\\project\\data:/app/data",
+        "C:\\path\\to\\your\\project\\.anubis:/app/.anubis",
         "hiveacademy/anubis"
       ]
     }
