@@ -108,23 +108,28 @@ export class RoleTransitionService {
       throw new Error(`Role '${fromRoleName}' not found`);
     }
 
-    // Simplified: Return empty transitions for now to avoid complexity
-    const transitions: any[] = [];
+    // Get transitions from the database using the repository method
+    const transitions =
+      await this.workflowRoleRepository.findTransitionsFromRole(fromRole.id);
 
     return transitions.map((transition: any) => ({
       id: transition.id,
       transitionName: transition.transitionName,
       fromRole: {
-        name: transition.fromRole.name,
-        description: transition.fromRole.description,
+        name: fromRole.name,
+        description: fromRole.description,
       },
       toRole: {
         name: transition.toRole.name,
         description: transition.toRole.description,
       },
-      conditions: null, // Will be populated from structured conditions
-      requirements: null, // Will be populated from structured requirements
-      handoffGuidance: null, // Will be populated from structured data
+      conditions: transition.conditions, // Populated from structured conditions
+      requirements: transition.requirements, // Populated from structured requirements
+      handoffGuidance: {
+        contextElements: transition.contextElements,
+        deliverables: transition.deliverables,
+        handoffMessage: transition.handoffMessage,
+      },
     }));
   }
 
