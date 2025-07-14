@@ -12,6 +12,9 @@
           "Check if task context is already available in current execution history",
           "If context is available, analyze and validate its completeness",
           "Only if context is missing or incomplete, execute TaskOperations.get to retrieve implementation context and codebase analysis",
+          "  - Use MCP call with serviceName: 'TaskOperations', operation: 'get'",
+          "  - Retrieve task details, implementation scope, and codebase analysis",
+          "  - Validate completeness of retrieved context information",
           "Analyze task type, tech stack, and implementation scope",
           "Identify highest-risk areas and integration points",
           "Formulate testing strategy appropriate for changes made",
@@ -25,18 +28,7 @@
         "Testing strategy formulated for tech stack and changes",
         "Risk-based testing priorities established"
       ],
-      "conditions": [],
-      "actions": [
-        {
-          "name": "get_implementation_context",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "TaskOperations",
-            "operation": "get"
-          },
-          "sequenceOrder": 1
-        }
-      ]
+      "conditions": []
     },
     {
       "name": "execute_targeted_validation",
@@ -73,8 +65,7 @@
           },
           "isRequired": true
         }
-      ],
-      "actions": []
+      ]
     },
     {
       "name": "verify_acceptance_criteria",
@@ -111,8 +102,7 @@
           },
           "isRequired": true
         }
-      ],
-      "actions": []
+      ]
     },
     {
       "name": "intelligent_review_decision_and_workflow_completion",
@@ -126,6 +116,9 @@
           "Evaluate all validation evidence against approval criteria for informed decision",
           "Apply deterministic decision criteria to determine APPROVED or NEEDS_CHANGES",
           "Create comprehensive review report with findings, evidence, and decision rationale",
+          "  - Use MCP call with serviceName: 'ReviewOperations', operation: 'create_review'",
+          "  - Include all validation evidence and decision rationale",
+          "  - Document findings, evidence, and comprehensive review assessment",
           "Determine appropriate role transition based on decision outcome",
           "Execute the appropriate execute_transition tool directly with proper context",
           "Ensure comprehensive documentation of decision rationale and next steps"
@@ -169,17 +162,6 @@
           },
           "isRequired": true
         }
-      ],
-      "actions": [
-        {
-          "name": "create_comprehensive_review_report",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "ReviewOperations",
-            "operation": "create_review"
-          },
-          "sequenceOrder": 1
-        }
       ]
     },
     {
@@ -217,8 +199,7 @@
           },
           "isRequired": true
         }
-      ],
-      "actions": []
+      ]
     }
   ]
 }

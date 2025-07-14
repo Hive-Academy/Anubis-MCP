@@ -1,19 +1,21 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { PrismaModule } from './prisma/prisma.module';
-import { McpModule, McpTransportType } from '@rekog/mcp-nest';
-import { TaskWorkflowModule } from './task-workflow/task-workflow.module';
-import { UtilsModule } from './task-workflow/utils/utils.module';
 import { APP_FILTER } from '@nestjs/core';
+import { McpModule, McpTransportType } from '@rekog/mcp-nest';
+import { PrismaModule } from './prisma/prisma.module';
+import { UtilsModule } from './utils/utils.module';
 
 // Global exception filter for MCP debugging
 import {
-  ExceptionFilter,
-  Catch,
   ArgumentsHost,
+  Catch,
+  ExceptionFilter,
   HttpException,
   Logger,
 } from '@nestjs/common';
+import { TaskManagementModule } from './domains/task-management/task-management.module';
+import { InitRulesModule } from './domains/init-rules/init-rules.module';
+import { WorkflowRulesModule } from './domains/workflow-rules/workflow-rules.module';
 
 // Determine transport type based on environment
 const getTransportType = (): McpTransportType => {
@@ -88,7 +90,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         mcpEndpoint: 'mcp',
       }),
     }),
-    TaskWorkflowModule,
+
+    // Rule-based workflow architecture - clean and focused
+    TaskManagementModule, // Internal task management services (NOT MCP tools)
+    WorkflowRulesModule, // Rule-driven workflow MCP interface (8 tools)
+    InitRulesModule, // Tool initialization for different AI agents,
     UtilsModule,
   ],
   providers: [

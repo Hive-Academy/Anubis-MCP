@@ -1,77 +1,132 @@
 {
   "workflowSteps": [
     {
-      "name": "setup_implementation_context",
-      "description": "Consume existing context and setup implementation environment",
+      "name": "context_gathering_and_analysis",
+      "description": "Gather comprehensive implementation context including task details, architect's strategic guidance, and subtask specifications for execution readiness.",
       "sequenceNumber": 1,
       "isRequired": true,
       "stepType": "ACTION",
-      "approach": "Retrieve comprehensive context and setup development environment",
+      "approach": "Intelligently retrieve and analyze all implementation context to establish a solid foundation for high-quality code execution.",
       "approachGuidance": {
         "stepByStep": [
-          "Check if task context is already available in current execution history",
-          "If context is available, analyze and validate its completeness",
-          "Only if context is missing or incomplete, execute TaskOperations.get to retrieve implementation context and codebase analysis",
-          "Check if implementation plan context is already available in current execution history",
-          "Only if context is missing or incomplete, Execute PlanningOperations.get_plan to get implementation plan and subtasks",
-          "Extract architect's strategic guidance and implementation specifics",
-          "Setup development environment following verified tech stack",
-          "Validate implementation readiness without redundant analysis"
+          "🔍 CONTEXT ACQUISITION PHASE:",
+          "Review message history to identify task context and architect's strategic guidance provided in previous roles.",
+          "If context is insufficient or missing critical details, execute TaskOperations.get MCP operation:",
+          "  - Use serviceName: 'TaskOperations', operation: 'get'",
+          "  - Include parameters: includeDescription: true, includeAnalysis: true, includeResearch: true, includeSubtasks: true",
+          "  - Only execute if context is missing from message history",
+          "  - Ensure comprehensive task understanding before proceeding",
+          "🏗️ IMPLEMENTATION CONTEXT ANALYSIS:",
+          "Analyze the complete task context including business requirements, technical specifications, and acceptance criteria.",
+          "Review architect's strategic guidance and subtask breakdown to understand the implementation approach.",
+          "Identify the technology stack, frameworks, and architectural patterns to be used.",
+          "Understand the existing codebase structure, conventions, and integration points.",
+          "Review any research findings and recommendations that impact implementation decisions.",
+          "📋 SUBTASK PREPARATION ASSESSMENT:",
+          "Evaluate the quality and completeness of architect's subtasks for implementation readiness.",
+          "Identify any gaps or ambiguities in subtask specifications that need clarification.",
+          "Understand the dependencies between subtasks and establish implementation order.",
+          "Assess the testing strategy and validation requirements for each subtask.",
+          "🔧 IMPLEMENTATION ENVIRONMENT SETUP:",
+          "Verify development environment is properly configured for the task requirements.",
+          "Ensure all necessary dependencies, tools, and frameworks are available.",
+          "Confirm access to required APIs, databases, and external services.",
+          "Validate that local development environment matches deployment requirements.",
+          "📊 QUALITY STANDARDS REVIEW:",
+          "Review established code quality standards, patterns, and conventions.",
+          "Understand the testing requirements (unit, integration, e2e) for this implementation.",
+          "Identify performance benchmarks and optimization requirements.",
+          "Review security considerations and compliance requirements.",
+          "Synthesize all gathered information to form a complete implementation strategy."
         ]
       },
       "qualityChecklist": [
-        "Complete task context and codebase analysis consumed",
-        "Implementation plan and all subtasks retrieved",
-        "Strategic guidance and code examples understood",
-        "Development environment properly configured",
-        "Implementation readiness validated"
+        "✅ MESSAGE HISTORY COMPREHENSIVELY REVIEWED: All previous context from boomerang and architect roles analyzed",
+        "✅ TASK CONTEXT COMPLETELY UNDERSTOOD: Business requirements, technical specifications, and acceptance criteria clear",
+        "✅ ARCHITECT'S STRATEGIC GUIDANCE ANALYZED: Implementation approach, patterns, and architectural decisions understood",
+        "✅ SUBTASK SPECIFICATIONS REVIEWED: All subtasks examined for completeness and implementation readiness",
+        "✅ TECHNOLOGY STACK IDENTIFIED: Frameworks, libraries, and tools required for implementation confirmed",
+        "✅ CODEBASE STRUCTURE ANALYZED: Existing patterns, conventions, and integration points understood",
+        "✅ RESEARCH FINDINGS INTEGRATED: Any research recommendations incorporated into implementation strategy",
+        "✅ DEPENDENCIES MAPPED: Inter-subtask dependencies and implementation order established",
+        "✅ TESTING STRATEGY UNDERSTOOD: Unit, integration, and acceptance testing requirements clarified",
+        "✅ DEVELOPMENT ENVIRONMENT VERIFIED: All necessary tools, dependencies, and access confirmed",
+        "✅ QUALITY STANDARDS REVIEWED: Code quality, performance, and security requirements understood",
+        "✅ IMPLEMENTATION STRATEGY FORMULATED: Complete approach for executing all subtasks established"
       ],
-      "conditions": [],
-      "actions": [
-        {
-          "name": "get_task_context",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "TaskOperations",
-            "operation": "get"
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "get_implementation_plan",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "PlanningOperations",
-            "operation": "get_plan"
-          },
-          "sequenceOrder": 2
-        }
-      ]
+      "conditions": []
     },
     {
       "name": "implement_subtasks",
-      "description": "Execute subtasks iteratively with testing and commits",
+      "description": "Execute subtasks iteratively with comprehensive testing, validation, and atomic commits following architect's specifications.",
       "sequenceNumber": 2,
       "isRequired": true,
       "stepType": "ACTION",
-      "approach": "Iterative subtask completion with individual commits and validation",
+      "approach": "Systematic subtask execution with rigorous testing, validation, and incremental commits ensuring high-quality implementation.",
       "approachGuidance": {
         "stepByStep": [
-          "Get next subtask using SubtaskOperations.get_next_subtask",
-          "Update subtask status to 'in-progress'",
-          "Implement following architect's guidance and code examples",
-          "Test implementation thoroughly (unit, integration, manual)",
-          "Commit changes with descriptive subtask-specific message",
-          "Update subtask to 'completed' with evidence",
-          "Repeat until no more subtasks available"
+          "🔄 MANDATORY SUBTASK EXECUTION LOOP - REPEAT UNTIL ALL SUBTASKS COMPLETED:",
+          "⚠️ CRITICAL: This step MUST NOT be considered complete until ALL subtasks are finished",
+          "⚠️ CRITICAL: You MUST get next subtask → update status → implement → complete → commit → repeat",
+          "1. GET NEXT SUBTASK (MANDATORY FIRST ACTION):",
+          "   - Execute mcp_anubis_individual_subtask_operations MCP tool",
+          "   - Use operation: 'get_next_subtask'",
+          "   - Parameters: { taskId: [task-id] }",
+          "   - If NO subtasks returned, ALL subtasks are completed - proceed to next step",
+          "   - If subtask returned, you MUST implement it before continuing",
+          "2. UPDATE SUBTASK STATUS TO IN-PROGRESS (MANDATORY):",
+          "   - Execute mcp_anubis_individual_subtask_operations MCP tool",
+          "   - Use operation: 'update_subtask'",
+          "   - Parameters: { taskId: [task-id], subtaskId: [subtask-id], status: 'in-progress' }",
+          "   - MUST update status before starting implementation",
+          "3. IMPLEMENT SUBTASK FOLLOWING ARCHITECT'S GUIDANCE:",
+          "   - Follow the exact implementation approach specified by architect",
+          "   - Use provided code examples as templates and extend as needed",
+          "   - Implement error handling strategies specified in subtask",
+          "   - Follow established codebase patterns and conventions",
+          "   - Ensure proper type safety and input validation",
+          "   - Add comprehensive logging and monitoring points",
+          "4. COMPREHENSIVE TESTING FOR CURRENT SUBTASK:",
+          "   - UNIT TESTING: Write and execute unit tests for new functions/methods",
+          "   - INTEGRATION TESTING: Test interactions with existing systems",
+          "   - MANUAL TESTING: Perform manual validation of user-facing features",
+          "   - REGRESSION TESTING: Ensure no existing functionality is broken",
+          "5. UPDATE SUBTASK STATUS TO COMPLETED (MANDATORY):",
+          "   - Execute mcp_anubis_individual_subtask_operations MCP tool",
+          "   - Use operation: 'update_subtask'",
+          "6. ATOMIC COMMIT FOR CURRENT SUBTASK (MANDATORY):",
+          "   - Stage ONLY files related to current subtask",
+          "   - Create descriptive commit message: 'feat: [subtask-name] - [brief description]'",
+          "   - Include subtask ID and brief description of changes",
+          "   - Execute git commit command",
+          "   - Ensure commit is atomic and represents complete subtask",
+          "7. RETURN TO STEP 1 - GET NEXT SUBTASK:",
+          "   - IMMEDIATELY return to step 1 to get next subtask",
+          "   - Do NOT proceed to next workflow step until ALL subtasks completed",
+          "   - Continue loop until get_next_subtask returns no subtasks",
+          "🛑 CRITICAL SUCCESS CRITERIA:",
+          "- You MUST complete ALL subtasks before moving to next step",
+          "- Each subtask MUST be committed individually",
+          "- You MUST follow the exact sequence: get → update to in-progress → implement → update to completed → commit → repeat",
+          "- You CANNOT skip any subtasks or batch them together"
         ]
       },
       "qualityChecklist": [
-        "All available subtasks retrieved and completed",
-        "Each subtask implemented following strategic guidance",
-        "Comprehensive testing performed for each subtask",
-        "Individual commits made after each subtask completion",
-        "All subtasks updated to 'completed' status with evidence"
+        "✅ CRITICAL: ALL SUBTASKS RETRIEVED AND COMPLETED: get_next_subtask returns no remaining subtasks",
+        "✅ MANDATORY: ITERATIVE PROCESS FOLLOWED: Each subtask went through get → update → implement → complete → commit cycle",
+        "✅ STATUS MANAGEMENT: Each subtask properly updated to 'in-progress' then 'completed' with evidence",
+        "✅ ATOMIC COMMITS: Each subtask completion resulted in single, descriptive commit with proper message",
+        "✅ IMPLEMENTATION QUALITY: Each subtask implemented following architect's guidance and specifications",
+        "✅ TESTING COVERAGE: Each subtask includes unit tests, integration tests, and manual validation",
+        "✅ CODE QUALITY: Each subtask meets linting, formatting, and TypeScript standards",
+        "✅ ERROR HANDLING: Each subtask includes robust error handling and edge case coverage",
+        "✅ COMPLETION EVIDENCE: Each subtask completion includes comprehensive evidence and validation results",
+        "✅ NO SHORTCUTS TAKEN: Did not skip any subtasks or batch multiple subtasks together",
+        "✅ SEQUENTIAL EXECUTION: Followed exact sequence without jumping ahead or skipping steps",
+        "✅ INTEGRATION VERIFIED: Each subtask properly integrates with existing codebase without conflicts",
+        "✅ DOCUMENTATION UPDATED: Code comments and documentation updated for each subtask as needed",
+        "✅ DEPENDENCY MANAGEMENT: Subtask dependencies properly handled and execution order maintained",
+        "✅ REGRESSION PREVENTION: No existing functionality broken by any subtask implementation"
       ],
       "conditions": [
         {
@@ -80,55 +135,109 @@
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "setup_implementation_context"
+              "stepName": "context_gathering_and_analysis"
             }
           },
           "isRequired": true
-        }
-      ],
-      "actions": [
-        {
-          "name": "get_next_subtask",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "SubtaskOperations",
-            "operation": "get_next_subtask"
-          },
-          "sequenceOrder": 1
-        },
-        {
-          "name": "update_subtask_in_progress",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "SubtaskOperations",
-            "operation": "update_subtask"
-          },
-          "sequenceOrder": 2
         }
       ]
     },
     {
       "name": "validate_implementation",
-      "description": "Validate complete implementation and prepare for code review",
+      "description": "Perform comprehensive validation of complete implementation including testing, quality assurance, and code review preparation.",
       "sequenceNumber": 3,
       "isRequired": true,
       "stepType": "ACTION",
-      "approach": "Comprehensive validation of completed implementation",
+      "approach": "Rigorous validation of entire implementation to ensure production readiness and comprehensive evidence collection for code review.",
       "approachGuidance": {
         "stepByStep": [
-          "Run complete test suite to ensure no regressions",
-          "Validate all acceptance criteria are met",
-          "Verify code follows established patterns and principles",
-          "Check error handling and edge cases",
-          "Prepare comprehensive evidence for code review"
+          "🔍 CRITICAL PRE-VALIDATION - SUBTASK COMPLETION VERIFICATION:",
+          "MANDATORY check before any validation activities begin:",
+          "  - Execute mcp_anubis_individual_subtask_operations MCP tool",
+          "  - Use operation: 'get_next_subtask'",
+          "  - Parameters: { taskId: [task-id] }",
+          "  - VERIFY that NO subtasks are returned (all completed)",
+          "  - If ANY subtasks remain, STOP immediately and return error",
+          "  - Document that ALL subtasks are verified completed",
+          "🧪 COMPREHENSIVE TESTING SUITE EXECUTION:",
+          "Execute complete test suite to ensure no regressions or failures:",
+          "  - Run all unit tests with coverage reporting (target: >90% coverage)",
+          "  - Execute integration tests to validate system interactions",
+          "  - Perform end-to-end tests for complete user workflows",
+          "  - Run performance tests to ensure benchmarks are met",
+          "  - Execute security tests to validate security measures",
+          "  - Validate accessibility compliance where applicable",
+          "📋 ACCEPTANCE CRITERIA VALIDATION:",
+          "Systematically validate all acceptance criteria are met:",
+          "  - Create checklist of all acceptance criteria from task and subtasks",
+          "  - Test each criterion individually with specific validation",
+          "  - Document evidence of successful validation for each criterion",
+          "  - Identify any criteria that are not fully met and address gaps",
+          "  - Ensure business requirements are satisfied from user perspective",
+          "🏗️ ARCHITECTURAL COMPLIANCE VERIFICATION:",
+          "Verify implementation follows established patterns and principles:",
+          "  - Check adherence to SOLID principles and design patterns",
+          "  - Validate consistency with existing codebase architecture",
+          "  - Ensure proper separation of concerns and modularity",
+          "  - Verify dependency injection and inversion of control usage",
+          "  - Check for code duplication and opportunities for refactoring",
+          "🔧 CODE QUALITY ASSESSMENT:",
+          "Perform comprehensive code quality evaluation:",
+          "  - Run static code analysis tools (ESLint, SonarQube, etc.)",
+          "  - Validate TypeScript types and interfaces are properly defined",
+          "  - Check for potential memory leaks and performance bottlenecks",
+          "  - Ensure proper error handling and logging throughout",
+          "  - Validate code documentation and comments are adequate",
+          "⚠️ ERROR HANDLING AND EDGE CASE VALIDATION:",
+          "Thoroughly test error handling and edge cases:",
+          "  - Test all error paths and exception scenarios",
+          "  - Validate graceful degradation for service failures",
+          "  - Test input validation and sanitization",
+          "  - Verify proper error messages and user feedback",
+          "  - Check timeout handling and retry mechanisms",
+          "🔒 SECURITY VALIDATION:",
+          "Perform security assessment of implementation:",
+          "  - Validate input sanitization and SQL injection prevention",
+          "  - Check authentication and authorization implementations",
+          "  - Verify secure data transmission and storage",
+          "  - Test for common security vulnerabilities (OWASP Top 10)",
+          "  - Ensure proper secrets management and configuration",
+          "📊 PERFORMANCE VALIDATION:",
+          "Assess performance characteristics of implementation:",
+          "  - Measure response times for critical operations",
+          "  - Validate memory usage and resource consumption",
+          "  - Test scalability under load conditions",
+          "  - Identify and address performance bottlenecks",
+          "  - Ensure database queries are optimized",
+          "📝 EVIDENCE COLLECTION FOR CODE REVIEW:",
+          "Prepare comprehensive evidence package for code review:",
+          "  - Compile test results and coverage reports",
+          "  - Document all validation activities and results",
+          "  - Create summary of implementation approach and decisions",
+          "  - Prepare list of files modified and their purposes",
+          "  - Document any deviations from original specifications",
+          "  - Include performance metrics and benchmarks achieved"
         ]
       },
       "qualityChecklist": [
-        "Complete test suite runs successfully",
-        "All acceptance criteria validated and met",
-        "Code follows established patterns and SOLID principles",
-        "Error handling properly implemented",
-        "Implementation evidence prepared for review"
+        "✅ CRITICAL: ALL SUBTASKS VERIFIED COMPLETED: get_next_subtask returns no remaining subtasks",
+        "✅ SUBTASK COMPLETION STATUS VALIDATED: All subtasks show 'completed' status with evidence",
+        "✅ NO INCOMPLETE WORK REMAINING: Zero subtasks in 'not-started', 'in-progress', or 'needs-review' status",
+        "✅ COMPLETE TEST SUITE EXECUTION: All unit, integration, and e2e tests pass successfully",
+        "✅ TEST COVERAGE ACHIEVED: Code coverage meets or exceeds 90% threshold",
+        "✅ ACCEPTANCE CRITERIA VALIDATED: All task and subtask acceptance criteria met with evidence",
+        "✅ ARCHITECTURAL COMPLIANCE: Implementation follows SOLID principles and established patterns",
+        "✅ CODE QUALITY STANDARDS: Static analysis tools pass with no critical issues",
+        "✅ TYPE SAFETY VERIFIED: TypeScript types properly defined and used throughout",
+        "✅ ERROR HANDLING COMPREHENSIVE: All error paths tested and handled gracefully",
+        "✅ EDGE CASES COVERED: Boundary conditions and edge cases properly tested",
+        "✅ SECURITY MEASURES VALIDATED: Security best practices implemented and verified",
+        "✅ PERFORMANCE BENCHMARKS MET: All performance requirements satisfied",
+        "✅ NO REGRESSIONS INTRODUCED: Existing functionality remains intact",
+        "✅ DOCUMENTATION UPDATED: Code comments, README, and technical docs current",
+        "✅ EVIDENCE PACKAGE PREPARED: Comprehensive documentation for code review",
+        "✅ DEPLOYMENT READINESS: Implementation ready for production deployment",
+        "✅ MONITORING AND LOGGING: Adequate monitoring and logging implemented"
       ],
       "conditions": [
         {
@@ -142,8 +251,7 @@
           },
           "isRequired": true
         }
-      ],
-      "actions": []
+      ]
     },
     {
       "name": "role_transition",
@@ -178,8 +286,7 @@
           },
           "isRequired": true
         }
-      ],
-      "actions": []
+      ]
     }
   ]
 }

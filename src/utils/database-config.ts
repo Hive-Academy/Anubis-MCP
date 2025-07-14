@@ -105,7 +105,7 @@ export class DatabaseConfigManager {
 
   /**
    * Docker deployment configuration
-   * Pattern: /app/data/workflow.db with volume mounting for project isolation
+   * Pattern: /app/.anubis/workflow.db with volume mounting for project isolation
    */
   private getDockerDatabaseConfig(
     projectRoot: string,
@@ -128,7 +128,7 @@ export class DatabaseConfigManager {
 
   /**
    * NPX deployment configuration
-   * Pattern: {projectRoot}/data/workflow.db for automatic project isolation
+   * Pattern: {projectRoot}/.anubis/workflow.db for automatic project isolation
    */
   private getNpxDatabaseConfig(
     projectRoot: string,
@@ -205,7 +205,7 @@ export class DatabaseConfigManager {
 
   /**
    * Local development configuration
-   * Pattern: {projectRoot}/data/workflow.db with optional custom paths
+   * Pattern: {projectRoot}/.anubis/workflow.db with optional custom paths
    */
   private getLocalDatabaseConfig(
     projectRoot: string,

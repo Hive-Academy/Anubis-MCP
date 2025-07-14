@@ -230,7 +230,7 @@ DOCKER_HUB_USERNAME=hiveacademy
 env:
   PACKAGE_NAME: '@hive-academy/anubis'
   NPM_REGISTRY: https://registry.npmjs.org/
-  DATABASE_URL: 'file:./prisma/data/workflow.db'
+  DATABASE_URL: 'file:./prisma/.anubis/workflow.db'
 ```
 
 #### Docker Workflow Settings

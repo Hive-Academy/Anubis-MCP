@@ -30,7 +30,7 @@ New-Item -ItemType Directory -Force -Path "prisma/data" | Out-Null
 
 # Step 4: Generate pre-seeded database
 Write-Host "Generating pre-seeded database..." -ForegroundColor Yellow
-$env:DATABASE_URL = "file:./prisma/data/workflow.db"
+$env:DATABASE_URL = "file:./prisma/.anubis/workflow.db"
 
 # Run migrations
 Write-Host "  Running migrations..." -ForegroundColor Gray
@@ -50,7 +50,7 @@ if ($LASTEXITCODE -ne 0) {
 
 
 
-$dbSize = (Get-Item "prisma/data/workflow.db").Length
+$dbSize = (Get-Item "prisma/.anubis/workflow.db").Length
 Write-Host "  Database created successfully ($([math]::Round($dbSize/1KB, 2)) KB)" -ForegroundColor Green
 
 # Step 6: Create simplified CLI for pre-built mode

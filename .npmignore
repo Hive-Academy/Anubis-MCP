@@ -9,7 +9,6 @@ coverage/
 *.tmp*
 
 # Database files (exclude actual data, keep schema)
-prisma/data/
 prisma/*.db*
 
 # Generated Prisma files (exclude large binaries, keep essentials)
@@ -42,4 +41,4 @@ docker-compose*
 
 # Scripts (keep only essential ones)
 scripts/
-!scripts/prisma-seed.ts 
+!scripts/prisma-seed.ts

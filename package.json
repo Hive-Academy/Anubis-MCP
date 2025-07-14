@@ -22,10 +22,7 @@
     "cursor",
     "nestjs",
     "prisma",
-    "docker",
-    "reporting",
-    "analytics",
-    "playwright"
+    "docker"
   ],
   "main": "dist/cli.js",
   "bin": {
@@ -50,6 +47,7 @@
     "prebuild": "rimraf dist",
     "build": "nest build",
     "build:prod": "cross-env NODE_ENV=production nest build",
+    "build:dev": "cross-env NODE_ENV=development nest build",
     "build:cli": "nest build --entryFile cli",
     "build:all": "npm run build && npm run build:cli",
     "build:all:prod": "npm run build:prod && cross-env NODE_ENV=production nest build --entryFile cli",
@@ -74,7 +72,10 @@
     "version:minor": "node scripts/version-manager.js --type minor",
     "version:major": "node scripts/version-manager.js --type major",
     "version:dry-run": "node scripts/version-manager.js --dry-run",
-    "publish:safe": "npm run version:resolve && npm run build && npm test && npm publish"
+    "publish:safe": "npm run version:resolve && npm run build && npm test && npm publish",
+    "cleanup:generated": "tsx scripts/cleanup-generated-files.ts",
+    "backup:prisma": "mkdir -p backup && cp -r generated/prisma backup/",
+    "restore:prisma": "cp -r backup/prisma generated/"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.4",
@@ -82,13 +83,14 @@
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
-    "@prisma/client": "^6.9.0",
+    "@prisma/adapter-better-sqlite3": "^6.11.1",
+    "@prisma/client": "^6.11.1",
     "@rekog/mcp-nest": "^1.5.2",
     "@types/express": "^4.17.21",
     "ejs": "^3.1.10",
     "express": "^4.19.2",
     "fastmcp": "^1.27.6",
-    "prisma": "^6.9.0",
+    "prisma": "^6.11.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "uuid": "^11.1.0",
@@ -110,6 +112,7 @@
     "compression-webpack-plugin": "^11.1.0",
     "copy-webpack-plugin": "^13.0.0",
     "cross-env": "^7.0.3",
+    "dotenv": "^16.4.5",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",

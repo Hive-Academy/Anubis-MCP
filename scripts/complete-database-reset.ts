@@ -16,26 +16,9 @@ async function completelyResetDatabase() {
     await prisma.workflowStepProgress.deleteMany();
     await prisma.workflowExecution.deleteMany();
 
-    // 2. Delete all project onboarding and analysis data
-    console.log('📊 Deleting project analysis data...');
-    await prisma.analysisRequest.deleteMany();
-    await prisma.projectAnalysisResult.deleteMany();
-    await prisma.codebaseInsights.deleteMany();
-    await prisma.architecturalProfile.deleteMany();
-    await prisma.roleProjectContext.deleteMany();
-    await prisma.generatedPattern.deleteMany();
-    await prisma.projectOnboarding.deleteMany();
-
-    // 3. Delete project behavioral profiles
-    console.log('🎭 Deleting behavioral profiles...');
-    await prisma.projectBehavioralProfile.deleteMany();
-    await prisma.projectPattern.deleteMany();
-    await prisma.projectContext.deleteMany();
-
     // 4. Delete all task-related data
     console.log('📋 Deleting task management data...');
-    await prisma.comment.deleteMany();
-    await prisma.workflowTransition.deleteMany();
+
     await prisma.completionReport.deleteMany();
     await prisma.codeReview.deleteMany();
     await prisma.researchReport.deleteMany();
@@ -43,23 +26,14 @@ async function completelyResetDatabase() {
     await prisma.subtaskDependency.deleteMany();
     await prisma.subtask.deleteMany();
     await prisma.codebaseAnalysis.deleteMany();
-    await prisma.implementationPlan.deleteMany();
     await prisma.taskDescription.deleteMany();
     await prisma.task.deleteMany();
 
     // 5. Delete streamlined workflow rules system (NEW STRUCTURE)
     console.log('⚙️ Deleting streamlined workflow rules...');
 
-    // Delete structured transition data
-    await prisma.transitionDeliverable.deleteMany();
-    await prisma.transitionContext.deleteMany();
-    await prisma.transitionValidation.deleteMany();
-    await prisma.transitionRequirement.deleteMany();
-    await prisma.transitionCondition.deleteMany();
-
     // Delete structured step data
     await prisma.stepDependency.deleteMany();
-    await prisma.mcpAction.deleteMany();
     await prisma.qualityCheck.deleteMany();
     await prisma.stepGuidance.deleteMany();
 
@@ -77,12 +51,9 @@ async function completelyResetDatabase() {
       prisma.workflowStep.count(),
       prisma.stepGuidance.count(),
       prisma.qualityCheck.count(),
-      prisma.mcpAction.count(),
       prisma.stepDependency.count(),
       prisma.roleTransition.count(),
-      prisma.transitionCondition.count(),
       prisma.task.count(),
-      prisma.projectOnboarding.count(),
     ]);
 
     console.log('📊 Verification - Record counts after reset:');
@@ -90,12 +61,9 @@ async function completelyResetDatabase() {
     console.log(`   - Workflow Steps: ${counts[1]}`);
     console.log(`   - Step Guidance: ${counts[2]}`);
     console.log(`   - Quality Checks: ${counts[3]}`);
-    console.log(`   - MCP Actions: ${counts[4]}`);
-    console.log(`   - Step Dependencies: ${counts[5]}`);
-    console.log(`   - Role Transitions: ${counts[6]}`);
-    console.log(`   - Transition Conditions: ${counts[7]}`);
-    console.log(`   - Tasks: ${counts[8]}`);
-    console.log(`   - Project Onboarding: ${counts[9]}`);
+    console.log(`   - Step Dependencies: ${counts[4]}`);
+    console.log(`   - Role Transitions: ${counts[5]}`);
+    console.log(`   - Tasks: ${counts[6]}`);
 
     if (counts.every((count) => count === 0)) {
       console.log('✅ Database is completely clean!');

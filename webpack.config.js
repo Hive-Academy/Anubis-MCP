@@ -1,6 +1,8 @@
 const CompressionPlugin = require('compression-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const webpack = require('webpack');
+require('dotenv').config();
 
 // Custom plugin to add shebang to CLI file
 class ShebangPlugin {
@@ -69,11 +71,25 @@ module.exports = (options, webpack) => {
     },
     plugins: [
       ...options.plugins,
+      // Inject environment variables into the bundle (development only)
+      ...(!isProduction
+        ? [
+            new webpack.DefinePlugin({
+              'process.env.DATABASE_URL': JSON.stringify(process.env.DATABASE_URL),
+              'process.env.MCP_SERVER_NAME': JSON.stringify(process.env.MCP_SERVER_NAME),
+              'process.env.MCP_SERVER_VERSION': JSON.stringify(process.env.MCP_SERVER_VERSION),
+              'process.env.MCP_TRANSPORT_TYPE': JSON.stringify(process.env.MCP_TRANSPORT_TYPE),
+              'process.env.PORT': JSON.stringify(process.env.PORT),
+              'process.env.HOST': JSON.stringify(process.env.HOST),
+              'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+            }),
+          ]
+        : []),
       // Copy templates to dist/templates (flattened)
       new CopyWebpackPlugin({
         patterns: [
           {
-            from: 'src/task-workflow/domains/init-rules/templates',
+            from: 'src/domains/init-rules/templates',
             to: 'templates',
             globOptions: {
               ignore: ['**/.DS_Store'],

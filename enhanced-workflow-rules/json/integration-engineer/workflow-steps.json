@@ -13,7 +13,8 @@
           "Review implementation plans and completed subtasks",
           "Analyze code review results and approved changes",
           "Identify files modified for documentation impact assessment",
-          "Prepare context for documentation updates and integration"
+          "Prepare context for documentation updates and integration",
+          "Use MCP call to TaskOperations service with 'get' operation to retrieve complete implementation context"
         ]
       },
       "qualityChecklist": [
@@ -23,18 +24,7 @@
         "File changes identified for documentation impact",
         "Integration requirements documented"
       ],
-      "conditions": [],
-      "actions": [
-        {
-          "name": "get_implementation_context",
-          "actionType": "MCP_CALL",
-          "actionData": {
-            "serviceName": "TaskOperations",
-            "operation": "get"
-          },
-          "sequenceOrder": 1
-        }
-      ]
+      "conditions": []
     },
     {
       "name": "update_documentation",
@@ -71,8 +61,7 @@
           },
           "isRequired": true
         }
-      ],
-      "actions": []
+      ]
     },
     {
       "name": "execute_git_integration",
@@ -109,51 +98,12 @@
           },
           "isRequired": true
         }
-      ],
-      "actions": []
-    },
-    {
-      "name": "create_pull_request",
-      "description": "Create comprehensive pull request with implementation summary",
-      "sequenceNumber": 4,
-      "isRequired": true,
-      "stepType": "ACTION",
-      "approach": "Comprehensive pull request creation with detailed description",
-      "approachGuidance": {
-        "stepByStep": [
-          "Generate comprehensive file change summary",
-          "Create detailed PR description with implementation overview",
-          "Include documentation updates summary in PR",
-          "Provide reviewer guidance and validation steps",
-          "Create pull request with comprehensive details"
-        ]
-      },
-      "qualityChecklist": [
-        "Comprehensive file change summary generated",
-        "Detailed PR description created with implementation overview",
-        "Documentation updates summarized in PR",
-        "Reviewer guidance and validation steps provided",
-        "Pull request created with comprehensive details"
-      ],
-      "conditions": [
-        {
-          "name": "documentation_updated",
-          "conditionType": "PREVIOUS_STEP_COMPLETED",
-          "logic": {
-            "check": "step_completed",
-            "parameters": {
-              "stepName": "update_documentation"
-            }
-          },
-          "isRequired": true
-        }
-      ],
-      "actions": []
+      ]
     },
     {
       "name": "complete_workflow",
       "description": "Complete task and workflow execution",
-      "sequenceNumber": 5,
+      "sequenceNumber": 4,
       "isRequired": true,
       "stepType": "ACTION",
       "approach": "Complete both task and workflow execution with final status",
@@ -183,8 +133,7 @@
           },
           "isRequired": true
         }
-      ],
-      "actions": []
+      ]
     }
   ]
 }
