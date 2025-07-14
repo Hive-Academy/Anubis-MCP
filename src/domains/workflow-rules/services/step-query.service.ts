@@ -522,8 +522,41 @@ export class StepQueryService {
   // TODO: Refactor to use repository pattern
   // ===================================================================
 
-  getStepWithDetails(_stepId: string) {
-    // TODO: Implement using step repository with guidance relations
-    return Promise.resolve(null);
+  async getStepWithDetails(stepId: string) {
+    try {
+      const step = await this.stepRepository.findById(stepId, {
+        stepGuidance: true,
+        qualityChecks: true,
+        dependencies: true,
+        role: true,
+        stepProgress: true,
+      });
+
+      if (!step) {
+        return null;
+      }
+
+      return {
+        id: step.id,
+        name: step.name,
+        description: step.description,
+        roleId: step.roleId,
+        approach: step.approach,
+        stepGuidance: step.stepGuidance,
+        qualityChecks: step.qualityChecks,
+        dependencies: step.dependencies,
+        sequenceNumber: step.sequenceNumber,
+        isRequired: step.isRequired,
+        stepType: step.stepType,
+        role: step.role,
+        stepProgress: step.stepProgress,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Failed to get step with details for ${stepId}:`,
+        error,
+      );
+      throw error;
+    }
   }
 }

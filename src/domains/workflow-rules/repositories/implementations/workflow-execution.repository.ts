@@ -260,53 +260,62 @@ export class WorkflowExecutionRepository
   }
 
   async handleExecutionError(
-    id: string,
-    error: {
-      message: string;
-      stack?: string;
-      code?: string;
-      details?: Record<string, any>;
-    },
-  ): Promise<WorkflowExecutionWithRelations> {
+    executionId: string,
+    error: any,
+  ): Promise<{ recoveryAttempts: number; maxRetries: number }> {
     try {
       const execution = await this.prisma.workflowExecution.findUniqueOrThrow({
-        where: { id },
-        select: { executionState: true, recoveryAttempts: true },
+        where: { id: executionId },
+        select: {
+          executionState: true,
+          recoveryAttempts: true,
+          maxRecoveryAttempts: true,
+        },
       });
 
       const currentState =
         (execution.executionState as Record<string, any>) || {};
+
+      const newRecoveryAttempts = (execution.recoveryAttempts || 0) + 1;
+      const maxRetries = execution.maxRecoveryAttempts || 3;
+
       const newState = {
         ...currentState,
         phase: 'failed',
         lastFailure: {
           timestamp: new Date().toISOString(),
-          error: error.message,
+          error: error.message || 'Unknown error',
           stack: error.stack,
           code: error.code,
-          details: error.details,
+          details: error.details || error,
         },
       };
 
-      return await this.prisma.workflowExecution.update({
-        where: { id },
+      await this.prisma.workflowExecution.update({
+        where: { id: executionId },
         data: {
           executionState: newState,
+          recoveryAttempts: newRecoveryAttempts,
           lastError: {
-            message: error.message,
+            message: error.message || 'Unknown error',
             timestamp: new Date().toISOString(),
             stack: error.stack,
             code: error.code,
-            details: error.details,
+            details: error.details || error,
           },
-          recoveryAttempts: execution.recoveryAttempts + 1,
-          updatedAt: new Date(),
         },
-        include: this.buildInclude(),
       });
-    } catch (error) {
-      this.logger.error(`Failed to handle execution error ${id}:`, error);
-      throw error;
+
+      return {
+        recoveryAttempts: newRecoveryAttempts,
+        maxRetries,
+      };
+    } catch (updateError) {
+      this.logger.error(
+        `Failed to handle execution error for ${executionId}:`,
+        updateError,
+      );
+      throw updateError;
     }
   }
 

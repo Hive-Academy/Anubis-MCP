@@ -55,6 +55,12 @@ export interface IWorkflowRoleRepository {
     include?: WorkflowRoleIncludeOptions,
   ): Promise<WorkflowRoleWithRelations[]>;
 
+  // Transition-related operations
+  findTransitionById(transitionId: string): Promise<any>;
+  findDelegationHistory(taskId: string): Promise<any[]>;
+  findTransitionsFromRole(fromRoleId: string): Promise<any[]>;
+  findTransitionsToRole(toRoleId: string): Promise<any[]>;
+
   // Capability Management
   findRolesByCapability(
     capabilityKey: string,
@@ -106,6 +112,4 @@ export interface IWorkflowRoleRepository {
   findRolesWithBehavioralProfiles(
     include?: WorkflowRoleIncludeOptions,
   ): Promise<WorkflowRoleWithRelations[]>;
-
-  // Role Transition Operations
 }

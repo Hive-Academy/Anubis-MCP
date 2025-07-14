@@ -227,12 +227,10 @@ export class WorkflowExecutionService extends ConfigurableService<ExecutionServi
       );
     }
 
-    return this.workflowExecutionRepository.updateProgress(executionId, {
+    return this.workflowExecutionRepository.update(executionId, {
       stepsCompleted,
       totalSteps,
       progressPercentage,
-      currentStepId: currentExecution.currentStepId as string,
-      currentRoleId: currentExecution.currentRoleId,
     });
   }
 
@@ -274,15 +272,30 @@ export class WorkflowExecutionService extends ConfigurableService<ExecutionServi
     retryCount: number;
     maxRetries: number;
   }> {
-    const result = await this.workflowExecutionRepository.handleExecutionError(
-      executionId,
-      error,
-    );
+    // Simplified: Get execution and manually handle error
+    const execution =
+      await this.workflowExecutionRepository.findById(executionId);
+    if (!execution) {
+      throw new Error(`Execution not found: ${executionId}`);
+    }
+
+    const newRecoveryAttempts = (execution.recoveryAttempts || 0) + 1;
+    const maxRetries = execution.maxRecoveryAttempts || 3;
+
+    await this.workflowExecutionRepository.update(executionId, {
+      recoveryAttempts: newRecoveryAttempts,
+      lastError: {
+        message: error.message || 'Unknown error',
+        timestamp: new Date().toISOString(),
+        stack: error.stack,
+        details: error.details || error,
+      },
+    });
 
     return {
-      canRetry: result.canRecover,
-      retryCount: result.recoveryAttempts,
-      maxRetries: result.maxRecoveryAttempts,
+      canRetry: newRecoveryAttempts < maxRetries,
+      retryCount: newRecoveryAttempts,
+      maxRetries,
     };
   }
 

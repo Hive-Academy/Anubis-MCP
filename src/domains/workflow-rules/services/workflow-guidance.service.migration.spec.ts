@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from '@nestjs/testing';
-import { WorkflowGuidanceService } from '../workflow-guidance.service';
 import { IProjectContextRepository } from '../repositories/interfaces/project-context.repository.interface';
 import { IWorkflowRoleRepository } from '../repositories/interfaces/workflow-role.repository.interface';
+import { WorkflowGuidanceService } from './workflow-guidance.service';
 
 describe('WorkflowGuidanceService Repository Migration', () => {
   let service: WorkflowGuidanceService;
@@ -63,7 +64,7 @@ describe('WorkflowGuidanceService Repository Migration', () => {
     // Arrange
     workflowRoleRepository.findByName.mockResolvedValue(mockRole);
     projectContextRepository.findProjectByPath.mockResolvedValue(
-      mockProjectContext,
+      mockProjectContext as any,
     );
     projectContextRepository.findBehavioralProfile.mockResolvedValue(null);
     projectContextRepository.findProjectPatterns.mockResolvedValue([]);

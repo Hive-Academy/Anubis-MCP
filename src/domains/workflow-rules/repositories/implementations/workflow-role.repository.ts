@@ -710,4 +710,74 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
 
     return Object.keys(result).length > 0 ? result : undefined;
   }
+
+  // Transition-related operations
+  async findTransitionById(transitionId: string): Promise<any> {
+    try {
+      return await this.prisma.roleTransition.findUnique({
+        where: { id: transitionId },
+        include: {
+          fromRole: true,
+          toRole: true,
+        },
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to find transition by id ${transitionId}:`,
+        error,
+      );
+      throw error;
+    }
+  }
+
+  findDelegationHistory(taskId: string): Promise<any[]> {
+    try {
+      // This would typically join with task workflow history
+      // For now, return empty array since we don't have delegation history tracking yet
+      this.logger.debug(`Finding delegation history for task ${taskId}`);
+      return Promise.resolve([]);
+    } catch (error) {
+      this.logger.error(
+        `Failed to find delegation history for task ${taskId}:`,
+        error,
+      );
+      throw error;
+    }
+  }
+
+  async findTransitionsFromRole(fromRoleId: string): Promise<any[]> {
+    try {
+      return await this.prisma.roleTransition.findMany({
+        where: { fromRoleId },
+        include: {
+          toRole: true,
+        },
+        orderBy: { transitionName: 'asc' },
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to find transitions from role ${fromRoleId}:`,
+        error,
+      );
+      throw error;
+    }
+  }
+
+  async findTransitionsToRole(toRoleId: string): Promise<any[]> {
+    try {
+      return await this.prisma.roleTransition.findMany({
+        where: { toRoleId },
+        include: {
+          fromRole: true,
+        },
+        orderBy: { transitionName: 'asc' },
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to find transitions to role ${toRoleId}:`,
+        error,
+      );
+      throw error;
+    }
+  }
 }

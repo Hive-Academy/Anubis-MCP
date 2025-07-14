@@ -1,16 +1,13 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProjectContextRepository } from './project-context.repository';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { ProjectType, PatternType } from '../../../../../generated/prisma';
-import {
-  CreateProjectContextDTO,
-  CreateProjectBehavioralProfileDTO,
-  CreateProjectPatternDTO,
-} from '../types/project-context.types';
+import { CreateProjectContextDTO } from '../types/project-context.types';
 
 describe('ProjectContextRepository', () => {
   let repository: ProjectContextRepository;
-  let prismaService: PrismaService;
+  let _prismaService: PrismaService;
 
   const mockPrismaService = {
     projectContext: {
@@ -50,7 +47,7 @@ describe('ProjectContextRepository', () => {
     }).compile();
 
     repository = module.get<ProjectContextRepository>(ProjectContextRepository);
-    prismaService = module.get<PrismaService>(PrismaService);
+    _prismaService = module.get<PrismaService>(PrismaService);
   });
 
   afterEach(() => {
