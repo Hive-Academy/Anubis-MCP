@@ -704,7 +704,6 @@ export class StepProgressRepository implements IStepProgressRepository {
         },
         role: true,
         execution: true,
-        task: true,
       };
     }
 

@@ -43,17 +43,161 @@ const ReportStepCompletionInputSchema = z
       .number()
       .optional()
       .describe('Task ID (optional if executionId provided)'),
-    executionId: z
-      .string()
-      .optional()
-      .describe('Execution ID (optional if taskId provided)'),
+    executionId: z.string().describe('Execution ID'),
     stepId: z.string().describe('Completed step ID'),
     result: z.enum(['success', 'failure']).describe('Execution result'),
-    executionData: z
-      .unknown()
-      .optional()
-      .describe('Results from local execution'),
     executionTime: z.number().optional().describe('Execution time in ms'),
+
+    // 🔧 NEW: Structured execution data with explicit fields
+    executionData: z
+      .object({
+        // Core execution information
+        outputSummary: z
+          .string()
+          .optional()
+          .describe('Brief summary of what was accomplished'),
+        evidenceDetails: z
+          .string()
+          .optional()
+          .describe('Detailed evidence of completion'),
+        duration: z
+          .string()
+          .optional()
+          .describe('Time taken to complete the step'),
+
+        // File and code changes
+        filesModified: z
+          .array(z.string())
+          .optional()
+          .describe('List of files that were modified'),
+        commandsExecuted: z
+          .array(z.string())
+          .optional()
+          .describe('List of commands that were executed'),
+
+        // Implementation details
+        implementationSummary: z
+          .string()
+          .optional()
+          .describe('Summary of implementation approach taken'),
+        completionEvidence: z
+          .record(z.any())
+          .optional()
+          .describe('Evidence of completion by acceptance criteria'),
+
+        // Delegation and handoff
+        delegationSummary: z
+          .string()
+          .optional()
+          .describe('Summary for next role/step'),
+
+        // Quality and validation
+        qualityChecksComplete: z
+          .boolean()
+          .optional()
+          .describe('Whether quality checks were completed'),
+        qualityValidation: z
+          .string()
+          .optional()
+          .describe('Results of quality validation'),
+        acceptanceCriteriaVerification: z
+          .record(z.any())
+          .optional()
+          .describe('Verification of acceptance criteria'),
+
+        // Testing results
+        testingResults: z
+          .record(z.any())
+          .optional()
+          .describe('Results from testing activities'),
+        qualityAssurance: z
+          .record(z.any())
+          .optional()
+          .describe('Quality assurance metrics and results'),
+
+        // Additional context
+        additionalContext: z
+          .record(z.any())
+          .optional()
+          .describe('Any additional context or findings'),
+      })
+      .optional()
+      .describe('Structured execution data with specific fields'),
+
+    // 🔧 NEW: Explicit validation results
+    validationResults: z
+      .object({
+        allChecksPassed: z
+          .boolean()
+          .describe('Whether all validation checks passed'),
+        checklist: z
+          .array(
+            z.object({
+              item: z.string().describe('Validation check item'),
+              passed: z.boolean().describe('Whether this check passed'),
+              evidence: z
+                .string()
+                .optional()
+                .describe('Evidence for this check'),
+              notes: z
+                .string()
+                .optional()
+                .describe('Additional notes about this check'),
+            }),
+          )
+          .optional()
+          .describe('Detailed validation checklist results'),
+        qualityScore: z
+          .number()
+          .optional()
+          .describe('Overall quality score (0-10)'),
+        issues: z.array(z.string()).optional().describe('List of issues found'),
+        recommendations: z
+          .array(z.string())
+          .optional()
+          .describe('Recommendations for improvement'),
+      })
+      .optional()
+      .describe('Structured validation results'),
+
+    // 🔧 NEW: Explicit report data
+    reportData: z
+      .object({
+        stepType: z
+          .string()
+          .optional()
+          .describe('Type of step that was completed'),
+        roleContext: z
+          .string()
+          .optional()
+          .describe('Context about the role that executed this step'),
+        keyAchievements: z
+          .array(z.string())
+          .optional()
+          .describe('Key achievements in this step'),
+        challengesFaced: z
+          .array(z.string())
+          .optional()
+          .describe('Challenges encountered and how they were resolved'),
+        nextStepRecommendations: z
+          .array(z.string())
+          .optional()
+          .describe('Recommendations for the next step'),
+        resourcesUsed: z
+          .array(z.string())
+          .optional()
+          .describe('Resources, tools, or services used'),
+        decisionsMade: z
+          .array(z.string())
+          .optional()
+          .describe('Key decisions made during execution'),
+        lessonsLearned: z
+          .array(z.string())
+          .optional()
+          .describe('Lessons learned for future reference'),
+      })
+      .optional()
+      .describe('Structured report data for comprehensive tracking'),
   })
   .refine(
     (data) => data.taskId !== undefined || data.executionId !== undefined,
@@ -64,13 +208,13 @@ const ReportStepCompletionInputSchema = z
   );
 
 const GetStepProgressInputSchema = z.object({
-  id: z.number().describe('Task ID for progress query'),
+  executionId: z.string().describe('Execution ID for progress query'),
   roleId: z.string().optional().describe('Optional role ID filter'),
 });
 
 const GetNextStepInputSchema = z.object({
   roleId: z.string().describe('Role ID for next step query'),
-  id: z.number().describe('Task ID for context'),
+  executionId: z.string().describe('Execution ID for context'),
 });
 
 type GetStepGuidanceInput = z.infer<typeof GetStepGuidanceInputSchema>;
@@ -190,30 +334,14 @@ export class StepExecutionMcpService extends BaseMcpService {
 
   @Tool({
     name: 'report_step_completion',
-    description: `Report step completion results and get next step guidance.`,
+    description: `Report step completion results with structured data and get next step guidance.`,
     parameters:
       ReportStepCompletionInputSchema as ZodSchema<ReportStepCompletionInput>,
   })
   async reportStepCompletion(input: ReportStepCompletionInput) {
     try {
-      let executionId = input.executionId;
-
-      if (!executionId && input.taskId) {
-        const execution =
-          await this.workflowExecutionOperationsService.getExecution({
-            taskId: input.taskId,
-          });
-        if (!execution.execution) {
-          return this.buildErrorResponse(
-            'No execution found for task',
-            `Task ${input.taskId} has no active execution`,
-            'EXECUTION_NOT_FOUND',
-          );
-        }
-        executionId = execution.execution.id;
-      }
-
-      if (!executionId) {
+      // Final validation - we must have an executionId at this point
+      if (!input.executionId) {
         return this.buildErrorResponse(
           'No execution identifier provided',
           'Either taskId or executionId must be provided',
@@ -221,13 +349,15 @@ export class StepExecutionMcpService extends BaseMcpService {
         );
       }
 
-      // ✅ DELEGATE to StepExecutionService
+      // ✅ DELEGATE to StepExecutionService with structured data
       const completionResult =
         await this.stepExecutionService.processStepCompletion(
-          executionId,
+          input.executionId,
           input.stepId,
           input.result,
           input.executionData,
+          input.validationResults,
+          input.reportData,
         );
 
       return this.buildResponse({
@@ -235,6 +365,9 @@ export class StepExecutionMcpService extends BaseMcpService {
           stepId: input.stepId,
           result: input.result,
           status: 'reported',
+          executionData: input.executionData,
+          validationResults: input.validationResults,
+          reportData: input.reportData,
         },
         nextGuidance: {
           hasNextStep: Boolean(completionResult),
@@ -254,41 +387,141 @@ export class StepExecutionMcpService extends BaseMcpService {
   // 📊 PROGRESS AND ANALYTICS TOOLS - Delegates to WorkflowExecutionOperationsService
   // ===================================================================
 
+  // ===================================================================
+  // 🔧 HELPER METHODS FOR PROGRESS ANALYSIS
+  // ===================================================================
+
+  /**
+   * Extract key findings from completed steps for AI agent context
+   */
+  private extractKeyFindings(completedSteps: any[]): string[] {
+    const findings: string[] = [];
+
+    // Extract key information from execution data
+    completedSteps.forEach((step) => {
+      if (step.executionData) {
+        const data = step.executionData;
+
+        // Look for key findings in various fields
+        if (data.outputSummary) {
+          findings.push(`${step.stepName}: ${data.outputSummary}`);
+        }
+        if (data.filesModified && Array.isArray(data.filesModified)) {
+          findings.push(
+            `${step.stepName}: Modified ${data.filesModified.length} files`,
+          );
+        }
+        if (data.commandsExecuted && Array.isArray(data.commandsExecuted)) {
+          findings.push(
+            `${step.stepName}: Executed ${data.commandsExecuted.length} commands`,
+          );
+        }
+        if (data.implementationSummary) {
+          findings.push(`${step.stepName}: ${data.implementationSummary}`);
+        }
+      }
+
+      // Extract validation results
+      if (step.validationResults) {
+        findings.push(`${step.stepName}: Validation completed`);
+      }
+    });
+
+    return findings.length > 0 ? findings : ['No key findings available'];
+  }
+
   @Tool({
     name: 'get_step_progress',
-    description: `Get focused step progress summary for a task.`,
+    description: `Get comprehensive step progress with detailed execution context for workflow continuation.`,
     parameters: GetStepProgressInputSchema as ZodSchema<GetStepProgressInput>,
   })
   async getStepProgress(input: GetStepProgressInput) {
     try {
-      // ✅ DELEGATE to WorkflowExecutionOperationsService
+      // ✅ CRITICAL FIX: Use executionId for progress tracking instead of taskId
       const executionResult =
         await this.workflowExecutionOperationsService.getExecution({
-          taskId: input.id,
+          executionId: input.executionId,
         });
 
       if (!executionResult.execution) {
         return this.buildResponse({
-          taskId: input.id,
+          executionId: input.executionId,
           status: 'no_execution',
-          error: 'No active execution found',
+          error: 'No execution found for provided executionId',
         });
       }
 
       const execution = executionResult.execution;
+
+      // Get all step progress records for this execution
+      const stepProgressRepository =
+        this.stepExecutionService['stepProgressRepository'];
+      const stepProgressRecords =
+        await stepProgressRepository.findByExecutionId(input.executionId, {
+          step: true,
+          role: true,
+        });
+
+      // Build comprehensive progress response
+      const completedSteps = stepProgressRecords
+        .filter((record) => record.status === 'COMPLETED')
+        .map((record) => ({
+          stepId: record.stepId,
+          stepName: record.step?.name || 'Unknown',
+          roleId: record.roleId,
+          roleName: record.role?.name || 'Unknown',
+          completedAt: record.completedAt,
+          duration: record.duration,
+          executionData: record.executionData,
+          validationResults: record.validationResults,
+          reportData: record.reportData,
+        }));
+
       const currentStep = execution.currentStep;
+      const currentRole = execution.currentRole;
 
       return this.buildResponse({
-        taskId: input.id,
+        executionId: input.executionId,
+        taskId: execution.taskId,
         status: execution.completedAt ? 'completed' : 'in_progress',
+
+        // Current execution state
         currentStep: {
+          id: currentStep?.id,
           name: currentStep?.name || 'No current step',
           status: execution.completedAt ? 'completed' : 'active',
-          stepId: currentStep?.id,
+          roleId: execution.currentRoleId,
+          roleName: currentRole?.name || 'Unknown',
         },
+
+        // Progress metrics
         progress: {
           stepsCompleted: execution.stepsCompleted || 0,
           progressPercentage: execution.progressPercentage || 0,
+          totalSteps: execution.totalSteps || 0,
+        },
+
+        // 🔧 CRITICAL ENHANCEMENT: Detailed step execution history
+        completedSteps,
+
+        // Execution context for workflow continuation
+        executionContext: {
+          phase: (execution.executionState as any)?.phase || 'unknown',
+          startedAt: execution.startedAt,
+          completedAt: execution.completedAt,
+          executionMode: execution.executionMode,
+          lastProgressUpdate: execution.updatedAt,
+        },
+
+        // Summary for AI agent understanding
+        contextSummary: {
+          totalStepsCompleted: completedSteps.length,
+          lastCompletedStep: completedSteps[0] || null,
+          hasValidationData: completedSteps.some(
+            (step) => step.validationResults,
+          ),
+          hasReportData: completedSteps.some((step) => step.reportData),
+          keyFindings: this.extractKeyFindings(completedSteps),
         },
       });
     } catch (error) {
@@ -310,12 +543,12 @@ export class StepExecutionMcpService extends BaseMcpService {
       // ✅ DELEGATE to WorkflowExecutionOperationsService
       const executionResult =
         await this.workflowExecutionOperationsService.getExecution({
-          taskId: input.id,
+          executionId: input.executionId,
         });
 
       if (!executionResult.execution) {
         return this.buildResponse({
-          taskId: input.id,
+          executionId: input.executionId,
           roleId: input.roleId,
           status: 'no_execution',
           error: 'No active execution found',
@@ -326,7 +559,7 @@ export class StepExecutionMcpService extends BaseMcpService {
 
       if (execution.currentRoleId !== input.roleId) {
         return this.buildResponse({
-          taskId: input.id,
+          executionId: input.executionId,
           roleId: input.roleId,
           status: 'role_mismatch',
           currentRole: execution.currentRole?.name || 'unknown',
@@ -337,16 +570,16 @@ export class StepExecutionMcpService extends BaseMcpService {
       // ✅ DELEGATE to StepExecutionService
       const nextStep: WorkflowStep | null =
         await this.stepExecutionService.getNextAvailableStep(
-          input.id,
+          execution.taskId || 0,
           input.roleId,
         );
 
       return this.buildResponse({
-        taskId: input.id,
+        executionId: input.executionId,
         roleId: input.roleId,
         nextStep: nextStep
           ? this.stepGuidanceService.getStepGuidance({
-              taskId: input.id,
+              taskId: execution.taskId || 0,
               roleId: nextStep.roleId,
               stepId: nextStep.id,
               executionId: execution.id,

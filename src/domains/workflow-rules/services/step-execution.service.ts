@@ -1,4 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
+import {
+  StepProgressStatus,
+  StepExecutionResult as PrismaStepExecutionResult,
+} from '../../../../generated/prisma';
 import { StepDataUtils } from '../utils/step-data.utils';
 import { getErrorMessage } from '../utils/type-safety.utils';
 import { StepGuidanceService } from './step-guidance.service';
@@ -170,13 +174,15 @@ export class StepExecutionService {
   }
 
   /**
-   * Process step completion - using executionId
+   * Process step completion - using structured data instead of extraction
    */
   async processStepCompletion(
     executionId: string,
     stepId: string,
     result: 'success' | 'failure',
-    executionData?: unknown,
+    executionData?: any,
+    validationResults?: any,
+    reportData?: any,
   ) {
     // Get current execution to get taskId and roleId
     const execution = await this.workflowExecutionRepository.findById(
@@ -191,21 +197,29 @@ export class StepExecutionService {
       throw new Error(`Execution not found: ${executionId}`);
     }
 
-    // Update step progress tied to execution
-    await this.stepProgressRepository.create({
+    // 🔧 CRITICAL FIX: Use structured data directly instead of extraction
+    const completionData = {
       executionId: executionId,
       taskId: execution.taskId?.toString(),
       stepId,
       roleId: execution.currentRoleId,
-      status: result === 'success' ? 'COMPLETED' : 'FAILED',
+      status:
+        result === 'success' ? 'COMPLETED' : ('FAILED' as StepProgressStatus),
       startedAt: new Date(),
       completedAt: result === 'success' ? new Date() : undefined,
       failedAt: result === 'failure' ? new Date() : undefined,
-      result: result === 'success' ? 'SUCCESS' : 'FAILURE',
-      executionData: executionData
-        ? JSON.parse(JSON.stringify(executionData))
-        : null,
-    });
+      result: (result === 'success'
+        ? 'SUCCESS'
+        : 'FAILURE') as PrismaStepExecutionResult,
+
+      // 🔧 NEW: Store structured data directly
+      executionData: executionData || null,
+      validationResults: validationResults || null,
+      reportData: reportData || null,
+    };
+
+    // Update step progress tied to execution
+    await this.stepProgressRepository.create(completionData);
 
     // If step completed successfully, advance to next step
     if (result === 'success') {
