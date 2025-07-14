@@ -493,7 +493,6 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
               currentStep: true,
             },
           },
-          behavioralProfiles: true,
         },
       });
     } catch (error) {
@@ -524,28 +523,6 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
       return !!role;
     } catch (error) {
       this.logger.error(`Failed to validate role exists ${roleId}:`, error);
-      throw error;
-    }
-  }
-
-  async findRolesWithBehavioralProfiles(
-    include?: WorkflowRoleIncludeOptions,
-  ): Promise<WorkflowRoleWithRelations[]> {
-    try {
-      return await this.prisma.workflowRole.findMany({
-        where: {
-          behavioralProfiles: {
-            some: {},
-          },
-        },
-        include: this.buildInclude(include),
-        orderBy: { priority: 'asc' },
-      });
-    } catch (error) {
-      this.logger.error(
-        'Failed to find roles with behavioral profiles:',
-        error,
-      );
       throw error;
     }
   }
@@ -701,11 +678,6 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
           },
         };
       }
-    }
-
-    // Handle behavioralProfiles include
-    if (include.behavioralProfiles !== undefined) {
-      result.behavioralProfiles = include.behavioralProfiles;
     }
 
     return Object.keys(result).length > 0 ? result : undefined;

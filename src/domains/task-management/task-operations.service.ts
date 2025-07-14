@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { Subtask } from 'generated/prisma';
 import { ZodSchema } from 'zod';
@@ -60,7 +60,7 @@ export interface TaskListResult {
 @Injectable()
 export class TaskOperationsService extends BaseMcpService {
   constructor(
-    private readonly taskRepository: ITaskRepository,
+    @Inject('ITaskRepository') private readonly taskRepository: ITaskRepository,
     private readonly prisma: PrismaService, // Keep for workflow execution updates
   ) {
     super();

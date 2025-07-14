@@ -1,10 +1,5 @@
-import { Injectable, Inject } from '@nestjs/common';
-import {
-  ProjectBehavioralProfile,
-  ProjectContext,
-  WorkflowRole,
-} from 'generated/prisma';
-import { IProjectContextRepository } from '../repositories/interfaces/project-context.repository.interface';
+import { Inject, Injectable } from '@nestjs/common';
+import { WorkflowRole } from 'generated/prisma';
 import { IWorkflowRoleRepository } from '../repositories/interfaces/workflow-role.repository.interface';
 import {
   BaseServiceConfig,
@@ -47,12 +42,6 @@ export interface PatternImplementation {
 // FOCUSED: Role/Persona context only - NO step details
 export interface WorkflowGuidance {
   currentRole: WorkflowRole;
-  projectContext: {
-    projectType?: string;
-    behavioralProfile?: any;
-    detectedPatterns?: any[];
-    qualityStandards?: any;
-  };
 }
 
 export interface RoleContext {
@@ -79,8 +68,6 @@ export class WorkflowGuidanceService extends ConfigurableService<GuidanceConfig>
   };
 
   constructor(
-    @Inject('IProjectContextRepository')
-    private projectContextRepository: IProjectContextRepository,
     @Inject('IWorkflowRoleRepository')
     private workflowRoleRepository: IWorkflowRoleRepository,
   ) {
@@ -95,7 +82,7 @@ export class WorkflowGuidanceService extends ConfigurableService<GuidanceConfig>
    */
   async getWorkflowGuidance(
     roleName: string,
-    context: RoleContext,
+    _context: RoleContext,
   ): Promise<WorkflowGuidance> {
     // Get role information
     const role = await this.getWorkflowRole(roleName);
@@ -103,26 +90,9 @@ export class WorkflowGuidanceService extends ConfigurableService<GuidanceConfig>
       throw new Error(`Workflow role '${roleName}' not found`);
     }
 
-    // Get project context if available
-    const projectContext = await this.getProjectContext(context.projectPath);
-
-    // Get project-specific behavioral profile
-    const behavioralProfile = await this.getProjectBehavioralProfile(
-      projectContext?.id,
-      roleName,
-    );
-
     // FOCUSED: Build role-only guidance structure (NO step details)
     const roleGuidance: WorkflowGuidance = {
       currentRole: role,
-      projectContext: {
-        projectType: projectContext?.projectType,
-        behavioralProfile: behavioralProfile,
-        detectedPatterns: projectContext
-          ? await this.getProjectPatterns(projectContext.id)
-          : [],
-        qualityStandards: behavioralProfile?.qualityStandards,
-      },
     };
 
     return roleGuidance;
@@ -134,42 +104,5 @@ export class WorkflowGuidanceService extends ConfigurableService<GuidanceConfig>
     roleName: string,
   ): Promise<WorkflowRole | null> {
     return await this.workflowRoleRepository.findByName(roleName);
-  }
-
-  private getProjectContext(
-    projectPath?: string,
-  ): Promise<ProjectContext | null> {
-    if (!projectPath) return Promise.resolve(null);
-
-    return this.projectContextRepository.findProjectByPath(projectPath);
-  }
-
-  private getProjectBehavioralProfile(
-    projectContextId?: number,
-    roleName?: string,
-  ): Promise<ProjectBehavioralProfile | null> {
-    if (!projectContextId || !roleName) return Promise.resolve(null);
-
-    return this.projectContextRepository.findBehavioralProfile(
-      projectContextId,
-    );
-  }
-
-  private async getProjectPatterns(projectContextId: number): Promise<any[]> {
-    const patterns = await this.projectContextRepository.findProjectPatterns(
-      projectContextId,
-      {
-        maxPatternsReturned:
-          this.getConfigValue('performance').maxPatternsReturned,
-      },
-    );
-
-    return patterns.map((pattern) => ({
-      name: pattern.name,
-      type: pattern.type,
-      description: pattern.description,
-      usage: this.getConfigValue('defaults').patternUsage,
-      confidence: this.getConfigValue('defaults').patternConfidence,
-    }));
   }
 }

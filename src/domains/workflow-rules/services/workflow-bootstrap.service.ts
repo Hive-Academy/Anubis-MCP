@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WorkflowBootstrapRepository } from '../repositories/implementations/workflow-bootstrap.repository';
 
 // Simplified bootstrap input - just execution setup
@@ -21,6 +21,7 @@ export interface BootstrapWorkflowInput {
 @Injectable()
 export class WorkflowBootstrapService {
   constructor(
+    @Inject('IWorkflowBootstrapRepository')
     private readonly bootstrapRepository: WorkflowBootstrapRepository,
   ) {}
 

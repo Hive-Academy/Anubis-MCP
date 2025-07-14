@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { CodeReview, CompletionReport, Prisma } from 'generated/prisma';
 import { ZodSchema } from 'zod';
 import {
@@ -55,7 +55,9 @@ export interface CompletionSummary {
 @Injectable()
 export class ReviewOperationsService extends BaseMcpService {
   constructor(
+    @Inject('ICodeReviewRepository')
     private readonly codeReviewRepository: CodeReviewRepository,
+    @Inject('ICompletionReportRepository')
     private readonly completionReportRepository: CompletionReportRepository,
   ) {
     super();

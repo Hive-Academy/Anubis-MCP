@@ -107,9 +107,4 @@ export interface IWorkflowRoleRepository {
     data: UpdateWorkflowRoleData,
     tx?: PrismaTransaction,
   ): Promise<WorkflowRoleWithRelations>;
-
-  // Project-Specific Operations
-  findRolesWithBehavioralProfiles(
-    include?: WorkflowRoleIncludeOptions,
-  ): Promise<WorkflowRoleWithRelations[]>;
 }

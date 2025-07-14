@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { Prisma, ResearchReport } from 'generated/prisma';
 import { ZodSchema } from 'zod';
@@ -42,6 +42,7 @@ export interface ResearchOperationResult {
 @Injectable()
 export class ResearchOperationsService extends BaseMcpService {
   constructor(
+    @Inject('IResearchReportRepository')
     private readonly researchReportRepository: ResearchReportRepository,
   ) {
     super();

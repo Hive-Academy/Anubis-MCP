@@ -14,13 +14,31 @@ import { ResearchReportRepository } from './repositories/implementations/researc
 @Module({
   imports: [PrismaModule],
   providers: [
-    // Repository layer
-    TaskRepository,
-    SubtaskRepository,
-    CodeReviewRepository,
-    CompletionReportRepository,
-    DelegationRecordRepository,
-    ResearchReportRepository,
+    // Repository layer with proper DI tokens
+    {
+      provide: 'ITaskRepository',
+      useClass: TaskRepository,
+    },
+    {
+      provide: 'ISubtaskRepository',
+      useClass: SubtaskRepository,
+    },
+    {
+      provide: 'ICodeReviewRepository',
+      useClass: CodeReviewRepository,
+    },
+    {
+      provide: 'ICompletionReportRepository',
+      useClass: CompletionReportRepository,
+    },
+    {
+      provide: 'IDelegationRecordRepository',
+      useClass: DelegationRecordRepository,
+    },
+    {
+      provide: 'IResearchReportRepository',
+      useClass: ResearchReportRepository,
+    },
     // Core operation services (converted to MCP tools)
     TaskOperationsService,
     IndividualSubtaskOperationsService,
@@ -28,13 +46,31 @@ import { ResearchReportRepository } from './repositories/implementations/researc
     ResearchOperationsService,
   ],
   exports: [
-    // Repository layer
-    TaskRepository,
-    SubtaskRepository,
-    CodeReviewRepository,
-    CompletionReportRepository,
-    DelegationRecordRepository,
-    ResearchReportRepository,
+    // Repository layer with proper DI tokens
+    {
+      provide: 'ITaskRepository',
+      useClass: TaskRepository,
+    },
+    {
+      provide: 'ISubtaskRepository',
+      useClass: SubtaskRepository,
+    },
+    {
+      provide: 'ICodeReviewRepository',
+      useClass: CodeReviewRepository,
+    },
+    {
+      provide: 'ICompletionReportRepository',
+      useClass: CompletionReportRepository,
+    },
+    {
+      provide: 'IDelegationRecordRepository',
+      useClass: DelegationRecordRepository,
+    },
+    {
+      provide: 'IResearchReportRepository',
+      useClass: ResearchReportRepository,
+    },
     // Core operation services (MCP tools exported for external use)
     TaskOperationsService,
     IndividualSubtaskOperationsService,

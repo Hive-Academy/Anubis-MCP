@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { ZodSchema } from 'zod';
 import { Prisma, Subtask } from 'generated/prisma';
 import { ISubtaskRepository } from './repositories/interfaces/subtask.repository.interface';
@@ -111,7 +111,10 @@ interface BatchCompletionResult {
  */
 @Injectable()
 export class IndividualSubtaskOperationsService extends BaseMcpService {
-  constructor(private readonly subtaskRepository: ISubtaskRepository) {
+  constructor(
+    @Inject('ISubtaskRepository')
+    private readonly subtaskRepository: ISubtaskRepository,
+  ) {
     super();
   }
 
@@ -638,9 +641,8 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
             );
           }
         }
-      } catch (error) {
+      } catch (_error) {
         // Log dependency update error but don't fail the entire update
-        console.error('Error updating subtask dependencies:', error);
       }
     }
 

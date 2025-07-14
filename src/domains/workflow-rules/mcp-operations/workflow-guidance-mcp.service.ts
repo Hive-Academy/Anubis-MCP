@@ -147,7 +147,6 @@ export class WorkflowGuidanceMcpService extends BaseMcpService {
       return this.buildResponse({
         success: true,
         currentRole: roleGuidance.currentRole,
-        projectContext: roleGuidance.projectContext,
         executionContext: executionContext,
       });
     } catch (error: any) {

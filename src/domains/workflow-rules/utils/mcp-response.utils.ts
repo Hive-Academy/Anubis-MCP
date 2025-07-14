@@ -370,9 +370,8 @@ function cleanMarkdown(obj: unknown, preserveFields: string[]): unknown {
           if (cleaned && cleaned.length > 10 && cleaned !== value) {
             result[key] = cleaned;
           }
-        } catch (error) {
+        } catch (_error) {
           // If markdown cleaning fails, keep original
-          console.warn(`Failed to clean markdown for field ${key}:`, error);
         }
       }
     } else if (typeof value === 'object' && value !== null) {
@@ -443,8 +442,7 @@ function flattenObject(obj: unknown, maxDepth: number): unknown {
     }
 
     return flattened;
-  } catch (error) {
-    console.warn('Failed to flatten object:', error);
+  } catch (_error) {
     return obj;
   }
 }

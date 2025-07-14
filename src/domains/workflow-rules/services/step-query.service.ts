@@ -118,10 +118,6 @@ export class StepQueryService {
     options: StepQueryOptions = { checkTransitionState: true },
   ): Promise<WorkflowStep | null> {
     try {
-      console.log(
-        `🔍 getNextAvailableStep called: taskId=${taskId}, roleId=${roleId}`,
-      );
-
       // 🔧 CRITICAL FIX: Check for post-transition state first
       if (options.checkTransitionState) {
         const transitionState = await this.checkPostTransitionState(
@@ -131,9 +127,6 @@ export class StepQueryService {
 
         if (transitionState.isPostTransition && transitionState.assignedStep) {
           // Don't return current step - we need the NEXT step after the assigned step
-          console.log(
-            `🔄 Post-transition detected: current step is ${transitionState.assignedStep.name} (seq: ${transitionState.assignedStep.sequenceNumber})`,
-          );
 
           // Get NEXT step after the assigned current step
           const nextStep = await this.stepRepository.findBySequenceNumber(
@@ -142,21 +135,15 @@ export class StepQueryService {
           );
 
           if (nextStep) {
-            console.log(
-              `➡️ Next step after transition: ${nextStep.name} (seq: ${nextStep.sequenceNumber})`,
-            );
             return nextStep;
           } else {
-            console.log(
-              `🏁 No more steps after ${transitionState.assignedStep.name} in role ${roleId}`,
-            );
             return null;
           }
         }
       }
 
       // Get the current execution state
-      console.log(`📋 Getting execution for taskId: ${taskId}`);
+
       const execution = await this.executionRepository.findByTaskId(
         parseInt(taskId),
         {
@@ -166,73 +153,44 @@ export class StepQueryService {
       );
 
       if (!execution) {
-        console.log(`❌ No execution found for taskId: ${taskId}`);
         // No execution found, return first step for role
         return this.stepRepository.findFirstStepForRole(roleId);
       }
 
-      console.log(
-        `📋 Execution found: currentStepId=${execution.currentStepId}, currentRoleId=${execution.currentRoleId}`,
-      );
-
       // 🔧 CRITICAL FIX: Validate role matches
       if (execution.currentRoleId !== roleId) {
-        console.log(
-          `⚠️ Role mismatch: execution has ${execution.currentRoleId}, requested ${roleId}`,
-        );
         // Role mismatch - return first step for the requested role
         return this.stepRepository.findFirstStepForRole(roleId);
       }
 
       // 🔧 CRITICAL FIX: Handle null currentStep after transitions
       if (!execution.currentStep) {
-        console.log(`❌ No currentStep in execution`);
         // Check if execution state has currentStep info from transition
         const executionState = execution.executionState as any;
         if (executionState?.currentStep?.id) {
-          console.log(
-            `🔍 Checking execution state for step: ${executionState.currentStep.id}`,
-          );
           // Validate the step exists and belongs to current role
           const stepFromState = await this.stepRepository.findById(
             executionState.currentStep.id,
           );
 
           if (stepFromState && stepFromState.roleId === roleId) {
-            console.log(
-              `✅ Found step from execution state: ${stepFromState.name}`,
-            );
             return stepFromState;
           }
         }
 
         // Fallback: return first step for current role
-        console.log(`🔄 Fallback: getting first step for role ${roleId}`);
         return this.stepRepository.findFirstStepForRole(roleId);
       }
 
       // Standard logic: get next step in sequence for this role
-      console.log(
-        `📋 Standard logic: looking for next step after sequence ${execution.currentStep.sequenceNumber} for role ${roleId}`,
-      );
+
       const nextStep = await this.stepRepository.findNextStepBySequence(
         roleId,
         execution.currentStep.sequenceNumber,
       );
 
-      if (nextStep) {
-        console.log(
-          `✅ Found next step: ${nextStep.name} (seq: ${nextStep.sequenceNumber})`,
-        );
-      } else {
-        console.log(
-          `🏁 No next step found after sequence ${execution.currentStep.sequenceNumber} for role ${roleId}`,
-        );
-      }
-
       return nextStep;
-    } catch (error) {
-      console.error('❌ Error in getNextAvailableStep:', error);
+    } catch (_error) {
       // Fallback: return first step for role
       return this.stepRepository.findFirstStepForRole(roleId);
     }
@@ -284,16 +242,9 @@ export class StepQueryService {
 
         // Validate step belongs to current role
         if (assignedStep && assignedStep.roleId !== roleId) {
-          console.log(
-            `⚠️ Step ${assignedStep.name} belongs to role ${assignedStep.roleId}, not ${roleId}`,
-          );
           assignedStep = null;
         }
       }
-
-      console.log(
-        `🔍 Post-transition check: isPostTransition=${isPostTransition}, assignedStep=${assignedStep?.name || 'null'}`,
-      );
 
       return {
         isPostTransition,
@@ -302,8 +253,7 @@ export class StepQueryService {
         transitionTimestamp: executionState?.lastTransition?.timestamp,
         newRoleId: executionState?.lastTransition?.newRoleId,
       };
-    } catch (error) {
-      console.error('Error checking post-transition state:', error);
+    } catch (_error) {
       return {
         isPostTransition: false,
         assignedStep: null,
@@ -331,20 +281,10 @@ export class StepQueryService {
     // Primary indicator: Execution phase explicitly states role transition
     // This is set by our RoleTransitionService after successful transition
     if (executionState?.phase === 'role_transitioned') {
-      console.log(
-        '🔄 Post-transition detected: execution phase = role_transitioned',
-      );
-
       // Validate this transition was to the requested role
       if (execution.currentRoleId === roleId) {
-        console.log(
-          `✅ Role transition confirmed: current role matches requested role ${roleId}`,
-        );
         return true;
       } else {
-        console.log(
-          `❌ Role mismatch: execution has ${execution.currentRoleId}, requested ${roleId}`,
-        );
         return false;
       }
     }
@@ -357,9 +297,6 @@ export class StepQueryService {
       executionState?.currentStep?.id &&
       !execution.currentStepId
     ) {
-      console.log(
-        '🔄 Post-transition detected: role assigned but step not synchronized in DB',
-      );
       return true;
     }
 
@@ -370,13 +307,9 @@ export class StepQueryService {
       execution.currentRoleId === roleId &&
       executionState?.currentStep?.assignedAt
     ) {
-      console.log(
-        '🔄 Post-transition detected: role and step assigned via transition',
-      );
       return true;
     }
 
-    console.log(`ℹ️ No post-transition state detected for role ${roleId}`);
     return false;
   }
 
@@ -470,8 +403,7 @@ export class StepQueryService {
       }
 
       return { isValid, corrected, currentStep };
-    } catch (error) {
-      console.error('Error validating execution state:', error);
+    } catch (_error) {
       return { isValid: false, corrected: false, currentStep: null };
     }
   }

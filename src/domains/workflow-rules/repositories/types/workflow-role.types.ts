@@ -39,9 +39,6 @@ export interface WorkflowRoleWithRelations extends WorkflowRole {
       currentStep?: boolean;
     };
   }>[];
-  behavioralProfiles?: Prisma.ProjectBehavioralProfileGetPayload<
-    Record<string, never>
-  >[];
 }
 
 // Create and Update data types

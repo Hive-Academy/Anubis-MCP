@@ -22,8 +22,6 @@ model WorkflowRole {
   stepProgress     WorkflowStepProgress[]
   activeExecutions WorkflowExecution[]
 
-  // Project-specific profiles
-  behavioralProfiles ProjectBehavioralProfile[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
