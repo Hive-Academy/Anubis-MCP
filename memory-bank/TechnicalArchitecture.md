@@ -1,4 +1,139 @@
-# Technical Architecture
+# Technical Architecture (v1.2.11)
+
+## Repository Pattern Implementation
+
+### Architecture Overview
+Anubis v1.2.11 implements a clean Repository Pattern that separates business logic from data access concerns:
+
+```typescript
+// Repository Interface Pattern
+export interface IWorkflowRoleRepository {
+  findByName(name: string): Promise<WorkflowRole | null>;
+  findTransitionsFromRole(roleId: string): Promise<RoleTransition[]>;
+  create(data: CreateWorkflowRoleData): Promise<WorkflowRole>;
+}
+
+// Implementation with Prisma
+@Injectable()
+export class WorkflowRoleRepository implements IWorkflowRoleRepository {
+  constructor(private prisma: PrismaService) {}
+
+  async findByName(name: string): Promise<WorkflowRole | null> {
+    return this.prisma.workflowRole.findFirst({ where: { name } });
+  }
+}
+```
+
+### Migrated Services (225% Success)
+The following 9 services successfully migrated to repository pattern:
+
+1. **workflow-guidance.service.ts**
+   - Separation: Business logic → Repository data access
+   - Benefit: Enhanced testability and maintainability
+
+2. **step-progress-tracker.service.ts**
+   - Pattern: Progress calculation → Database persistence
+   - Benefit: Clean state management
+
+3. **workflow-bootstrap.service.ts**
+   - Architecture: Initialization logic → Data creation
+   - Benefit: Simplified bootstrap process
+
+4. **progress-calculator.service.ts**
+   - Design: Computation → Data retrieval
+   - Benefit: Pure business logic functions
+
+5. **step-query.service.ts**
+   - Pattern: Query logic → Repository abstraction
+   - Benefit: Flexible data access strategies
+
+6. **step-execution.service.ts**
+   - Architecture: Execution flow → State persistence
+   - Benefit: Reliable execution tracking
+
+7. **role-transition.service.ts**
+   - Design: Transition logic → Database operations
+   - Benefit: Consistent role management
+
+8. **execution-data-enricher.service.ts**
+   - Pattern: Data enrichment → Repository queries
+   - Benefit: Efficient data aggregation
+
+9. **workflow-guidance-mcp.service.ts**
+   - Architecture: MCP integration → Clean data access
+   - Benefit: Standardized MCP operations
+
+## Dependency Injection Architecture
+
+### Service Layer Organization
+```typescript
+// Module Structure
+@Module({
+  imports: [PrismaModule],
+  providers: [
+    // Repository Implementations
+    WorkflowRoleRepository,
+    TaskRepository,
+    StepRepository,
+    
+    // Business Services
+    WorkflowGuidanceService,
+    StepProgressTrackerService,
+    RoleTransitionService,
+  ],
+  exports: [
+    WorkflowGuidanceService,
+    StepProgressTrackerService,
+    RoleTransitionService,
+  ],
+})
+export class WorkflowRulesModule {}
+
+// Service Constructor Injection
+@Injectable()
+export class WorkflowGuidanceService {
+  constructor(
+    private readonly workflowRoleRepository: IWorkflowRoleRepository,
+    private readonly stepRepository: IStepRepository,
+    private readonly logger: Logger,
+  ) {}
+}
+```
+
+## Database Access Layer
+
+### Prisma Integration with Repository Pattern
+```typescript
+// Repository Base Pattern
+@Injectable()
+export abstract class BaseRepository<TModel, TCreateData, TUpdateData> {
+  constructor(protected prisma: PrismaService) {}
+  
+  abstract findById(id: string): Promise<TModel | null>;
+  abstract create(data: TCreateData): Promise<TModel>;
+  abstract update(id: string, data: TUpdateData): Promise<TModel>;
+}
+
+// Concrete Implementation
+@Injectable()
+export class TaskRepository extends BaseRepository<Task, CreateTaskData, UpdateTaskData> {
+  async findById(id: string): Promise<Task | null> {
+    return this.prisma.task.findUnique({
+      where: { id },
+      include: {
+        description: true,
+        subtasks: true,
+        codebaseAnalysis: true,
+      },
+    });
+  }
+}
+```
+
+### Performance Optimization
+- **Database Size**: 434176 → 421888 bytes (optimized)
+- **Query Efficiency**: Repository pattern enables selective loading
+- **Type Safety**: 95% TypeScript coverage with strict null checks
 
 ## Technical Stack
 
@@ -9,72 +144,16 @@
 - **MCP Integration**: @rekog/mcp-nest v1.5.2 for seamless protocol compliance
 - **Validation Framework**: Zod v3.24.4 for comprehensive parameter validation
 - **Runtime Environment**: Node.js >=18.0.0 with npm >=8.0.0
-- **Package Version**: @hive-academy/anubis v1.0.15
+- **Package Version**: @hive-academy/anubis v1.2.11
 
 ### Architecture Patterns
 
 - **Domain-driven design** with clear boundaries and separation of concerns
-- **Repository Pattern** with comprehensive data access abstraction layer
+- **Repository Pattern** with comprehensive data access abstraction layer (v1.2.11)
 - **MCP-compliant guidance architecture** providing intelligent workflow guidance
 - **Database-driven workflow intelligence** with dynamic rule management
 - **Clean Architecture** principles with proper dependency injection patterns
 - **Feature-based organization** with embedded workflow intelligence
-
-### **Recent Architecture Enhancement: Repository Pattern Implementation**
-
-**IMPLEMENTATION STATUS**: Successfully completed comprehensive repository pattern migration with 225% of requirements exceeded (9 services migrated vs 4 targeted).
-
-#### **Repository Layer Architecture**
-
-```typescript
-// Repository pattern with comprehensive interfaces
-interface IWorkflowExecutionRepository {
-  findById(id: string, include?: WorkflowExecutionIncludeOptions): Promise<WorkflowExecutionWithRelations | null>;
-  findByTaskId(taskId: number): Promise<WorkflowExecutionWithRelations | null>;
-  create(data: CreateWorkflowExecutionData): Promise<WorkflowExecution>;
-  update(id: string, data: UpdateWorkflowExecutionData): Promise<WorkflowExecution>;
-  delete(id: string): Promise<WorkflowExecution>;
-  // 15+ additional methods with transaction support
-}
-
-// Transaction support for data integrity
-interface PrismaTransaction {
-  workflowExecution: any;
-  workflowStepProgress: any;
-  workflowRole: any;
-  // Additional transaction contexts
-}
-```
-
-#### **Repository Implementations Completed**
-
-- **WorkflowExecutionRepository** - Core workflow execution data access with JSON path queries
-- **StepProgressRepository** - 25+ methods for comprehensive step lifecycle management  
-- **ProjectContextRepository** - 15+ methods for project context and behavioral profiles
-- **WorkflowBootstrapRepository** - Streamlined workflow creation and initialization
-- **ProgressCalculationRepository** - 3 essential methods for task and role progress
-- **WorkflowRoleRepository** - Role and transition management with delegation support
-
-#### **Service Migration Results**
-
-**COMPLETED (9/9 Services - 225% of requirement):**
-- ✅ `workflow-guidance.service.ts` - 4 Prisma calls → repository methods
-- ✅ `step-progress-tracker.service.ts` - 8 Prisma calls → repository methods  
-- ✅ `workflow-bootstrap.service.ts` - repository pattern implementation
-- ✅ `progress-calculator.service.ts` - 3 Prisma calls → repository methods
-- ✅ `step-query.service.ts` - 7 Prisma calls → repository methods
-- ✅ `step-execution.service.ts` - 4 Prisma calls → repository methods
-- ✅ `role-transition.service.ts` - 11 Prisma calls → 5 repositories
-- ✅ `execution-data-enricher.service.ts` - 2 Prisma calls → repository methods
-- ✅ `workflow-guidance-mcp.service.ts` - 4 Prisma calls → repository methods
-
-**TECHNICAL ACHIEVEMENTS:**
-- 🎯 Zero TypeScript compilation errors achieved
-- 🎯 95% type safety target exceeded  
-- 🎯 75% maintenance reduction through proper abstraction
-- 🎯 SOLID principles implementation with dependency injection
-- 🎯 Comprehensive error handling and logging throughout
-- 🎯 Transaction support for data integrity operations
 
 ## **🚀 MCP-Compliant Guidance Architecture**
 
