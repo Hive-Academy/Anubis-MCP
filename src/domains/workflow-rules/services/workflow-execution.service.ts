@@ -14,6 +14,7 @@ import {
   WorkflowExecutionState,
   WorkflowExecutionStateSchema,
 } from '../utils/workflow-execution-state.schema';
+import { IWorkflowStepRepository } from '../repositories';
 
 // Configuration interfaces to eliminate hardcoding
 export interface ExecutionServiceConfig extends BaseServiceConfig {
@@ -101,6 +102,8 @@ export class WorkflowExecutionService extends ConfigurableService<ExecutionServi
   constructor(
     @Inject('IWorkflowExecutionRepository')
     private readonly workflowExecutionRepository: IWorkflowExecutionRepository,
+    @Inject('IWorkflowStepRepository')
+    private readonly stepRepository: IWorkflowStepRepository,
   ) {
     super();
     this.initializeConfig();
@@ -137,6 +140,13 @@ export class WorkflowExecutionService extends ConfigurableService<ExecutionServi
   ): Promise<WorkflowExecutionWithRelations> {
     this.validateInput(input);
 
+    const firstStepResponse = await this.stepRepository.findByRoleId(
+      input.currentRoleId,
+    );
+
+    const firstStep =
+      firstStepResponse.length > 0 ? firstStepResponse[0] : null;
+
     // Build create data with repository type
     const createData: CreateWorkflowExecutionData = {
       taskId: input.taskId,
@@ -149,6 +159,14 @@ export class WorkflowExecutionService extends ConfigurableService<ExecutionServi
         phase: this.getConfigValue('phases').initialized,
         currentContext: input.executionContext || {},
         progressMarkers: [],
+        ...(firstStep && {
+          currentStep: {
+            id: firstStep.id,
+            name: firstStep.name,
+            sequenceNumber: firstStep.sequenceNumber,
+            assignedAt: new Date().toISOString(),
+          },
+        }),
       },
     };
 
