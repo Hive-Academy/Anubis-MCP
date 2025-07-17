@@ -127,6 +127,7 @@ export class WorkflowGuidanceMcpService extends BaseMcpService {
       };
 
       // Get ONLY essential role identity - NO verbose behavioral context
+      // The guidance service now returns minimal role data without relations
       const roleGuidance =
         await this.workflowGuidanceService.getWorkflowGuidance(
           input.roleName,

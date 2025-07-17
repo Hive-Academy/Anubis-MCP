@@ -22,22 +22,15 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
   // Basic CRUD Operations
   async findById(
     id: string,
-    _include?: WorkflowRoleIncludeOptions,
+    include?: WorkflowRoleIncludeOptions,
   ): Promise<WorkflowRoleWithRelations | null> {
     try {
+      // Build include object based on the provided options
+      const includeClause = include ? this.buildInclude(include) : undefined;
+
       return await this.prisma.workflowRole.findUnique({
         where: { id },
-        include: {
-          steps: {
-            include: {
-              stepGuidance: true,
-              qualityChecks: true,
-              stepDependencies: true,
-            },
-          },
-          fromTransitions: { include: { toRole: true } },
-          toTransitions: { include: { fromRole: true } },
-        },
+        include: includeClause,
       });
     } catch (error) {
       this.logger.error(`Failed to find workflow role by id ${id}:`, error);
@@ -47,22 +40,15 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
 
   async findByName(
     name: string,
-    _include?: WorkflowRoleIncludeOptions,
+    include?: WorkflowRoleIncludeOptions,
   ): Promise<WorkflowRoleWithRelations | null> {
     try {
+      // Build include object based on the provided options
+      const includeClause = include ? this.buildInclude(include) : undefined;
+
       return await this.prisma.workflowRole.findUnique({
         where: { name },
-        include: {
-          steps: {
-            include: {
-              stepGuidance: true,
-              qualityChecks: true,
-              stepDependencies: true,
-            },
-          },
-          fromTransitions: { include: { toRole: true } },
-          toTransitions: { include: { fromRole: true } },
-        },
+        include: includeClause,
       });
     } catch (error) {
       this.logger.error(`Failed to find workflow role by name ${name}:`, error);

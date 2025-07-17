@@ -242,7 +242,11 @@ C) Get quick help - View current guidance
 Please select an option (A/B/C/D) to proceed.
 ```
 
-**If selected to continue (Option A)**: Use get_workflow_guidance to resume with proper role:
+**If selected to continue (Option A)**: 
+
+- Make sure you did called the MCP server to get active executions before getting the workflow guidance.
+
+- Use get_workflow_guidance to resume with proper role:
 
 ```typescript
 const roleGuidance = await get_workflow_guidance({
@@ -374,8 +378,6 @@ await workflow_execution_operations({
 });
 ```
 
----
-
 ## Understanding MCP Operations
 
 ### Critical: Schema Compliance
@@ -423,8 +425,6 @@ await execute_mcp_operation({
   },
 });
 ```
-
----
 
 ## Troubleshooting Guide
 

@@ -48,14 +48,17 @@ ls -lh *.tgz
 
 ## 🚀 Publishing Process
 
-### Step 1: Clean Build
+### Step 1: Clean Build with Seed Compilation
 
 ```bash
-# Clean build and generate Prisma client
+# Clean build and generate Prisma client + compile seed script
 npm run prepublishOnly   # or let npm publish run it automatically
 
-# Verify no generated folder is included
-# (package.json excludes "generated/**/*")
+# This now includes:
+# - TypeScript compilation (dist/)
+# - Prisma client generation (generated/)
+# - Seed script compilation (dist/scripts/prisma-seed.js)
+# - Verification of pre-built database
 ```
 
 ### Step 2: Version Bump
@@ -113,6 +116,31 @@ When users run `npx @hive-academy/anubis`:
    1. CLI applies any pending Prisma migrations (`prisma migrate deploy`)
    2. CLI executes the idempotent `prisma-seed.js` script, which UPSERTs core tables so new workflow data appears without touching user-generated records
    3. NestJS app starts
+
+## 🔄 Database Update Strategy
+
+### Version-Aware Updates
+Starting with this version, Anubis implements a **smart database update system** that ensures users always get the latest workflow rules and schema changes:
+
+- **Version Tracking**: Each installation creates a `.anubis-version` file
+- **Automatic Updates**: Database is updated when package version changes
+- **Data Preservation**: User data is preserved while system data is updated
+- **Idempotent Operations**: Safe to run multiple times without corruption
+
+### Update Process
+When users run `npx @hive-academy/anubis`:
+
+1. **Version Check**: Compare package version with stored version
+2. **Smart Update**: Copy latest pre-built database if version changed
+3. **Migrations**: Run `prisma migrate deploy` for schema changes
+4. **Seeding**: Run `prisma-seed.js` for workflow rule updates
+5. **Start**: Launch MCP server with latest rules
+
+### Build Process Changes
+The build process now includes:
+- **Seed Compilation**: `prisma-seed.ts` → `dist/scripts/prisma-seed.js`
+- **Version Tracking**: Package version embedded in database setup
+- **Runtime Updates**: Always run migrations and seeding on startup
 
 ## 🔧 Configuration Files
 

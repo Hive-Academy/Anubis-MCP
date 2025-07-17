@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { execSync } from 'child_process';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { setupDatabaseEnvironment } from './utils/database-config';
@@ -12,16 +13,10 @@ import * as path from 'path';
  * This eliminates all the complexity that was causing NPX deployment issues
  */
 /**
- * PRE-BUILT DATABASE SETUP
- * Copies pre-seeded database from package to project directory
+ * SMART DATABASE SETUP WITH VERSION-AWARE UPDATES
+ * Ensures users always get the latest workflow rules and schema
  */
-function setupPrebuiltDatabase(dbConfig: any): void {
-  // This function now assumes dbConfig is provided and correct.
-  // It also assumes the data directory has been created by setupDatabaseEnvironment.
-  if (fs.existsSync(dbConfig.databasePath)) {
-    return; // Database already exists, no need to copy
-  }
-  // Correctly locate the template DB within the package installation directory
+function setupSmartDatabase(dbConfig: any): void {
   const packageRoot = path.resolve(__dirname, '..');
   const templateDbPath = path.join(
     packageRoot,
@@ -30,13 +25,117 @@ function setupPrebuiltDatabase(dbConfig: any): void {
     'workflow.db',
   );
 
+  // Check if template database exists
   if (!fs.existsSync(templateDbPath)) {
     throw new Error(
       `Pre-built database template not found at: ${templateDbPath}`,
     );
   }
-  // Copy the pre-built database to the final destination
-  fs.copyFileSync(templateDbPath, dbConfig.databasePath);
+
+  const databaseExists = fs.existsSync(dbConfig.databasePath);
+  const versionFile = path.join(dbConfig.dataDirectory, '.anubis-version');
+
+  // Get current package version
+  const packageJsonPath = path.join(packageRoot, 'package.json');
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+  const currentVersion = packageJson.version;
+
+  // Check if we need to update
+  let needsUpdate = false;
+  let previousVersion = null;
+
+  if (databaseExists && fs.existsSync(versionFile)) {
+    previousVersion = fs.readFileSync(versionFile, 'utf-8').trim();
+    needsUpdate = previousVersion !== currentVersion;
+  } else {
+    needsUpdate = true; // First install or version file missing
+  }
+
+  if (needsUpdate) {
+    console.log(`📦 Anubis Database Update:`);
+    if (previousVersion) {
+      console.log(`   - Previous version: ${previousVersion}`);
+      console.log(`   - Current version: ${currentVersion}`);
+      console.log(`   - Updating database with latest workflow rules...`);
+    } else {
+      console.log(`   - Version: ${currentVersion}`);
+      console.log(`   - Setting up database...`);
+    }
+
+    // Always copy the latest template database
+    fs.copyFileSync(templateDbPath, dbConfig.databasePath);
+
+    // Update version file
+    fs.writeFileSync(versionFile, currentVersion);
+
+    console.log(`   ✅ Database updated successfully`);
+  }
+}
+
+/**
+ * Run Prisma migrations to ensure schema is up-to-date
+ */
+function runDatabaseMigrations(dbConfig: any): void {
+  try {
+    const packageRoot = path.resolve(__dirname, '..');
+
+    // Set the correct DATABASE_URL for migrations
+    process.env.DATABASE_URL = dbConfig.databaseUrl;
+
+    // Run Prisma migrations
+    console.log('🔄 Running database migrations...');
+    execSync('npx prisma migrate deploy', {
+      cwd: packageRoot,
+      stdio: 'pipe', // Suppress output unless there's an error
+    });
+
+    console.log('✅ Database migrations completed');
+  } catch (error) {
+    console.warn(
+      '⚠️  Database migrations failed (this may be expected for first-time setup)',
+    );
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Migration error:', error);
+    }
+  }
+}
+
+/**
+ * Run database seed to ensure latest workflow rules
+ */
+async function runDatabaseSeed(dbConfig: any): Promise<void> {
+  try {
+    const packageRoot = path.resolve(__dirname, '..');
+    const seedScriptPath = path.join(
+      packageRoot,
+      'dist',
+      'scripts',
+      'prisma-seed.js',
+    );
+
+    // Check if compiled seed script exists
+    if (!fs.existsSync(seedScriptPath)) {
+      console.warn('⚠️  Seed script not found, skipping database seeding');
+      return;
+    }
+
+    // Set the correct DATABASE_URL for seeding
+    process.env.DATABASE_URL = dbConfig.databaseUrl;
+    process.env.NODE_ENV = 'production'; // Ensure idempotent seeding
+
+    console.log('🌱 Running database seed...');
+
+    // Import and run the seed function
+    const seedModule = await import(seedScriptPath);
+    await seedModule.seed();
+
+    console.log('✅ Database seed completed');
+  } catch (error) {
+    console.warn('⚠️  Database seeding failed');
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Seed error:', error);
+    }
+  }
 }
 
 async function bootstrap() {
@@ -51,8 +150,12 @@ async function bootstrap() {
   process.env.MCP_TRANSPORT_TYPE ||= 'STDIO';
   process.env.MCP_SERVER_NAME ||= 'Anubis';
   process.env.NODE_ENV ||= 'production';
-  // Setup pre-built database by copying the template
-  setupPrebuiltDatabase(dbConfig);
+  // Setup smart database with version-aware updates
+  setupSmartDatabase(dbConfig);
+
+  // CRITICAL: Always run migrations and seed to ensure latest schema/data
+  runDatabaseMigrations(dbConfig);
+  await runDatabaseSeed(dbConfig);
 
   // Start NestJS application
   const app = await NestFactory.createApplicationContext(AppModule, {

@@ -1,12 +1,10 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from '@nestjs/testing';
-import { IProjectContextRepository } from '../repositories/interfaces/project-context.repository.interface';
 import { IWorkflowRoleRepository } from '../repositories/interfaces/workflow-role.repository.interface';
 import { WorkflowGuidanceService } from './workflow-guidance.service';
 
 describe('WorkflowGuidanceService Repository Migration', () => {
   let service: WorkflowGuidanceService;
-  let projectContextRepository: jest.Mocked<IProjectContextRepository>;
   let workflowRoleRepository: jest.Mocked<IWorkflowRoleRepository>;
 
   const mockRole = {
@@ -22,32 +20,52 @@ describe('WorkflowGuidanceService Repository Migration', () => {
     updatedAt: new Date(),
   };
 
-  const mockProjectContext = {
-    id: 1,
-    projectPath: '/test/project',
-    projectType: 'web-app',
-    createdAt: new Date(),
-    updatedAt: new Date(),
+  const mockWorkflowRoleRepository = {
+    findByName: jest.fn(),
+    findById: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    findMany: jest.fn(),
+    findActiveRoles: jest.fn(),
+    findByPriority: jest.fn(),
+    findByPriorityRange: jest.fn(),
+    findRolesByHierarchy: jest.fn(),
+    findDelegationCandidates: jest.fn(),
+    findByCapability: jest.fn(),
+    findByResponsibility: jest.fn(),
+    findRoleTransitions: jest.fn(),
+    findTransitionsByRole: jest.fn(),
+    findCurrentExecutions: jest.fn(),
+    findCapabilityPatterns: jest.fn(),
+    findStepsForRole: jest.fn(),
+    findRoleStepProgression: jest.fn(),
+    upsert: jest.fn(),
+    bulkUpdate: jest.fn(),
+    bulkDelete: jest.fn(),
+    count: jest.fn(),
+    exists: jest.fn(),
+    findOrCreate: jest.fn(),
+    findByNameCaseInsensitive: jest.fn(),
+    findActiveRolesByPriority: jest.fn(),
+    findRolesByCapabilityType: jest.fn(),
+    findRolesByResponsibilityType: jest.fn(),
+    findRolesByExecutionContext: jest.fn(),
+    findRolesByBehavioralProfile: jest.fn(),
+    findRolesByPerformanceMetrics: jest.fn(),
+    findRolesByQualityStandards: jest.fn(),
+    findRolesByComplianceRequirements: jest.fn(),
+    findRolesByRiskLevel: jest.fn(),
+    findRolesByAuthorization: jest.fn(),
+    findRolesByTechnicalStack: jest.fn(),
+    findRolesByBusinessContext: jest.fn(),
+    findRolesByProjectConstraints: jest.fn(),
   };
 
   beforeEach(async () => {
-    const mockProjectContextRepository = {
-      findProjectByPath: jest.fn(),
-      findBehavioralProfile: jest.fn(),
-      findProjectPatterns: jest.fn(),
-    };
-
-    const mockWorkflowRoleRepository = {
-      findByName: jest.fn(),
-    };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         WorkflowGuidanceService,
-        {
-          provide: 'IProjectContextRepository',
-          useValue: mockProjectContextRepository,
-        },
         {
           provide: 'IWorkflowRoleRepository',
           useValue: mockWorkflowRoleRepository,
@@ -56,18 +74,12 @@ describe('WorkflowGuidanceService Repository Migration', () => {
     }).compile();
 
     service = module.get<WorkflowGuidanceService>(WorkflowGuidanceService);
-    projectContextRepository = module.get('IProjectContextRepository');
     workflowRoleRepository = module.get('IWorkflowRoleRepository');
   });
 
-  it('should successfully migrate from Prisma to repositories', async () => {
+  it('should successfully return minimal role guidance', async () => {
     // Arrange
     workflowRoleRepository.findByName.mockResolvedValue(mockRole);
-    projectContextRepository.findProjectByPath.mockResolvedValue(
-      mockProjectContext as any,
-    );
-    projectContextRepository.findBehavioralProfile.mockResolvedValue(null);
-    projectContextRepository.findProjectPatterns.mockResolvedValue([]);
 
     // Act
     const result = await service.getWorkflowGuidance('architect', {
@@ -77,36 +89,17 @@ describe('WorkflowGuidanceService Repository Migration', () => {
 
     // Assert
     expect(result.currentRole).toEqual(mockRole);
-    expect(result.projectContext.projectType).toBe('web-app');
     expect(workflowRoleRepository.findByName).toHaveBeenCalledWith('architect');
-    expect(projectContextRepository.findProjectByPath).toHaveBeenCalledWith(
-      '/test/project',
-    );
-    expect(projectContextRepository.findBehavioralProfile).toHaveBeenCalledWith(
-      1,
-    );
-    expect(projectContextRepository.findProjectPatterns).toHaveBeenCalledWith(
-      1,
-      {
-        maxPatternsReturned: 50,
-      },
-    );
+    // Verify minimal response structure without projectContext
+    expect(Object.keys(result)).toEqual(['currentRole']);
   });
 
-  it('should verify all repository methods are properly called', () => {
+  it('should verify repository methods are properly called', () => {
     // Verify that service no longer has any Prisma dependencies
     expect(service).toBeDefined();
-    expect(projectContextRepository).toBeDefined();
     expect(workflowRoleRepository).toBeDefined();
 
     // Verify repository methods exist
-    expect(typeof projectContextRepository.findProjectByPath).toBe('function');
-    expect(typeof projectContextRepository.findBehavioralProfile).toBe(
-      'function',
-    );
-    expect(typeof projectContextRepository.findProjectPatterns).toBe(
-      'function',
-    );
     expect(typeof workflowRoleRepository.findByName).toBe('function');
   });
 });

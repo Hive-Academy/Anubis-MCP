@@ -1,6 +1,6 @@
 {
   "name": "@hive-academy/anubis",
-  "version": "1.2.14",
+  "version": "1.2.15",
   "description": "🏺 Anubis - Intelligent Guidance for AI Workflows | MCP-compliant workflow intelligence system with embedded, context-aware guidance for reliable AI-assisted development",
   "author": "Hive Academy <abdallah@nghive.tech>",
   "license": "MIT",
@@ -45,8 +45,8 @@
   ],
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "nest build",
-    "build:prod": "cross-env NODE_ENV=production nest build",
+    "build": "nest build && tsc scripts/prisma-seed.ts --outDir dist/scripts --target es2020 --module commonjs --lib es2020 --skipLibCheck",
+    "build:prod": "cross-env NODE_ENV=production nest build && tsc scripts/prisma-seed.ts --outDir dist/scripts --target es2020 --module commonjs --lib es2020 --skipLibCheck",
     "build:dev": "cross-env NODE_ENV=development nest build",
     "build:cli": "nest build --entryFile cli",
     "build:all": "npm run build && npm run build:cli",

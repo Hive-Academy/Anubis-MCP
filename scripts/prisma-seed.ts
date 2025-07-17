@@ -120,7 +120,14 @@ async function checkIfSeeded(): Promise<boolean> {
     const roleCount = await prisma.workflowRole.count();
     const stepCount = await prisma.workflowStep.count();
 
-    // If we have roles and steps, consider it seeded
+    // Even if we have roles and steps, we should still run seed for production
+    // to ensure the latest workflow rules are applied
+    if (process.env.NODE_ENV === 'production') {
+      console.log('🔄 Production mode: Running seed to ensure latest workflow rules...');
+      return false; // Always run seed in production
+    }
+
+    // In development, only skip if already seeded
     return roleCount > 0 && stepCount > 0;
   } catch (error) {
     console.log('🔍 Database not yet initialized, proceeding with seeding...');
@@ -148,6 +155,25 @@ async function resetDatabase() {
     console.log('✅ Database reset completed');
   } catch (error) {
     console.error('❌ Error resetting database:', error);
+    throw error;
+  }
+}
+
+async function resetSystemDataOnly() {
+  console.log('🔄 Resetting system data only (preserving user data)...');
+
+  try {
+    // Only delete workflow system data, preserve user tasks and executions
+    await prisma.stepDependency.deleteMany();
+    await prisma.qualityCheck.deleteMany();
+    await prisma.stepGuidance.deleteMany();
+    await prisma.workflowStep.deleteMany();
+    await prisma.roleTransition.deleteMany();
+    await prisma.workflowRole.deleteMany();
+
+    console.log('✅ System data reset completed (user data preserved)');
+  } catch (error) {
+    console.error('❌ Error resetting system data:', error);
     throw error;
   }
 }
@@ -180,8 +206,18 @@ async function seedWorkflowRoles(jsonBasePath: string) {
     const roleDefinition = await loadJsonFile<RoleDefinition>(roleDefPath);
 
     try {
-      const createdRole = await prisma.workflowRole.create({
-        data: {
+      // Use upsert to handle existing roles
+      const upsertedRole = await prisma.workflowRole.upsert({
+        where: { name: roleDefinition.name },
+        update: {
+          description: roleDefinition.description,
+          priority: roleDefinition.priority,
+          isActive: roleDefinition.isActive,
+          capabilities: roleDefinition.capabilities,
+          coreResponsibilities: roleDefinition.coreResponsibilities,
+          keyCapabilities: roleDefinition.keyCapabilities,
+        },
+        create: {
           name: roleDefinition.name,
           description: roleDefinition.description,
           priority: roleDefinition.priority,
@@ -193,10 +229,10 @@ async function seedWorkflowRoles(jsonBasePath: string) {
       });
 
       console.log(
-        `✅ Created role: ${createdRole.name} (ID: ${createdRole.id})`,
+        `✅ Upserted role: ${upsertedRole.name} (ID: ${upsertedRole.id})`,
       );
     } catch (error) {
-      console.error(`❌ Error creating role ${roleName}:`, error);
+      console.error(`❌ Error upserting role ${roleName}:`, error);
       throw error;
     }
   }
@@ -421,26 +457,28 @@ async function main() {
       '🚀 Starting Anubis database seeding (Streamlined Schema)...\n',
     );
 
-    // Check if already seeded (for production environments)
+    // Check if already seeded (for development environments only)
     const isAlreadySeeded = await checkIfSeeded();
-    if (isAlreadySeeded && process.env.NODE_ENV === 'production') {
-      console.log('✅ Database already seeded, skipping...');
+    if (isAlreadySeeded) {
+      console.log('✅ Database already seeded (development mode), skipping...');
       return;
     }
 
     // Get the correct JSON base path
     const jsonBasePath = getJsonBasePath();
 
-    // Reset database (only in development or when explicitly requested)
-    if (
-      process.env.NODE_ENV !== 'production' ||
-      process.env.FORCE_RESET === 'true'
-    ) {
+    // In production, we run a selective reset to preserve user data
+    // but update system data (roles, steps, transitions)
+    if (process.env.NODE_ENV === 'production') {
+      console.log('🔄 Production mode: Updating system data while preserving user data...');
+      await resetSystemDataOnly();
+    } else {
+      // Development: Full reset
       await resetDatabase();
-      console.log('');
     }
+    console.log('');
 
-    // Seed workflow roles
+    // Seed workflow roles (with upsert)
     await seedWorkflowRoles(jsonBasePath);
     console.log('');
 
