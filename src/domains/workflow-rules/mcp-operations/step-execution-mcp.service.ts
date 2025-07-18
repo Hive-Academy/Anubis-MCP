@@ -361,18 +361,11 @@ export class StepExecutionMcpService extends BaseMcpService {
         );
 
       return this.buildResponse({
-        completion: {
-          stepId: input.stepId,
-          result: input.result,
-          status: 'reported',
-          executionData: input.executionData,
-          validationResults: input.validationResults,
-          reportData: input.reportData,
-        },
-        nextGuidance: {
-          hasNextStep: Boolean(completionResult),
-          nextStep: completionResult.nextStep,
-        },
+        success: true,
+        message: `Step '${input.stepId}' completion reported successfully`,
+        result: input.result,
+        hasNextStep: Boolean(completionResult?.nextStep),
+        nextStepAvailable: completionResult?.nextStep ? true : false,
       });
     } catch (error) {
       return this.buildErrorResponse(
@@ -387,52 +380,9 @@ export class StepExecutionMcpService extends BaseMcpService {
   // 📊 PROGRESS AND ANALYTICS TOOLS - Delegates to WorkflowExecutionOperationsService
   // ===================================================================
 
-  // ===================================================================
-  // 🔧 HELPER METHODS FOR PROGRESS ANALYSIS
-  // ===================================================================
-
-  /**
-   * Extract key findings from completed steps for AI agent context
-   */
-  private extractKeyFindings(completedSteps: any[]): string[] {
-    const findings: string[] = [];
-
-    // Extract key information from execution data
-    completedSteps.forEach((step) => {
-      if (step.executionData) {
-        const data = step.executionData;
-
-        // Look for key findings in various fields
-        if (data.outputSummary) {
-          findings.push(`${step.stepName}: ${data.outputSummary}`);
-        }
-        if (data.filesModified && Array.isArray(data.filesModified)) {
-          findings.push(
-            `${step.stepName}: Modified ${data.filesModified.length} files`,
-          );
-        }
-        if (data.commandsExecuted && Array.isArray(data.commandsExecuted)) {
-          findings.push(
-            `${step.stepName}: Executed ${data.commandsExecuted.length} commands`,
-          );
-        }
-        if (data.implementationSummary) {
-          findings.push(`${step.stepName}: ${data.implementationSummary}`);
-        }
-      }
-
-      // Extract validation results
-      if (step.validationResults) {
-        findings.push(`${step.stepName}: Validation completed`);
-      }
-    });
-
-    return findings.length > 0 ? findings : ['No key findings available'];
-  }
-
   @Tool({
     name: 'get_step_progress',
-    description: `Get comprehensive step progress with detailed execution context for workflow continuation.`,
+    description: `Get concise step progress focused on essential status information for workflow continuation.`,
     parameters: GetStepProgressInputSchema as ZodSchema<GetStepProgressInput>,
   })
   async getStepProgress(input: GetStepProgressInput) {
@@ -453,29 +403,17 @@ export class StepExecutionMcpService extends BaseMcpService {
 
       const execution = executionResult.execution;
 
-      // Get all step progress records for this execution
+      // Get only essential step progress data
       const stepProgressRepository =
         this.stepExecutionService['stepProgressRepository'];
       const stepProgressRecords =
-        await stepProgressRepository.findByExecutionId(input.executionId, {
-          step: true,
-          role: true,
-        });
+        await stepProgressRepository.findByExecutionId(input.executionId);
 
-      // Build comprehensive progress response
-      const completedSteps = stepProgressRecords
-        .filter((record) => record.status === 'COMPLETED')
-        .map((record) => ({
-          stepId: record.stepId,
-          stepName: record.step?.name || 'Unknown',
-          roleId: record.roleId,
-          roleName: record.role?.name || 'Unknown',
-          completedAt: record.completedAt,
-          duration: record.duration,
-          executionData: record.executionData,
-          validationResults: record.validationResults,
-          reportData: record.reportData,
-        }));
+      // Count completed steps and get most recent
+      const completedSteps = stepProgressRecords.filter(
+        (record) => record.status === 'COMPLETED',
+      );
+      const mostRecentStep = completedSteps[0] || null;
 
       const currentStep = execution.currentStep;
       const currentRole = execution.currentRole;
@@ -494,34 +432,36 @@ export class StepExecutionMcpService extends BaseMcpService {
           roleName: currentRole?.name || 'Unknown',
         },
 
-        // Progress metrics
+        // Essential progress metrics
         progress: {
-          stepsCompleted: execution.stepsCompleted || 0,
+          stepsCompleted:
+            completedSteps.length || execution.stepsCompleted || 0,
           progressPercentage: execution.progressPercentage || 0,
           totalSteps: execution.totalSteps || 0,
         },
 
-        // 🔧 CRITICAL ENHANCEMENT: Detailed step execution history
-        completedSteps,
-
-        // Execution context for workflow continuation
+        // Minimal execution context
         executionContext: {
           phase: (execution.executionState as any)?.phase || 'unknown',
+          executionMode: execution.executionMode,
           startedAt: execution.startedAt,
           completedAt: execution.completedAt,
-          executionMode: execution.executionMode,
-          lastProgressUpdate: execution.updatedAt,
         },
 
-        // Summary for AI agent understanding
-        contextSummary: {
+        // Essential summary only
+        summary: {
           totalStepsCompleted: completedSteps.length,
-          lastCompletedStep: completedSteps[0] || null,
-          hasValidationData: completedSteps.some(
-            (step) => step.validationResults,
-          ),
-          hasReportData: completedSteps.some((step) => step.reportData),
-          keyFindings: this.extractKeyFindings(completedSteps),
+          lastCompletedStep: mostRecentStep
+            ? {
+                stepName: mostRecentStep.step?.name || 'Unknown',
+                roleName: mostRecentStep.role?.name || 'Unknown',
+                completedAt: mostRecentStep.completedAt,
+                summary:
+                  (mostRecentStep.executionData as any)?.outputSummary ||
+                  'No summary available',
+              }
+            : null,
+          isReady: Boolean(currentStep && !execution.completedAt),
         },
       });
     } catch (error) {

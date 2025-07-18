@@ -60,7 +60,7 @@ export class ResearchOperationsService extends BaseMcpService {
     const startTime = performance.now();
 
     try {
-      let result: ResearchReport;
+      let result: ResearchReport | { message: string; researchId: number };
 
       switch (input.operation) {
         case 'create_research':
@@ -101,7 +101,7 @@ export class ResearchOperationsService extends BaseMcpService {
 
   private async createResearch(
     input: ResearchOperationsInput,
-  ): Promise<ResearchReport> {
+  ): Promise<{ message: string; researchId: number }> {
     const { taskId, researchData } = input;
 
     if (!researchData) {
@@ -117,7 +117,10 @@ export class ResearchOperationsService extends BaseMcpService {
       references: researchData.references || [],
     } satisfies Prisma.ResearchReportCreateInput);
 
-    return research;
+    return {
+      message: `Research report created successfully for task ${taskId}`,
+      researchId: research.id,
+    };
   }
 
   private async updateResearch(
@@ -169,55 +172,5 @@ export class ResearchOperationsService extends BaseMcpService {
     }
 
     return reports[0]; // Return the most recent one
-  }
-
-  /**
-   * Internal method for backward compatibility
-   * Allows other services to call research operations without MCP wrapping
-   */
-  async executeResearchOperationInternal(
-    input: ResearchOperationsInput,
-  ): Promise<ResearchOperationResult> {
-    const startTime = performance.now();
-
-    try {
-      let result: ResearchReport | ResearchReport[];
-
-      switch (input.operation) {
-        case 'create_research':
-          result = await this.createResearch(input);
-          break;
-        case 'update_research':
-          result = await this.updateResearch(input);
-          break;
-        case 'get_research':
-          result = await this.getResearch(input);
-          break;
-
-        default:
-          throw new Error(`Unknown operation: ${String(input.operation)}`);
-      }
-
-      const responseTime = performance.now() - startTime;
-
-      return {
-        success: true,
-        data: result,
-        metadata: {
-          operation: input.operation,
-          taskId: input.taskId,
-          responseTime: Math.round(responseTime),
-        },
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        error: {
-          message: error.message,
-          code: 'RESEARCH_OPERATION_FAILED',
-          operation: input.operation,
-        },
-      };
-    }
   }
 }

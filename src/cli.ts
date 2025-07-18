@@ -56,19 +56,26 @@ function setupSmartDatabase(dbConfig: any): void {
     if (previousVersion) {
       console.log(`   - Previous version: ${previousVersion}`);
       console.log(`   - Current version: ${currentVersion}`);
-      console.log(`   - Updating database with latest workflow rules...`);
+      console.log(`   - Updating workflow rules (preserving user data)...`);
     } else {
       console.log(`   - Version: ${currentVersion}`);
       console.log(`   - Setting up database...`);
     }
 
-    // Always copy the latest template database
-    fs.copyFileSync(templateDbPath, dbConfig.databasePath);
+    // Only copy template if database doesn't exist (first install)
+    if (!databaseExists) {
+      console.log(`   - Creating new database from template...`);
+      fs.copyFileSync(templateDbPath, dbConfig.databasePath);
+    } else {
+      console.log(`   - Database exists, preserving user data...`);
+      // For existing databases, we'll rely on migrations and seeding
+      // to update workflow rules without destroying user data
+    }
 
     // Update version file
     fs.writeFileSync(versionFile, currentVersion);
 
-    console.log(`   ✅ Database updated successfully`);
+    console.log(`   ✅ Database update completed`);
   }
 }
 

@@ -219,28 +219,26 @@
       "sequenceNumber": 5,
       "isRequired": true,
       "stepType": "TRANSITION",
-      "approach": "Execute role transition with complete context summary and verification",
+      "approach": "Get correct transition ID, then execute transition to researcher or architect",
       "approachGuidance": {
         "stepByStep": [
-          "📋 CONTEXT SUMMARY PREPARATION (5 bullet points maximum):",
-          "  - Business objective and user requirements with key constraints",
-          "  - Technical architecture pattern and implementation approach",
-          "  - Critical research findings and implementation guidance",
-          "  - Key risks, dependencies, and mitigation strategies",
-          "  - Task and research linkage status for architect reference",
-          "🔄 ROLE TRANSITION EXECUTION:",
-          "Execute architect role transition with context handoff",
-          "Verify transition succeeded and architect role activated",
-          "✅ TRANSITION VERIFICATION:",
-          "Confirm successful handoff with no context loss"
+          "Determine target role based on research decision (researcher or architect)",
+          "Execute get_role_transitions with fromRoleName: 'boomerang', taskId, and roleId",
+          "Extract correct transitionId from response based on target role",
+          "Execute execute_transition with obtained transitionId and handoff message",
+          "Verify transition success and delegation record creation"
         ]
       },
       "qualityChecklist": [
-        "✅ Context summary prepared with essential information only",
-        "✅ All critical findings and decisions documented for architect",
-        "✅ Task and research linkage verified for continuity",
-        "✅ Role transition executed successfully with context preservation"
+        "Target role determined based on research decision",
+        "get_role_transitions executed with correct parameters",
+        "Correct transitionId obtained from response (not placeholder)",
+        "execute_transition executed with proper transitionId",
+        "Handoff message includes task context and analysis",
+        "Transition success verified and delegation confirmed"
       ]
     }
   ]
 }
+
+
