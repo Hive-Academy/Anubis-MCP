@@ -7,8 +7,8 @@ import { BaseMcpService } from '../utils/mcp-response.utils';
 // Simplified schema - just basic execution setup
 const BootstrapWorkflowInputSchema = z.object({
   initialRole: z
-    .enum(['boomerang', 'architect', 'senior-developer', 'code-review'])
-    .default('boomerang')
+    .enum(['product-manager', 'architect', 'senior-developer', 'code-review'])
+    .default('product-manager')
     .describe('Initial role to start the workflow with'),
   executionMode: z
     .enum(['GUIDED', 'AUTOMATED', 'HYBRID'])
@@ -27,7 +27,7 @@ export class WorkflowBootstrapMcpService extends BaseMcpService {
 
   @Tool({
     name: 'bootstrap_workflow',
-    description: `Initializes a new workflow execution with boomerang role, starting from git setup through task creation and delegation.`,
+    description: `Initializes a new workflow execution with product-manager role, starting from git setup through task creation and delegation.`,
     parameters:
       BootstrapWorkflowInputSchema as ZodSchema<BootstrapWorkflowInputType>,
   })

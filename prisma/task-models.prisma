@@ -7,8 +7,8 @@ model Task {
   slug              String?   @unique // Human-readable slug for task identification
   status            String    @default("not-started")
   completionDate    DateTime?
-  owner             String    @default("boomerang")
-  currentMode       String    @default("boomerang")
+  owner             String    @default("product-manager")
+  currentMode       String    @default("product-manager")
   priority          String    @default("Medium")
   dependencies      Json      @default("[]")
   redelegationCount Int       @default(0)
@@ -189,7 +189,7 @@ model CodebaseAnalysis {
   // Metadata
   analyzedAt      DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  analyzedBy      String // Role that performed the analysis (boomerang, architect, etc.)
+  analyzedBy      String // Role that performed the analysis (product-manager, architect, etc.)
   analysisVersion String   @default("1.0") // For tracking analysis evolution
 
   task Task @relation(fields: [taskId], references: [id])

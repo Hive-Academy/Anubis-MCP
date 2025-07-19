@@ -10,7 +10,7 @@
 
 ### Role Boundaries
 
-- **🟠 BOOMERANG**: Strategic analysis only, delegate implementation
+- **🟠 Product_Manager**: Strategic analysis only, delegate implementation
 - **🟡 RESEARCHER**: Research & documentation, read-only commands
 - **🔵 ARCHITECT**: Design specifications, no code implementation
 - **🟢 SENIOR DEVELOPER**: Implement code, create/modify files
@@ -186,7 +186,7 @@ Please select an option (A/B/C/D) to proceed.
 <tool_name>bootstrap_workflow</tool_name>
 <arguments>
 {
-  "initialRole": "boomerang",
+  "initialRole": "product-manager",
   "executionMode": "GUIDED",
   "projectPath": "/full/project/path"
 }

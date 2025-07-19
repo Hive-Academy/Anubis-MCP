@@ -3,7 +3,6 @@ import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { StepExecutionService } from '../services/step-execution.service';
 import { StepGuidanceService } from '../services/step-guidance.service';
-import { WorkflowStep } from '../services/step-query.service';
 import { WorkflowExecutionOperationsService } from '../services/workflow-execution-operations.service';
 import { BaseMcpService } from '../utils/mcp-response.utils';
 import { getErrorMessage } from '../utils/type-safety.utils';
@@ -212,9 +211,13 @@ const GetStepProgressInputSchema = z.object({
   roleId: z.string().optional().describe('Optional role ID filter'),
 });
 
-const GetNextStepInputSchema = z.object({
-  roleId: z.string().describe('Role ID for next step query'),
-  executionId: z.string().describe('Execution ID for context'),
+const GetWorkflowStateInputSchema = z.object({
+  executionId: z.string().describe('Execution ID for workflow state query'),
+  includeStepDetails: z
+    .boolean()
+    .optional()
+    .default(true)
+    .describe('Include detailed step information'),
 });
 
 type GetStepGuidanceInput = z.infer<typeof GetStepGuidanceInputSchema>;
@@ -222,7 +225,7 @@ type ReportStepCompletionInput = z.infer<
   typeof ReportStepCompletionInputSchema
 >;
 type GetStepProgressInput = z.infer<typeof GetStepProgressInputSchema>;
-type GetNextStepInput = z.infer<typeof GetNextStepInputSchema>;
+type GetWorkflowStateInput = z.infer<typeof GetWorkflowStateInputSchema>;
 
 /**
  * 🚀 CLEAN: StepExecutionMcpService - MCP Interface Only
@@ -474,13 +477,13 @@ export class StepExecutionMcpService extends BaseMcpService {
   }
 
   @Tool({
-    name: 'get_next_available_step',
-    description: `Get focused next step information for role progression.`,
-    parameters: GetNextStepInputSchema as ZodSchema<GetNextStepInput>,
+    name: 'get_workflow_state_tracker',
+    description: `CRITICAL WORKFLOW STATE TRACKER: Returns essential database identifiers for workflow continuity including executionId, taskId, roleId, and stepId. Use this tool whenever you need to verify or recover workflow state, especially when experiencing ID confusion or workflow interruptions.`,
+    parameters: GetWorkflowStateInputSchema as ZodSchema<GetWorkflowStateInput>,
   })
-  async getNextAvailableStep(input: GetNextStepInput) {
+  async getWorkflowStateTracker(input: GetWorkflowStateInput) {
     try {
-      // ✅ DELEGATE to WorkflowExecutionOperationsService
+      // ✅ GET EXECUTION STATE
       const executionResult =
         await this.workflowExecutionOperationsService.getExecution({
           executionId: input.executionId,
@@ -489,49 +492,34 @@ export class StepExecutionMcpService extends BaseMcpService {
       if (!executionResult.execution) {
         return this.buildResponse({
           executionId: input.executionId,
-          roleId: input.roleId,
           status: 'no_execution',
-          error: 'No active execution found',
+          error: 'No active execution found for provided executionId',
+          stateValid: false,
         });
       }
 
       const execution = executionResult.execution;
+      const task = execution.task;
+      const currentRole = execution.currentRole;
+      const currentStep = execution.currentStep;
 
-      if (execution.currentRoleId !== input.roleId) {
-        return this.buildResponse({
-          executionId: input.executionId,
-          roleId: input.roleId,
-          status: 'role_mismatch',
-          currentRole: execution.currentRole?.name || 'unknown',
-          message: `Execution is currently assigned to ${execution.currentRole?.name || 'unknown'}, not ${input.roleId}`,
-        });
-      }
+      // ✅ RETURN ONLY CRITICAL DATABASE IDENTIFIERS
+      const criticalState = {
+        executionId: execution.id,
+        taskId: execution.taskId,
+        roleId: execution.currentRoleId,
+        stepId: execution.currentStepId,
+        taskName: task?.name || 'Bootstrap/No Task',
+        roleName: currentRole?.name || 'Unknown',
+        stepName: currentStep?.name || 'No Step',
+      };
 
-      // ✅ DELEGATE to StepExecutionService
-      const nextStep: WorkflowStep | null =
-        await this.stepExecutionService.getNextAvailableStep(
-          execution.taskId || 0,
-          input.roleId,
-        );
-
-      return this.buildResponse({
-        executionId: input.executionId,
-        roleId: input.roleId,
-        nextStep: nextStep
-          ? this.stepGuidanceService.getStepGuidance({
-              taskId: execution.taskId || 0,
-              roleId: nextStep.roleId,
-              stepId: nextStep.id,
-              executionId: execution.id,
-            })
-          : null,
-        status: nextStep ? 'step_available' : 'no_steps_available',
-      });
+      return this.buildResponse(criticalState);
     } catch (error) {
       return this.buildErrorResponse(
-        'Failed to get next available step',
+        'Failed to get workflow state tracker',
         getErrorMessage(error),
-        'NEXT_STEP_ERROR',
+        'WORKFLOW_STATE_ERROR',
       );
     }
   }

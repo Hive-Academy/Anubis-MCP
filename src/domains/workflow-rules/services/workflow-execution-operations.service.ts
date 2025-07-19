@@ -210,7 +210,7 @@ export class WorkflowExecutionOperationsService extends ConfigurableService<Exec
 
   /**
    * Get execution context data
-   * Used by boomerang workflow to retrieve task creation data
+   * Used by product-manager workflow to retrieve task creation data
    */
   async getExecutionContext(input: {
     executionId: string;
@@ -251,7 +251,7 @@ export class WorkflowExecutionOperationsService extends ConfigurableService<Exec
 
   /**
    * Update execution context
-   * Used by boomerang workflow to update context after task updates
+   * Used by product-manager workflow to update context after task updates
    */
   async updateExecutionContext(input: {
     executionId: string;

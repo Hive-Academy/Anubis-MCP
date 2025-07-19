@@ -140,8 +140,8 @@ export class TaskOperationsService extends BaseMcpService {
       priority: taskData.priority || 'Medium',
       dependencies: taskData.dependencies || [],
       gitBranch: taskData.gitBranch,
-      owner: 'boomerang',
-      currentMode: 'boomerang',
+      owner: 'product-manager',
+      currentMode: 'product-manager',
       taskDescription: description
         ? {
             description: description.description || '',

@@ -1,7 +1,7 @@
 {
-  "roleId": "boomerang",
-  "name": "boomerang",
-  "displayName": "Boomerang Agent - Strategic Workflow Orchestrator with Research Integration",
+  "roleId": "product-manager",
+  "name": "product-manager",
+  "displayName": "Product Manager Agent - Strategic Workflow Orchestrator with Research Integration",
   "description": "Enhanced strategic workflow orchestrator with integrated research capabilities, responsible for comprehensive task analysis, research execution when needed, and strategic delegation to architect role",
   "priority": 100,
   "isActive": true,

@@ -35,7 +35,7 @@ describe('WorkflowBootstrapRepository', () => {
 
   describe('bootstrapWorkflow', () => {
     const mockInput: BootstrapWorkflowInput = {
-      initialRole: 'boomerang' as const,
+      initialRole: 'product-manager' as const,
       executionMode: 'GUIDED',
       projectPath: '/test/project',
     };
@@ -43,7 +43,7 @@ describe('WorkflowBootstrapRepository', () => {
     it('should successfully bootstrap workflow', async () => {
       const mockResult = {
         workflowExecution: { id: 'execution-1' },
-        role: { name: 'boomerang' },
+        role: { name: 'product-manager' },
         firstStep: { name: 'Test Step' },
       };
 

@@ -9,7 +9,7 @@
       "approach": "Intelligently retrieve comprehensive task information to build a foundation for strategic planning.",
       "approachGuidance": {
         "stepByStep": [
-          "Review message history to identify existing context and requirements provided by the boomerang role.",
+          "Review message history to identify existing context and requirements provided by the product-manager role.",
           "If context is insufficient, execute the 'TaskOperations.get' MCP operation to fetch the full task details.",
           "Ensure the MCP call includes parameters to retrieve the description, codebase analysis, research findings, and any existing subtasks.",
           "When making the MCP call, use serviceName: 'TaskOperations', operation: 'get', with includeDescription: true, includeAnalysis: true, includeResearch: true, includeCodeReviews: true.",
@@ -20,7 +20,7 @@
       "qualityChecklist": [
         "Message history reviewed for initial context.",
         "Task description, business requirements, and acceptance criteria are fully understood.",
-        "Codebase analysis from the boomerang role has been reviewed and comprehended.",
+        "Codebase analysis from the product-manager role has been reviewed and comprehended.",
         "Research findings and recommendations have been analyzed.",
         "A comprehensive understanding of the task is achieved before proceeding to planning."
       ],
@@ -35,7 +35,7 @@
       "approach": "Leverage existing comprehensive task analysis to create implementation-ready subtasks through structured phases: analysis synthesis, strategic architecture, and quality validation.",
       "approachGuidance": {
         "stepByStep": [
-          "⚠️ CRITICAL PROTOCOL: You are the bridge between Boomerang's analysis and Senior Developer's implementation. Your subtasks must be implementation-ready with zero ambiguity.",
+          "⚠️ CRITICAL PROTOCOL: You are the bridge between Product Manager's analysis and Senior Developer's implementation. Your subtasks must be implementation-ready with zero ambiguity.",
           "🔍 PHASE 1: SYNTHESIS & STRATEGIC FOUNDATION (5 minutes focus)",
           "1. EXTRACT business objectives from task.taskDescription.businessRequirements and map to user impact",
           "2. LEVERAGE architecture patterns from task.codebaseAnalysis.architectureFindings (techStack, patterns, designPrinciples)",
@@ -64,7 +64,7 @@
       "qualityChecklist": [
         "🔍 PHASE 1 COMPLETION:",
         "✅ Business objectives extracted from taskDescription.businessRequirements",
-        "✅ Architecture patterns leveraged from codebaseAnalysis.architectureFindings",  
+        "✅ Architecture patterns leveraged from codebaseAnalysis.architectureFindings",
         "✅ Issues prioritized by severity from problemsIdentified (critical → high → medium)",
         "✅ Research insights applied from researchReports.recommendations",
         "✅ Quality baseline established from qualityAssessment metrics",
@@ -72,13 +72,13 @@
         "✅ Each acceptanceCriteria mapped to specific implementable subtasks",
         "✅ Individual subtask creation with unique, contextual content (no batching)",
         "✅ Technical precision: Exact file paths from architectureFindings.fileStructure",
-        "✅ Complete code examples based on existing techStack and designPrinciples", 
+        "✅ Complete code examples based on existing techStack and designPrinciples",
         "✅ Error handling addresses specific problemsIdentified.issues by severity",
         "✅ Testing strategy builds on testingApproach and addresses coverage gaps",
         "✅ Performance considerations address identified issues and metrics",
         "✅ Security awareness applies qualityGuidelines and addresses security issues",
         "✅ Each subtask validated against problemsIdentified and research alignment",
-        "🔧 PHASE 3 COMPLETION:", 
+        "🔧 PHASE 3 COMPLETION:",
         "✅ All acceptanceCriteria verification: Every criteria mapped to subtasks",
         "✅ Critical/high severity issues confirmation: All addressed in subtasks",
         "✅ Research recommendations implementation: All applied and risks avoided",

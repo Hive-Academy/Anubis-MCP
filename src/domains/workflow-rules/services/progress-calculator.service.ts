@@ -240,7 +240,7 @@ export class ProgressCalculatorService {
   private getNextMilestone(currentRoleName: string): string | undefined {
     // Simple milestone mapping
     const milestones: Record<string, string> = {
-      boomerang: 'Task Analysis Complete',
+      'product-manager': 'Task Analysis Complete',
       architect: 'Subtasks Ready',
       'senior-developer': 'Implementation Complete',
       'code-review': 'Quality Review Complete',
