@@ -89,7 +89,10 @@ describe('WorkflowGuidanceService Repository Migration', () => {
 
     // Assert
     expect(result.currentRole).toEqual(mockRole);
-    expect(workflowRoleRepository.findByName).toHaveBeenCalledWith('architect');
+    expect(workflowRoleRepository.findByName).toHaveBeenCalledWith(
+      'architect',
+      {},
+    );
     // Verify minimal response structure without projectContext
     expect(Object.keys(result)).toEqual(['currentRole']);
   });

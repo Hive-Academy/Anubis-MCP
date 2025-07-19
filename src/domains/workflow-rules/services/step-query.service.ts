@@ -126,19 +126,38 @@ export class StepQueryService {
         );
 
         if (transitionState.isPostTransition && transitionState.assignedStep) {
-          // Don't return current step - we need the NEXT step after the assigned step
-
-          // Get NEXT step after the assigned current step
-          const nextStep = await this.stepRepository.findBySequenceNumber(
-            roleId,
-            transitionState.assignedStep.sequenceNumber + 1,
+          // ⚠️ FIXED: Don't assume assigned step is completed!
+          // Check if the assigned step is actually completed
+          const execution = await this.executionRepository.findByTaskId(
+            parseInt(taskId),
+            {},
           );
 
-          if (nextStep) {
-            return nextStep;
-          } else {
+          if (!execution) {
             return null;
           }
+
+          const assignedStepProgress =
+            await this.stepRepository.findStepProgress(
+              transitionState.assignedStep.id,
+              execution.id,
+            );
+
+          // If assigned step is NOT completed, return it (don't skip!)
+          if (
+            !assignedStepProgress ||
+            assignedStepProgress.status !== 'COMPLETED'
+          ) {
+            return transitionState.assignedStep;
+          }
+
+          // Only if actually completed, find the next step in sequence
+          const nextStep = await this.stepRepository.findNextStepBySequence(
+            roleId,
+            transitionState.assignedStep.sequenceNumber,
+          );
+
+          return nextStep;
         }
       }
 

@@ -48,7 +48,7 @@ describe('ProgressCalculationRepository', () => {
         createdAt: new Date(),
       };
 
-      prisma.task.findUnique.mockResolvedValue(mockTask);
+      (prisma.task.findUnique as jest.Mock).mockResolvedValue(mockTask);
 
       const result = await repository.findTaskBasicInfo(1);
 
@@ -57,7 +57,7 @@ describe('ProgressCalculationRepository', () => {
     });
 
     it('should handle task not found', async () => {
-      prisma.task.findUnique.mockResolvedValue(null);
+      (prisma.task.findUnique as jest.Mock).mockResolvedValue(null);
 
       const result = await repository.findTaskBasicInfo(999);
 
@@ -66,7 +66,9 @@ describe('ProgressCalculationRepository', () => {
     });
 
     it('should handle database errors', async () => {
-      prisma.task.findUnique.mockRejectedValue(new Error('Database error'));
+      (prisma.task.findUnique as jest.Mock).mockRejectedValue(
+        new Error('Database error'),
+      );
 
       const result = await repository.findTaskBasicInfo(1);
 
@@ -94,7 +96,7 @@ describe('ProgressCalculationRepository', () => {
         ],
       };
 
-      prisma.workflowRole.findUnique.mockResolvedValue(mockRole);
+      (prisma.workflowRole.findUnique as jest.Mock).mockResolvedValue(mockRole);
 
       const result = await repository.findRoleWithSteps('boomerang');
 
@@ -103,7 +105,7 @@ describe('ProgressCalculationRepository', () => {
     });
 
     it('should handle role not found', async () => {
-      prisma.workflowRole.findUnique.mockResolvedValue(null);
+      (prisma.workflowRole.findUnique as jest.Mock).mockResolvedValue(null);
 
       const result = await repository.findRoleWithSteps('nonexistent');
 
@@ -112,7 +114,7 @@ describe('ProgressCalculationRepository', () => {
     });
 
     it('should handle database errors', async () => {
-      prisma.workflowRole.findUnique.mockRejectedValue(
+      (prisma.workflowRole.findUnique as jest.Mock).mockRejectedValue(
         new Error('Database error'),
       );
 
@@ -161,7 +163,7 @@ describe('ProgressCalculationRepository', () => {
         },
       ];
 
-      prisma.workflowStepProgress.findMany.mockResolvedValue(
+      (prisma.workflowStepProgress.findMany as jest.Mock).mockResolvedValue(
         mockStepProgress as any,
       );
 
@@ -172,7 +174,7 @@ describe('ProgressCalculationRepository', () => {
     });
 
     it('should handle database errors', async () => {
-      prisma.workflowStepProgress.findMany.mockRejectedValue(
+      (prisma.workflowStepProgress.findMany as jest.Mock).mockRejectedValue(
         new Error('Database error'),
       );
 
