@@ -62,7 +62,7 @@ docker run --rm test-mcp-workflow --help
    docker buildx build
      --platform linux/amd64,linux/arm64
      --tag hiveacademy/anubis:latest
-   --tag hiveacademy/anubis:1.0.0
+   --tag hiveacademy/anubis:1.2.20
      --push .
    ```
 

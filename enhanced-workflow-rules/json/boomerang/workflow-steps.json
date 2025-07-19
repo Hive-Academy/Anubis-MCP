@@ -214,23 +214,21 @@
       ]
     },
     {
-      "name": "strategic_decision_and_architect_transition",
+      "name": "architect_transition",
       "description": "Transition to architect role with comprehensive context handoff",
       "sequenceNumber": 5,
       "isRequired": true,
       "stepType": "TRANSITION",
-      "approach": "Get correct transition ID, then execute transition to researcher or architect",
+      "approach": "Get correct transition ID, then execute transition to architect",
       "approachGuidance": {
         "stepByStep": [
-          "Determine target role based on research decision (researcher or architect)",
           "Execute get_role_transitions with fromRoleName: 'boomerang', taskId, and roleId",
-          "Extract correct transitionId from response based on target role",
+          "Extract correct transitionId from response based on target role 'architect' ",
           "Execute execute_transition with obtained transitionId and handoff message",
           "Verify transition success and delegation record creation"
         ]
       },
       "qualityChecklist": [
-        "Target role determined based on research decision",
         "get_role_transitions executed with correct parameters",
         "Correct transitionId obtained from response (not placeholder)",
         "execute_transition executed with proper transitionId",
@@ -240,5 +238,3 @@
     }
   ]
 }
-
-
