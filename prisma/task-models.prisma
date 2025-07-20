@@ -24,9 +24,8 @@ model Task {
   codeReviews       CodeReview[]
   completionReports CompletionReport[]
 
-
-  codebaseAnalysis    CodebaseAnalysis?
-  workflowExecutions  WorkflowExecution[]
+  codebaseAnalysis   CodebaseAnalysis?
+  workflowExecutions WorkflowExecution[]
 
   @@index([status])
   @@index([owner])
@@ -77,30 +76,13 @@ model Subtask {
   // Completion tracking
   completionEvidence Json? // Evidence of completion for quality validation
 
-  task              Task                @relation(fields: [taskId], references: [id])
-  dependencies_from SubtaskDependency[] @relation("DependentSubtask")
-  dependencies_to   SubtaskDependency[] @relation("RequiredSubtask")
+  task Task @relation(fields: [taskId], references: [id])
 
   @@index([taskId])
   @@index([status])
   @@index([batchId])
   @@index([sequenceNumber])
   @@map("subtasks")
-}
-
-model SubtaskDependency {
-  id                 Int    @id @default(autoincrement())
-  dependentSubtaskId Int // The subtask that depends on another
-  requiredSubtaskId  Int // The subtask that must be completed first
-  dependencyType     String @default("sequential") // sequential, parallel, conditional
-
-  dependentSubtask Subtask @relation("DependentSubtask", fields: [dependentSubtaskId], references: [id])
-  requiredSubtask  Subtask @relation("RequiredSubtask", fields: [requiredSubtaskId], references: [id])
-
-  @@unique([dependentSubtaskId, requiredSubtaskId])
-  @@index([dependentSubtaskId])
-  @@index([requiredSubtaskId])
-  @@map("subtask_dependencies")
 }
 
 model DelegationRecord {
@@ -167,8 +149,6 @@ model CompletionReport {
 
   @@map("completion_reports")
 }
-
-
 
 // CodebaseAnalysis model for storing structured codebase analysis results
 // Critical for maintaining consistency across roles and preventing re-analysis
