@@ -1,26 +1,21 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma, Subtask } from '../../../../../generated/prisma';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import {
-  ISubtaskRepository,
-  SubtaskIncludeOptions,
-  SubtaskFindManyOptions,
-  SubtaskProgressSummary,
   BatchProgressSummary,
+  ISubtaskRepository,
   SubtaskCompletionEvidence,
+  SubtaskFindManyOptions,
+  SubtaskIncludeOptions,
+  SubtaskProgressSummary,
 } from '../interfaces/subtask.repository.interface';
 import {
-  SubtaskWithRelations,
-  SubtaskWithDependencies,
   CreateSubtaskData,
-  UpdateSubtaskData,
-  SubtaskBatchData,
   PrismaTransaction,
+  SubtaskBatchData,
+  SubtaskWithRelations,
+  UpdateSubtaskData,
 } from '../types/subtask.types';
-import {
-  Subtask,
-  SubtaskDependency,
-  Prisma,
-} from '../../../../../generated/prisma';
 
 @Injectable()
 export class SubtaskRepository implements ISubtaskRepository {
@@ -60,8 +55,6 @@ export class SubtaskRepository implements ISubtaskRepository {
         },
         include: {
           task: true,
-          dependencies_from: true,
-          dependencies_to: true,
         },
       });
 
@@ -101,16 +94,11 @@ export class SubtaskRepository implements ISubtaskRepository {
 
       // Update dependencies if provided
       if (dependencies !== undefined) {
-        // Remove existing dependencies
-        await tx.subtaskDependency.deleteMany({
-          where: { dependentSubtaskId: id },
-        });
-
-        // Create new dependencies
-        if (dependencies.length > 0) {
-          // Create dependency guidance (no longer creates DB relationships)
-          this.createDependenciesForSubtask(tx, id, dependencies);
-        }
+        // SIMPLIFIED: Dependencies are now guidance-only, stored in JSON field only
+        // Skip database relationship operations to avoid dependency table access
+        console.log(
+          `📋 Updated subtask ${id} dependency guidance: ${dependencies.join(', ')}`,
+        );
       }
 
       const result = await this.findById(id, {
@@ -128,17 +116,8 @@ export class SubtaskRepository implements ISubtaskRepository {
   }
 
   async delete(id: number): Promise<Subtask> {
-    return this.prisma.$transaction(async (tx) => {
-      // Remove dependencies
-      await tx.subtaskDependency.deleteMany({
-        where: {
-          OR: [{ dependentSubtaskId: id }, { requiredSubtaskId: id }],
-        },
-      });
-
-      return tx.subtask.delete({
-        where: { id },
-      });
+    return this.prisma.subtask.delete({
+      where: { id },
     });
   }
 
@@ -209,54 +188,22 @@ export class SubtaskRepository implements ISubtaskRepository {
     });
   }
 
-  async findWithDependencies(
-    id: number,
-  ): Promise<SubtaskWithDependencies | null> {
-    return this.prisma.subtask.findUnique({
-      where: { id },
-      include: {
-        dependencies_from: {
-          include: {
-            requiredSubtask: true,
-          },
-        },
-        dependencies_to: {
-          include: {
-            dependentSubtask: true,
-          },
-        },
-      },
-    });
+  findDependents(subtaskId: number): Promise<SubtaskWithRelations[]> {
+    // SIMPLIFIED: Dependencies are now guidance-only in JSON field
+    // Return empty array as no database relationships exist
+    console.log(
+      `📋 Dependency guidance request for subtask ${subtaskId} - returning empty array`,
+    );
+    return Promise.resolve([]);
   }
 
-  async findDependents(subtaskId: number): Promise<SubtaskWithRelations[]> {
-    const dependencies = await this.prisma.subtaskDependency.findMany({
-      where: { requiredSubtaskId: subtaskId },
-      include: {
-        dependentSubtask: {
-          include: {
-            task: true,
-          },
-        },
-      },
-    });
-
-    return dependencies.map((dep) => dep.dependentSubtask);
-  }
-
-  async findDependencies(subtaskId: number): Promise<SubtaskWithRelations[]> {
-    const dependencies = await this.prisma.subtaskDependency.findMany({
-      where: { dependentSubtaskId: subtaskId },
-      include: {
-        requiredSubtask: {
-          include: {
-            task: true,
-          },
-        },
-      },
-    });
-
-    return dependencies.map((dep) => dep.requiredSubtask);
+  findDependencies(subtaskId: number): Promise<SubtaskWithRelations[]> {
+    // SIMPLIFIED: Dependencies are now guidance-only in JSON field
+    // Return empty array as no database relationships exist
+    console.log(
+      `📋 Dependency guidance request for subtask ${subtaskId} - returning empty array`,
+    );
+    return Promise.resolve([]);
   }
 
   async validateDependencies(
@@ -283,28 +230,28 @@ export class SubtaskRepository implements ISubtaskRepository {
     return existingSubtasks.length === dependencies.length;
   }
 
-  async createDependency(
-    dependentSubtaskId: number,
-    requiredSubtaskId: number,
-  ): Promise<SubtaskDependency> {
-    return this.prisma.subtaskDependency.create({
-      data: {
-        dependentSubtaskId,
-        requiredSubtaskId,
-      },
-    });
-  }
-
-  async removeDependency(
+  createDependency(
     dependentSubtaskId: number,
     requiredSubtaskId: number,
   ): Promise<void> {
-    await this.prisma.subtaskDependency.deleteMany({
-      where: {
-        dependentSubtaskId,
-        requiredSubtaskId,
-      },
-    });
+    // SIMPLIFIED: Dependencies are now guidance-only in JSON field
+    // No database relationship creation needed
+    console.log(
+      `📋 Dependency guidance: subtask ${dependentSubtaskId} depends on ${requiredSubtaskId}`,
+    );
+    return Promise.resolve();
+  }
+
+  removeDependency(
+    dependentSubtaskId: number,
+    requiredSubtaskId: number,
+  ): Promise<void> {
+    // SIMPLIFIED: Dependencies are now guidance-only in JSON field
+    // No database relationship removal needed
+    console.log(
+      `📋 Removing dependency guidance: subtask ${dependentSubtaskId} no longer depends on ${requiredSubtaskId}`,
+    );
+    return Promise.resolve();
   }
 
   async createBatch(
@@ -364,12 +311,10 @@ export class SubtaskRepository implements ISubtaskRepository {
         },
         include: {
           task: true,
-          dependencies_from: true,
-          dependencies_to: true,
         },
         orderBy: { sequenceNumber: 'asc' },
       });
-      
+
       return firstNotStarted;
     }
 
@@ -382,7 +327,7 @@ export class SubtaskRepository implements ISubtaskRepository {
 
     // Find the immediate next subtask by sequence number (current + 1)
     const nextSequenceNumber = currentSubtask.sequenceNumber + 1;
-    
+
     const nextSubtask = await this.prisma.subtask.findFirst({
       where: {
         taskId,
@@ -391,8 +336,6 @@ export class SubtaskRepository implements ISubtaskRepository {
       },
       include: {
         task: true,
-        dependencies_from: true,
-        dependencies_to: true,
       },
     });
 
@@ -578,8 +521,6 @@ export class SubtaskRepository implements ISubtaskRepository {
       },
       include: {
         task: true,
-        dependencies_from: true,
-        dependencies_to: true,
       },
     });
 
@@ -605,24 +546,8 @@ export class SubtaskRepository implements ISubtaskRepository {
       data: subtaskData,
       include: {
         task: true,
-        dependencies_from: true,
-        dependencies_to: true,
       },
     });
-
-    // Update dependencies if provided
-    if (dependencies !== undefined) {
-      // Remove existing dependencies
-      await prismaClient.subtaskDependency.deleteMany({
-        where: { dependentSubtaskId: id },
-      });
-
-      // Create new dependencies
-      if (dependencies.length > 0) {
-        // Create dependency guidance (no longer creates DB relationships)
-        this.createDependenciesForSubtask(prismaClient, id, dependencies);
-      }
-    }
 
     return subtask;
   }
@@ -679,8 +604,6 @@ export class SubtaskRepository implements ISubtaskRepository {
 
     return {
       task: include.task,
-      dependencies_from: include.dependencies,
-      dependencies_to: include.dependents,
     };
   }
 
