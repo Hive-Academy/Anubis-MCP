@@ -5,6 +5,7 @@ import { RoleTransitionService } from '../services/role-transition.service';
 import { WorkflowContextCacheService } from '../services/workflow-context-cache.service';
 import { BaseMcpService } from '../utils/mcp-response.utils';
 import { getErrorMessage } from '../utils/type-safety.utils';
+import { AutoWorkflowValidation } from '../utils/dynamic-workflow-validation.util';
 
 // ===================================================================
 // 🔥 ROLE TRANSITION MCP SERVICE - COMPLETE REVAMP FOR MINIMAL RESPONSES
@@ -69,6 +70,7 @@ export class RoleTransitionMcpService extends BaseMcpService {
     parameters:
       GetRoleTransitionsInputSchema as ZodSchema<GetRoleTransitionsInput>,
   })
+  @AutoWorkflowValidation(GetRoleTransitionsInputSchema, 'get_role_transitions')
   async getRoleTransitions(input: GetRoleTransitionsInput) {
     try {
       const context = {
@@ -128,6 +130,7 @@ export class RoleTransitionMcpService extends BaseMcpService {
     parameters:
       ValidateTransitionInputSchema as ZodSchema<ValidateTransitionInput>,
   })
+  @AutoWorkflowValidation(ValidateTransitionInputSchema, 'validate_transition')
   async validateTransition(input: ValidateTransitionInput) {
     try {
       const context = {
@@ -167,6 +170,7 @@ export class RoleTransitionMcpService extends BaseMcpService {
     parameters:
       ExecuteTransitionInputSchema as ZodSchema<ExecuteTransitionInput>,
   })
+  @AutoWorkflowValidation(ExecuteTransitionInputSchema, 'execute_transition')
   async executeTransition(input: ExecuteTransitionInput) {
     try {
       const context = {

@@ -73,11 +73,6 @@ export class ReviewOperationsService extends BaseMcpService {
   @AutoWorkflowValidation(
     ReviewOperationsInputSchema,
     'execute_review_operation',
-    {
-      requiredIds: ['taskId'],
-      allowBootstrap: false,
-      contextSelectionStrategy: 'byTaskId',
-    },
   )
   async executeReviewOperation(
     input: ReviewOperationsInput,

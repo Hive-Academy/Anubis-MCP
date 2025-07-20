@@ -95,11 +95,6 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
   @AutoWorkflowValidation(
     IndividualSubtaskOperationsInputSchema,
     'individual_subtask_operations',
-    {
-      requiredIds: ['taskId'],
-      allowBootstrap: false,
-      contextSelectionStrategy: 'byTaskId',
-    },
   )
   async executeIndividualSubtaskOperation(
     input: IndividualSubtaskOperationsInput,

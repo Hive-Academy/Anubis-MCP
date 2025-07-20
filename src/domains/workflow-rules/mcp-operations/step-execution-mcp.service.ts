@@ -121,18 +121,11 @@ const GetStepProgressInputSchema = z.object({
   roleId: z.string().optional().describe('Optional role ID filter'),
 });
 
-const GetWorkflowStateInputSchema = z
-  .object({
-    // Remove all parameters - this tool should work without any input
-  })
-  .optional();
-
 type GetStepGuidanceInput = z.infer<typeof GetStepGuidanceInputSchema>;
 type ReportStepCompletionInput = z.infer<
   typeof ReportStepCompletionInputSchema
 >;
 type GetStepProgressInput = z.infer<typeof GetStepProgressInputSchema>;
-type GetWorkflowStateInput = z.infer<typeof GetWorkflowStateInputSchema>;
 
 /**
  * 🚀 CLEAN: StepExecutionMcpService - MCP Interface Only
@@ -285,6 +278,10 @@ export class StepExecutionMcpService extends BaseMcpService {
     parameters:
       ReportStepCompletionInputSchema as ZodSchema<ReportStepCompletionInput>,
   })
+  @AutoWorkflowValidation(
+    ReportStepCompletionInputSchema,
+    'report_step_completion',
+  )
   async reportStepCompletion(input: ReportStepCompletionInput) {
     try {
       // Final validation - we must have an executionId at this point
@@ -428,18 +425,8 @@ export class StepExecutionMcpService extends BaseMcpService {
   @Tool({
     name: 'get_workflow_state_tracker',
     description: `CRITICAL WORKFLOW STATE TRACKER: Returns essential database identifiers for workflow continuity including executionId, taskId, roleId, and stepId from the active execution. Use this tool whenever you need to verify or recover workflow state, especially when experiencing ID confusion or workflow interruptions. Requires no parameters - automatically finds the active execution.`,
-    parameters: GetWorkflowStateInputSchema as ZodSchema<GetWorkflowStateInput>,
   })
-  @AutoWorkflowValidation(
-    GetWorkflowStateInputSchema,
-    'get_workflow_state_tracker',
-    {
-      requiredIds: [],
-      allowBootstrap: true,
-      contextSelectionStrategy: 'mostRecent',
-    },
-  )
-  async getWorkflowStateTracker(_input?: GetWorkflowStateInput) {
+  async getWorkflowStateTracker() {
     try {
       // ✅ GET ACTIVE EXECUTIONS INSTEAD OF REQUIRING EXECUTION ID
       const activeExecutionsResult =

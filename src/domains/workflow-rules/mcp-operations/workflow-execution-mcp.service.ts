@@ -236,11 +236,6 @@ export class WorkflowExecutionMcpService extends BaseMcpService {
   @AutoWorkflowValidation(
     WorkflowExecutionSchema,
     'workflow_execution_operations',
-    {
-      requiredIds: ['executionId', 'taskId'],
-      allowBootstrap: false,
-      contextSelectionStrategy: 'byExecutionId',
-    },
   )
   async executeWorkflowOperation(
     input: WorkflowExecutionInputSchema,

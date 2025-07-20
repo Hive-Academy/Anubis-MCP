@@ -58,11 +58,6 @@ export class ResearchOperationsService extends BaseMcpService {
   @AutoWorkflowValidation(
     ResearchOperationsInputSchema,
     'execute_research_operation',
-    {
-      requiredIds: ['taskId'],
-      allowBootstrap: false,
-      contextSelectionStrategy: 'byTaskId',
-    },
   )
   async executeResearchOperation(
     input: ResearchOperationsInput,
