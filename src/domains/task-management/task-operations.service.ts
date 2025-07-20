@@ -6,6 +6,7 @@ import {
   BaseMcpService,
   McpResponse,
 } from '../../domains/workflow-rules/utils/mcp-response.utils';
+import { AutoWorkflowValidation } from '../workflow-rules/utils/dynamic-workflow-validation.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ITaskRepository } from './repositories/interfaces/task.repository.interface';
 import {
@@ -70,6 +71,7 @@ export class TaskOperationsService extends BaseMcpService {
    * Execute task operation as MCP tool
    * Returns MCP-formatted response
    */
+  @AutoWorkflowValidation(TaskOperationsInputSchema, 'task_operations')
   @Tool({
     name: 'task_operations',
     description:
@@ -138,10 +140,9 @@ export class TaskOperationsService extends BaseMcpService {
       name: taskData.name,
       status: taskData.status || 'not-started',
       priority: taskData.priority || 'Medium',
-      dependencies: taskData.dependencies || [],
       gitBranch: taskData.gitBranch,
-      owner: 'boomerang',
-      currentMode: 'boomerang',
+      owner: 'product-manager',
+      currentMode: 'product-manager',
       taskDescription: description
         ? {
             description: description.description || '',
@@ -199,7 +200,6 @@ export class TaskOperationsService extends BaseMcpService {
       ...(taskData?.name && { name: taskData.name }),
       ...(taskData?.status && { status: taskData.status }),
       ...(taskData?.priority && { priority: taskData.priority }),
-      ...(taskData?.dependencies && { dependencies: taskData.dependencies }),
       ...(taskData?.gitBranch && { gitBranch: taskData.gitBranch }),
       ...(description && {
         taskDescription: {

@@ -22,8 +22,6 @@ export const IndividualSubtaskOperationsSchema = z.object({
       sequenceNumber: z.number(), // REQUIRED - order within batch
       acceptanceCriteria: z.array(z.string()).optional(), // Array of specific testable requirements
       implementationApproach: z.string().optional(), // Detailed approach and technical specifications
-      // Dependencies
-      dependencies: z.array(z.string()).optional(), // Array of prerequisite subtask names
     })
     .optional(),
 
@@ -42,25 +40,13 @@ export const IndividualSubtaskOperationsSchema = z.object({
               sequenceNumber: z.number(), // REQUIRED - order within batch
               acceptanceCriteria: z.array(z.string()).optional(),
               implementationApproach: z.string().optional(), // Detailed approach and technical specifications
-              // Dependencies
-              dependencies: z.array(z.string()).optional(), // Dependencies within this batch or across batches
             }),
           ),
         }),
       ),
-      // Global dependency configuration across batches
-      batchDependencies: z
-        .array(
-          z.object({
-            batchId: z.string(), // Dependent batch
-            dependsOnBatches: z.array(z.string()), // Required predecessor batches
-          }),
-        )
-        .optional(),
       // Validation and optimization settings
       validationOptions: z
         .object({
-          validateDependencies: z.boolean().default(true),
           optimizeSequencing: z.boolean().default(true),
           allowParallelExecution: z.boolean().default(true),
         })
@@ -81,8 +67,6 @@ export const IndividualSubtaskOperationsSchema = z.object({
       // Implementation details
       implementationApproach: z.string().optional(),
       acceptanceCriteria: z.array(z.string()).optional(),
-      dependencies: z.array(z.string()).optional(),
-
       // Status and completion
       status: z
         .enum([

@@ -11,6 +11,7 @@ import {
   BaseMcpService,
   McpResponse,
 } from '../workflow-rules/utils/mcp-response.utils';
+import { AutoWorkflowValidation } from '../workflow-rules/utils/dynamic-workflow-validation.util';
 
 // Import focused services
 import { SubtaskCreationService } from './services/subtask-creation.service';
@@ -22,7 +23,7 @@ export interface SubtaskOperationResult {
   success: boolean;
   data?:
     | Subtask
-    | SubtaskWithDependencies
+    | SubtaskWithEvidence
     | NextSubtaskResult
     | SubtaskCreationResult
     | SubtaskUpdateResult
@@ -40,35 +41,14 @@ export interface SubtaskOperationResult {
   };
 }
 
-export interface SubtaskWithDependencies {
+export interface SubtaskWithEvidence {
   subtask: Subtask;
-  dependsOn: Array<{
-    id: number;
-    name: string;
-    status: string;
-    sequenceNumber: number;
-  }>;
-  dependents: Array<{
-    id: number;
-    name: string;
-    status: string;
-    sequenceNumber: number;
-  }>;
-  dependencyStatus: {
-    totalDependencies: number;
-    completedDependencies: number;
-    canStart: boolean;
-  };
+  completionEvidence?: any;
 }
 
 export interface NextSubtaskResult {
   nextSubtask: Subtask | null;
   message: string;
-  blockedSubtasks?: Array<{
-    id: number;
-    name: string;
-    pendingDependencies: string[];
-  }>;
 }
 
 export interface SubtaskCreationResult {
@@ -112,6 +92,10 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
       'Execute individual subtask operations including creation, updates, dependency tracking, and batch management with evidence collection',
     parameters: IndividualSubtaskOperationsInputSchema as ZodSchema,
   })
+  @AutoWorkflowValidation(
+    IndividualSubtaskOperationsInputSchema,
+    'individual_subtask_operations',
+  )
   async executeIndividualSubtaskOperation(
     input: IndividualSubtaskOperationsInput,
   ): Promise<McpResponse> {
@@ -120,7 +104,6 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
     try {
       let result:
         | Subtask
-        | SubtaskWithDependencies
         | NextSubtaskResult
         | SubtaskCreationResult
         | SubtaskUpdateResult
@@ -183,7 +166,7 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
     try {
       let result:
         | Subtask
-        | SubtaskWithDependencies
+        | SubtaskWithEvidence
         | NextSubtaskResult
         | SubtaskCreationResult
         | SubtaskUpdateResult

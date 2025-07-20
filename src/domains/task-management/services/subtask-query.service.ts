@@ -2,27 +2,9 @@ import { Injectable, Inject } from '@nestjs/common';
 import { Subtask } from 'generated/prisma';
 import { ISubtaskRepository } from '../repositories/interfaces/subtask.repository.interface';
 import { IndividualSubtaskOperationsInput } from '../schemas/individual-subtask-operations.schema';
-import { SubtaskDependencyService } from './subtask-dependency.service';
 
 export interface SubtaskWithDependencies {
   subtask: Subtask;
-  dependsOn: Array<{
-    id: number;
-    name: string;
-    status: string;
-    sequenceNumber: number;
-  }>;
-  dependents: Array<{
-    id: number;
-    name: string;
-    status: string;
-    sequenceNumber: number;
-  }>;
-  dependencyStatus: {
-    totalDependencies: number;
-    completedDependencies: number;
-    canStart: boolean;
-  };
 }
 
 export interface NextSubtaskResult {
@@ -39,7 +21,7 @@ export interface NextSubtaskResult {
  * SubtaskQueryService
  *
  * Responsible for:
- * - Getting subtask details with dependencies
+ * - Getting subtask details
  * - Finding next available subtasks
  * - Sequence-based subtask discovery
  * - Handling in-progress subtask detection
@@ -49,83 +31,40 @@ export class SubtaskQueryService {
   constructor(
     @Inject('ISubtaskRepository')
     private readonly subtaskRepository: ISubtaskRepository,
-    private readonly subtaskDependencyService: SubtaskDependencyService,
   ) {}
 
   /**
-   * Get specific subtask details with optional evidence
+   * Get specific subtask details
    */
-  async getSubtask(
-    input: IndividualSubtaskOperationsInput,
-  ): Promise<SubtaskWithDependencies> {
+  async getSubtask(input: IndividualSubtaskOperationsInput): Promise<Subtask> {
     const { taskId, subtaskId } = input;
 
     if (!subtaskId) {
       throw new Error('Subtask ID is required for subtask retrieval');
     }
 
-    const subtask =
-      await this.subtaskRepository.findWithDependencies(subtaskId);
+    const subtask = await this.subtaskRepository.findById(subtaskId);
 
     if (!subtask || subtask.taskId !== taskId) {
       throw new Error(`Subtask ${subtaskId} not found for task ${taskId}`);
     }
 
-    // Format dependency information
-    const dependsOn = (subtask.dependencies_from || []).map(
-      (dep) => dep.requiredSubtask,
-    );
-    const dependents = (subtask.dependencies_to || []).map(
-      (dep) => dep.dependentSubtask,
-    );
-
-    const result = {
-      subtask,
-      dependsOn,
-      dependents,
-      dependencyStatus: {
-        totalDependencies: dependsOn.length,
-        completedDependencies: dependsOn.filter(
-          (dep) => dep.status === 'completed',
-        ).length,
-        canStart: dependsOn.every((dep) => dep.status === 'completed'),
-      },
-    };
-
-    return result;
+    return subtask;
   }
 
   /**
-   * Get next subtask in sequence based on dependencies and status
+   * Get next subtask in sequence based on status
    *
-   * ENHANCED: Handles cases where only taskId is provided by finding the last completed
-   * subtask and determining the next one based on sequence number and dependencies.
+   * Handles cases where only taskId is provided by finding the next subtask
+   * based on sequence number and status.
    */
   async getNextSubtask(
     input: IndividualSubtaskOperationsInput,
   ): Promise<NextSubtaskResult> {
-    const { taskId, currentSubtaskId, status } = input;
+    const { taskId, status } = input;
 
-    // ENHANCED: Handle case where only taskId is provided
-    if (!currentSubtaskId) {
-      return await this.findNextSubtaskBySequence(taskId, status);
-    }
-
-    // Original logic: Use repository to find next eligible subtask
-    const nextSubtask = await this.subtaskRepository.findNextSubtask(
-      taskId,
-      currentSubtaskId,
-    );
-
-    if (!nextSubtask) {
-      // Fallback to sequence-based approach
-      return await this.findNextSubtaskBySequence(taskId, status);
-    }
-
-    return {
-      nextSubtask,
-      message: `Next available subtask: '${nextSubtask.name}' in batch ${nextSubtask.batchId}`,
-    };
+    // Always use sequence-based approach since dependencies are removed
+    return await this.findNextSubtaskBySequence(taskId, status);
   }
 
   /**
@@ -135,8 +74,7 @@ export class SubtaskQueryService {
    * 1. FIRST checks for any in-progress subtasks (critical for workflow integrity)
    * 2. Finds the last completed subtask by sequence number
    * 3. Finds the next subtask in sequence that's not completed
-   * 4. Validates that all dependencies are met
-   * 5. Returns the next available subtask or explains why none are available
+   * 4. Returns the next available subtask or explains why none are available
    */
   async findNextSubtaskBySequence(
     taskId: number,
@@ -172,55 +110,21 @@ export class SubtaskQueryService {
         };
       }
 
-      // Find the last completed subtask
-      const lastCompletedSubtask = sortedSubtasks
-        .filter((s) => s.status === 'completed')
-        .pop(); // Get the last one in sequence
-
-      let startSequence = 0;
-      if (lastCompletedSubtask) {
-        startSequence = lastCompletedSubtask.sequenceNumber;
-      }
-
-      // Find the next subtask that's not completed, starting from the sequence after last completed
-      const candidateSubtasks = sortedSubtasks.filter(
-        (s) =>
-          s.sequenceNumber > startSequence &&
-          s.status !== 'completed' &&
-          s.status !== 'in-progress', // Exclude in-progress (already handled above)
+      // Find the next subtask that's not completed or in-progress
+      const nextSubtask = sortedSubtasks.find(
+        (s) => s.status !== 'completed' && s.status !== 'in-progress',
       );
 
-      if (candidateSubtasks.length === 0) {
+      if (!nextSubtask) {
         return {
           nextSubtask: null,
           message: 'All subtasks have been completed',
         };
       }
 
-      // Check each candidate subtask for dependency readiness
-      for (const candidate of candidateSubtasks) {
-        const dependencyCheck =
-          await this.subtaskDependencyService.checkSubtaskDependencies(
-            candidate,
-          );
-
-        if (dependencyCheck.canStart) {
-          return {
-            nextSubtask: candidate,
-            message: `Next available subtask: '${candidate.name}' (sequence ${candidate.sequenceNumber}) in batch ${candidate.batchId}`,
-          };
-        }
-      }
-
-      // If no subtasks are ready due to dependencies, return blocked subtasks info
-      const blockedSubtasks =
-        await this.getBlockedSubtasksInfo(candidateSubtasks);
-
       return {
-        nextSubtask: null,
-        message:
-          'No subtasks available - all remaining subtasks have incomplete dependencies',
-        blockedSubtasks,
+        nextSubtask,
+        message: `Next available subtask: '${nextSubtask.name}' (sequence ${nextSubtask.sequenceNumber}) in batch ${nextSubtask.batchId}`,
       };
     } catch (error: any) {
       return {
@@ -228,31 +132,5 @@ export class SubtaskQueryService {
         message: `Error finding next subtask: ${error.message}`,
       };
     }
-  }
-
-  /**
-   * Get detailed information about blocked subtasks
-   */
-  async getBlockedSubtasksInfo(subtasks: Subtask[]): Promise<
-    Array<{
-      id: number;
-      name: string;
-      pendingDependencies: string[];
-    }>
-  > {
-    const blockedInfo = [];
-
-    for (const subtask of subtasks) {
-      const dependencyCheck =
-        await this.subtaskDependencyService.checkSubtaskDependencies(subtask);
-
-      blockedInfo.push({
-        id: subtask.id,
-        name: subtask.name,
-        pendingDependencies: dependencyCheck.pendingDependencies,
-      });
-    }
-
-    return blockedInfo;
   }
 }

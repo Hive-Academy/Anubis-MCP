@@ -73,7 +73,7 @@ interface RoleTransition {
 }
 
 const ROLES = [
-  'boomerang',
+  'product-manager',
   'architect',
   'senior-developer',
   'code-review',
@@ -123,7 +123,9 @@ async function checkIfSeeded(): Promise<boolean> {
     // Even if we have roles and steps, we should still run seed for production
     // to ensure the latest workflow rules are applied
     if (process.env.NODE_ENV === 'production') {
-      console.log('🔄 Production mode: Running seed to ensure latest workflow rules...');
+      console.log(
+        '🔄 Production mode: Running seed to ensure latest workflow rules...',
+      );
       return false; // Always run seed in production
     }
 
@@ -179,22 +181,29 @@ async function resetSystemDataOnly(): Promise<{
     });
 
     if (activeExecutions.length > 0) {
-      console.log(`⚠️  Found ${activeExecutions.length} active executions. Updating carefully...`);
-      
+      console.log(
+        `⚠️  Found ${activeExecutions.length} active executions. Updating carefully...`,
+      );
+
       // Store current role/step mappings to preserve relationships
       const roleMappings = new Map<string, string>(); // old roleId -> role name
       const stepMappings = new Map<string, string>(); // old stepId -> step name
-      
+
       for (const execution of activeExecutions) {
         if (execution.currentRole) {
           roleMappings.set(execution.currentRoleId, execution.currentRole.name);
         }
         if (execution.currentStep) {
-          stepMappings.set(execution.currentStepId!, execution.currentStep.name);
+          stepMappings.set(
+            execution.currentStepId!,
+            execution.currentStep.name,
+          );
         }
       }
 
-      console.log(`📝 Stored ${roleMappings.size} role mappings and ${stepMappings.size} step mappings`);
+      console.log(
+        `📝 Stored ${roleMappings.size} role mappings and ${stepMappings.size} step mappings`,
+      );
 
       // Delete workflow system data (preserving mapping info)
       await prisma.stepDependency.deleteMany();
@@ -204,8 +213,10 @@ async function resetSystemDataOnly(): Promise<{
       await prisma.roleTransition.deleteMany();
       await prisma.workflowRole.deleteMany();
 
-      console.log('✅ System data reset completed with active execution protection');
-      
+      console.log(
+        '✅ System data reset completed with active execution protection',
+      );
+
       // Return mappings for relationship restoration
       return { roleMappings, stepMappings, activeExecutions };
     } else {
@@ -229,40 +240,50 @@ async function resetSystemDataOnly(): Promise<{
 async function restoreActiveExecutionRelationships(
   roleMappings: Map<string, string>,
   stepMappings: Map<string, string>,
-  activeExecutions: any[]
+  activeExecutions: any[],
 ) {
   console.log('🔗 Restoring active execution relationships...');
 
   try {
     for (const execution of activeExecutions) {
       const updates: any = {};
-      
+
       // Restore role relationship
-      if (execution.currentRoleId && roleMappings.has(execution.currentRoleId)) {
+      if (
+        execution.currentRoleId &&
+        roleMappings.has(execution.currentRoleId)
+      ) {
         const roleName = roleMappings.get(execution.currentRoleId)!;
         const newRole = await prisma.workflowRole.findUnique({
           where: { name: roleName },
         });
-        
+
         if (newRole) {
           updates.currentRoleId = newRole.id;
-          console.log(`  ✅ Updated role for execution ${execution.id}: ${roleName}`);
+          console.log(
+            `  ✅ Updated role for execution ${execution.id}: ${roleName}`,
+          );
         }
       }
-      
+
       // Restore step relationship
-      if (execution.currentStepId && stepMappings.has(execution.currentStepId)) {
+      if (
+        execution.currentStepId &&
+        stepMappings.has(execution.currentStepId)
+      ) {
         const stepName = stepMappings.get(execution.currentStepId)!;
         const newStep = await prisma.workflowStep.findFirst({
           where: { name: stepName },
         });
-        
+
         if (newStep) {
           updates.currentStepId = newStep.id;
-          console.log(`  ✅ Updated step for execution ${execution.id}: ${stepName}`);
+          console.log(
+            `  ✅ Updated step for execution ${execution.id}: ${stepName}`,
+          );
         }
       }
-      
+
       // Apply updates if any
       if (Object.keys(updates).length > 0) {
         await prisma.workflowExecution.update({
@@ -271,7 +292,7 @@ async function restoreActiveExecutionRelationships(
         });
       }
     }
-    
+
     console.log('✅ Active execution relationships restored');
   } catch (error) {
     console.error('❌ Error restoring execution relationships:', error);
@@ -575,9 +596,11 @@ async function main() {
       stepMappings: Map<string, string>;
       activeExecutions: any[];
     } | null = null;
-    
+
     if (process.env.NODE_ENV === 'production') {
-      console.log('🔄 Production mode: Updating system data while preserving user data...');
+      console.log(
+        '🔄 Production mode: Updating system data while preserving user data...',
+      );
       executionMappings = await resetSystemDataOnly();
     } else {
       // Development: Full reset
@@ -602,7 +625,7 @@ async function main() {
       await restoreActiveExecutionRelationships(
         executionMappings.roleMappings,
         executionMappings.stepMappings,
-        executionMappings.activeExecutions
+        executionMappings.activeExecutions,
       );
       console.log('');
     }

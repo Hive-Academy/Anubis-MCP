@@ -2,8 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { RoleTransitionService } from '../services/role-transition.service';
+import { WorkflowContextCacheService } from '../services/workflow-context-cache.service';
 import { BaseMcpService } from '../utils/mcp-response.utils';
 import { getErrorMessage } from '../utils/type-safety.utils';
+import { AutoWorkflowValidation } from '../utils/dynamic-workflow-validation.util';
 
 // ===================================================================
 // 🔥 ROLE TRANSITION MCP SERVICE - COMPLETE REVAMP FOR MINIMAL RESPONSES
@@ -15,7 +17,7 @@ import { getErrorMessage } from '../utils/type-safety.utils';
 
 const GetRoleTransitionsInputSchema = z.object({
   fromRoleName: z
-    .enum(['boomerang', 'architect', 'senior-developer', 'code-review'])
+    .enum(['product-manager', 'architect', 'senior-developer', 'code-review'])
     .describe('Current role name'),
   taskId: z.number().describe('Task ID for transition context'),
   roleId: z.string().describe('Role ID for transition context'),
@@ -51,7 +53,10 @@ type ExecuteTransitionInput = z.infer<typeof ExecuteTransitionInputSchema>;
  */
 @Injectable()
 export class RoleTransitionMcpService extends BaseMcpService {
-  constructor(private readonly roleTransitionService: RoleTransitionService) {
+  constructor(
+    private readonly roleTransitionService: RoleTransitionService,
+    private readonly workflowContextCache: WorkflowContextCacheService,
+  ) {
     super();
   }
 
@@ -65,6 +70,7 @@ export class RoleTransitionMcpService extends BaseMcpService {
     parameters:
       GetRoleTransitionsInputSchema as ZodSchema<GetRoleTransitionsInput>,
   })
+  @AutoWorkflowValidation(GetRoleTransitionsInputSchema, 'get_role_transitions')
   async getRoleTransitions(input: GetRoleTransitionsInput) {
     try {
       const context = {
@@ -124,6 +130,7 @@ export class RoleTransitionMcpService extends BaseMcpService {
     parameters:
       ValidateTransitionInputSchema as ZodSchema<ValidateTransitionInput>,
   })
+  @AutoWorkflowValidation(ValidateTransitionInputSchema, 'validate_transition')
   async validateTransition(input: ValidateTransitionInput) {
     try {
       const context = {
@@ -163,6 +170,7 @@ export class RoleTransitionMcpService extends BaseMcpService {
     parameters:
       ExecuteTransitionInputSchema as ZodSchema<ExecuteTransitionInput>,
   })
+  @AutoWorkflowValidation(ExecuteTransitionInputSchema, 'execute_transition')
   async executeTransition(input: ExecuteTransitionInput) {
     try {
       const context = {
@@ -175,6 +183,33 @@ export class RoleTransitionMcpService extends BaseMcpService {
         context,
         input.handoffMessage,
       );
+
+      // 🧠 UPDATE WORKFLOW CONTEXT CACHE
+      // Store latest workflow state after successful transition
+      if (result.success && result.newRoleId) {
+        try {
+          // Try to find existing cache entry to update
+          const existingContext = this.workflowContextCache.findContextByTaskId(
+            input.taskId,
+          );
+
+          const cacheKey = existingContext
+            ? WorkflowContextCacheService.generateKey(
+                existingContext.executionId,
+                'transition',
+              )
+            : WorkflowContextCacheService.generateKey(
+                `task-${input.taskId}`,
+                'transition',
+              );
+
+          this.workflowContextCache.updateContext(cacheKey, {
+            currentRoleId: result.newRoleId,
+          });
+        } catch (_cacheError) {
+          // Don't fail transition if cache update fails
+        }
+      }
 
       // ✅ MINIMAL RESPONSE: Only essential execution data
       return this.buildResponse({

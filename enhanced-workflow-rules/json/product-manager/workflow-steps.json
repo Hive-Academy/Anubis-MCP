@@ -1,0 +1,243 @@
+{
+  "workflowSteps": [
+    {
+      "name": "git_setup_and_user_prompt_enhancement",
+      "description": "Establish git workflow and enhance user requirements with project context.",
+      "sequenceNumber": 1,
+      "isRequired": true,
+      "stepType": "ACTION",
+      "approach": "Git setup with intelligent user prompt enhancement using available project context.",
+      "approachGuidance": {
+        "stepByStep": [
+          "🔧 GIT WORKFLOW SETUP:",
+          "Check repository state: 'git status', 'git branch'",
+          "ASK USER: 'Continue on current branch or create new feature branch?'",
+          "Execute decision: verify safety or create branch 'git checkout -b [name]'",
+          "Handle uncommitted changes: commit, stash, or resolve conflicts",
+          "📚 PROJECT CONTEXT GATHERING:",
+          "Analyze memory-bank files: ProjectOverview.md, TechnicalArchitecture.md, DeveloperGuide.md",
+          "If no memory-bank: scan README.md, package.json, or similar project files",
+          "Extract: business objectives, technical constraints, development practices",
+          "🎯 USER PROMPT ENHANCEMENT:",
+          "Review user requirements against project context",
+          "Identify missing technical details, scope clarifications, or constraints",
+          "ASK USER targeted questions to fill gaps and refine requirements",
+          "Document enhanced requirements with business and technical context"
+        ]
+      },
+      "qualityChecklist": [
+        "✅ Git workflow established and repository stabilized",
+        "✅ Project context extracted from available documentation",
+        "✅ User requirements enhanced with targeted clarifications",
+        "✅ Business objectives and technical constraints documented",
+        "✅ Enhanced requirements ready for codebase analysis"
+      ]
+    },
+    {
+      "name": "memory_bank_and_codebase_analysis",
+      "description": "Analyze memory bank and live codebase to validate enhanced requirements against implementation reality.",
+      "sequenceNumber": 2,
+      "isRequired": true,
+      "stepType": "ACTION",
+      "approach": "Comprehensive analysis building on Step 1 context to validate enhanced requirements.",
+      "approachGuidance": {
+        "stepByStep": [
+          "📚 MEMORY BANK DEEP ANALYSIS:",
+          "Cross-reference enhanced requirements from Step 1 with memory bank details",
+          "Validate business objectives against documented architecture decisions",
+          "Identify gaps between user requirements and existing technical constraints",
+          "🔍 TARGETED CODEBASE ANALYSIS:",
+          "Use semantic searches focused on enhanced requirements scope",
+          "Analyze architecture patterns: directory structure, data flow, boundaries",
+          "Verify technology stack: versions, frameworks, dependencies, build tools",
+          "Map integration points: APIs, databases, external services, authentication",
+          "🎯 REQUIREMENTS VALIDATION:",
+          "Assess feasibility of enhanced requirements against current implementation",
+          "Identify technical constraints, risks, and potential breaking changes",
+          "Document code quality standards and testing coverage relevant to requirements",
+          "📊 IMPLEMENTATION READINESS ASSESSMENT:",
+          "Synthesize findings: memory bank context + codebase reality + enhanced requirements",
+          "Flag conflicts between user expectations and technical limitations",
+          "Prepare comprehensive context for intelligent task creation"
+        ]
+      },
+      "qualityChecklist": [
+        "✅ Memory bank analysis completed and cross-referenced with enhanced requirements",
+        "✅ Codebase analysis targeted to validate enhanced requirements feasibility",
+        "✅ Architecture patterns and technology stack verified against requirements",
+        "✅ Integration points and constraints mapped relative to user needs",
+        "✅ Requirements validation completed with conflict identification",
+        "✅ Implementation readiness assessed with comprehensive context synthesis",
+        "✅ All findings prepared for intelligent task creation in Step 3"
+      ]
+    },
+    {
+      "name": "intelligent_task_creation_with_context",
+      "description": "Create comprehensive task using enhanced requirements and validated implementation context.",
+      "sequenceNumber": 3,
+      "isRequired": true,
+      "stepType": "ACTION",
+      "approach": "Intelligent task creation leveraging enhanced requirements and comprehensive analysis from Steps 1-2.",
+      "approachGuidance": {
+        "stepByStep": [
+          "🎯 ENHANCED REQUIREMENTS SYNTHESIS:",
+          "Combine enhanced user requirements from Step 1 with validated context from Step 2",
+          "Reconcile conflicts identified in Step 2 between user expectations and technical reality",
+          "Prioritize requirements based on business impact and implementation feasibility",
+          "📋 INTELLIGENT TASK DATA PREPARATION:",
+          "Structure task with comprehensive context integration:",
+          "  - Title: Action-oriented, reflecting enhanced requirements and technical scope",
+          "  - Description: Enhanced requirements + validated constraints + implementation approach",
+          "  - Acceptance Criteria: Specific, measurable outcomes based on feasibility analysis",
+          "  - Priority: Assessed from business impact vs technical risk analysis",
+          "  - Complexity: Justified by implementation readiness assessment from Step 2",
+          "🔗 MCP TASK CREATION WITH VALIDATION:",
+          "Execute TaskOperations.create with comprehensive parameters:",
+          "  - MANDATORY: executionId for workflow linkage",
+          "  - taskData: Enhanced requirements + validated technical context",
+          "  - codebaseAnalysis: Implementation readiness assessment from Step 2",
+          "  - description: Complete context from enhanced requirements validation",
+          "🔄 CREATION VERIFICATION AND HANDOFF:",
+          "Verify task creation success and prepare architect handoff",
+          "Document any remaining risks or assumptions for next role",
+          "Confirm all enhanced context properly integrated and accessible"
+        ]
+      },
+      "qualityChecklist": [
+        "✅ Enhanced requirements from Step 1 successfully integrated",
+        "✅ Implementation feasibility validated against Step 2 analysis",
+        "✅ Task data prepared with comprehensive context and realistic scope",
+        "✅ Business impact and technical complexity accurately assessed",
+        "✅ TaskOperations.create executed with all enhanced context",
+        "✅ Execution ID linkage verified for workflow continuity",
+        "✅ All validation findings and constraints properly documented",
+        "✅ Task ready for architect handoff with complete context"
+      ],
+      "conditions": [
+        {
+          "name": "enhanced_analysis_completed",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "check": "step_completed",
+            "parameters": {
+              "stepName": "memory_bank_and_codebase_analysis"
+            }
+          },
+          "isRequired": true
+        }
+      ]
+    },
+    {
+      "name": "research_evaluation_and_persistence",
+      "description": "Evaluate research needs and persist findings to support implementation decisions.",
+      "sequenceNumber": 4,
+      "isRequired": true,
+      "stepType": "ACTION",
+      "approach": "Strategic research assessment with focused investigation and systematic persistence of findings.",
+      "approachGuidance": {
+        "stepByStep": [
+          "🔍 STRATEGIC RESEARCH ASSESSMENT:",
+          "Evaluate task requirements for critical knowledge gaps using specific criteria:",
+          "  - Technologies/frameworks not identified in codebase analysis",
+          "  - Integration patterns not documented in memory bank",
+          "  - Security/compliance requirements with unclear implementation",
+          "  - Performance optimization opportunities requiring external validation",
+          "  - Framework versions with breaking changes or migration requirements",
+          "DECISION CRITERIA for research requirement:",
+          "  - HIGH PRIORITY: Unknown technologies affecting core implementation",
+          "  - MEDIUM PRIORITY: Best practices for identified patterns needing validation",
+          "  - LOW PRIORITY: Optimization opportunities that don't affect basic functionality",
+          "  - NO RESEARCH: All implementation approaches well-understood from analysis",
+          "🔬 FOCUSED RESEARCH EXECUTION (IF REQUIRED - max 30 minutes):",
+          "If research deemed necessary, execute systematic investigation:",
+          "  - PRIMARY: Official documentation and GitHub repositories",
+          "  - SECONDARY: Package registries (NPM, PyPI) for compatibility",
+          "  - VALIDATION: Technical articles from reputable sources (not forums)",
+          "  - COMMUNITY: Stack Overflow for specific implementation patterns only",
+          "📚 FINDINGS VALIDATION AND SYNTHESIS:",
+          "Cross-reference information across multiple authoritative sources:",
+          "  - Verify compatibility with identified technology stack",
+          "  - Validate security implications and compliance requirements",
+          "  - Assess performance implications and optimization opportunities",
+          "  - Document conflicting information and recommend resolution",
+          "📊 FINDINGS ORGANIZATION BY IMPLEMENTATION PRIORITY:",
+          "  - CRITICAL DECISIONS: Framework choices, architecture patterns, security approaches",
+          "  - IMPLEMENTATION GUIDANCE: Best practices, code patterns, configuration",
+          "  - RISK MITIGATION: Security considerations, performance implications, compatibility",
+          "  - OPTIMIZATION OPPORTUNITIES: Performance improvements, scalability enhancements",
+          "💾 RESEARCH PERSISTENCE WITH MCP OPERATION:",
+          "Execute ResearchOperations.create_research with comprehensive data:",
+          "  - serviceName: 'ResearchOperations', operation: 'create_research'",
+          "  - MANDATORY: taskId parameter linking to task created in Step 3",
+          "  - Include research methodology, sources, and validation approach",
+          "  - Document conflicting findings and recommended resolution paths",
+          "  - Specify risk assessments and mitigation strategies with evidence",
+          "🚨 RESEARCH COMPLETION SCENARIOS:",
+          "If no critical research needed: Document decision rationale and proceed",
+          "If research inconclusive: Document limitations and proceed with acknowledged risks",
+          "If research reveals blocking issues: Escalate findings and recommend task modification"
+        ]
+      },
+      "qualityChecklist": [
+        "✅ Research requirements evaluated using specific, objective criteria",
+        "✅ Research decision properly justified with clear reasoning",
+        "✅ Investigation limited to implementation-critical knowledge gaps only",
+        "✅ Multiple authoritative sources validated and cross-referenced",
+        "✅ Technology compatibility and constraints verified against current stack",
+        "✅ Conflicting information acknowledged with resolution recommendations",
+        "✅ Actionable recommendations developed with evidence and risk assessment",
+        "✅ ResearchOperations.create_research executed successfully with complete data",
+        "✅ Research properly linked to task via taskId parameter for traceability",
+        "✅ Edge cases handled: no research needed, inconclusive results, blocking issues"
+      ]
+    },
+    {
+      "name": "intelligent_role_transition_decision",
+      "description": "Intelligently decide whether to transition to architect or directly to senior developer based on task complexity and requirements",
+      "sequenceNumber": 5,
+      "isRequired": true,
+      "stepType": "ACTION",
+      "approach": "Analyze task complexity and architectural requirements to determine optimal workflow path",
+      "approachGuidance": {
+        "stepByStep": [
+          "🧠 INTELLIGENT COMPLEXITY ASSESSMENT:",
+          "Evaluate task against architectural complexity criteria:",
+          "  - SIMPLE TASKS (Direct to Senior Developer):",
+          "    • Single file modifications or bug fixes",
+          "    • Clear implementation path with existing patterns",
+          "    • No new architectural patterns or frameworks required",
+          "    • No complex business logic or data modeling",
+          "    • No integration with external systems",
+          "    • Estimated effort < 4 hours",
+          "  - COMPLEX TASKS (Requires Architect):",
+          "    • Multi-component changes affecting system architecture",
+          "    • New feature requiring strategic design decisions",
+          "    • Database schema changes or new data models",
+          "    • Integration with external APIs or services",
+          "    • Performance optimization requiring architectural analysis",
+          "    • Security implementations requiring strategic planning",
+          "    • Estimated effort > 4 hours or unclear scope",
+          "📊 DECISION LOGIC EVALUATION:",
+          "Analyze task characteristics from Steps 1-4:",
+          "  - Review enhanced requirements complexity from Step 1",
+          "  - Assess codebase analysis findings from Step 2 for architectural impact",
+          "  - Evaluate research findings from Step 4 for implementation complexity",
+          "  - Consider acceptance criteria scope and technical requirements",
+          "🎯 TRANSITION EXECUTION:",
+          "Based on assessment, execute appropriate transition:",
+          "  - IF SIMPLE: Execute direct transition to senior-developer",
+          "  - IF COMPLEX: Execute transition to architect",
+          "Include detailed reasoning in handoff message for transparency"
+        ]
+      },
+      "qualityChecklist": [
+        "✅ Task complexity assessed against specific architectural criteria",
+        "✅ Enhanced requirements, codebase analysis, and research findings evaluated",
+        "✅ Decision logic applied with clear reasoning documented",
+        "✅ Appropriate transition path selected (architect vs senior-developer)",
+        "✅ Transition executed with comprehensive context and reasoning",
+        "✅ Handoff message includes decision rationale and task context"
+      ]
+    }
+  ]
+}

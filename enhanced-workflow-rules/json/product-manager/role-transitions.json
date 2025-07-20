@@ -1,0 +1,103 @@
+{
+  "roleTransitions": [
+    {
+      "fromRoleId": "product-manager",
+      "toRoleId": "architect",
+      "transitionName": "product_manager_to_architect_enhanced",
+      "description": "Enhanced transition with comprehensive analysis and research integration for complex tasks requiring architectural design",
+      "conditions": {
+        "requirementsClear": true,
+        "architecturalDecisionsRequired": true,
+        "implementationPlanRequired": true,
+        "researchCompleted": true,
+        "taskComplexity": "complex"
+      },
+      "requirements": [
+        "Task context complete with comprehensive analysis",
+        "Current state verified through functional testing",
+        "Research questions identified and prioritized",
+        "Critical research conducted when needed",
+        "Strategic direction set with evidence-based decisions",
+        "Task assessed as requiring architectural planning"
+      ],
+      "validationCriteria": [
+        "All enhanced product-manager workflow steps completed",
+        "Comprehensive project context documented",
+        "Research findings integrated (if applicable)",
+        "Architectural requirements identified",
+        "Implementation scope defined with technical considerations",
+        "Quality standards established with risk assessment",
+        "Task complexity assessment indicates need for architectural design"
+      ],
+      "handoffGuidance": {
+        "contextToPreserve": [
+          "task_context",
+          "comprehensive_codebase_analysis",
+          "strategic_decisions",
+          "research_findings",
+          "technical_recommendations",
+          "architectural_requirements",
+          "quality_standards",
+          "risk_assessment",
+          "complexity_assessment"
+        ],
+        "handoffMessage": "Complex task requiring comprehensive architectural design. Enhanced context with integrated research findings and evidence-based analysis provided for strategic planning and subtask creation.",
+        "expectedDeliverables": [
+          "implementation_plan",
+          "architectural_decisions",
+          "technical_specifications",
+          "quality_constraints",
+          "risk_mitigation_strategies",
+          "strategic_subtasks"
+        ]
+      },
+      "isActive": true
+    },
+    {
+      "fromRoleId": "product-manager",
+      "toRoleId": "senior-developer",
+      "transitionName": "product_manager_to_senior_developer_direct",
+      "description": "Direct transition to senior developer for simple tasks with clear implementation path",
+      "conditions": {
+        "requirementsClear": true,
+        "implementationPathClear": true,
+        "noArchitecturalChanges": true,
+        "taskComplexity": "simple"
+      },
+      "requirements": [
+        "Task context complete with comprehensive analysis",
+        "Implementation approach clearly defined",
+        "No architectural decisions required",
+        "Existing patterns and frameworks sufficient",
+        "Task assessed as simple with clear scope"
+      ],
+      "validationCriteria": [
+        "All enhanced product-manager workflow steps completed",
+        "Task complexity assessment indicates simple implementation",
+        "No new architectural patterns or frameworks required",
+        "Clear implementation path identified using existing codebase patterns",
+        "Estimated effort under 4 hours with well-defined scope",
+        "No database schema changes or external integrations required"
+      ],
+      "handoffGuidance": {
+        "contextToPreserve": [
+          "task_context",
+          "comprehensive_codebase_analysis",
+          "implementation_approach",
+          "research_findings",
+          "quality_standards",
+          "complexity_assessment",
+          "existing_patterns_to_follow"
+        ],
+        "handoffMessage": "Simple task with clear implementation path. Enhanced context provided with specific guidance on existing patterns to follow. No architectural design required - ready for direct implementation.",
+        "expectedDeliverables": [
+          "implemented_solution",
+          "test_coverage",
+          "quality_validation",
+          "implementation_evidence"
+        ]
+      },
+      "isActive": true
+    }
+  ]
+}

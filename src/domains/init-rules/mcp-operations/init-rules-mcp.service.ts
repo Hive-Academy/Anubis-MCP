@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { InitRulesService } from '../init-rules.service';
+import { AutoWorkflowValidation } from '../../workflow-rules/utils/dynamic-workflow-validation.util';
 
 // Schema definitions for MCP operations
 const InitRulesInputSchema = z.object({
@@ -30,6 +31,11 @@ export class InitRulesMcpService {
     description:
       'Initialize Anubis workflow rules to specified AI agent (cursor or copilot)',
     parameters: InitRulesInputSchema as ZodSchema<InitRulesInput>,
+  })
+  @AutoWorkflowValidation(InitRulesInputSchema, 'init_rules', {
+    requiredIds: [],
+    allowBootstrap: true,
+    contextSelectionStrategy: 'mostRecent',
   })
   async InitRules(input: InitRulesInput) {
     try {

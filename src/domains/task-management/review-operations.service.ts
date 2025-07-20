@@ -12,6 +12,7 @@ import {
 import { Tool } from '@rekog/mcp-nest';
 import { CodeReviewRepository } from './repositories/implementations/code-review.repository';
 import { CompletionReportRepository } from './repositories/implementations/completion-report.repository';
+import { AutoWorkflowValidation } from '../workflow-rules/utils/dynamic-workflow-validation.util';
 
 // Type-safe interfaces for review operations
 export interface ReviewOperationResult {
@@ -69,6 +70,10 @@ export class ReviewOperationsService extends BaseMcpService {
       'Execute review operations including create, update, get for code reviews and completion reports',
     parameters: ReviewOperationsInputSchema as ZodSchema,
   })
+  @AutoWorkflowValidation(
+    ReviewOperationsInputSchema,
+    'execute_review_operation',
+  )
   async executeReviewOperation(
     input: ReviewOperationsInput,
   ): Promise<McpResponse> {

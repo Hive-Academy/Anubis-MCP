@@ -21,7 +21,6 @@ _Follow these rules precisely to ensure successful workflow execution_
 
 ---
 
-
 ## Workflow Execution Phases
 
 ### Phase 1: Startup & Initialization
@@ -73,7 +72,7 @@ const roleGuidance = await get_workflow_guidance({
 
 ```typescript
 const initResult = await bootstrap_workflow({
-  initialRole: 'boomerang',
+  initialRole: 'product-manager',
   executionMode: 'GUIDED',
   projectPath: '/full/project/path', // Your actual project path
 });
@@ -245,20 +244,20 @@ await execute_mcp_operation({
 
 ## Troubleshooting Guide
 
-| Issue                             | Diagnostic                                           | Solution                                                      |
-| --------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------- |
-| "No step guidance available"      | Verify function parameter names and values           | Use proper `get_step_guidance({})` format                     |
-| "Command execution failed"        | Check your local tool syntax                         | Retry 3 times, report detailed error in executionData         |
-| "Quality check validation failed" | Review qualityChecklist items from guidance          | Fix issues, re-validate, only proceed when all pass           |
-| "ExecutionId parameter missing"   | Check parameter structure                            | Always include executionId in parameters                      |
-| "Schema parameter mismatch"       | Compare parameters against mcpOperations guidance    | Use exact structure from guidance mcpOperations section       |
-| "Direct tool call failed"         | Check transitionId and parameters from step guidance | Use exact parameters provided in workflow step instructions   |
-| "Role violation detected"         | Review role boundary cards                           | Stop immediately, acknowledge violation, and restore workflow |
-| "Workflow state lost"             | Check your mental workflow state tracker             | Re-query active executions and restore execution context      |
-| "Subtasks not completed"          | Check if get_next_subtask returns any subtasks       | Return to implement_subtasks step and complete all remaining  |
+| Issue                             | Diagnostic                                           | Solution                                                       |
+| --------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------- |
+| "No step guidance available"      | Verify function parameter names and values           | Use proper `get_step_guidance({})` format                      |
+| "Command execution failed"        | Check your local tool syntax                         | Retry 3 times, report detailed error in executionData          |
+| "Quality check validation failed" | Review qualityChecklist items from guidance          | Fix issues, re-validate, only proceed when all pass            |
+| "ExecutionId parameter missing"   | Check parameter structure                            | Always include executionId in parameters                       |
+| "Schema parameter mismatch"       | Compare parameters against mcpOperations guidance    | Use exact structure from guidance mcpOperations section        |
+| "Direct tool call failed"         | Check transitionId and parameters from step guidance | Use exact parameters provided in workflow step instructions    |
+| "Role violation detected"         | Review role boundary cards                           | Stop immediately, acknowledge violation, and restore workflow  |
+| "Workflow state lost"             | Check your mental workflow state tracker             | Re-query active executions and restore execution context       |
+| "Subtasks not completed"          | Check if get_next_subtask returns any subtasks       | Return to implement_subtasks step and complete all remaining   |
 | "Subtask batch implementation"    | Review subtask execution protocol                    | Implement each subtask individually with proper status updates |
-| "Missing subtask commits"         | Check git log for individual subtask commits         | Ensure each subtask has its own atomic commit                 |
-| "Subtask status not updated"      | Verify update_subtask operations were executed       | Always update status to 'in-progress' then 'completed'       |
+| "Missing subtask commits"         | Check git log for individual subtask commits         | Ensure each subtask has its own atomic commit                  |
+| "Subtask status not updated"      | Verify update_subtask operations were executed       | Always update status to 'in-progress' then 'completed'         |
 
 ---
 
@@ -273,7 +272,6 @@ To ensure workflow protocol remains in active memory:
 5. REPORT step completion with comprehensive evidence
 
 ---
-
 
 ## ⚠️ CRITICAL: WORKFLOW INTERRUPTION PROTOCOL
 
@@ -336,12 +334,12 @@ console.log('Resuming workflow as [role name] with proper boundaries');
 
 ### Role-Specific Execution Constraints
 
-| Role                 | FORBIDDEN ACTIONS                                                                                                                   | REQUIRED ACTIONS                                                                                                                              |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Boomerang**        | ❌ NEVER implement, create, or modify code files<br>❌ NEVER create files or directories<br>❌ NEVER run modification commands      | ✅ Strategic analysis and delegation ONLY<br>✅ Create specifications for Senior Developer<br>✅ Use read-only commands for analysis          |
-| **Architect**        | ❌ NEVER implement, create, or modify code files<br>❌ NEVER create files or directories<br>❌ NEVER run file modification commands | ✅ Design specifications and blueprints ONLY<br>✅ Create implementation plans for Senior Developer<br>✅ Use read-only commands for analysis |
-| **Senior Developer** | ❌ NEVER make strategic decisions<br>❌ NEVER change architectural designs<br>❌ NEVER skip subtasks or batch them together          | ✅ Implement code based on specifications<br>✅ Create, modify, and manage files<br>✅ Execute all development commands<br>✅ MUST complete ALL subtasks individually                       |
-| **Code Review**      | ❌ NEVER implement fixes directly<br>❌ NEVER create or modify files                                                                | ✅ Review and provide feedback ONLY<br>✅ Identify issues and delegate fixes                                                                  |
+| Role                 | FORBIDDEN ACTIONS                                                                                                                   | REQUIRED ACTIONS                                                                                                                                                      |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Product Manager**  | ❌ NEVER implement, create, or modify code files<br>❌ NEVER create files or directories<br>❌ NEVER run modification commands      | ✅ Strategic analysis and delegation ONLY<br>✅ Create specifications for Senior Developer<br>✅ Use read-only commands for analysis                                  |
+| **Architect**        | ❌ NEVER implement, create, or modify code files<br>❌ NEVER create files or directories<br>❌ NEVER run file modification commands | ✅ Design specifications and blueprints ONLY<br>✅ Create implementation plans for Senior Developer<br>✅ Use read-only commands for analysis                         |
+| **Senior Developer** | ❌ NEVER make strategic decisions<br>❌ NEVER change architectural designs<br>❌ NEVER skip subtasks or batch them together         | ✅ Implement code based on specifications<br>✅ Create, modify, and manage files<br>✅ Execute all development commands<br>✅ MUST complete ALL subtasks individually |
+| **Code Review**      | ❌ NEVER implement fixes directly<br>❌ NEVER create or modify files                                                                | ✅ Review and provide feedback ONLY<br>✅ Identify issues and delegate fixes                                                                                          |
 
 ### 🔄 CRITICAL: SUBTASK EXECUTION PROTOCOL FOR SENIOR DEVELOPER
 
@@ -354,32 +352,36 @@ console.log('Resuming workflow as [role name] with proper boundaries');
 #### Required Subtask Execution Sequence:
 
 1. **GET NEXT SUBTASK** (Always first action)
+
    ```typescript
    const nextSubtask = await individual_subtask_operations({
      operation: 'get_next_subtask',
-     taskId: taskId
+     taskId: taskId,
    });
    ```
 
 2. **UPDATE STATUS TO IN-PROGRESS** (Mandatory before implementation)
+
    ```typescript
    await individual_subtask_operations({
      operation: 'update_subtask',
      taskId: taskId,
      subtaskId: subtaskId,
-     status: 'in-progress'
+     status: 'in-progress',
    });
    ```
 
 3. **IMPLEMENT SUBTASK** (Follow architect's specifications)
+
    - Create/modify files as specified
    - Write unit tests
    - Perform integration testing
    - Validate against acceptance criteria
 
 4. **UPDATE STATUS TO COMPLETED** (With comprehensive evidence)
+
    ```typescript
-   await  individual_subtask_operations({
+   await individual_subtask_operations({
      operation: 'update_subtask',
      taskId: taskId,
      subtaskId: subtaskId,
@@ -389,13 +391,14 @@ console.log('Resuming workflow as [role name] with proper boundaries');
          filesModified: ['/path/to/file1', '/path/to/file2'],
          implementationSummary: 'What was implemented',
          testingResults: { unitTests: 'passed', integrationTests: 'passed' },
-         qualityAssurance: { codeQuality: 'meets standards' }
-       }
-     }
+         qualityAssurance: { codeQuality: 'meets standards' },
+       },
+     },
    });
    ```
 
 5. **ATOMIC COMMIT** (Individual commit per subtask)
+
    ```bash
    git add [subtask-specific-files]
    git commit -m "feat: [subtask-name] - [brief description]"
@@ -408,6 +411,7 @@ console.log('Resuming workflow as [role name] with proper boundaries');
 ### 🛑 SUBTASK EXECUTION VIOLATIONS
 
 **NEVER DO THESE ACTIONS:**
+
 - Skip any subtasks or mark them as completed without implementation
 - Batch multiple subtasks together in a single commit
 - Proceed to next workflow step while subtasks remain
@@ -416,6 +420,7 @@ console.log('Resuming workflow as [role name] with proper boundaries');
 - Jump ahead in the workflow without finishing all subtasks
 
 **RECOVERY FROM VIOLATIONS:**
+
 1. **STOP** current activity immediately
 2. **ACKNOWLEDGE** the protocol violation
 3. **RETURN** to get_next_subtask operation
@@ -445,7 +450,7 @@ console.log('Resuming workflow as [role name] with proper boundaries');
 
 ### Strategic vs Implementation Distinction
 
-**STRATEGIC ROLES** (Boomerang, Researcher, Architect):
+**STRATEGIC ROLES** (Product Manager, Researcher, Architect):
 
 - **Think, Analyze, Plan, Specify, Delegate**
 - **NEVER touch code, files, or implementation**

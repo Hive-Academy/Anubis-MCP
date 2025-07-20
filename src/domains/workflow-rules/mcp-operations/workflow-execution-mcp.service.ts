@@ -7,6 +7,7 @@ import {
   WorkflowExecutionOperationsService,
 } from '../services/workflow-execution-operations.service';
 import { BaseMcpService, McpResponse } from '../utils/mcp-response.utils';
+import { AutoWorkflowValidation } from '../utils/dynamic-workflow-validation.util';
 
 // ===================================================================
 // 🎯 STRUCTURED SCHEMAS: Proper structure definitions instead of z.any()
@@ -146,7 +147,7 @@ const WorkflowExecutionSchema = z
 
     // Role and execution settings
     roleName: z
-      .enum(['boomerang', 'architect', 'senior-developer', 'code-review'])
+      .enum(['product-manager', 'architect', 'senior-developer', 'code-review'])
       .optional()
       .describe('Role name for execution'),
 
@@ -232,6 +233,10 @@ export class WorkflowExecutionMcpService extends BaseMcpService {
     description: `Manages workflow execution state through strongly-typed operations for creating, querying, updating, and completing workflow executions. Handles execution context and progress tracking with validated parameters.`,
     parameters: WorkflowExecutionSchema,
   })
+  @AutoWorkflowValidation(
+    WorkflowExecutionSchema,
+    'workflow_execution_operations',
+  )
   async executeWorkflowOperation(
     input: WorkflowExecutionInputSchema,
   ): Promise<McpResponse> {

@@ -1,26 +1,21 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma, Subtask } from '../../../../../generated/prisma';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import {
-  ISubtaskRepository,
-  SubtaskIncludeOptions,
-  SubtaskFindManyOptions,
-  SubtaskProgressSummary,
   BatchProgressSummary,
+  ISubtaskRepository,
   SubtaskCompletionEvidence,
+  SubtaskFindManyOptions,
+  SubtaskIncludeOptions,
+  SubtaskProgressSummary,
 } from '../interfaces/subtask.repository.interface';
 import {
-  SubtaskWithRelations,
-  SubtaskWithDependencies,
   CreateSubtaskData,
-  UpdateSubtaskData,
-  SubtaskBatchData,
   PrismaTransaction,
+  SubtaskBatchData,
+  SubtaskWithRelations,
+  UpdateSubtaskData,
 } from '../types/subtask.types';
-import {
-  Subtask,
-  SubtaskDependency,
-  Prisma,
-} from '../../../../../generated/prisma';
 
 @Injectable()
 export class SubtaskRepository implements ISubtaskRepository {
@@ -60,20 +55,11 @@ export class SubtaskRepository implements ISubtaskRepository {
         },
         include: {
           task: true,
-          dependencies_from: true,
-          dependencies_to: true,
         },
       });
 
-      // Create dependencies if provided
-      if (dependencies && dependencies.length > 0) {
-        await this.createDependenciesForSubtask(tx, subtask.id, dependencies);
-      }
-
       const result = await this.findById(subtask.id, {
         task: true,
-        dependencies: true,
-        dependents: true,
       });
 
       if (!result) {
@@ -100,21 +86,15 @@ export class SubtaskRepository implements ISubtaskRepository {
 
       // Update dependencies if provided
       if (dependencies !== undefined) {
-        // Remove existing dependencies
-        await tx.subtaskDependency.deleteMany({
-          where: { dependentSubtaskId: id },
-        });
-
-        // Create new dependencies
-        if (dependencies.length > 0) {
-          await this.createDependenciesForSubtask(tx, id, dependencies);
-        }
+        // SIMPLIFIED: Dependencies are now guidance-only, stored in JSON field only
+        // Skip database relationship operations to avoid dependency table access
+        console.log(
+          `📋 Updated subtask ${id} dependency guidance: ${dependencies.join(', ')}`,
+        );
       }
 
       const result = await this.findById(id, {
         task: true,
-        dependencies: true,
-        dependents: true,
       });
 
       if (!result) {
@@ -126,17 +106,8 @@ export class SubtaskRepository implements ISubtaskRepository {
   }
 
   async delete(id: number): Promise<Subtask> {
-    return this.prisma.$transaction(async (tx) => {
-      // Remove dependencies
-      await tx.subtaskDependency.deleteMany({
-        where: {
-          OR: [{ dependentSubtaskId: id }, { requiredSubtaskId: id }],
-        },
-      });
-
-      return tx.subtask.delete({
-        where: { id },
-      });
+    return this.prisma.subtask.delete({
+      where: { id },
     });
   }
 
@@ -207,104 +178,6 @@ export class SubtaskRepository implements ISubtaskRepository {
     });
   }
 
-  async findWithDependencies(
-    id: number,
-  ): Promise<SubtaskWithDependencies | null> {
-    return this.prisma.subtask.findUnique({
-      where: { id },
-      include: {
-        dependencies_from: {
-          include: {
-            requiredSubtask: true,
-          },
-        },
-        dependencies_to: {
-          include: {
-            dependentSubtask: true,
-          },
-        },
-      },
-    });
-  }
-
-  async findDependents(subtaskId: number): Promise<SubtaskWithRelations[]> {
-    const dependencies = await this.prisma.subtaskDependency.findMany({
-      where: { requiredSubtaskId: subtaskId },
-      include: {
-        dependentSubtask: {
-          include: {
-            task: true,
-          },
-        },
-      },
-    });
-
-    return dependencies.map((dep) => dep.dependentSubtask);
-  }
-
-  async findDependencies(subtaskId: number): Promise<SubtaskWithRelations[]> {
-    const dependencies = await this.prisma.subtaskDependency.findMany({
-      where: { dependentSubtaskId: subtaskId },
-      include: {
-        requiredSubtask: {
-          include: {
-            task: true,
-          },
-        },
-      },
-    });
-
-    return dependencies.map((dep) => dep.requiredSubtask);
-  }
-
-  async validateDependencies(
-    subtaskId: number,
-    dependencies: string[],
-  ): Promise<boolean> {
-    if (!dependencies || dependencies.length === 0) return true;
-
-    const subtask = await this.prisma.subtask.findUnique({
-      where: { id: subtaskId },
-      select: { taskId: true },
-    });
-
-    if (!subtask) return false;
-
-    const existingSubtasks = await this.prisma.subtask.findMany({
-      where: {
-        taskId: subtask.taskId,
-        name: { in: dependencies },
-      },
-      select: { name: true },
-    });
-
-    return existingSubtasks.length === dependencies.length;
-  }
-
-  async createDependency(
-    dependentSubtaskId: number,
-    requiredSubtaskId: number,
-  ): Promise<SubtaskDependency> {
-    return this.prisma.subtaskDependency.create({
-      data: {
-        dependentSubtaskId,
-        requiredSubtaskId,
-      },
-    });
-  }
-
-  async removeDependency(
-    dependentSubtaskId: number,
-    requiredSubtaskId: number,
-  ): Promise<void> {
-    await this.prisma.subtaskDependency.deleteMany({
-      where: {
-        dependentSubtaskId,
-        requiredSubtaskId,
-      },
-    });
-  }
-
   async createBatch(
     batchData: SubtaskBatchData,
   ): Promise<SubtaskWithRelations[]> {
@@ -330,20 +203,6 @@ export class SubtaskRepository implements ISubtaskRepository {
         createdSubtasks.push(subtask);
       }
 
-      // Create dependencies after all subtasks are created
-      for (let i = 0; i < batchData.subtasks.length; i++) {
-        const subtaskData = batchData.subtasks[i];
-        const subtask = createdSubtasks[i];
-
-        if (subtaskData.dependencies && subtaskData.dependencies.length > 0) {
-          await this.createDependenciesForSubtask(
-            tx,
-            subtask.id,
-            subtaskData.dependencies,
-          );
-        }
-      }
-
       return createdSubtasks;
     });
   }
@@ -352,50 +211,51 @@ export class SubtaskRepository implements ISubtaskRepository {
     taskId: number,
     currentSubtaskId?: number,
   ): Promise<SubtaskWithRelations | null> {
-    // Find available subtasks (not started, with all dependencies completed)
-    const availableSubtasks = await this.findAvailableSubtasks(taskId);
-
-    if (availableSubtasks.length === 0) return null;
-
-    // If no current subtask, return the first available
+    // If no current subtask, return the first not-started subtask by sequence
     if (!currentSubtaskId) {
-      return availableSubtasks[0];
+      const firstNotStarted = await this.prisma.subtask.findFirst({
+        where: {
+          taskId,
+          status: 'not-started',
+        },
+        include: {
+          task: true,
+        },
+        orderBy: { sequenceNumber: 'asc' },
+      });
+
+      return firstNotStarted;
     }
 
-    // Find next in sequence after current
+    // Get current subtask to find its sequence number
     const currentSubtask = await this.findById(currentSubtaskId);
-    if (!currentSubtask) return availableSubtasks[0];
+    if (!currentSubtask) {
+      // If current subtask not found, fall back to first not-started
+      return this.findNextSubtask(taskId);
+    }
 
-    const nextInSequence = availableSubtasks.find(
-      (subtask) => subtask.sequenceNumber > currentSubtask.sequenceNumber,
-    );
+    // Find the immediate next subtask by sequence number (current + 1)
+    const nextSequenceNumber = currentSubtask.sequenceNumber + 1;
 
-    return nextInSequence || availableSubtasks[0];
+    const nextSubtask = await this.prisma.subtask.findFirst({
+      where: {
+        taskId,
+        sequenceNumber: nextSequenceNumber,
+        status: 'not-started',
+      },
+      include: {
+        task: true,
+      },
+    });
+
+    return nextSubtask;
   }
 
   async findAvailableSubtasks(taskId: number): Promise<SubtaskWithRelations[]> {
-    // Get all not-started subtasks
-    const notStartedSubtasks = await this.findByStatus('not-started', taskId, {
-      dependencies: true,
+    // Pure sequence-based logic - return all not-started subtasks sorted by sequence
+    return this.findByStatus('not-started', taskId, {
+      task: true,
     });
-
-    // Filter out subtasks with incomplete dependencies
-    const availableSubtasks: SubtaskWithRelations[] = [];
-
-    for (const subtask of notStartedSubtasks) {
-      const dependencies = await this.findDependencies(subtask.id);
-      const allDependenciesCompleted = dependencies.every(
-        (dep) => dep.status === 'completed',
-      );
-
-      if (allDependenciesCompleted) {
-        availableSubtasks.push(subtask);
-      }
-    }
-
-    return availableSubtasks.sort(
-      (a, b) => a.sequenceNumber - b.sequenceNumber,
-    );
   }
 
   async updateBatchStatus(
@@ -552,19 +412,8 @@ export class SubtaskRepository implements ISubtaskRepository {
       },
       include: {
         task: true,
-        dependencies_from: true,
-        dependencies_to: true,
       },
     });
-
-    // Create dependencies if provided
-    if (dependencies && dependencies.length > 0) {
-      await this.createDependenciesForSubtask(
-        prismaClient,
-        subtask.id,
-        dependencies,
-      );
-    }
 
     return subtask;
   }
@@ -582,23 +431,8 @@ export class SubtaskRepository implements ISubtaskRepository {
       data: subtaskData,
       include: {
         task: true,
-        dependencies_from: true,
-        dependencies_to: true,
       },
     });
-
-    // Update dependencies if provided
-    if (dependencies !== undefined) {
-      // Remove existing dependencies
-      await prismaClient.subtaskDependency.deleteMany({
-        where: { dependentSubtaskId: id },
-      });
-
-      // Create new dependencies
-      if (dependencies.length > 0) {
-        await this.createDependenciesForSubtask(prismaClient, id, dependencies);
-      }
-    }
 
     return subtask;
   }
@@ -629,20 +463,6 @@ export class SubtaskRepository implements ISubtaskRepository {
       createdSubtasks.push(subtask);
     }
 
-    // Create dependencies after all subtasks are created
-    for (let i = 0; i < batchData.subtasks.length; i++) {
-      const subtaskData = batchData.subtasks[i];
-      const subtask = createdSubtasks[i];
-
-      if (subtaskData.dependencies && subtaskData.dependencies.length > 0) {
-        await this.createDependenciesForSubtask(
-          prismaClient,
-          subtask.id,
-          subtaskData.dependencies,
-        );
-      }
-    }
-
     return createdSubtasks;
   }
 
@@ -654,41 +474,6 @@ export class SubtaskRepository implements ISubtaskRepository {
 
     return {
       task: include.task,
-      dependencies_from: include.dependencies,
-      dependencies_to: include.dependents,
     };
-  }
-
-  private async createDependenciesForSubtask(
-    prismaClient: any,
-    subtaskId: number,
-    dependencies: string[],
-  ): Promise<void> {
-    // Get the task ID for this subtask
-    const subtask = await prismaClient.subtask.findUnique({
-      where: { id: subtaskId },
-      select: { taskId: true },
-    });
-
-    if (!subtask) return;
-
-    // Find subtasks by name within the same task
-    const dependencySubtasks = await prismaClient.subtask.findMany({
-      where: {
-        taskId: subtask.taskId,
-        name: { in: dependencies },
-      },
-      select: { id: true, name: true },
-    });
-
-    // Create dependency records
-    for (const depSubtask of dependencySubtasks) {
-      await prismaClient.subtaskDependency.create({
-        data: {
-          dependentSubtaskId: subtaskId,
-          requiredSubtaskId: depSubtask.id,
-        },
-      });
-    }
   }
 }

@@ -4,7 +4,6 @@ import { ISubtaskRepository } from '../repositories/interfaces/subtask.repositor
 import { UpdateSubtaskData } from '../repositories/types/subtask.types';
 import { IndividualSubtaskOperationsInput } from '../schemas/individual-subtask-operations.schema';
 import { SubtaskBatchService } from './subtask-batch.service';
-import { SubtaskDependencyService } from './subtask-dependency.service';
 
 export interface SubtaskUpdateResult {
   message: string;
@@ -17,19 +16,17 @@ export interface SubtaskUpdateResult {
  * - Updating individual subtasks
  * - Status transitions with validation
  * - Evidence collection during updates
- * - Dependency updates and validation
  */
 @Injectable()
 export class SubtaskUpdateService {
   constructor(
     @Inject('ISubtaskRepository')
     private readonly subtaskRepository: ISubtaskRepository,
-    private readonly subtaskDependencyService: SubtaskDependencyService,
     private readonly subtaskBatchService: SubtaskBatchService,
   ) {}
 
   /**
-   * Update individual subtask with evidence collection
+   * Update individual subtask with evidence collection and validation
    */
   async updateSubtask(
     input: IndividualSubtaskOperationsInput,
@@ -45,19 +42,10 @@ export class SubtaskUpdateService {
     }
 
     // Verify subtask exists and belongs to task
-    const existingSubtask =
-      await this.subtaskRepository.findWithDependencies(subtaskId);
+    const existingSubtask = await this.subtaskRepository.findById(subtaskId);
 
     if (!existingSubtask || existingSubtask.taskId !== taskId) {
       throw new Error(`Subtask ${subtaskId} not found for task ${taskId}`);
-    }
-
-    // Validate status transition and dependencies
-    if (updateData.status) {
-      await this.subtaskDependencyService.validateSubtaskStatusTransition(
-        existingSubtask,
-        updateData.status,
-      );
     }
 
     // Prepare update data
@@ -93,49 +81,13 @@ export class SubtaskUpdateService {
       updateFields.acceptanceCriteria = updateData.acceptanceCriteria;
     }
 
-    if (updateData.dependencies !== undefined) {
-      updateFields.dependencies = updateData.dependencies;
-    }
-
     // Status and completion
     if (updateData.status) {
       updateFields.status = updateData.status;
-      // Status updated without timestamp tracking
     }
 
     if (updateData.completionEvidence) {
       updateFields.completionEvidence = updateData.completionEvidence;
-    }
-
-    if (updateData.dependencies !== undefined) {
-      try {
-        // Remove existing dependencies for this subtask
-        const existingDependencies =
-          await this.subtaskRepository.findDependencies(subtaskId);
-        for (const dep of existingDependencies) {
-          await this.subtaskRepository.removeDependency(subtaskId, dep.id);
-        }
-
-        // Add new dependencies if any
-        if (updateData.dependencies.length > 0) {
-          // Find subtasks by name within the same task
-          const allTaskSubtasks =
-            await this.subtaskRepository.findByTaskId(taskId);
-          const dependencySubtasks = allTaskSubtasks.filter((subtask) =>
-            updateData.dependencies?.includes(subtask.name),
-          );
-
-          // Create new dependency records
-          for (const depSubtask of dependencySubtasks) {
-            await this.subtaskRepository.createDependency(
-              subtaskId,
-              depSubtask.id,
-            );
-          }
-        }
-      } catch (_error) {
-        // Log dependency update error but don't fail the entire update
-      }
     }
 
     // Update the subtask
@@ -156,9 +108,6 @@ export class SubtaskUpdateService {
       }),
       ...(updateFields.acceptanceCriteria && {
         acceptanceCriteria: updateFields.acceptanceCriteria as string[],
-      }),
-      ...(updateFields.dependencies && {
-        dependencies: updateFields.dependencies as string[],
       }),
       ...(updateFields.status && { status: updateFields.status as string }),
       ...(updateFields.completionEvidence && {
@@ -195,8 +144,6 @@ export class SubtaskUpdateService {
       updatedFields.push('implementationApproach');
     if (updateFields.acceptanceCriteria !== undefined)
       updatedFields.push('acceptanceCriteria');
-    if (updateFields.dependencies !== undefined)
-      updatedFields.push('dependencies');
     if (updateFields.status) updatedFields.push('status');
     if (updateFields.completionEvidence)
       updatedFields.push('completionEvidence');
