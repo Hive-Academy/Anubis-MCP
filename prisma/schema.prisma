@@ -3,16 +3,16 @@
 // Prisma automatically discovers and includes all .prisma files in the same directory
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["queryCompiler", "driverAdapters"]
-  output   = "../generated/prisma"
-  engineType = "library"
-  binaryTargets = []
+  output          = "../generated/prisma"
+  engineType      = "library"
+  binaryTargets   = []
 }
 
 datasource db {
   provider = "sqlite"
-  url      =  env("DATABASE_URL") // Use environment variable for flexibility
+  url      = env("DATABASE_URL") // Use environment variable for flexibility
 }
 
 // All models are now organized in separate files in the same directory:

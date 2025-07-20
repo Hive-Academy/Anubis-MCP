@@ -3,8 +3,8 @@
 
 // Streamlined enums for workflow rules system
 enum StepType {
-  ACTION        // Perform an action (git operations, file operations, MCP calls)
-  ANALYSIS      // Analyze or validate (codebase analysis, quality checks)
+  ACTION // Perform an action (git operations, file operations, MCP calls)
+  ANALYSIS // Analyze or validate (codebase analysis, quality checks)
 }
 
 enum StepProgressStatus {
@@ -76,7 +76,7 @@ enum ProcessingStatus {
 }
 
 enum WorkflowExecutionMode {
-  GUIDED    // Step-by-step guided execution with user interaction
+  GUIDED // Step-by-step guided execution with user interaction
   AUTOMATED // Fully automated execution without user intervention
-  HYBRID    // Mix of automated and guided steps based on context
+  HYBRID // Mix of automated and guided steps based on context
 }

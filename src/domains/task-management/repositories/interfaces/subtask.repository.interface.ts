@@ -1,11 +1,10 @@
-import { Subtask, SubtaskDependency } from '../../../../../generated/prisma';
+import { Subtask } from '../../../../../generated/prisma';
 import {
   CreateSubtaskData,
   PrismaTransaction,
   SubtaskBatchData,
   SubtaskOrderByInput,
   SubtaskWhereInput,
-  SubtaskWithDependencies,
   SubtaskWithRelations,
   UpdateSubtaskData,
 } from '../types/subtask.types';
@@ -46,23 +45,6 @@ export interface ISubtaskRepository {
     startSeq: number,
     endSeq: number,
   ): Promise<SubtaskWithRelations[]>;
-
-  // Dependency Management
-  findWithDependencies(id: number): Promise<SubtaskWithDependencies | null>;
-  findDependents(subtaskId: number): Promise<SubtaskWithRelations[]>;
-  findDependencies(subtaskId: number): Promise<SubtaskWithRelations[]>;
-  validateDependencies(
-    subtaskId: number,
-    dependencies: string[],
-  ): Promise<boolean>;
-  createDependency(
-    dependentSubtaskId: number,
-    requiredSubtaskId: number,
-  ): Promise<SubtaskDependency>;
-  removeDependency(
-    dependentSubtaskId: number,
-    requiredSubtaskId: number,
-  ): Promise<void>;
 
   // Batch Operations
   createBatch(batchData: SubtaskBatchData): Promise<SubtaskWithRelations[]>;
@@ -112,8 +94,6 @@ export interface ISubtaskRepository {
 
 export interface SubtaskIncludeOptions {
   task?: boolean;
-  dependencies?: boolean;
-  dependents?: boolean;
   completionEvidence?: boolean;
 }
 

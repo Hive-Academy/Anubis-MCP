@@ -15,7 +15,6 @@ import { ResearchReportRepository } from './repositories/implementations/researc
 import { SubtaskCreationService } from './services/subtask-creation.service';
 import { SubtaskUpdateService } from './services/subtask-update.service';
 import { SubtaskQueryService } from './services/subtask-query.service';
-import { SubtaskDependencyService } from './services/subtask-dependency.service';
 import { SubtaskBatchService } from './services/subtask-batch.service';
 
 @Module({
@@ -48,7 +47,6 @@ import { SubtaskBatchService } from './services/subtask-batch.service';
     },
 
     // Focused services (in dependency order)
-    SubtaskDependencyService, // No dependencies on other services
     SubtaskBatchService, // No dependencies on other services
     SubtaskCreationService, // Depends on SubtaskDependencyService
     SubtaskUpdateService, // Depends on SubtaskDependencyService, SubtaskBatchService
@@ -88,7 +86,6 @@ import { SubtaskBatchService } from './services/subtask-batch.service';
     },
 
     // Focused services (exported for external use and testing)
-    SubtaskDependencyService,
     SubtaskBatchService,
     SubtaskCreationService,
     SubtaskUpdateService,

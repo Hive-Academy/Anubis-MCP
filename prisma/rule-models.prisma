@@ -22,7 +22,6 @@ model WorkflowRole {
   stepProgress     WorkflowStepProgress[]
   activeExecutions WorkflowExecution[]
 
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

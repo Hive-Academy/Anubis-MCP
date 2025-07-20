@@ -58,16 +58,8 @@ export class SubtaskRepository implements ISubtaskRepository {
         },
       });
 
-      // Create dependencies if provided
-      if (dependencies && dependencies.length > 0) {
-        // Create dependency guidance (no longer creates DB relationships)
-        this.createDependenciesForSubtask(tx, subtask.id, dependencies);
-      }
-
       const result = await this.findById(subtask.id, {
         task: true,
-        dependencies: true,
-        dependents: true,
       });
 
       if (!result) {
@@ -103,8 +95,6 @@ export class SubtaskRepository implements ISubtaskRepository {
 
       const result = await this.findById(id, {
         task: true,
-        dependencies: true,
-        dependents: true,
       });
 
       if (!result) {
@@ -188,72 +178,6 @@ export class SubtaskRepository implements ISubtaskRepository {
     });
   }
 
-  findDependents(subtaskId: number): Promise<SubtaskWithRelations[]> {
-    // SIMPLIFIED: Dependencies are now guidance-only in JSON field
-    // Return empty array as no database relationships exist
-    console.log(
-      `📋 Dependency guidance request for subtask ${subtaskId} - returning empty array`,
-    );
-    return Promise.resolve([]);
-  }
-
-  findDependencies(subtaskId: number): Promise<SubtaskWithRelations[]> {
-    // SIMPLIFIED: Dependencies are now guidance-only in JSON field
-    // Return empty array as no database relationships exist
-    console.log(
-      `📋 Dependency guidance request for subtask ${subtaskId} - returning empty array`,
-    );
-    return Promise.resolve([]);
-  }
-
-  async validateDependencies(
-    subtaskId: number,
-    dependencies: string[],
-  ): Promise<boolean> {
-    if (!dependencies || dependencies.length === 0) return true;
-
-    const subtask = await this.prisma.subtask.findUnique({
-      where: { id: subtaskId },
-      select: { taskId: true },
-    });
-
-    if (!subtask) return false;
-
-    const existingSubtasks = await this.prisma.subtask.findMany({
-      where: {
-        taskId: subtask.taskId,
-        name: { in: dependencies },
-      },
-      select: { name: true },
-    });
-
-    return existingSubtasks.length === dependencies.length;
-  }
-
-  createDependency(
-    dependentSubtaskId: number,
-    requiredSubtaskId: number,
-  ): Promise<void> {
-    // SIMPLIFIED: Dependencies are now guidance-only in JSON field
-    // No database relationship creation needed
-    console.log(
-      `📋 Dependency guidance: subtask ${dependentSubtaskId} depends on ${requiredSubtaskId}`,
-    );
-    return Promise.resolve();
-  }
-
-  removeDependency(
-    dependentSubtaskId: number,
-    requiredSubtaskId: number,
-  ): Promise<void> {
-    // SIMPLIFIED: Dependencies are now guidance-only in JSON field
-    // No database relationship removal needed
-    console.log(
-      `📋 Removing dependency guidance: subtask ${dependentSubtaskId} no longer depends on ${requiredSubtaskId}`,
-    );
-    return Promise.resolve();
-  }
-
   async createBatch(
     batchData: SubtaskBatchData,
   ): Promise<SubtaskWithRelations[]> {
@@ -277,21 +201,6 @@ export class SubtaskRepository implements ISubtaskRepository {
         });
 
         createdSubtasks.push(subtask);
-      }
-
-      // Create dependencies after all subtasks are created
-      for (let i = 0; i < batchData.subtasks.length; i++) {
-        const subtaskData = batchData.subtasks[i];
-        const subtask = createdSubtasks[i];
-
-        if (subtaskData.dependencies && subtaskData.dependencies.length > 0) {
-          // Create dependency guidance (no longer creates DB relationships)
-          this.createDependenciesForSubtask(
-            tx,
-            subtask.id,
-            subtaskData.dependencies,
-          );
-        }
       }
 
       return createdSubtasks;
@@ -343,28 +252,10 @@ export class SubtaskRepository implements ISubtaskRepository {
   }
 
   async findAvailableSubtasks(taskId: number): Promise<SubtaskWithRelations[]> {
-    // Get all not-started subtasks
-    const notStartedSubtasks = await this.findByStatus('not-started', taskId, {
-      dependencies: true,
+    // Pure sequence-based logic - return all not-started subtasks sorted by sequence
+    return this.findByStatus('not-started', taskId, {
+      task: true,
     });
-
-    // Filter out subtasks with incomplete dependencies
-    const availableSubtasks: SubtaskWithRelations[] = [];
-
-    for (const subtask of notStartedSubtasks) {
-      const dependencies = await this.findDependencies(subtask.id);
-      const allDependenciesCompleted = dependencies.every(
-        (dep) => dep.status === 'completed',
-      );
-
-      if (allDependenciesCompleted) {
-        availableSubtasks.push(subtask);
-      }
-    }
-
-    return availableSubtasks.sort(
-      (a, b) => a.sequenceNumber - b.sequenceNumber,
-    );
   }
 
   async updateBatchStatus(
@@ -524,12 +415,6 @@ export class SubtaskRepository implements ISubtaskRepository {
       },
     });
 
-    // Create dependencies if provided
-    if (dependencies && dependencies.length > 0) {
-      // Create dependency guidance (no longer creates DB relationships)
-      this.createDependenciesForSubtask(prismaClient, subtask.id, dependencies);
-    }
-
     return subtask;
   }
 
@@ -578,21 +463,6 @@ export class SubtaskRepository implements ISubtaskRepository {
       createdSubtasks.push(subtask);
     }
 
-    // Create dependencies after all subtasks are created
-    for (let i = 0; i < batchData.subtasks.length; i++) {
-      const subtaskData = batchData.subtasks[i];
-      const subtask = createdSubtasks[i];
-
-      if (subtaskData.dependencies && subtaskData.dependencies.length > 0) {
-        // Create dependency guidance (no longer creates DB relationships)
-        this.createDependenciesForSubtask(
-          prismaClient,
-          subtask.id,
-          subtaskData.dependencies,
-        );
-      }
-    }
-
     return createdSubtasks;
   }
 
@@ -605,23 +475,5 @@ export class SubtaskRepository implements ISubtaskRepository {
     return {
       task: include.task,
     };
-  }
-
-  private createDependenciesForSubtask(
-    _prismaClient: any,
-    subtaskId: number,
-    dependencies: string[],
-  ): void {
-    // SIMPLIFIED: Dependencies are now guidance-only, stored in JSON field
-    // Skip creating complex database relationships to avoid unique constraint issues
-
-    // Optional: Log for debugging/monitoring
-    if (dependencies && dependencies.length > 0) {
-      console.log(
-        `📋 Subtask ${subtaskId} has dependency guidance: ${dependencies.join(', ')}`,
-      );
-    }
-
-    // Skip database relationship creation - dependencies are handled via JSON field only
   }
 }
