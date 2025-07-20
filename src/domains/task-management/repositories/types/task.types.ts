@@ -38,7 +38,6 @@ export interface CreateTaskData {
   owner?: string;
   currentMode?: string;
   priority?: string;
-  dependencies?: string[];
   gitBranch?: string;
   taskDescription?: {
     description?: string;
@@ -64,7 +63,6 @@ export interface UpdateTaskData {
   owner?: string;
   currentMode?: string;
   priority?: string;
-  dependencies?: string[];
   gitBranch?: string;
   taskDescription?: {
     description?: string;

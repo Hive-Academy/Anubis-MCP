@@ -140,7 +140,6 @@ export class TaskOperationsService extends BaseMcpService {
       name: taskData.name,
       status: taskData.status || 'not-started',
       priority: taskData.priority || 'Medium',
-      dependencies: taskData.dependencies || [],
       gitBranch: taskData.gitBranch,
       owner: 'product-manager',
       currentMode: 'product-manager',
@@ -201,7 +200,6 @@ export class TaskOperationsService extends BaseMcpService {
       ...(taskData?.name && { name: taskData.name }),
       ...(taskData?.status && { status: taskData.status }),
       ...(taskData?.priority && { priority: taskData.priority }),
-      ...(taskData?.dependencies && { dependencies: taskData.dependencies }),
       ...(taskData?.gitBranch && { gitBranch: taskData.gitBranch }),
       ...(description && {
         taskDescription: {

@@ -46,11 +46,11 @@ import { SubtaskBatchService } from './services/subtask-batch.service';
       useClass: ResearchReportRepository,
     },
 
-    // Focused services (in dependency order)
+    // Focused services (simplified without dependency management)
     SubtaskBatchService, // No dependencies on other services
-    SubtaskCreationService, // Depends on SubtaskDependencyService
-    SubtaskUpdateService, // Depends on SubtaskDependencyService, SubtaskBatchService
-    SubtaskQueryService, // Depends on SubtaskDependencyService
+    SubtaskCreationService, // Simplified sequence-based approach
+    SubtaskUpdateService, // Uses SubtaskBatchService for completion checks
+    SubtaskQueryService, // Sequence-based subtask discovery
 
     // Core operation services (converted to MCP tools)
     TaskOperationsService,
