@@ -70,9 +70,6 @@ model Subtask {
   // Quality validation
   acceptanceCriteria Json? // Acceptance criteria for validation
 
-  // Dependencies (used by dependency system)
-  dependencies Json? // Dependencies on other subtasks
-
   // Completion tracking
   completionEvidence Json? // Evidence of completion for quality validation
 
