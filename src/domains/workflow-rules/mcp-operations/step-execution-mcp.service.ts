@@ -4,6 +4,8 @@ import { ZodSchema, z } from 'zod';
 import { StepExecutionService } from '../services/step-execution.service';
 import { StepGuidanceService } from '../services/step-guidance.service';
 import { WorkflowExecutionOperationsService } from '../services/workflow-execution-operations.service';
+import { WorkflowContextCacheService } from '../services/workflow-context-cache.service';
+import { AutoWorkflowValidation } from '../utils/dynamic-workflow-validation.util';
 import { BaseMcpService } from '../utils/mcp-response.utils';
 import { getErrorMessage } from '../utils/type-safety.utils';
 
@@ -36,6 +38,7 @@ const GetStepGuidanceInputSchema = z
     },
   );
 
+// ✅ MINIMAL SCHEMA: Only essential fields actually used in practice
 const ReportStepCompletionInputSchema = z
   .object({
     taskId: z
@@ -47,24 +50,14 @@ const ReportStepCompletionInputSchema = z
     result: z.enum(['success', 'failure']).describe('Execution result'),
     executionTime: z.number().optional().describe('Execution time in ms'),
 
-    // 🔧 NEW: Structured execution data with explicit fields
+    // ✅ MINIMAL: Only actually used fields based on analysis
     executionData: z
       .object({
-        // Core execution information
+        // Core fields - most commonly used
         outputSummary: z
           .string()
           .optional()
           .describe('Brief summary of what was accomplished'),
-        evidenceDetails: z
-          .string()
-          .optional()
-          .describe('Detailed evidence of completion'),
-        duration: z
-          .string()
-          .optional()
-          .describe('Time taken to complete the step'),
-
-        // File and code changes
         filesModified: z
           .array(z.string())
           .optional()
@@ -74,129 +67,46 @@ const ReportStepCompletionInputSchema = z
           .optional()
           .describe('List of commands that were executed'),
 
-        // Implementation details
-        implementationSummary: z
-          .string()
-          .optional()
-          .describe('Summary of implementation approach taken'),
-        completionEvidence: z
-          .record(z.any())
-          .optional()
-          .describe('Evidence of completion by acceptance criteria'),
-
-        // Delegation and handoff
-        delegationSummary: z
-          .string()
-          .optional()
-          .describe('Summary for next role/step'),
-
-        // Quality and validation
+        // Quality validation - simple boolean
         qualityChecksComplete: z
           .boolean()
           .optional()
           .describe('Whether quality checks were completed'),
-        qualityValidation: z
+
+        // Optional implementation details
+        implementationSummary: z
           .string()
           .optional()
-          .describe('Results of quality validation'),
-        acceptanceCriteriaVerification: z
-          .record(z.any())
-          .optional()
-          .describe('Verification of acceptance criteria'),
-
-        // Testing results
-        testingResults: z
-          .record(z.any())
-          .optional()
-          .describe('Results from testing activities'),
-        qualityAssurance: z
-          .record(z.any())
-          .optional()
-          .describe('Quality assurance metrics and results'),
-
-        // Additional context
-        additionalContext: z
-          .record(z.any())
-          .optional()
-          .describe('Any additional context or findings'),
+          .describe('Summary of implementation approach taken'),
       })
       .optional()
-      .describe('Structured execution data with specific fields'),
+      .describe('Essential execution data'),
 
-    // 🔧 NEW: Explicit validation results
+    // ✅ MINIMAL: Basic validation results
     validationResults: z
       .object({
         allChecksPassed: z
           .boolean()
           .describe('Whether all validation checks passed'),
-        checklist: z
-          .array(
-            z.object({
-              item: z.string().describe('Validation check item'),
-              passed: z.boolean().describe('Whether this check passed'),
-              evidence: z
-                .string()
-                .optional()
-                .describe('Evidence for this check'),
-              notes: z
-                .string()
-                .optional()
-                .describe('Additional notes about this check'),
-            }),
-          )
-          .optional()
-          .describe('Detailed validation checklist results'),
-        qualityScore: z
-          .number()
-          .optional()
-          .describe('Overall quality score (0-10)'),
         issues: z.array(z.string()).optional().describe('List of issues found'),
-        recommendations: z
-          .array(z.string())
-          .optional()
-          .describe('Recommendations for improvement'),
       })
       .optional()
-      .describe('Structured validation results'),
+      .describe('Basic validation results'),
 
-    // 🔧 NEW: Explicit report data
+    // ✅ MINIMAL: Optional report data for advanced tracking
     reportData: z
       .object({
         stepType: z
           .string()
           .optional()
           .describe('Type of step that was completed'),
-        roleContext: z
-          .string()
-          .optional()
-          .describe('Context about the role that executed this step'),
         keyAchievements: z
           .array(z.string())
           .optional()
           .describe('Key achievements in this step'),
-        challengesFaced: z
-          .array(z.string())
-          .optional()
-          .describe('Challenges encountered and how they were resolved'),
-        nextStepRecommendations: z
-          .array(z.string())
-          .optional()
-          .describe('Recommendations for the next step'),
-        resourcesUsed: z
-          .array(z.string())
-          .optional()
-          .describe('Resources, tools, or services used'),
-        decisionsMade: z
-          .array(z.string())
-          .optional()
-          .describe('Key decisions made during execution'),
-        lessonsLearned: z
-          .array(z.string())
-          .optional()
-          .describe('Lessons learned for future reference'),
       })
       .optional()
-      .describe('Structured report data for comprehensive tracking'),
+      .describe('Optional report data'),
   })
   .refine(
     (data) => data.taskId !== undefined || data.executionId !== undefined,
@@ -211,14 +121,11 @@ const GetStepProgressInputSchema = z.object({
   roleId: z.string().optional().describe('Optional role ID filter'),
 });
 
-const GetWorkflowStateInputSchema = z.object({
-  executionId: z.string().describe('Execution ID for workflow state query'),
-  includeStepDetails: z
-    .boolean()
-    .optional()
-    .default(true)
-    .describe('Include detailed step information'),
-});
+const GetWorkflowStateInputSchema = z
+  .object({
+    // Remove all parameters - this tool should work without any input
+  })
+  .optional();
 
 type GetStepGuidanceInput = z.infer<typeof GetStepGuidanceInputSchema>;
 type ReportStepCompletionInput = z.infer<
@@ -242,6 +149,7 @@ export class StepExecutionMcpService extends BaseMcpService {
     private readonly stepExecutionService: StepExecutionService,
     private readonly stepGuidanceService: StepGuidanceService,
     private readonly workflowExecutionOperationsService: WorkflowExecutionOperationsService,
+    private readonly workflowContextCache: WorkflowContextCacheService,
   ) {
     super();
   }
@@ -250,6 +158,7 @@ export class StepExecutionMcpService extends BaseMcpService {
   // ✅ GUIDANCE TOOL - Delegates to StepGuidanceService
   // ===================================================================
 
+  @AutoWorkflowValidation(GetStepGuidanceInputSchema, 'get_step_guidance')
   @Tool({
     name: 'get_step_guidance',
     description: `Provides focused guidance for executing the current workflow step, including commands and validation checklist.`,
@@ -320,6 +229,41 @@ export class StepExecutionMcpService extends BaseMcpService {
         validateTransitionState: true, // Enable transition state detection
       });
 
+      // 🧠 UPDATE WORKFLOW CONTEXT CACHE
+      // Store latest workflow state after successful guidance generation
+      if (resolvedExecutionId) {
+        try {
+          const cacheKey = WorkflowContextCacheService.generateKey(
+            resolvedExecutionId,
+            'step_guidance',
+          );
+
+          // Get current execution to extract latest state
+          const currentExecution =
+            await this.workflowExecutionOperationsService.getExecution({
+              executionId: resolvedExecutionId,
+            });
+
+          if (currentExecution.execution) {
+            const execution = currentExecution.execution;
+            this.workflowContextCache.storeContext(cacheKey, {
+              executionId: resolvedExecutionId,
+              taskId: execution.taskId || actualTaskId,
+              currentRoleId: execution.currentRoleId || currentRoleId,
+              currentStepId: execution.currentStepId || undefined,
+              roleName: execution.currentRole?.name || 'Unknown',
+              stepName: execution.currentStep?.name,
+              taskName: execution.task?.name,
+              projectPath: process.cwd(),
+              source: 'step_completion',
+            });
+          }
+        } catch (_cacheError) {
+          // Don't fail the main operation if cache update fails
+          // Silent fail to avoid disrupting workflow
+        }
+      }
+
       // Return clean guidance without artificial fields
       return this.buildResponse(guidance);
     } catch (error) {
@@ -387,6 +331,11 @@ export class StepExecutionMcpService extends BaseMcpService {
     name: 'get_step_progress',
     description: `Get concise step progress focused on essential status information for workflow continuation.`,
     parameters: GetStepProgressInputSchema as ZodSchema<GetStepProgressInput>,
+  })
+  @AutoWorkflowValidation(GetStepProgressInputSchema, 'get_step_progress', {
+    requiredIds: ['executionId'],
+    allowBootstrap: false,
+    contextSelectionStrategy: 'byExecutionId',
   })
   async getStepProgress(input: GetStepProgressInput) {
     try {
@@ -478,32 +427,43 @@ export class StepExecutionMcpService extends BaseMcpService {
 
   @Tool({
     name: 'get_workflow_state_tracker',
-    description: `CRITICAL WORKFLOW STATE TRACKER: Returns essential database identifiers for workflow continuity including executionId, taskId, roleId, and stepId. Use this tool whenever you need to verify or recover workflow state, especially when experiencing ID confusion or workflow interruptions.`,
+    description: `CRITICAL WORKFLOW STATE TRACKER: Returns essential database identifiers for workflow continuity including executionId, taskId, roleId, and stepId from the active execution. Use this tool whenever you need to verify or recover workflow state, especially when experiencing ID confusion or workflow interruptions. Requires no parameters - automatically finds the active execution.`,
     parameters: GetWorkflowStateInputSchema as ZodSchema<GetWorkflowStateInput>,
   })
-  async getWorkflowStateTracker(input: GetWorkflowStateInput) {
+  @AutoWorkflowValidation(
+    GetWorkflowStateInputSchema,
+    'get_workflow_state_tracker',
+    {
+      requiredIds: [],
+      allowBootstrap: true,
+      contextSelectionStrategy: 'mostRecent',
+    },
+  )
+  async getWorkflowStateTracker(_input?: GetWorkflowStateInput) {
     try {
-      // ✅ GET EXECUTION STATE
-      const executionResult =
-        await this.workflowExecutionOperationsService.getExecution({
-          executionId: input.executionId,
-        });
+      // ✅ GET ACTIVE EXECUTIONS INSTEAD OF REQUIRING EXECUTION ID
+      const activeExecutionsResult =
+        await this.workflowExecutionOperationsService.getActiveExecutions();
 
-      if (!executionResult.execution) {
+      if (
+        !activeExecutionsResult.executions ||
+        activeExecutionsResult.executions.length === 0
+      ) {
         return this.buildResponse({
-          executionId: input.executionId,
-          status: 'no_execution',
-          error: 'No active execution found for provided executionId',
+          status: 'no_active_executions',
+          error: 'No active executions found',
           stateValid: false,
+          executions: [],
         });
       }
 
-      const execution = executionResult.execution;
+      // Get the most recent active execution (first one)
+      const execution = activeExecutionsResult.executions[0];
       const task = execution.task;
       const currentRole = execution.currentRole;
       const currentStep = execution.currentStep;
 
-      // ✅ RETURN ONLY CRITICAL DATABASE IDENTIFIERS
+      // ✅ RETURN ONLY CRITICAL DATABASE IDENTIFIERS - SAME FORMAT AS BEFORE
       const criticalState = {
         executionId: execution.id,
         taskId: execution.taskId,
@@ -512,6 +472,13 @@ export class StepExecutionMcpService extends BaseMcpService {
         taskName: task?.name || 'Bootstrap/No Task',
         roleName: currentRole?.name || 'Unknown',
         stepName: currentStep?.name || 'No Step',
+        stateValid: true,
+
+        // Include summary info from active executions for context
+        summary: activeExecutionsResult.summary,
+
+        // If multiple executions, include count for awareness
+        totalActiveExecutions: activeExecutionsResult.executions.length,
       };
 
       return this.buildResponse(criticalState);

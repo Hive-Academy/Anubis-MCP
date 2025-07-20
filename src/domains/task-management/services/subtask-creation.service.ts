@@ -45,16 +45,19 @@ export class SubtaskCreationService {
       );
     }
 
-    // Validate dependencies if provided
+    // SIMPLIFIED: Make dependencies optional guidance, not rigid requirements
     if (subtaskData.dependencies && subtaskData.dependencies.length > 0) {
-      await this.subtaskDependencyService.validateSubtaskDependencies(
-        taskId,
-        subtaskData.dependencies,
+      // Just store as guidance - don't create complex relationships
+      console.log(
+        `📋 Suggested prerequisite tasks: ${subtaskData.dependencies.join(', ')}`,
       );
+
+      // Skip complex dependency validation and creation
+      // Dependencies are stored in subtask.dependencies array for reference only
     }
 
     // Create the individual subtask with enhanced evidence fields
-    const subtask = await this.subtaskRepository.create({
+    await this.subtaskRepository.create({
       taskId,
       name: subtaskData.name,
       description: subtaskData.description,
@@ -67,17 +70,18 @@ export class SubtaskCreationService {
       implementationApproach: subtaskData.implementationApproach,
     });
 
-    // Create dependency relationships if specified
-    if (subtaskData.dependencies && subtaskData.dependencies.length > 0) {
-      await this.subtaskDependencyService.createSubtaskDependencyRelations(
-        subtask.id,
-        taskId,
-        subtaskData.dependencies,
-      );
-    }
+    // SIMPLIFIED: No complex dependency relationship creation
+    // Dependencies are stored as guidance in the subtask.dependencies JSON field
+    // This avoids unique constraint issues and complex relationship management
+
+    const dependencyCount = subtaskData.dependencies?.length || 0;
+    const dependencyMessage =
+      dependencyCount > 0
+        ? ` (suggested prerequisites: ${subtaskData.dependencies!.join(', ')})`
+        : '';
 
     return {
-      message: `Individual subtask '${subtaskData.name}' created successfully with ${subtaskData.dependencies?.length || 0} dependencies`,
+      message: `Individual subtask '${subtaskData.name}' created successfully${dependencyMessage}`,
     };
   }
 

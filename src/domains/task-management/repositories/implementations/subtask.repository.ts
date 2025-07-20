@@ -67,7 +67,8 @@ export class SubtaskRepository implements ISubtaskRepository {
 
       // Create dependencies if provided
       if (dependencies && dependencies.length > 0) {
-        await this.createDependenciesForSubtask(tx, subtask.id, dependencies);
+        // Create dependency guidance (no longer creates DB relationships)
+        this.createDependenciesForSubtask(tx, subtask.id, dependencies);
       }
 
       const result = await this.findById(subtask.id, {
@@ -107,7 +108,8 @@ export class SubtaskRepository implements ISubtaskRepository {
 
         // Create new dependencies
         if (dependencies.length > 0) {
-          await this.createDependenciesForSubtask(tx, id, dependencies);
+          // Create dependency guidance (no longer creates DB relationships)
+          this.createDependenciesForSubtask(tx, id, dependencies);
         }
       }
 
@@ -336,7 +338,8 @@ export class SubtaskRepository implements ISubtaskRepository {
         const subtask = createdSubtasks[i];
 
         if (subtaskData.dependencies && subtaskData.dependencies.length > 0) {
-          await this.createDependenciesForSubtask(
+          // Create dependency guidance (no longer creates DB relationships)
+          this.createDependenciesForSubtask(
             tx,
             subtask.id,
             subtaskData.dependencies,
@@ -352,25 +355,48 @@ export class SubtaskRepository implements ISubtaskRepository {
     taskId: number,
     currentSubtaskId?: number,
   ): Promise<SubtaskWithRelations | null> {
-    // Find available subtasks (not started, with all dependencies completed)
-    const availableSubtasks = await this.findAvailableSubtasks(taskId);
-
-    if (availableSubtasks.length === 0) return null;
-
-    // If no current subtask, return the first available
+    // If no current subtask, return the first not-started subtask by sequence
     if (!currentSubtaskId) {
-      return availableSubtasks[0];
+      const firstNotStarted = await this.prisma.subtask.findFirst({
+        where: {
+          taskId,
+          status: 'not-started',
+        },
+        include: {
+          task: true,
+          dependencies_from: true,
+          dependencies_to: true,
+        },
+        orderBy: { sequenceNumber: 'asc' },
+      });
+      
+      return firstNotStarted;
     }
 
-    // Find next in sequence after current
+    // Get current subtask to find its sequence number
     const currentSubtask = await this.findById(currentSubtaskId);
-    if (!currentSubtask) return availableSubtasks[0];
+    if (!currentSubtask) {
+      // If current subtask not found, fall back to first not-started
+      return this.findNextSubtask(taskId);
+    }
 
-    const nextInSequence = availableSubtasks.find(
-      (subtask) => subtask.sequenceNumber > currentSubtask.sequenceNumber,
-    );
+    // Find the immediate next subtask by sequence number (current + 1)
+    const nextSequenceNumber = currentSubtask.sequenceNumber + 1;
+    
+    const nextSubtask = await this.prisma.subtask.findFirst({
+      where: {
+        taskId,
+        sequenceNumber: nextSequenceNumber,
+        status: 'not-started',
+      },
+      include: {
+        task: true,
+        dependencies_from: true,
+        dependencies_to: true,
+      },
+    });
 
-    return nextInSequence || availableSubtasks[0];
+    return nextSubtask;
   }
 
   async findAvailableSubtasks(taskId: number): Promise<SubtaskWithRelations[]> {
@@ -559,11 +585,8 @@ export class SubtaskRepository implements ISubtaskRepository {
 
     // Create dependencies if provided
     if (dependencies && dependencies.length > 0) {
-      await this.createDependenciesForSubtask(
-        prismaClient,
-        subtask.id,
-        dependencies,
-      );
+      // Create dependency guidance (no longer creates DB relationships)
+      this.createDependenciesForSubtask(prismaClient, subtask.id, dependencies);
     }
 
     return subtask;
@@ -596,7 +619,8 @@ export class SubtaskRepository implements ISubtaskRepository {
 
       // Create new dependencies
       if (dependencies.length > 0) {
-        await this.createDependenciesForSubtask(prismaClient, id, dependencies);
+        // Create dependency guidance (no longer creates DB relationships)
+        this.createDependenciesForSubtask(prismaClient, id, dependencies);
       }
     }
 
@@ -635,7 +659,8 @@ export class SubtaskRepository implements ISubtaskRepository {
       const subtask = createdSubtasks[i];
 
       if (subtaskData.dependencies && subtaskData.dependencies.length > 0) {
-        await this.createDependenciesForSubtask(
+        // Create dependency guidance (no longer creates DB relationships)
+        this.createDependenciesForSubtask(
           prismaClient,
           subtask.id,
           subtaskData.dependencies,
@@ -659,36 +684,21 @@ export class SubtaskRepository implements ISubtaskRepository {
     };
   }
 
-  private async createDependenciesForSubtask(
-    prismaClient: any,
+  private createDependenciesForSubtask(
+    _prismaClient: any,
     subtaskId: number,
     dependencies: string[],
-  ): Promise<void> {
-    // Get the task ID for this subtask
-    const subtask = await prismaClient.subtask.findUnique({
-      where: { id: subtaskId },
-      select: { taskId: true },
-    });
+  ): void {
+    // SIMPLIFIED: Dependencies are now guidance-only, stored in JSON field
+    // Skip creating complex database relationships to avoid unique constraint issues
 
-    if (!subtask) return;
-
-    // Find subtasks by name within the same task
-    const dependencySubtasks = await prismaClient.subtask.findMany({
-      where: {
-        taskId: subtask.taskId,
-        name: { in: dependencies },
-      },
-      select: { id: true, name: true },
-    });
-
-    // Create dependency records
-    for (const depSubtask of dependencySubtasks) {
-      await prismaClient.subtaskDependency.create({
-        data: {
-          dependentSubtaskId: subtaskId,
-          requiredSubtaskId: depSubtask.id,
-        },
-      });
+    // Optional: Log for debugging/monitoring
+    if (dependencies && dependencies.length > 0) {
+      console.log(
+        `📋 Subtask ${subtaskId} has dependency guidance: ${dependencies.join(', ')}`,
+      );
     }
+
+    // Skip database relationship creation - dependencies are handled via JSON field only
   }
 }

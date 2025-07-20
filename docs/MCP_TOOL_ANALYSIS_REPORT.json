@@ -1,0 +1,286 @@
+[
+  {
+    "service": "role-transition-mcp.service.ts",
+    "toolName": "get_role_transitions",
+    "schemaName": "",
+    "methodName": "getRoleTransitions",
+    "schemaLocation": "Found in src/domains/workflow-rules/mcp-operations/role-transition-mcp.service.ts",
+    "workflowIds": {
+      "found": [],
+      "required": [],
+      "optional": []
+    },
+    "recommendedConfig": {
+      "requiredIds": [],
+      "allowBootstrap": false,
+      "contextSelectionStrategy": "mostRecent",
+      "priority": "Critical"
+    },
+    "currentStatus": "Not Found",
+    "integrationComplexity": "Simple"
+  },
+  {
+    "service": "role-transition-mcp.service.ts",
+    "toolName": "validate_transition",
+    "schemaName": "",
+    "methodName": "validateTransition",
+    "schemaLocation": "Found in src/domains/workflow-rules/mcp-operations/role-transition-mcp.service.ts",
+    "workflowIds": {
+      "found": [],
+      "required": [],
+      "optional": []
+    },
+    "recommendedConfig": {
+      "requiredIds": [],
+      "allowBootstrap": false,
+      "contextSelectionStrategy": "mostRecent",
+      "priority": "Medium"
+    },
+    "currentStatus": "Not Found",
+    "integrationComplexity": "Simple"
+  },
+  {
+    "service": "role-transition-mcp.service.ts",
+    "toolName": "execute_transition",
+    "schemaName": "",
+    "methodName": "executeTransition",
+    "schemaLocation": "Found in src/domains/workflow-rules/mcp-operations/role-transition-mcp.service.ts",
+    "workflowIds": {
+      "found": [],
+      "required": [],
+      "optional": []
+    },
+    "recommendedConfig": {
+      "requiredIds": [],
+      "allowBootstrap": false,
+      "contextSelectionStrategy": "mostRecent",
+      "priority": "Critical"
+    },
+    "currentStatus": "Not Found",
+    "integrationComplexity": "Simple"
+  },
+  {
+    "service": "workflow-guidance-mcp.service.ts",
+    "toolName": "get_workflow_guidance",
+    "schemaName": "",
+    "methodName": "getWorkflowGuidance",
+    "schemaLocation": "Found in src/domains/workflow-rules/mcp-operations/workflow-guidance-mcp.service.ts",
+    "workflowIds": {
+      "found": [],
+      "required": [],
+      "optional": []
+    },
+    "recommendedConfig": {
+      "requiredIds": [],
+      "allowBootstrap": false,
+      "contextSelectionStrategy": "mostRecent",
+      "priority": "Medium"
+    },
+    "currentStatus": "Not Found",
+    "integrationComplexity": "Simple"
+  },
+  {
+    "service": "workflow-execution-mcp.service.ts",
+    "toolName": "workflow_execution_operations",
+    "schemaName": "WorkflowExecutionSchema",
+    "methodName": "AutoWorkflowValidation",
+    "schemaLocation": "Found in src/domains/workflow-rules/mcp-operations/workflow-execution-mcp.service.ts",
+    "workflowIds": {
+      "found": [],
+      "required": [],
+      "optional": []
+    },
+    "recommendedConfig": {
+      "requiredIds": [],
+      "allowBootstrap": false,
+      "contextSelectionStrategy": "mostRecent",
+      "priority": "Medium"
+    },
+    "currentStatus": "Pending",
+    "integrationComplexity": "Simple"
+  },
+  {
+    "service": "step-execution-mcp.service.ts",
+    "toolName": "get_step_guidance",
+    "schemaName": "GetStepGuidanceInputSchema",
+    "methodName": "getStepGuidance",
+    "schemaLocation": "Found in src/domains/workflow-rules/mcp-operations/step-execution-mcp.service.ts",
+    "workflowIds": {
+      "found": [
+        "executionId",
+        "taskId",
+        "roleId",
+        "stepId"
+      ],
+      "required": [
+        "executionId",
+        "taskId",
+        "roleId"
+      ],
+      "optional": [
+        "stepId"
+      ]
+    },
+    "recommendedConfig": {
+      "requiredIds": [
+        "executionId",
+        "taskId",
+        "currentRoleId"
+      ],
+      "allowBootstrap": false,
+      "contextSelectionStrategy": "byTaskId",
+      "priority": "Critical"
+    },
+    "currentStatus": "Complete",
+    "integrationComplexity": "Complex"
+  },
+  {
+    "service": "step-execution-mcp.service.ts",
+    "toolName": "report_step_completion",
+    "schemaName": "",
+    "methodName": "reportStepCompletion",
+    "schemaLocation": "Found in src/domains/workflow-rules/mcp-operations/step-execution-mcp.service.ts",
+    "workflowIds": {
+      "found": [],
+      "required": [],
+      "optional": []
+    },
+    "recommendedConfig": {
+      "requiredIds": [],
+      "allowBootstrap": false,
+      "contextSelectionStrategy": "mostRecent",
+      "priority": "Critical"
+    },
+    "currentStatus": "Complete",
+    "integrationComplexity": "Simple"
+  },
+  {
+    "service": "step-execution-mcp.service.ts",
+    "toolName": "get_step_progress",
+    "schemaName": "GetStepProgressInputSchema",
+    "methodName": "AutoWorkflowValidation",
+    "schemaLocation": "Found in src/domains/workflow-rules/mcp-operations/step-execution-mcp.service.ts",
+    "workflowIds": {
+      "found": [
+        "executionId",
+        "roleId"
+      ],
+      "required": [
+        "executionId"
+      ],
+      "optional": [
+        "roleId"
+      ]
+    },
+    "recommendedConfig": {
+      "requiredIds": [
+        "executionId"
+      ],
+      "allowBootstrap": false,
+      "contextSelectionStrategy": "mostRecent",
+      "priority": "Medium"
+    },
+    "currentStatus": "Complete",
+    "integrationComplexity": "Medium"
+  },
+  {
+    "service": "step-execution-mcp.service.ts",
+    "toolName": "get_workflow_state_tracker",
+    "schemaName": "GetWorkflowStateInputSchema",
+    "methodName": "AutoWorkflowValidation",
+    "schemaLocation": "Found in src/domains/workflow-rules/mcp-operations/step-execution-mcp.service.ts",
+    "workflowIds": {
+      "found": [],
+      "required": [],
+      "optional": []
+    },
+    "recommendedConfig": {
+      "requiredIds": [],
+      "allowBootstrap": false,
+      "contextSelectionStrategy": "mostRecent",
+      "priority": "Medium"
+    },
+    "currentStatus": "Pending",
+    "integrationComplexity": "Simple"
+  },
+  {
+    "service": "review-operations.service.ts",
+    "toolName": "execute_review_operation",
+    "schemaName": "ReviewOperationsInputSchema",
+    "methodName": "AutoWorkflowValidation",
+    "schemaLocation": "Found in src/domains/task-management/review-operations.service.ts",
+    "workflowIds": {
+      "found": [],
+      "required": [],
+      "optional": []
+    },
+    "recommendedConfig": {
+      "requiredIds": [],
+      "allowBootstrap": false,
+      "contextSelectionStrategy": "mostRecent",
+      "priority": "Medium"
+    },
+    "currentStatus": "Pending",
+    "integrationComplexity": "Simple"
+  },
+  {
+    "service": "research-operations.service.ts",
+    "toolName": "execute_research_operation",
+    "schemaName": "ResearchOperationsInputSchema",
+    "methodName": "AutoWorkflowValidation",
+    "schemaLocation": "Found in src/domains/task-management/research-operations.service.ts",
+    "workflowIds": {
+      "found": [],
+      "required": [],
+      "optional": []
+    },
+    "recommendedConfig": {
+      "requiredIds": [],
+      "allowBootstrap": false,
+      "contextSelectionStrategy": "mostRecent",
+      "priority": "Medium"
+    },
+    "currentStatus": "Pending",
+    "integrationComplexity": "Simple"
+  },
+  {
+    "service": "individual-subtask-operations.service.ts",
+    "toolName": "individual_subtask_operations",
+    "schemaName": "IndividualSubtaskOperationsInputSchema",
+    "methodName": "AutoWorkflowValidation",
+    "schemaLocation": "Found in src/domains/task-management/individual-subtask-operations.service.ts",
+    "workflowIds": {
+      "found": [],
+      "required": [],
+      "optional": []
+    },
+    "recommendedConfig": {
+      "requiredIds": [],
+      "allowBootstrap": false,
+      "contextSelectionStrategy": "byTaskId",
+      "priority": "High"
+    },
+    "currentStatus": "Pending",
+    "integrationComplexity": "Simple"
+  },
+  {
+    "service": "init-rules-mcp.service.ts",
+    "toolName": "init_rules",
+    "schemaName": "InitRulesInputSchema",
+    "methodName": "agent",
+    "schemaLocation": "Found in src/domains/init-rules/mcp-operations/init-rules-mcp.service.ts",
+    "workflowIds": {
+      "found": [],
+      "required": [],
+      "optional": []
+    },
+    "recommendedConfig": {
+      "requiredIds": [],
+      "allowBootstrap": true,
+      "contextSelectionStrategy": "mostRecent",
+      "priority": "Low"
+    },
+    "currentStatus": "Complete",
+    "integrationComplexity": "Simple"
+  }
+]

@@ -11,6 +11,7 @@ import {
   BaseMcpService,
   McpResponse,
 } from '../workflow-rules/utils/mcp-response.utils';
+import { AutoWorkflowValidation } from '../workflow-rules/utils/dynamic-workflow-validation.util';
 
 // Import focused services
 import { SubtaskCreationService } from './services/subtask-creation.service';
@@ -112,6 +113,15 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
       'Execute individual subtask operations including creation, updates, dependency tracking, and batch management with evidence collection',
     parameters: IndividualSubtaskOperationsInputSchema as ZodSchema,
   })
+  @AutoWorkflowValidation(
+    IndividualSubtaskOperationsInputSchema,
+    'individual_subtask_operations',
+    {
+      requiredIds: ['taskId'],
+      allowBootstrap: false,
+      contextSelectionStrategy: 'byTaskId',
+    },
+  )
   async executeIndividualSubtaskOperation(
     input: IndividualSubtaskOperationsInput,
   ): Promise<McpResponse> {

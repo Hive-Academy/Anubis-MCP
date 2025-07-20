@@ -6,6 +6,7 @@ import {
   BaseMcpService,
   McpResponse,
 } from '../../domains/workflow-rules/utils/mcp-response.utils';
+import { AutoWorkflowValidation } from '../workflow-rules/utils/dynamic-workflow-validation.util';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ITaskRepository } from './repositories/interfaces/task.repository.interface';
 import {
@@ -70,6 +71,7 @@ export class TaskOperationsService extends BaseMcpService {
    * Execute task operation as MCP tool
    * Returns MCP-formatted response
    */
+  @AutoWorkflowValidation(TaskOperationsInputSchema, 'task_operations')
   @Tool({
     name: 'task_operations',
     description:

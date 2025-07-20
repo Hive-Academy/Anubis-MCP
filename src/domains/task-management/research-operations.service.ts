@@ -11,6 +11,7 @@ import {
   ResearchOperationsInputSchema,
 } from './schemas/research-operations.schema';
 import { ResearchReportRepository } from './repositories/implementations/research-report.repository';
+import { AutoWorkflowValidation } from '../workflow-rules/utils/dynamic-workflow-validation.util';
 
 // Type-safe interfaces for research operations
 export interface ResearchOperationResult {
@@ -54,6 +55,15 @@ export class ResearchOperationsService extends BaseMcpService {
       'Execute research operations including create, update, get, and list operations for research reports',
     parameters: ResearchOperationsInputSchema as ZodSchema,
   })
+  @AutoWorkflowValidation(
+    ResearchOperationsInputSchema,
+    'execute_research_operation',
+    {
+      requiredIds: ['taskId'],
+      allowBootstrap: false,
+      contextSelectionStrategy: 'byTaskId',
+    },
+  )
   async executeResearchOperation(
     input: ResearchOperationsInput,
   ): Promise<McpResponse> {

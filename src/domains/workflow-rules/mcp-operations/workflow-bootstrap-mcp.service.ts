@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { WorkflowBootstrapService } from '../services/workflow-bootstrap.service';
+import { WorkflowContextCacheService } from '../services/workflow-context-cache.service';
+import { AutoWorkflowValidation } from '../utils/dynamic-workflow-validation.util';
 import { BaseMcpService } from '../utils/mcp-response.utils';
 
 // Simplified schema - just basic execution setup
@@ -21,10 +23,20 @@ type BootstrapWorkflowInputType = z.infer<typeof BootstrapWorkflowInputSchema>;
 
 @Injectable()
 export class WorkflowBootstrapMcpService extends BaseMcpService {
-  constructor(private readonly bootstrapService: WorkflowBootstrapService) {
+  constructor(
+    private readonly bootstrapService: WorkflowBootstrapService,
+    private readonly workflowContextCache: WorkflowContextCacheService,
+  ) {
     super();
   }
 
+  @AutoWorkflowValidation(BootstrapWorkflowInputSchema, 'bootstrap_workflow', {
+    // Bootstrap doesn't need existing workflow IDs - it creates them
+    allowBootstrap: true,
+    requiredIds: [],
+    autoCorrect: false,
+    logCorrections: false,
+  })
   @Tool({
     name: 'bootstrap_workflow',
     description: `Initializes a new workflow execution with product-manager role, starting from git setup through task creation and delegation.`,
@@ -38,6 +50,29 @@ export class WorkflowBootstrapMcpService extends BaseMcpService {
 
       if (!result.success) {
         return this.buildErrorResponse(result.message, '', 'ERROR');
+      }
+
+      // 🧠 UPDATE WORKFLOW CONTEXT CACHE
+      // Store initial workflow state after successful bootstrap
+      try {
+        const cacheKey = WorkflowContextCacheService.generateKey(
+          result.resources.executionId,
+          'bootstrap',
+        );
+
+        this.workflowContextCache.storeContext(cacheKey, {
+          executionId: result.resources.executionId,
+          taskId: result.resources.taskId || 0, // Bootstrap may not have taskId yet
+          currentRoleId: result.currentRole.id,
+          currentStepId: result.currentStep.id,
+          roleName: result.currentRole.name,
+          stepName: result.currentStep.name,
+          taskName: 'Bootstrap Workflow',
+          projectPath: input.projectPath || process.cwd(),
+          source: 'bootstrap',
+        });
+      } catch (_cacheError) {
+        // Don't fail bootstrap if cache update fails
       }
 
       // Return streamlined response with essential data only

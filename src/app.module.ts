@@ -13,8 +13,9 @@ import {
   HttpException,
   Logger,
 } from '@nestjs/common';
-import { TaskManagementModule } from './domains/task-management/task-management.module';
 import { InitRulesModule } from './domains/init-rules/init-rules.module';
+import { TaskManagementModule } from './domains/task-management/task-management.module';
+import { WorkflowContextValidationGuard } from './domains/workflow-rules/guards/workflow-context-validation.guard';
 import { WorkflowRulesModule } from './domains/workflow-rules/workflow-rules.module';
 
 // Determine transport type based on environment
@@ -89,6 +90,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       ...(getTransportType() === McpTransportType.STREAMABLE_HTTP && {
         mcpEndpoint: 'mcp',
       }),
+      guards: [WorkflowContextValidationGuard],
     }),
 
     // Rule-based workflow architecture - clean and focused
