@@ -7,7 +7,6 @@ import { WorkflowGuidanceService } from '../services/workflow-guidance.service';
 import { BaseMcpService } from '../utils/mcp-response.utils';
 import { IWorkflowExecutionRepository } from '../repositories/interfaces/workflow-execution.repository.interface';
 import { IWorkflowStepRepository } from '../repositories/interfaces/workflow-step.repository.interface';
-import { AutoWorkflowValidation } from '../utils/dynamic-workflow-validation.util';
 
 const GetWorkflowGuidanceInputSchema = z
   .object({
@@ -65,10 +64,6 @@ export class WorkflowGuidanceMcpService extends BaseMcpService {
     parameters:
       GetWorkflowGuidanceInputSchema as ZodSchema<GetWorkflowGuidanceInput>,
   })
-  @AutoWorkflowValidation(
-    GetWorkflowGuidanceInputSchema,
-    'get_workflow_guidance',
-  )
   async getWorkflowGuidance(input: GetWorkflowGuidanceInput): Promise<any> {
     try {
       // 🔧 BOOTSTRAP FIX: Handle both taskId and executionId

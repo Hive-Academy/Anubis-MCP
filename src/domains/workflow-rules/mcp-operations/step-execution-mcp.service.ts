@@ -5,7 +5,6 @@ import { StepExecutionService } from '../services/step-execution.service';
 import { StepGuidanceService } from '../services/step-guidance.service';
 import { WorkflowExecutionOperationsService } from '../services/workflow-execution-operations.service';
 import { WorkflowContextCacheService } from '../services/workflow-context-cache.service';
-import { AutoWorkflowValidation } from '../utils/dynamic-workflow-validation.util';
 import { BaseMcpService } from '../utils/mcp-response.utils';
 import { getErrorMessage } from '../utils/type-safety.utils';
 
@@ -151,7 +150,6 @@ export class StepExecutionMcpService extends BaseMcpService {
   // ✅ GUIDANCE TOOL - Delegates to StepGuidanceService
   // ===================================================================
 
-  @AutoWorkflowValidation(GetStepGuidanceInputSchema, 'get_step_guidance')
   @Tool({
     name: 'get_step_guidance',
     description: `Provides focused guidance for executing the current workflow step, including commands and validation checklist.`,
@@ -278,10 +276,6 @@ export class StepExecutionMcpService extends BaseMcpService {
     parameters:
       ReportStepCompletionInputSchema as ZodSchema<ReportStepCompletionInput>,
   })
-  @AutoWorkflowValidation(
-    ReportStepCompletionInputSchema,
-    'report_step_completion',
-  )
   async reportStepCompletion(input: ReportStepCompletionInput) {
     try {
       // Final validation - we must have an executionId at this point
@@ -328,11 +322,6 @@ export class StepExecutionMcpService extends BaseMcpService {
     name: 'get_step_progress',
     description: `Get concise step progress focused on essential status information for workflow continuation.`,
     parameters: GetStepProgressInputSchema as ZodSchema<GetStepProgressInput>,
-  })
-  @AutoWorkflowValidation(GetStepProgressInputSchema, 'get_step_progress', {
-    requiredIds: ['executionId'],
-    allowBootstrap: false,
-    contextSelectionStrategy: 'byExecutionId',
   })
   async getStepProgress(input: GetStepProgressInput) {
     try {

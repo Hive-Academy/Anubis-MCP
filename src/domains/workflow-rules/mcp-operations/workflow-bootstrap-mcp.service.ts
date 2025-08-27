@@ -3,7 +3,6 @@ import { Tool } from '@rekog/mcp-nest';
 import { ZodSchema, z } from 'zod';
 import { WorkflowBootstrapService } from '../services/workflow-bootstrap.service';
 import { WorkflowContextCacheService } from '../services/workflow-context-cache.service';
-import { AutoWorkflowValidation } from '../utils/dynamic-workflow-validation.util';
 import { BaseMcpService } from '../utils/mcp-response.utils';
 
 // Simplified schema - just basic execution setup
@@ -30,13 +29,6 @@ export class WorkflowBootstrapMcpService extends BaseMcpService {
     super();
   }
 
-  @AutoWorkflowValidation(BootstrapWorkflowInputSchema, 'bootstrap_workflow', {
-    // Bootstrap doesn't need existing workflow IDs - it creates them
-    allowBootstrap: true,
-    requiredIds: [],
-    autoCorrect: false,
-    logCorrections: false,
-  })
   @Tool({
     name: 'bootstrap_workflow',
     description: `Initializes a new workflow execution with product-manager role, starting from git setup through task creation and delegation.`,
