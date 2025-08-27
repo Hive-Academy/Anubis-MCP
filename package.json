@@ -75,7 +75,9 @@
     "publish:safe": "npm run version:resolve && npm run build && npm test && npm publish",
     "cleanup:generated": "tsx scripts/cleanup-generated-files.ts",
     "backup:prisma": "mkdir -p backup && cp -r generated/prisma backup/",
-    "restore:prisma": "cp -r backup/prisma generated/"
+    "restore:prisma": "cp -r backup/prisma generated/",
+    "prepare": "husky install",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.4",
@@ -129,7 +131,16 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0",
-    "webpack": "^5.99.9"
+    "webpack": "^5.99.9",
+    "husky": "^9.0.0",
+    "lint-staged": "^16.0.0",
+    "@commitlint/cli": "^17.6.0",
+    "@commitlint/config-conventional": "^17.6.0"
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
   },
   "jest": {
     "moduleFileExtensions": [
