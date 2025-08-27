@@ -32,3 +32,6 @@ export interface PrismaErrorHandler {
     },
   ): never;
 }
+
+// Export dashboard types
+export * from './dashboard.types';

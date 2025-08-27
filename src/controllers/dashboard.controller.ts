@@ -7,47 +7,11 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-
-export interface ExecutionOverview {
-  id: string;
-  taskId: number;
-  currentRole: string;
-  currentStep: string;
-  progress: number;
-  elapsedTime: string;
-  nextSteps: string[];
-  status: string;
-  taskName: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface TaskDetail {
-  id: number;
-  name: string;
-  description: string;
-  businessRequirements: string;
-  technicalRequirements: string;
-  acceptanceCriteria: string[];
-  status: string;
-  priority: string;
-  subtasks: SubtaskDetail[];
-  totalSubtasks: number;
-  completedSubtasks: number;
-  progress: number;
-}
-
-export interface SubtaskDetail {
-  id: number;
-  name: string;
-  description: string;
-  status: string;
-  batchId: string;
-  batchTitle: string;
-  sequenceNumber: number;
-  dependencies: string[];
-  acceptanceCriteria: string[];
-}
+import {
+  ExecutionOverview,
+  TaskDetail,
+  SubtaskDetail,
+} from '../types/dashboard.types';
 
 @Controller('dashboard/api')
 export class DashboardController {
