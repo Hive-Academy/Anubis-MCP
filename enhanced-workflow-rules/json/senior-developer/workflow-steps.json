@@ -1,52 +1,134 @@
 {
   "workflowSteps": [
     {
-      "name": "context_gathering_and_analysis",
-      "description": "Gather comprehensive implementation context including task details, architect's strategic guidance, and subtask specifications.",
+      "name": "context_gathering",
+      "description": "Gather comprehensive task context and determine transition source (architect vs product-manager).",
       "sequenceNumber": 1,
       "isRequired": true,
       "stepType": "ACTION",
-      "approach": "Retrieve and analyze all implementation context to establish execution foundation.",
+      "approach": "Retrieve and analyze task context to understand requirements and transition source.",
       "approachGuidance": {
         "stepByStep": [
           "🔍 CONTEXT ACQUISITION:",
-          "Review message history for task context and architect's strategic guidance",
+          "Review message history for task context and determine transition source (architect vs product-manager)",
           "If context insufficient, execute TaskOperations.get MCP operation:",
           "  - serviceName: 'TaskOperations', operation: 'get'",
           "  - Parameters: includeDescription: true, includeAnalysis: true, includeResearch: true, includeSubtasks: true",
           "🏗️ IMPLEMENTATION CONTEXT ANALYSIS:",
           "Analyze complete task context: business requirements, technical specifications, acceptance criteria",
-          "Review architect's strategic guidance and subtask breakdown for implementation approach",
           "Identify technology stack, frameworks, architectural patterns, and existing codebase structure",
-          "Review research findings and recommendations impacting implementation decisions",
-          "📋 SUBTASK AND ENVIRONMENT PREPARATION:",
-          "Evaluate architect's subtasks for implementation readiness and identify any gaps",
-          "Understand subtask dependencies and establish implementation order",
-          "Verify development environment configuration and required dependencies",
-          "Review established code quality standards, testing requirements, and security considerations"
+          "Review research findings and recommendations impacting implementation decisions"
         ]
       },
       "qualityChecklist": [
-        "✅ Task context and architect's guidance comprehensively understood",
+        "✅ Task context comprehensively understood",
+        "✅ Transition source identified (architect vs product-manager)",
         "✅ Technology stack and codebase structure analyzed",
-        "✅ Subtasks evaluated for completeness and dependencies mapped",
-        "✅ Development environment verified and quality standards reviewed",
-        "✅ Implementation strategy formulated with clear execution approach"
+        "✅ Business requirements and acceptance criteria clear"
       ]
     },
     {
-      "name": "implement_subtasks",
-      "description": "Execute subtasks iteratively with testing, validation, and atomic commits following architect's specifications.",
+      "name": "implementation_planning",
+      "description": "Determine implementation approach and prepare execution strategy based on available guidance.",
       "sequenceNumber": 2,
       "isRequired": true,
       "stepType": "ACTION",
-      "approach": "Systematic subtask execution loop with rigorous testing and incremental commits.",
+      "approach": "Analyze available guidance and formulate appropriate implementation strategy.",
       "approachGuidance": {
         "stepByStep": [
-          "🔄 SUBTASK EXECUTION LOOP (Repeat until all subtasks completed):",
-          "**1. GET NEXT SUBTASK:**",
+          "📋 WORKFLOW PATH DETERMINATION:",
+          "Determine implementation approach based on transition source:",
+          "  - FROM ARCHITECT: Review architect's strategic guidance and subtask breakdown",
+          "    • Evaluate subtasks for implementation readiness and identify any gaps",
+          "    • Understand subtask dependencies and establish implementation order",
+          "  - FROM PRODUCT-MANAGER (Direct): Prepare for direct implementation",
+          "    • Analyze task complexity assessment and implementation guidance",
+          "    • Identify existing patterns and frameworks to follow",
+          "    • Plan implementation approach based on product manager's analysis",
+          "🛠️ ENVIRONMENT AND STANDARDS PREPARATION:",
+          "Verify development environment configuration and required dependencies",
+          "Review established code quality standards, testing requirements, and security considerations",
+          "Formulate implementation strategy appropriate to workflow path (subtask-based or direct)"
+        ]
+      },
+      "qualityChecklist": [
+        "✅ Workflow path determined (architect-guided vs direct implementation)",
+        "✅ Implementation approach formulated appropriate to available guidance",
+        "✅ Development environment verified and quality standards reviewed",
+        "✅ Implementation strategy established with clear execution approach"
+      ],
+      "conditions": [
+        {
+          "name": "context_gathered",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "check": "step_completed",
+            "parameters": {
+              "stepName": "context_gathering"
+            }
+          },
+          "isRequired": true
+        }
+      ]
+    },
+    {
+      "name": "implementation_path_setup",
+      "description": "Initialize implementation path by checking for subtasks and setting up execution approach.",
+      "sequenceNumber": 3,
+      "isRequired": true,
+      "stepType": "ACTION",
+      "approach": "Determine specific implementation path and initialize execution environment.",
+      "approachGuidance": {
+        "stepByStep": [
+          "🔍 IMPLEMENTATION PATH DETERMINATION:",
+          "Check if subtasks exist by attempting to get next subtask:",
           "Execute mcp_anubis_individual_subtask_operations with operation: 'get_next_subtask'",
           "Parameters: { taskId: [task-id] }",
+          "📋 PATH SETUP:",
+          "If subtasks exist: Prepare for subtask-based implementation",
+          "  • Document subtask execution approach",
+          "  • Prepare for iterative subtask loop",
+          "If no subtasks: Prepare for direct implementation",
+          "  • Break down acceptance criteria into implementation steps",
+          "  • Identify files to modify/create based on analysis",
+          "🛠️ EXECUTION ENVIRONMENT SETUP:",
+          "Set up implementation tracking and progress monitoring",
+          "Prepare testing environment and validation framework"
+        ]
+      },
+      "qualityChecklist": [
+        "✅ Implementation path determined (subtask-based vs direct)",
+        "✅ Execution approach documented and prepared",
+        "✅ Implementation environment set up for chosen path",
+        "✅ Progress tracking and validation framework ready"
+      ],
+      "conditions": [
+        {
+          "name": "planning_completed",
+          "conditionType": "PREVIOUS_STEP_COMPLETED",
+          "logic": {
+            "check": "step_completed",
+            "parameters": {
+              "stepName": "implementation_planning"
+            }
+          },
+          "isRequired": true
+        }
+      ]
+    },
+    {
+      "name": "execute_implementation",
+      "description": "Execute core implementation using either subtask-based approach or direct implementation.",
+      "sequenceNumber": 4,
+      "isRequired": true,
+      "stepType": "ACTION",
+      "approach": "Execute implementation following the established path - subtask execution loop or direct implementation.",
+      "approachGuidance": {
+        "stepByStep": [
+          "🔄 PATH A: SUBTASK-BASED IMPLEMENTATION (If subtasks exist):",
+          "**SUBTASK EXECUTION LOOP (Repeat until all subtasks completed):**",
+          "**1. GET NEXT SUBTASK:**",
+          "Execute mcp_anubis_individual_subtask_operations with operation: 'get_next_subtask'",
           "If NO subtasks returned → ALL COMPLETED, proceed to next step",
           "If subtask returned → continue with implementation",
           "**2. UPDATE STATUS TO IN-PROGRESS:**",
@@ -55,43 +137,44 @@
           "**3. IMPLEMENT SUBTASK:**",
           "Follow architect's exact implementation approach and provided code examples",
           "Implement error handling, maintain type safety, add logging as specified",
-          "Follow established codebase patterns and conventions",
-          "**4. TEST IMPLEMENTATION:**",
+          "**4. TEST AND COMPLETE:**",
+          "Execute tests, update subtask status to 'completed', create atomic commit",
+          "**5. RETURN TO STEP 1** - Continue loop until get_next_subtask returns empty",
+          "🚀 PATH B: DIRECT IMPLEMENTATION (If no subtasks exist):",
+          "**DIRECT IMPLEMENTATION APPROACH:**",
+          "**1. IMPLEMENT INCREMENTALLY:**",
+          "Implement solution following existing patterns identified in codebase analysis",
+          "Use research findings and technical recommendations from product manager",
+          "Follow established code quality standards and architectural patterns",
+          "**2. TEST CONTINUOUSLY:**",
           "Execute unit tests for new functions, integration tests for system interactions",
-          "Perform manual validation and regression testing to ensure no breaks",
-          "**5. COMPLETE AND COMMIT:**",
-          "Update subtask status to 'completed' using update_subtask operation",
-          "Create atomic commit: 'feat: [subtask-name] - [brief description]'",
-          "Stage only files related to current subtask and commit",
-          "**6. RETURN TO STEP 1** - Continue loop until get_next_subtask returns empty",
-          "🚨 CRITICAL REQUIREMENTS:",
-          "- MUST complete ALL subtasks before proceeding to validation step",
-          "- Each subtask requires individual commit with proper message",
-          "- Follow exact sequence: get → update → implement → test → complete → commit",
-          "🛠️ ERROR HANDLING:",
-          "If subtask implementation fails: Document issue and continue with next subtask",
+          "Perform manual validation and regression testing",
+          "**3. COMMIT INCREMENTALLY:**",
+          "Create logical commits for each major implementation milestone",
+          "Use descriptive commit messages: 'feat: [feature-name] - [description]'",
+          "🛠️ COMMON ERROR HANDLING (Both Paths):",
+          "If implementation fails: Document issue and adjust approach",
           "If MCP operations fail: Retry once, then document error and proceed",
-          "If testing reveals critical issues: Fix before marking subtask complete"
+          "If testing reveals critical issues: Fix before proceeding"
         ]
       },
       "qualityChecklist": [
-        "✅ ALL subtasks retrieved and completed (get_next_subtask returns empty)",
-        "✅ Each subtask followed complete cycle: get → update → implement → test → complete → commit",
-        "✅ Status properly managed for each subtask (in-progress → completed)",
-        "✅ Individual atomic commits created for each subtask with descriptive messages",
-        "✅ Implementation follows architect's guidance and established patterns",
-        "✅ Comprehensive testing performed for each subtask",
+        "✅ If subtasks exist: ALL subtasks completed with proper status management",
+        "✅ If direct implementation: Solution implemented following existing patterns",
+        "✅ Implementation follows available guidance (architect or product manager)",
+        "✅ Comprehensive testing performed throughout implementation",
         "✅ Code quality maintained with proper error handling and type safety",
-        "✅ No subtasks skipped or batched together inappropriately"
+        "✅ Appropriate commits created with descriptive messages",
+        "✅ All acceptance criteria addressed in implementation"
       ],
       "conditions": [
         {
-          "name": "context_setup_completed",
+          "name": "path_setup_completed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "context_gathering_and_analysis"
+              "stepName": "implementation_path_setup"
             }
           },
           "isRequired": true
@@ -101,7 +184,7 @@
     {
       "name": "validate_implementation",
       "description": "Perform comprehensive validation of complete implementation including testing, quality assurance, and code review preparation.",
-      "sequenceNumber": 3,
+      "sequenceNumber": 5,
       "isRequired": true,
       "stepType": "ACTION",
       "approach": "Rigorous validation of entire implementation to ensure production readiness.",
@@ -141,12 +224,12 @@
       ],
       "conditions": [
         {
-          "name": "subtasks_completed",
+          "name": "implementation_executed",
           "conditionType": "PREVIOUS_STEP_COMPLETED",
           "logic": {
             "check": "step_completed",
             "parameters": {
-              "stepName": "implement_subtasks"
+              "stepName": "execute_implementation"
             }
           },
           "isRequired": true
@@ -156,7 +239,7 @@
     {
       "name": "role_transition",
       "description": "Transition to code review role with implementation evidence",
-      "sequenceNumber": 4,
+      "sequenceNumber": 6,
       "isRequired": true,
       "stepType": "ACTION",
       "approach": "Execute transition to code review with comprehensive implementation evidence",

@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run typecheck and tests before allowing a push
+npm run -s typecheck && npm test

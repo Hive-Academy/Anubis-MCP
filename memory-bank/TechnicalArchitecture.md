@@ -3,6 +3,7 @@
 ## Repository Pattern Implementation
 
 ### Architecture Overview
+
 Anubis v1.2.11 implements a clean Repository Pattern that separates business logic from data access concerns:
 
 ```typescript
@@ -25,37 +26,46 @@ export class WorkflowRoleRepository implements IWorkflowRoleRepository {
 ```
 
 ### Migrated Services (225% Success)
+
 The following 9 services successfully migrated to repository pattern:
 
 1. **workflow-guidance.service.ts**
+
    - Separation: Business logic → Repository data access
    - Benefit: Enhanced testability and maintainability
 
 2. **step-progress-tracker.service.ts**
+
    - Pattern: Progress calculation → Database persistence
    - Benefit: Clean state management
 
 3. **workflow-bootstrap.service.ts**
+
    - Architecture: Initialization logic → Data creation
    - Benefit: Simplified bootstrap process
 
 4. **progress-calculator.service.ts**
+
    - Design: Computation → Data retrieval
    - Benefit: Pure business logic functions
 
 5. **step-query.service.ts**
+
    - Pattern: Query logic → Repository abstraction
    - Benefit: Flexible data access strategies
 
 6. **step-execution.service.ts**
+
    - Architecture: Execution flow → State persistence
    - Benefit: Reliable execution tracking
 
 7. **role-transition.service.ts**
+
    - Design: Transition logic → Database operations
    - Benefit: Consistent role management
 
 8. **execution-data-enricher.service.ts**
+
    - Pattern: Data enrichment → Repository queries
    - Benefit: Efficient data aggregation
 
@@ -66,6 +76,7 @@ The following 9 services successfully migrated to repository pattern:
 ## Dependency Injection Architecture
 
 ### Service Layer Organization
+
 ```typescript
 // Module Structure
 @Module({
@@ -75,7 +86,7 @@ The following 9 services successfully migrated to repository pattern:
     WorkflowRoleRepository,
     TaskRepository,
     StepRepository,
-    
+
     // Business Services
     WorkflowGuidanceService,
     StepProgressTrackerService,
@@ -103,12 +114,13 @@ export class WorkflowGuidanceService {
 ## Database Access Layer
 
 ### Prisma Integration with Repository Pattern
+
 ```typescript
 // Repository Base Pattern
 @Injectable()
 export abstract class BaseRepository<TModel, TCreateData, TUpdateData> {
   constructor(protected prisma: PrismaService) {}
-  
+
   abstract findById(id: string): Promise<TModel | null>;
   abstract create(data: TCreateData): Promise<TModel>;
   abstract update(id: string, data: TUpdateData): Promise<TModel>;
@@ -116,7 +128,11 @@ export abstract class BaseRepository<TModel, TCreateData, TUpdateData> {
 
 // Concrete Implementation
 @Injectable()
-export class TaskRepository extends BaseRepository<Task, CreateTaskData, UpdateTaskData> {
+export class TaskRepository extends BaseRepository<
+  Task,
+  CreateTaskData,
+  UpdateTaskData
+> {
   async findById(id: string): Promise<Task | null> {
     return this.prisma.task.findUnique({
       where: { id },
@@ -131,6 +147,7 @@ export class TaskRepository extends BaseRepository<Task, CreateTaskData, UpdateT
 ```
 
 ### Performance Optimization
+
 - **Database Size**: 434176 → 421888 bytes (optimized)
 - **Query Efficiency**: Repository pattern enables selective loading
 - **Type Safety**: 95% TypeScript coverage with strict null checks
@@ -169,7 +186,7 @@ The system eliminates static configuration files in favor of a **living, intelli
 // Core workflow intelligence tables
 model WorkflowRule {
   id          Int      @id @default(autoincrement())
-  roleId      String   // boomerang, researcher, architect, etc.
+  roleId      String   // product-manager, researcher, architect, etc.
   serviceType String   // task, planning, workflow, review, research, subtask
   ruleName    String
   description String
@@ -469,7 +486,7 @@ model Subtask {
   sequenceNumber        Int
   batchId               String?  // Batch grouping identifier
   batchTitle            String?  // Human-readable batch name
-  
+
   // Enhanced implementation context stored directly in subtasks
   implementationOverview String?
   implementationApproach String?
@@ -506,7 +523,7 @@ model Subtask {
 ```typescript
 model WorkflowRule {
   id          Int      @id @default(autoincrement())
-  roleId      String   // boomerang, researcher, architect, senior-developer, code-review
+  roleId      String   // product-manager, researcher, architect, senior-developer, code-review
   serviceType String   // task, planning, workflow, review, research, subtask
   ruleName    String
   description String
@@ -545,7 +562,7 @@ model WorkflowExecution {
 
 model WorkflowRole {
   id           String   @id @default(cuid())
-  name         String   @unique // boomerang, researcher, architect, etc.
+  name         String   @unique // product-manager, researcher, architect, etc.
   displayName  String
   description  String
   priority     Int      @default(0)

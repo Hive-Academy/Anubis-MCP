@@ -1,9 +1,4 @@
-import {
-  Prisma,
-  Subtask,
-  SubtaskDependency,
-  Task,
-} from '../../../../../generated/prisma';
+import { Prisma, Subtask, Task } from '../../../../../generated/prisma';
 import { PrismaTransaction } from './task.types';
 
 // Re-export PrismaTransaction for use in interfaces
@@ -16,18 +11,6 @@ export type SubtaskOrderByInput = Prisma.SubtaskOrderByWithRelationInput;
 // Comprehensive Subtask with relations
 export type SubtaskWithRelations = Subtask & {
   task?: Task;
-  dependencies_from?: SubtaskDependency[];
-  dependencies_to?: SubtaskDependency[];
-};
-
-// Subtask with dependency details
-export type SubtaskWithDependencies = Subtask & {
-  dependencies_from: (SubtaskDependency & {
-    requiredSubtask: Subtask;
-  })[];
-  dependencies_to: (SubtaskDependency & {
-    dependentSubtask: Subtask;
-  })[];
 };
 
 // Create and Update data types

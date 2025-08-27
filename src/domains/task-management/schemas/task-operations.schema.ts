@@ -216,12 +216,6 @@ export const SubtaskDataSchema = z.object({
     .array(z.string())
     .optional()
     .describe('Acceptance criteria for validation'),
-
-  // Dependencies (used by dependency system)
-  dependencies: z
-    .array(z.string())
-    .optional()
-    .describe('Dependencies on other subtasks'),
 });
 
 // ===================================================================
@@ -259,7 +253,6 @@ export const TaskOperationsSchema = z
           ])
           .optional(),
         priority: z.enum(['Low', 'Medium', 'High', 'Critical']).optional(),
-        dependencies: z.array(z.string()).optional(),
         gitBranch: z.string().optional(),
       })
       .optional(),

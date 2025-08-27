@@ -11,7 +11,7 @@ import { IWorkflowStepRepository } from '../repositories/interfaces/workflow-ste
 const GetWorkflowGuidanceInputSchema = z
   .object({
     roleName: z
-      .enum(['boomerang', 'architect', 'senior-developer', 'code-review'])
+      .enum(['product-manager', 'architect', 'senior-developer', 'code-review'])
       .describe('Current role name for workflow guidance'),
     taskId: z
       .number()

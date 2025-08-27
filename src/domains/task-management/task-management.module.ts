@@ -15,7 +15,6 @@ import { ResearchReportRepository } from './repositories/implementations/researc
 import { SubtaskCreationService } from './services/subtask-creation.service';
 import { SubtaskUpdateService } from './services/subtask-update.service';
 import { SubtaskQueryService } from './services/subtask-query.service';
-import { SubtaskDependencyService } from './services/subtask-dependency.service';
 import { SubtaskBatchService } from './services/subtask-batch.service';
 
 @Module({
@@ -47,12 +46,11 @@ import { SubtaskBatchService } from './services/subtask-batch.service';
       useClass: ResearchReportRepository,
     },
 
-    // Focused services (in dependency order)
-    SubtaskDependencyService, // No dependencies on other services
+    // Focused services (simplified without dependency management)
     SubtaskBatchService, // No dependencies on other services
-    SubtaskCreationService, // Depends on SubtaskDependencyService
-    SubtaskUpdateService, // Depends on SubtaskDependencyService, SubtaskBatchService
-    SubtaskQueryService, // Depends on SubtaskDependencyService
+    SubtaskCreationService, // Simplified sequence-based approach
+    SubtaskUpdateService, // Uses SubtaskBatchService for completion checks
+    SubtaskQueryService, // Sequence-based subtask discovery
 
     // Core operation services (converted to MCP tools)
     TaskOperationsService,
@@ -88,7 +86,6 @@ import { SubtaskBatchService } from './services/subtask-batch.service';
     },
 
     // Focused services (exported for external use and testing)
-    SubtaskDependencyService,
     SubtaskBatchService,
     SubtaskCreationService,
     SubtaskUpdateService,

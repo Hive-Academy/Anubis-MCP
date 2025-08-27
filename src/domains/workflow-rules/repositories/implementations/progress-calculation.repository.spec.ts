@@ -81,7 +81,7 @@ describe('ProgressCalculationRepository', () => {
     it('should find role with steps successfully', async () => {
       const mockRole = {
         id: 'role-1',
-        name: 'boomerang',
+        name: 'product-manager',
         steps: [
           {
             id: 'step-1',
@@ -98,7 +98,7 @@ describe('ProgressCalculationRepository', () => {
 
       (prisma.workflowRole.findUnique as jest.Mock).mockResolvedValue(mockRole);
 
-      const result = await repository.findRoleWithSteps('boomerang');
+      const result = await repository.findRoleWithSteps('product-manager');
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(mockRole);
@@ -118,7 +118,7 @@ describe('ProgressCalculationRepository', () => {
         new Error('Database error'),
       );
 
-      const result = await repository.findRoleWithSteps('boomerang');
+      const result = await repository.findRoleWithSteps('product-manager');
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('Database error');
@@ -152,7 +152,7 @@ describe('ProgressCalculationRepository', () => {
           },
           role: {
             id: 'role-1',
-            name: 'boomerang',
+            name: 'product-manager',
             description: 'Test role',
             priority: 1,
             isActive: true,

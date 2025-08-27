@@ -6,6 +6,9 @@ import { WorkflowBootstrapMcpService } from './mcp-operations/workflow-bootstrap
 import { WorkflowExecutionMcpService } from './mcp-operations/workflow-execution-mcp.service';
 import { WorkflowGuidanceMcpService } from './mcp-operations/workflow-guidance-mcp.service';
 
+// Guards
+import { WorkflowContextValidationGuard } from './guards/workflow-context-validation.guard';
+
 // Repository Implementations
 import { ProgressCalculationRepository } from './repositories/implementations/progress-calculation.repository';
 import { StepProgressRepository } from './repositories/implementations/step-progress.repository';
@@ -26,6 +29,7 @@ import { StepGuidanceService } from './services/step-guidance.service';
 import { StepProgressTrackerService } from './services/step-progress-tracker.service';
 import { StepQueryService } from './services/step-query.service';
 import { WorkflowBootstrapService } from './services/workflow-bootstrap.service';
+import { WorkflowContextCacheService } from './services/workflow-context-cache.service';
 import { WorkflowExecutionOperationsService } from './services/workflow-execution-operations.service';
 import { WorkflowExecutionService } from './services/workflow-execution.service';
 import { WorkflowGuidanceService } from './services/workflow-guidance.service';
@@ -80,6 +84,10 @@ import { WorkflowGuidanceService } from './services/workflow-guidance.service';
     ExecutionDataEnricherService,
     WorkflowBootstrapService,
     ExecutionAnalyticsService,
+    WorkflowContextCacheService,
+
+    // Guards
+    WorkflowContextValidationGuard,
   ],
   exports: [
     // MCP Operations
@@ -101,6 +109,10 @@ import { WorkflowGuidanceService } from './services/workflow-guidance.service';
     ExecutionDataEnricherService,
     WorkflowBootstrapService,
     ExecutionAnalyticsService,
+    WorkflowContextCacheService,
+
+    // Guards
+    WorkflowContextValidationGuard,
   ],
 })
 export class WorkflowRulesModule {}

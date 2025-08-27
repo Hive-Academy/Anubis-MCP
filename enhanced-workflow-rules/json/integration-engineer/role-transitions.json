@@ -2,8 +2,8 @@
   "roleTransitions": [
     {
       "fromRoleId": "integration-engineer",
-      "toRoleId": "boomerang",
-      "transitionName": "integration_engineer_to_boomerang_completion",
+      "toRoleId": "product-manager",
+      "transitionName": "integration_engineer_to_product_manager_completion",
       "description": "Complete workflow when integration and deployment successful",
       "conditions": {
         "integrationComplete": true,

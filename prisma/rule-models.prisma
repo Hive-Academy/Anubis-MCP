@@ -5,7 +5,7 @@
 // Core role definitions - simplified and focused
 model WorkflowRole {
   id          String  @id @default(cuid())
-  name        String  @unique // 'boomerang',  'architect', 'senior-developer', 'code-review', 'integration-engineer'
+  name        String  @unique // 'product-manager',  'architect', 'senior-developer', 'code-review', 'integration-engineer'
   description String // Role description and purpose
   priority    Int     @default(0) // For role hierarchy and delegation order
   isActive    Boolean @default(true)
@@ -21,7 +21,6 @@ model WorkflowRole {
   toTransitions    RoleTransition[]       @relation("ToRole")
   stepProgress     WorkflowStepProgress[]
   activeExecutions WorkflowExecution[]
-
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -102,7 +101,7 @@ model RoleTransition {
   id             String  @id @default(cuid())
   fromRoleId     String
   toRoleId       String
-  transitionName String  @unique // 'boomerang_to_researcher', 'researcher_to_architect'
+  transitionName String  @unique // 'product_manager_to_researcher', 'researcher_to_architect'
   description    String  @default("Role transition") // Brief transition description
   handoffMessage String  @default("Transitioning to next role") // Concise handoff message template
   isActive       Boolean @default(true)

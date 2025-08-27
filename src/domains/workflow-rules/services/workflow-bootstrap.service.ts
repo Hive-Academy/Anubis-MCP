@@ -4,7 +4,11 @@ import { WorkflowBootstrapRepository } from '../repositories/implementations/wor
 // Simplified bootstrap input - just execution setup
 export interface BootstrapWorkflowInput {
   // Workflow execution setup only
-  initialRole: 'boomerang' | 'architect' | 'senior-developer' | 'code-review';
+  initialRole:
+    | 'product-manager'
+    | 'architect'
+    | 'senior-developer'
+    | 'code-review';
   executionMode?: 'GUIDED' | 'AUTOMATED' | 'HYBRID';
   projectPath?: string;
 }
@@ -14,7 +18,7 @@ export interface BootstrapWorkflowInput {
  *
  * SIMPLIFIED APPROACH:
  * 1. Creates workflow execution without any task details
- * 2. Points execution to first boomerang step (git integration setup)
+ * 2. Points execution to first product-manager step (git integration setup)
  * 3. Returns comprehensive execution data for immediate step execution
  * 4. Workflow steps handle all task gathering, analysis, and creation
  */
@@ -30,11 +34,11 @@ export class WorkflowBootstrapService {
    *
    * WHAT THIS DOES:
    * 1. Creates workflow execution without task (taskId = null)
-   * 2. Points execution to first boomerang step (git integration setup)
+   * 2. Points execution to first product-manager step (git integration setup)
    * 3. Returns comprehensive execution data for immediate step execution
    * 4. Workflow steps guide the agent through everything else
    *
-   * WHAT THE BOOMERANG WORKFLOW WILL DO:
+   * WHAT THE Product_Manager WORKFLOW WILL DO:
    * - Step 1: Git integration setup and verification
    * - Step 2: Source code analysis with functional testing
    * - Step 3: Gather task requirements and create comprehensive task

@@ -22,7 +22,7 @@ export interface SubtaskOperationResult {
   success: boolean;
   data?:
     | Subtask
-    | SubtaskWithDependencies
+    | SubtaskWithEvidence
     | NextSubtaskResult
     | SubtaskCreationResult
     | SubtaskUpdateResult
@@ -40,35 +40,14 @@ export interface SubtaskOperationResult {
   };
 }
 
-export interface SubtaskWithDependencies {
+export interface SubtaskWithEvidence {
   subtask: Subtask;
-  dependsOn: Array<{
-    id: number;
-    name: string;
-    status: string;
-    sequenceNumber: number;
-  }>;
-  dependents: Array<{
-    id: number;
-    name: string;
-    status: string;
-    sequenceNumber: number;
-  }>;
-  dependencyStatus: {
-    totalDependencies: number;
-    completedDependencies: number;
-    canStart: boolean;
-  };
+  completionEvidence?: any;
 }
 
 export interface NextSubtaskResult {
   nextSubtask: Subtask | null;
   message: string;
-  blockedSubtasks?: Array<{
-    id: number;
-    name: string;
-    pendingDependencies: string[];
-  }>;
 }
 
 export interface SubtaskCreationResult {
@@ -120,7 +99,6 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
     try {
       let result:
         | Subtask
-        | SubtaskWithDependencies
         | NextSubtaskResult
         | SubtaskCreationResult
         | SubtaskUpdateResult
@@ -183,7 +161,7 @@ export class IndividualSubtaskOperationsService extends BaseMcpService {
     try {
       let result:
         | Subtask
-        | SubtaskWithDependencies
+        | SubtaskWithEvidence
         | NextSubtaskResult
         | SubtaskCreationResult
         | SubtaskUpdateResult

@@ -16,7 +16,11 @@ export type WorkflowStepEntity = WorkflowStep;
  * Bootstrap input interface
  */
 export interface BootstrapWorkflowInput {
-  initialRole: 'boomerang' | 'architect' | 'senior-developer' | 'code-review';
+  initialRole:
+    | 'product-manager'
+    | 'architect'
+    | 'senior-developer'
+    | 'code-review';
   executionMode?: 'GUIDED' | 'AUTOMATED' | 'HYBRID';
   projectPath?: string;
 }
