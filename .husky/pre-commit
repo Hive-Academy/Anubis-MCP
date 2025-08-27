@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run lint-staged to fix and format staged files
+npx --no-install lint-staged

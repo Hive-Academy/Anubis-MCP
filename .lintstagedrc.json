@@ -1,0 +1,5 @@
+{
+  "*.{js,jsx,ts,tsx}": ["eslint --fix", "prettier --write"],
+  "*.prisma": ["npx prisma format"],
+  "*.{json,md}": ["prettier --write"]
+}
