@@ -19,6 +19,7 @@ import { WorkflowContextValidationGuard } from './domains/workflow-rules/guards/
 import { WorkflowRulesModule } from './domains/workflow-rules/workflow-rules.module';
 import { SystemController } from './controllers/system.controller';
 import { DashboardController } from './controllers/dashboard.controller';
+import { DashboardGateway } from './gateways/dashboard.gateway';
 
 // Determine transport type based on environment
 const getTransportType = (): McpTransportType => {
@@ -106,6 +107,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       provide: APP_FILTER,
       useClass: GlobalExceptionFilter,
     },
+    DashboardGateway,
   ],
   controllers: [SystemController, DashboardController],
 })
