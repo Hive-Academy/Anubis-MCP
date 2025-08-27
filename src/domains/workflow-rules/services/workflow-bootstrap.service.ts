@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WorkflowBootstrapRepository } from '../repositories/implementations/workflow-bootstrap.repository';
+import { WorkflowEventsService } from '../events/workflow-events.service';
 
 // Simplified bootstrap input - just execution setup
 export interface BootstrapWorkflowInput {
@@ -27,6 +28,7 @@ export class WorkflowBootstrapService {
   constructor(
     @Inject('IWorkflowBootstrapRepository')
     private readonly bootstrapRepository: WorkflowBootstrapRepository,
+    private readonly events: WorkflowEventsService,
   ) {}
 
   /**
@@ -64,7 +66,7 @@ export class WorkflowBootstrapService {
     }
 
     // Return execution data for immediate workflow start
-    return {
+    const payload = {
       success: true,
       message: `Workflow execution started successfully. Begin with: ${result.data.firstStep.description}`,
       resources: {
@@ -76,5 +78,18 @@ export class WorkflowBootstrapService {
       currentStep: result.data.firstStep,
       currentRole: result.data.role,
     };
+
+    // Emit realtime event for connected dashboards/agents
+    this.events.emitWorkflowBootstrapped({
+      executionId: payload.resources.executionId,
+      firstStepId: payload.resources.firstStepId,
+      role: payload.currentRole
+        ? { id: payload.currentRole.id, name: payload.currentRole.name }
+        : null,
+      message: payload.message,
+      timestamp: new Date().toISOString(),
+    });
+
+    return payload;
   }
 }

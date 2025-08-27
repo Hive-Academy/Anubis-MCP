@@ -33,9 +33,13 @@ import { WorkflowContextCacheService } from './services/workflow-context-cache.s
 import { WorkflowExecutionOperationsService } from './services/workflow-execution-operations.service';
 import { WorkflowExecutionService } from './services/workflow-execution.service';
 import { WorkflowGuidanceService } from './services/workflow-guidance.service';
+import { WorkflowEventsGateway } from './events/workflow-events.gateway';
+import { WorkflowEventsService } from './events/workflow-events.service';
+import { WorkflowDashboardController } from './controllers/workflow-dashboard.controller';
 
 @Module({
   imports: [PrismaModule, TaskManagementModule],
+  controllers: [WorkflowDashboardController],
   providers: [
     // Repository Implementations
     {
@@ -88,6 +92,9 @@ import { WorkflowGuidanceService } from './services/workflow-guidance.service';
 
     // Guards
     WorkflowContextValidationGuard,
+    // Realtime events
+    WorkflowEventsGateway,
+    WorkflowEventsService,
   ],
   exports: [
     // MCP Operations
@@ -113,6 +120,9 @@ import { WorkflowGuidanceService } from './services/workflow-guidance.service';
 
     // Guards
     WorkflowContextValidationGuard,
+    // Realtime events
+    WorkflowEventsGateway,
+    WorkflowEventsService,
   ],
 })
 export class WorkflowRulesModule {}

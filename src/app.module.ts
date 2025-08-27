@@ -17,6 +17,8 @@ import { InitRulesModule } from './domains/init-rules/init-rules.module';
 import { TaskManagementModule } from './domains/task-management/task-management.module';
 import { WorkflowContextValidationGuard } from './domains/workflow-rules/guards/workflow-context-validation.guard';
 import { WorkflowRulesModule } from './domains/workflow-rules/workflow-rules.module';
+import { SystemController } from './controllers/system.controller';
+import { DashboardController } from './controllers/dashboard.controller';
 
 // Determine transport type based on environment
 const getTransportType = (): McpTransportType => {
@@ -105,5 +107,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       useClass: GlobalExceptionFilter,
     },
   ],
+  controllers: [SystemController, DashboardController],
 })
 export class AppModule {}

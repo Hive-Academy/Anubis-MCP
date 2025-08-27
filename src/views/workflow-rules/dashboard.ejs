@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Anubis - Workflow Dashboard</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 20px; }
+    h1 { margin-bottom: 8px; }
+    .muted { color: #666; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { padding: 8px 10px; border-bottom: 1px solid #eee; text-align: left; }
+    .progress { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; }
+    .bar { height: 100%; background: #4f46e5; }
+    .pill { padding: 2px 8px; border-radius: 999px; background: #f3f4f6; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Workflow Executions</h1>
+  <div class="muted">Real-time updates via WebSocket. Keep this page open during execution.</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Execution</th>
+        <th>Task</th>
+        <th>Role</th>
+        <th>Step</th>
+        <th>Progress</th>
+        <th>Started</th>
+      </tr>
+    </thead>
+    <tbody id="rows">
+      <% (executions || []).forEach(function(x){ %>
+        <tr id="row-<%= x.id %>">
+          <td><code><%= x.id %></code></td>
+          <td><%= x.taskId || '-' %></td>
+          <td><span class="pill"><%= x.roleName %></span></td>
+          <td><%= x.stepName %></td>
+          <td>
+            <div class="progress">
+              <div class="bar" style="width:<%= x.progress %>%"></div>
+            </div>
+            <small class="muted"><%= x.stepsCompleted %>/<%= x.totalSteps %> (<%= x.progress %>%)</small>
+          </td>
+          <td><small class="muted"><%= new Date(x.startedAt).toLocaleString() %></small></td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+  <script>
+    const tbody = document.getElementById('rows');
+    const socket = io(window.location.origin + '/workflow', { transports: ['websocket'] });
+
+    function ensureRow(id) {
+      let row = document.getElementById('row-' + id);
+      if (!row) {
+        row = document.createElement('tr');
+        row.id = 'row-' + id;
+        row.innerHTML = `
+          <td><code>${id}</code></td>
+          <td>-</td>
+          <td><span class="pill">-</span></td>
+          <td>-</td>
+          <td>
+            <div class="progress"><div class="bar" style="width:0%"></div></div>
+            <small class="muted">0/0 (0%)</small>
+          </td>
+          <td><small class="muted">-</small></td>
+        `;
+        tbody.prepend(row);
+      }
+      return row;
+    }
+
+    socket.on('workflow.bootstrapped', (evt) => {
+      const row = ensureRow(evt.executionId);
+      row.children[1].textContent = '-';
+      row.children[2].querySelector('.pill').textContent = evt.role?.name || 'Unknown';
+      row.children[3].textContent = 'Bootstrapped';
+      row.children[4].querySelector('.bar').style.width = '0%';
+      row.children[4].querySelector('small').textContent = '0/0 (0%)';
+      row.children[5].querySelector('small').textContent = new Date(evt.timestamp).toLocaleString();
+    });
+
+    // Future: handle step.started, step.completed, progress updates, etc.
+  </script>
+</body>
+</html>

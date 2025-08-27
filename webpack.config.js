@@ -75,10 +75,18 @@ module.exports = (options, webpack) => {
       ...(!isProduction
         ? [
             new webpack.DefinePlugin({
-              'process.env.DATABASE_URL': JSON.stringify(process.env.DATABASE_URL),
-              'process.env.MCP_SERVER_NAME': JSON.stringify(process.env.MCP_SERVER_NAME),
-              'process.env.MCP_SERVER_VERSION': JSON.stringify(process.env.MCP_SERVER_VERSION),
-              'process.env.MCP_TRANSPORT_TYPE': JSON.stringify(process.env.MCP_TRANSPORT_TYPE),
+              'process.env.DATABASE_URL': JSON.stringify(
+                process.env.DATABASE_URL,
+              ),
+              'process.env.MCP_SERVER_NAME': JSON.stringify(
+                process.env.MCP_SERVER_NAME,
+              ),
+              'process.env.MCP_SERVER_VERSION': JSON.stringify(
+                process.env.MCP_SERVER_VERSION,
+              ),
+              'process.env.MCP_TRANSPORT_TYPE': JSON.stringify(
+                process.env.MCP_TRANSPORT_TYPE,
+              ),
               'process.env.PORT': JSON.stringify(process.env.PORT),
               'process.env.HOST': JSON.stringify(process.env.HOST),
               'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
@@ -91,6 +99,13 @@ module.exports = (options, webpack) => {
           {
             from: 'src/domains/init-rules/templates',
             to: 'templates',
+            globOptions: {
+              ignore: ['**/.DS_Store'],
+            },
+          },
+          {
+            from: 'src/views',
+            to: 'views',
             globOptions: {
               ignore: ['**/.DS_Store'],
             },
