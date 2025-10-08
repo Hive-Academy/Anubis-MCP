@@ -1,0 +1,53 @@
+Chat message received: chat:messageAdded {requestId: '5b87ab4a-290a-42ed-b2b3-554fd0ee639d', success: true, data: {…}, metadata: {…}}data: message: content: "hello"id: "1756473053212"sessionId: "3df12955-5bed-4adc-a3d5-666a68b2b9d5"timestamp: "2025-08-29T13:10:53.212Z"type: "user"[[Prototype]]: Object[[Prototype]]: Objectmetadata: {timestamp: 1756473053212, source: 'extension', version: '1.0.0'}requestId: "5b87ab4a-290a-42ed-b2b3-554fd0ee639d"success: true[[Prototype]]: Object
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:53.212Z - Added message to session 3df12955-5bed-4adc-a3d5-666a68b2b9d5: hello... (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:53.227Z - Saved 8 sessions to storage (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:53.229Z - 🔍 Verifying Claude Code CLI installation... (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.370Z - ✅ Existing Claude CLI installation verified: claude (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.371Z - Starting Claude CLI streaming for session: 3df12955-5bed-4adc-a3d5-666a68b2b9d5 (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.372Z - Starting Claude chat session with stream pipeline: 3df12955-5bed-4adc-a3d5-666a68b2b9d5 (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.376Z - Circuit breaker initialized for service: claude-cli-3df12955-5bed-4adc-a3d5-666a68b2b9d5 {config: {…}, source: 'PtahConfigService'} (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.379Z - Circuit breaker stream initialized: claude-cli-3df12955-5bed-4adc-a3d5-666a68b2b9d5 {sessionId: '3df12955-5bed-4adc-a3d5-666a68b2b9d5', config: {…}} (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.380Z - Initialized ClaudeMessageTransformStream for session: 3df12955-5bed-4adc-a3d5-666a68b2b9d5 (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.381Z - Initialized MessageToJsonTransformStream with correlation: bf26a013-086b-4b06-b7f0-9a6733d7b21c (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.383Z - Executing operation through circuit breaker: claude-cli {state: 'CLOSED', failureCount: 0} (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.385Z - Message sent to Claude CLI session 3df12955-5bed-4adc-a3d5-666a68b2b9d5: hello... (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+log.ts:460   ERR [Extension Host] [ERROR] 2025-08-29T13:10:54.386Z - Claude CLI process error with circuit breaker {error: {…}, sessionId: '3df12955-5bed-4adc-a3d5-666a68b2b9d5', circuitStatus: {…}}
+error @ log.ts:460
+error @ log.ts:565
+error @ logService.ts:51
+Dms @ remoteConsoleUtil.ts:58
+$logExtensionHostMessage @ mainThreadConsole.ts:38
+S @ rpcProtocol.ts:458
+Q @ rpcProtocol.ts:443
+M @ rpcProtocol.ts:373
+L @ rpcProtocol.ts:299
+(anonymous) @ rpcProtocol.ts:161
+C @ event.ts:1219
+fire @ event.ts:1250
+fire @ ipc.net.ts:652
+l.onmessage @ localProcessExtensionHost.ts:383
+console.ts:137 [Extension Host] [ERROR] 2025-08-29T13:10:54.386Z - Claude CLI process error with circuit breaker {error: {…}, sessionId: '3df12955-5bed-4adc-a3d5-666a68b2b9d5', circuitStatus: {…}} (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+Ims @ console.ts:137
+$logExtensionHostMessage @ mainThreadConsole.ts:39
+S @ rpcProtocol.ts:458
+Q @ rpcProtocol.ts:443
+M @ rpcProtocol.ts:373
+L @ rpcProtocol.ts:299
+(anonymous) @ rpcProtocol.ts:161
+C @ event.ts:1219
+fire @ event.ts:1250
+fire @ ipc.net.ts:652
+l.onmessage @ localProcessExtensionHost.ts:383
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.387Z - Attempting circuit breaker recovery: claude-cli-3df12955-5bed-4adc-a3d5-666a68b2b9d5 {attempt: 1, sessionId: '3df12955-5bed-4adc-a3d5-666a68b2b9d5'} (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.389Z - Initialized ClaudeMessageTransformStream for session: 3df12955-5bed-4adc-a3d5-666a68b2b9d5 (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.389Z - Initialized MessageToJsonTransformStream with correlation: 68d6fb88-bb57-4f95-b4b0-22a02527308e (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.390Z - Emitting parsed message chunk: partial (13 chars) (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.391Z - Successfully transformed message to JSON in 0ms (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.393Z - Flushed ClaudeMessageTransformStream for session: 3df12955-5bed-4adc-a3d5-666a68b2b9d5 (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.394Z - Circuit breaker recovery successful: claude-cli-3df12955-5bed-4adc-a3d5-666a68b2b9d5 {attempt: 1, sessionId: '3df12955-5bed-4adc-a3d5-666a68b2b9d5'} (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.395Z - Output stream ended for session: 3df12955-5bed-4adc-a3d5-666a68b2b9d5 {circuitStatus: {…}} (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.395Z - Stream completed for session: 3df12955-5bed-4adc-a3d5-666a68b2b9d5 (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.397Z - Claude CLI streaming completed for session: 3df12955-5bed-4adc-a3d5-666a68b2b9d5 (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.397Z - Successfully handled message: chat:sendMessage (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.398Z - Resilient stream pipeline completed successfully for session: 3df12955-5bed-4adc-a3d5-666a68b2b9d5 (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
+console.ts:137 [Extension Host] [INFO] 2025-08-29T13:10:54.399Z - Message chat:sendMessage handled successfully {success: true} (at console.<anonymous> (file:///c:/Users/abdal/AppData/Local/Programs/Microsoft%20VS%20Code/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:198:31117))
