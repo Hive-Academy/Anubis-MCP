@@ -20,5 +20,12 @@
         "github.copilot-chat/o4-mini"
       ]
     }
-  }
+  },
+  "ptah.context.includedFiles": [
+    "d:\\projects\\Anubis-MCP\\package.json",
+    "d:\\projects\\Anubis-MCP\\.vscode\\settings.json",
+    "d:\\projects\\Anubis-MCP\\generated\\prisma\\package.json",
+    "d:\\projects\\Anubis-MCP\\.vscode\\mcp.json",
+  ],
+  "ptah.context.excludedFiles": []
 }

@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "anubis": {
+      "command": "node",
+      "args": ["D:/projects/anubis-MCP/dist/main.js"],
+      "env": {
+        "PROJECT_ROOT": "D:/projects/anubis-MCP"
+      },
+      "disabled": true
+    }
+  }
+}

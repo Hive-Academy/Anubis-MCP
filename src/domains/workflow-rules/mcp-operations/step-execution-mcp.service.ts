@@ -411,59 +411,6 @@ export class StepExecutionMcpService extends BaseMcpService {
     }
   }
 
-  @Tool({
-    name: 'get_workflow_state_tracker',
-    description: `CRITICAL WORKFLOW STATE TRACKER: Returns essential database identifiers for workflow continuity including executionId, taskId, roleId, and stepId from the active execution. Use this tool whenever you need to verify or recover workflow state, especially when experiencing ID confusion or workflow interruptions. Requires no parameters - automatically finds the active execution.`,
-  })
-  async getWorkflowStateTracker() {
-    try {
-      // ✅ GET ACTIVE EXECUTIONS INSTEAD OF REQUIRING EXECUTION ID
-      const activeExecutionsResult =
-        await this.workflowExecutionOperationsService.getActiveExecutions();
-
-      if (
-        !activeExecutionsResult.executions ||
-        activeExecutionsResult.executions.length === 0
-      ) {
-        return this.buildResponse({
-          status: 'no_active_executions',
-          error: 'No active executions found',
-          stateValid: false,
-          executions: [],
-        });
-      }
-
-      // Get the most recent active execution (first one)
-      const execution = activeExecutionsResult.executions[0];
-      const task = execution.task;
-      const currentRole = execution.currentRole;
-      const currentStep = execution.currentStep;
-
-      // ✅ RETURN ONLY CRITICAL DATABASE IDENTIFIERS - SAME FORMAT AS BEFORE
-      const criticalState = {
-        executionId: execution.id,
-        taskId: execution.taskId,
-        roleId: execution.currentRoleId,
-        stepId: execution.currentStepId,
-        taskName: task?.name || 'Bootstrap/No Task',
-        roleName: currentRole?.name || 'Unknown',
-        stepName: currentStep?.name || 'No Step',
-        stateValid: true,
-
-        // Include summary info from active executions for context
-        summary: activeExecutionsResult.summary,
-
-        // If multiple executions, include count for awareness
-        totalActiveExecutions: activeExecutionsResult.executions.length,
-      };
-
-      return this.buildResponse(criticalState);
-    } catch (error) {
-      return this.buildErrorResponse(
-        'Failed to get workflow state tracker',
-        getErrorMessage(error),
-        'WORKFLOW_STATE_ERROR',
-      );
-    }
-  }
+  // REMOVED: get_workflow_state_tracker - was faulty and confusing
+  // Use workflow_execution_operations with 'get_active_executions' instead
 }

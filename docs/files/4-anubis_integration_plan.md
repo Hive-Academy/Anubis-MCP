@@ -6,11 +6,11 @@ This plan specifies exact modifications to ANUBIS workflow steps to incorporate 
 
 ## 📋 **Modified Workflow Steps Specification**
 
-### **Boomerang Role - Enhanced Workflow Steps**
+### **PM Role - Enhanced Workflow Steps**
 
 #### **Step 1: Enhanced Git Setup & Architectural Intelligence**
 
-**File to Modify**: `enhanced-workflow-rules/json/boomerang/workflow-steps.json`
+**File to Modify**: `enhanced-workflow-rules/json/PM/workflow-steps.json`
 
 **Original Step**: `git_setup_and_memory_analysis`
 **New Step**: `git_setup_and_imhotep_architectural_intelligence`
@@ -105,7 +105,7 @@ This plan specifies exact modifications to ANUBIS workflow steps to incorporate 
       }
     },
     {
-      "serviceName": "IMHOTEP", 
+      "serviceName": "IMHOTEP",
       "operation": "analyze_design_patterns",
       "required": true,
       "parameters": {
@@ -116,7 +116,7 @@ This plan specifies exact modifications to ANUBIS workflow steps to incorporate 
     },
     {
       "serviceName": "IMHOTEP",
-      "operation": "analyze_code_quality_metrics", 
+      "operation": "analyze_code_quality_metrics",
       "required": true,
       "parameters": {
         "projectPath": "string (current project path)",
@@ -138,7 +138,7 @@ This plan specifies exact modifications to ANUBIS workflow steps to incorporate 
   "description": "Complete comprehensive project intelligence with security, performance, and testing analysis using IMHOTEP",
   "sequenceNumber": 2,
   "isRequired": true,
-  "stepType": "ACTION", 
+  "stepType": "ACTION",
   "approach": "Comprehensive security, performance, and testing intelligence to complete project understanding",
   "approachGuidance": {
     "stepByStep": [
@@ -154,7 +154,7 @@ This plan specifies exact modifications to ANUBIS workflow steps to incorporate 
       "",
       "Document security findings:",
       "  - Vulnerability assessment by severity level",
-      "  - Security pattern implementation analysis", 
+      "  - Security pattern implementation analysis",
       "  - Dependency security assessment",
       "  - Security hardening recommendations",
       "",
@@ -224,7 +224,7 @@ This plan specifies exact modifications to ANUBIS workflow steps to incorporate 
       "operation": "analyze_performance_optimization",
       "required": true,
       "parameters": {
-        "projectPath": "string (current project path)", 
+        "projectPath": "string (current project path)",
         "analyzeAlgorithmicComplexity": true,
         "checkDatabaseQueries": true
       }
@@ -249,7 +249,7 @@ This plan specifies exact modifications to ANUBIS workflow steps to incorporate 
 
 ```json
 {
-  "name": "task_creation_with_imhotep_intelligence", 
+  "name": "task_creation_with_imhotep_intelligence",
   "description": "Create comprehensive task using IMHOTEP intelligence and pattern recommendations",
   "sequenceNumber": 3,
   "isRequired": true,
@@ -261,7 +261,7 @@ This plan specifies exact modifications to ANUBIS workflow steps to incorporate 
       "Integrate user requirements with IMHOTEP comprehensive intelligence:",
       "  - Architectural constraints and opportunities from analysis",
       "  - Security requirements and considerations from vulnerability assessment",
-      "  - Performance implications and optimization needs", 
+      "  - Performance implications and optimization needs",
       "  - Quality standards and improvement opportunities",
       "  - Testing requirements and strategy alignment",
       "",
@@ -280,7 +280,7 @@ This plan specifies exact modifications to ANUBIS workflow steps to incorporate 
       "",
       "Document pattern recommendations:",
       "  - Recommended patterns with effectiveness scores",
-      "  - Implementation complexity and benefits analysis", 
+      "  - Implementation complexity and benefits analysis",
       "  - Alternative approaches and trade-offs",
       "  - Cross-project success evidence",
       "",
@@ -307,7 +307,7 @@ This plan specifies exact modifications to ANUBIS workflow steps to incorporate 
   },
   "qualityChecklist": [
     "✅ User requirements synthesized with comprehensive IMHOTEP intelligence",
-    "✅ Pattern recommendations analyzed with effectiveness evidence", 
+    "✅ Pattern recommendations analyzed with effectiveness evidence",
     "✅ Security considerations integrated from vulnerability assessment",
     "✅ Performance targets established from optimization analysis",
     "✅ Quality elevation plan incorporated from metrics analysis",
@@ -327,7 +327,7 @@ This plan specifies exact modifications to ANUBIS workflow steps to incorporate 
       }
     },
     {
-      "serviceName": "TaskOperations", 
+      "serviceName": "TaskOperations",
       "operation": "create",
       "required": true,
       "parameters": {
@@ -364,7 +364,7 @@ This plan specifies exact modifications to ANUBIS workflow steps to incorporate 
     },
     {
       "duringSubtaskPlanning": {
-        "serviceName": "IMHOTEP", 
+        "serviceName": "IMHOTEP",
         "operation": "get_pattern_effectiveness",
         "parameters": {
           "patterns": "{{ identifiedPatterns }}",
@@ -380,7 +380,7 @@ This plan specifies exact modifications to ANUBIS workflow steps to incorporate 
     "  - Assess pattern effectiveness for current project context",
     "  - Extract lessons learned and best practices",
     "",
-    "💡 INTELLIGENCE-INFORMED SUBTASK CREATION:", 
+    "💡 INTELLIGENCE-INFORMED SUBTASK CREATION:",
     "Create subtasks enhanced with IMHOTEP intelligence:",
     "  - Include pattern implementation guidance",
     "  - Add quality gates based on analysis findings",
@@ -417,7 +417,7 @@ This plan specifies exact modifications to ANUBIS workflow steps to incorporate 
       "  - Cross-project implementation lessons",
       "  - Risk mitigation strategies"
     ],
-    
+
     "duringImplementation": [
       "📊 QUALITY-GUIDED IMPLEMENTATION:",
       "Apply IMHOTEP guidance during implementation:",
@@ -426,7 +426,7 @@ This plan specifies exact modifications to ANUBIS workflow steps to incorporate 
       "  - Address security considerations from vulnerability assessment",
       "  - Optimize for performance targets from analysis"
     ],
-    
+
     "afterImplementation": [
       "📝 LEARNING EPISODE RECORDING:",
       "Record implementation outcome for IMHOTEP learning:",
@@ -459,7 +459,7 @@ This plan specifies exact modifications to ANUBIS workflow steps to incorporate 
         "operation": "store_implementation_outcome",
         "parameters": {
           "projectPath": "string",
-          "taskDescription": "string", 
+          "taskDescription": "string",
           "outcome": "success | failure | partial",
           "duration": "number (minutes)",
           "quality": "number (0-1 score)",
@@ -469,7 +469,7 @@ This plan specifies exact modifications to ANUBIS workflow steps to incorporate 
         }
       }
     },
-    
+
     "patternApplication": {
       "trigger": "When applying recommended patterns",
       "mcpOperation": {
@@ -484,11 +484,11 @@ This plan specifies exact modifications to ANUBIS workflow steps to incorporate 
         }
       }
     },
-    
+
     "qualityImprovement": {
       "trigger": "When quality improvements are achieved",
       "mcpOperation": {
-        "serviceName": "IMHOTEP", 
+        "serviceName": "IMHOTEP",
         "operation": "record_quality_improvement",
         "parameters": {
           "projectPath": "string",
@@ -518,7 +518,7 @@ This plan specifies exact modifications to ANUBIS workflow steps to incorporate 
 ```typescript
 interface EnhancedWorkflowGuidance {
   // Existing guidance fields...
-  
+
   // NEW: IMHOTEP Intelligence Integration
   imhotepIntelligence?: {
     available: boolean;
@@ -529,11 +529,11 @@ interface EnhancedWorkflowGuidance {
     securityConsiderations: SecurityConsideration[];
     crossProjectLearnings: CrossProjectLearning[];
   };
-  
+
   // Enhanced behavioral context with intelligence
   enhancedBehavioralContext: {
     // Existing behavioral context...
-    
+
     intelligenceGuidance: string[];
     patternAwareness: string[];
     qualityExpectations: string[];
@@ -545,16 +545,19 @@ interface EnhancedWorkflowGuidance {
 ## 🎯 **Implementation Priority**
 
 ### **Phase 1: Core Integration (Week 1-2)**
-1. **Modify boomerang workflow steps** with IMHOTEP tool calls
+
+1. **Modify PM workflow steps** with IMHOTEP tool calls
 2. **Update step guidance generation** to include IMHOTEP operations
 3. **Test basic integration** with architectural and pattern analysis
 
-### **Phase 2: Enhanced Intelligence (Week 3-4)**  
+### **Phase 2: Enhanced Intelligence (Week 3-4)**
+
 1. **Add security, performance, testing analysis** to workflow steps
 2. **Implement pattern recommendation integration** in task creation
 3. **Add cross-project learning** integration points
 
 ### **Phase 3: Advanced Features (Week 5-6)**
+
 1. **Enhance architect and senior developer roles** with intelligence
 2. **Implement learning episode recording** throughout workflow
 3. **Add comprehensive testing** and documentation

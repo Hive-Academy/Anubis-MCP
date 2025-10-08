@@ -198,7 +198,7 @@ await workflow_execution_operations({
 
 The `mcpOperations` section in step guidance provides exact schemas for any MCP operations needed. **You must follow these schemas precisely**.
 
-### When guidance provides an mcpOperation schema:
+### When guidance provides an mcpOperation schema
 
 1. **Use the exact service name** specified in the schema
 2. **Use the exact operation name** specified in the schema
@@ -349,7 +349,7 @@ console.log('Resuming workflow as [role name] with proper boundaries');
 
 **⚠️ VIOLATION WARNING**: Senior Developer who skips subtasks, batches them together, or fails to follow the iterative process violates the fundamental workflow protocol.
 
-#### Required Subtask Execution Sequence:
+#### Required Subtask Execution Sequence
 
 1. **GET NEXT SUBTASK** (Always first action)
 
